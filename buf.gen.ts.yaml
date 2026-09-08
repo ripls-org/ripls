@@ -1,0 +1,17 @@
+# Controls TypeScript code generation for Buf.
+# Only generates code from proto/ripls/api/ (excludes proto/ripls/models/) —
+# the e2e test harness talks to the public Connect surface, not storage models.
+# Runtime imports land on @bufbuild/protobuf and @connectrpc/connect-web.
+#
+# protobuf-es v2 emits both message types and service descriptors from
+# the single bufbuild/es plugin (when target=ts). At runtime, the
+# Connect-ES v2 client consumes those descriptors directly via
+# `createClient(YourService, transport)` — no separate connectrpc/es
+# codegen step is needed.
+version: v2
+plugins:
+  - remote: buf.build/bufbuild/es:v2.2.3
+    out: e2e/gen
+    opt:
+      - target=ts
+      - import_extension=js

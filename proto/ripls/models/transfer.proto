@@ -1,0 +1,109 @@
+// A transfer of gear from one community member to another (loan or giveaway).
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+import "ripls/models/common.proto";
+import "ripls/models/impact_estimate.proto";
+
+// Type of transfer.
+enum TransferType {
+    TRANSFER_TYPE_UNSPECIFIED = 0;
+    TRANSFER_TYPE_LOAN = 1;     // Temporary loan (item will be returned)
+    TRANSFER_TYPE_GIVEAWAY = 2; // Permanent transfer of ownership
+}
+
+// Possible states of a transfer.
+enum TransferState {
+    TRANSFER_STATE_UNSPECIFIED = 0;
+    TRANSFER_STATE_INTEREST_EXPRESSED = 1;  // Someone has shown interest (chat started)
+    TRANSFER_STATE_RECIPIENT_SELECTED = 2;  // Owner chose a recipient
+    TRANSFER_STATE_ACTIVE = 3;              // Loan active (doesn't apply to giveaway)
+    TRANSFER_STATE_COMPLETED = 4;           // Transfer completed successfully
+    TRANSFER_STATE_CANCELLED = 5;           // Transfer cancelled
+}
+
+// A transfer of a piece of gear for loan or giveaway.
+message Transfer {
+    // A unique identifier for the transfer.
+    string id = 1;
+
+    // The ID of the gear being transferred.
+    string gear_id = 2;
+
+    // The ID of the gear owner.
+    string owner_id = 3;
+
+    // The ID of the user receiving the gear.
+    string recipient_id = 4;
+
+    // Type of transfer (loan or giveaway).
+    TransferType transfer_type = 5;
+
+    // Current state of the transfer.
+    TransferState state = 6;
+
+    // The community this transfer belongs to.
+    string community_id = 7;
+
+    // The entity this transfer sprang from, when it was created as a targeted
+    // offer rather than through the interest flow. A transfer carrying an origin
+    // is a child of that entity: the entity's lifecycle drives the transfer's.
+    // - origin_request_id (#2702): a helper's gear-backed offer on a community
+    //   request; its handoff can fulfill the request, and the request's
+    //   lifecycle can cancel it.
+    // - origin_experience_id (#2708): a participant's gear brought to an event;
+    //   the transfer is "lent to the host for the event" and completes when the
+    //   event completes (cancels when it is cancelled).
+    oneof origin {
+      string origin_request_id = 19;
+      string origin_experience_id = 21;
+    }
+
+    // Unix timestamp (seconds) of the most recent interest expression for this transfer.
+    int64 latest_request_unix_sec = 8;
+
+    // Estimated pickup time (Unix timestamp in seconds).
+    optional int64 estimated_pickup_unix_sec = 9;
+
+    // Actual pickup time (Unix timestamp in seconds). Set on ACTIVE transition.
+    optional int64 actual_pickup_unix_sec = 10;
+
+    // Estimated loan duration in days (loans only).
+    optional int32 loan_duration_days = 11;
+
+    // Actual return time (Unix timestamp in seconds). Set on COMPLETED transition (loans only).
+    optional int64 actual_return_unix_sec = 12;
+
+    // Expected return time (Unix timestamp in seconds). Computed on the
+    // ACTIVE transition for loans as actual_pickup_unix_sec +
+    // loan_duration_days * 86400. Indexed so scheduled-notification
+    // reconcilers can locate loans nearing their return date without
+    // recomputing the derived value at query time.
+    optional int64 expected_return_unix_sec = 15;
+
+    // Estimated impact of this transfer (money saved, emissions prevented, time saved).
+    ImpactEstimate impact_estimate = 13;
+
+    // Provisional user recipient — set when the recipient is not a registered user.
+    // Exactly one of recipient_id and provisional_recipient_id should be set.
+    optional string provisional_recipient_id = 14;
+
+    // Hand-off coordination for calendar bookings: where the recipient picks up
+    // and drops off the gear. Optional until the recipient sets them. The
+    // hand-off *times* reuse estimated_pickup_unix_sec (pickup) and
+    // expected_return_unix_sec (drop-off).
+    optional string pickup_location_id = 16;
+    optional string dropoff_location_id = 17;
+
+    // Accept token for an owner-created "pending" gear reservation: the days are
+    // held (recipient_id empty) until someone with this token accepts via
+    // AcceptGearBooking, which assigns them as the recipient and clears it.
+    optional string accept_token = 18;
+
+    // Soft deletion metadata.
+    optional DeletedMetadata deleted = 20;
+}

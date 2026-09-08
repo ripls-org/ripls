@@ -1,0 +1,277 @@
+// A user of the community app.
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+import "ripls/models/common.proto";
+
+// AuthMethod indicates how the user authenticates.
+enum AuthMethod {
+    AUTH_METHOD_UNSPECIFIED = 0;
+    AUTH_METHOD_EMAIL_PASSWORD = 1;  // Traditional email/password
+    AUTH_METHOD_GOOGLE = 2;          // Google OIDC
+    AUTH_METHOD_APPLE = 3;           // Apple OIDC
+    AUTH_METHOD_PHONE = 4;           // Passwordless phone OTP via Firebase
+}
+
+message User {
+    // Unique identifier for the user in our system.
+    string id = 1;
+
+    // User's email address.
+    string email = 2;
+
+    // User's phone number in E.164 format (e.g., "+15551234567").
+    // Set only for AUTH_METHOD_PHONE users.
+    optional string phone_number = 18;
+
+    // Timestamp when this user's email address was proven to belong to
+    // them. Absent means the address is self-asserted and unproven.
+    //
+    // Only ownership-proving paths may set this: completing an emailed
+    // one-time code, or an identity-provider token whose issuer already
+    // verified the address. Profile edits must never set it. Anything
+    // that acts on the strength of an address — notably claiming
+    // placeholder identities keyed to it — must require this field.
+    optional int64 email_verified_at_unix_sec = 23;
+
+    // Display name for the user.
+    string name = 3;
+
+    // Timestamp when the user was created in our system.
+    int64 created_at = 4;
+
+    // Timestamp when the user was last updated.
+    int64 updated_at = 5;
+
+    // Role-based access control (simple for now).
+    Role role = 6;
+
+    // User's primary residence location.
+    string primary_residence_location_id = 7;
+
+    // Additional locations associated with this user.
+    repeated string other_location_ids = 8;
+
+    // Authentication method used during registration.
+    AuthMethod auth_method = 9;
+
+    // Password hash (only for EMAIL_PASSWORD auth method).
+    string password_hash = 10;
+
+    // User ID of who invited this user (from CommunityInvitation.inviter_id).
+    string invited_by_id = 11;
+
+    // OIDC provider's unique identifier for this user (sub claim from ID token).
+    string oidc_provider_subject = 12;
+
+    // Field 13 was `string media_id` — the legacy single-avatar pointer.
+    // Replaced by media_ids[0] (see field 15). Removed in #2083 Phase 4a
+    // after data backfill restored the documented invariant. Tag 13 is
+    // permanently reserved: protobuf tag numbering is forever even on
+    // internal storage protos.
+    reserved 13;
+
+    // User bio/description.
+    string description = 14;
+
+    // Media IDs for the user's profile images. media_ids[0] is the
+    // primary (current) avatar; subsequent entries are historical
+    // avatars retained for the multi-avatar feature.
+    repeated string media_ids = 15;
+
+    // User's preferred timezone for displaying all events.
+    // IANA timezone string (e.g., "America/New_York").
+    // Optional: empty string means use device timezone.
+    string preferred_timezone = 16;
+
+    // User's preferred language for server-rendered content (push
+    // notifications, emails). BCP-47 tag, e.g. "en", "es". Empty
+    // means the server resolves the locale at render time from the
+    // request's Accept-Language header, falling back to "en".
+    optional string preferred_language = 19;
+
+    // If set, this user was created by a simulation run with this ID.
+    // Used by CleanupSimulation to remove simulation data without affecting real users.
+    optional string simulation_id = 17;
+
+    // Whether the user has opted out of off-app (email) notifications sent
+    // when they have no active app device. Set true when the user follows the
+    // one-click unsubscribe link in such an email. Honored at dispatch time:
+    // an opted-out user is never sent an off-app email (in-app push to a real
+    // device is unaffected). Defaults false. CAN-SPAM: this is the durable
+    // suppression record for the off-app email channel.
+    //
+    // TODO(#2524): reversible from in-app settings. Today this only flips true
+    // via the one-click email unsubscribe link; there is no in-app way to opt
+    // out or re-subscribe. Removing this TODO means a toggle on
+    // user_notifications_screen backed by a get/set RPC (the field itself is
+    // already reversible — this is the missing UI/RPC).
+    bool off_app_email_opted_out = 21;
+
+    // Unix seconds of the last platform SMS that carried the STOP/HELP opt-out
+    // disclosure, or 0 if the user has never been sent one. The keywords are
+    // honored centrally regardless (Twilio Advanced Opt-Out + the persist-only
+    // inbound webhook), so the rendered footer is a copy decision, not a
+    // functional one: it rides the first platform SMS, then re-appears only
+    // ~monthly (see notifications.shouldDiscloseOptOut). Set after a send that
+    // included the disclosure. CTIA asks for the reminder in the opt-in/first
+    // message and "conspicuously and frequently" thereafter, not on every text.
+    int64 sms_optout_disclosed_at_unix_sec = 22;
+
+    // Soft deletion metadata.
+    optional DeletedMetadata deleted = 20;
+}
+
+// Role-based access control.
+enum Role {
+    ROLE_UNSPECIFIED = 0;
+    ROLE_USER = 1;        // Standard user - can manage their own gear
+    ROLE_ADMIN = 2;       // Admin user - can manage all gear
+}
+
+// How a refresh token came to exist: minted by an interactive
+// authentication (login or registration) or by rotating a prior token.
+// Lets metrics distinguish people signing in from automatic credential
+// refresh. Server-only; not exposed on the API.
+enum RefreshTokenOrigin {
+    // Unset — rows created before origin stamping existed. Treated as
+    // unknown (not interactive) by metrics; ages out with token expiry.
+    REFRESH_TOKEN_ORIGIN_UNSPECIFIED = 0;
+
+    // Minted by an interactive authentication: password, one-time-code,
+    // or identity-provider login, or account registration.
+    REFRESH_TOKEN_ORIGIN_INTERACTIVE = 1;
+
+    // Minted by rotating a prior refresh token.
+    REFRESH_TOKEN_ORIGIN_ROTATION = 2;
+}
+
+// RefreshToken represents a long-lived token used to obtain new access tokens.
+message RefreshToken {
+    // Unique identifier for this refresh token record.
+    string id = 1;
+
+    // User ID this token belongs to.
+    string user_id = 2;
+
+    // SHA-256 hash of the raw token (raw token is never stored).
+    string token_hash = 3;
+
+    // Timestamp when this token expires (Unix seconds).
+    int64 expires_at_unix_sec = 4;
+
+    // Timestamp when this token was created (Unix seconds).
+    int64 created_at_unix_sec = 5;
+
+    // How this token came to exist (interactive sign-in vs rotation).
+    RefreshTokenOrigin origin = 7;
+
+    // Whether this token has been revoked.
+    bool is_revoked = 6;
+}
+
+// UserWeeklyGoals stores the user's personal weekly impact targets.
+message UserWeeklyGoals {
+    // Unique identifier for this goals record.
+    string id = 1;
+
+    // User ID these goals belong to.
+    string user_id = 2;
+
+    // Target quality-time minutes per week.
+    int32 social_time_minutes_goal = 3;
+
+    // Target cost saved in cents per week.
+    int32 money_saved_cents_goal = 4;
+
+    // Target CO₂ avoided in grams per week.
+    int32 co2_avoided_grams_goal = 5;
+
+    // Timestamp when this record was last updated (Unix seconds).
+    int64 updated_at_unix_sec = 6;
+}
+
+// Per-user push-notification preferences that aren't scoped to a
+// single community. Use CommunityNotificationPreferences for
+// per-community category toggles; use this type for preferences that
+// follow the user across all their communities (e.g. loan return
+// reminders are about "your stuff in your hands", not about any one
+// community's feed). Absence of a row means "all categories on";
+// absence of an individual `optional bool` field means the same.
+message UserNotificationPreferences {
+    // Unique identifier for this preferences row.
+    string id = 1;
+
+    // The user these preferences belong to. Exactly one row per user.
+    string user_id = 2;
+
+    // Notify on scheduled loan-return reminders (1 day before due,
+    // due-day, and overdue). Unset = on. See #625.
+    optional bool notify_loan_return_reminders = 3;
+
+    // Notify on the post-event prompt that asks the host to mark an
+    // Experience completed. Unset = on. Used in Phase 4 of #625.
+    optional bool notify_event_close_prompts = 4;
+
+    // When the row was created (Unix timestamp in seconds).
+    int64 created_at_unix_sec = 5;
+
+    // When the row was last updated (Unix timestamp in seconds).
+    int64 updated_at_unix_sec = 6;
+}
+
+// PendingPasswordReset represents a password reset request.
+message PendingPasswordReset {
+    // Unique identifier for this password reset request.
+    string id = 1;
+
+    // User ID for whom this reset was requested.
+    string user_id = 2;
+
+    // Secure random token sent to user via email.
+    string token = 3;
+
+    // Timestamp when this reset request was created.
+    int64 created_at_unix_sec = 4;
+
+    // Timestamp when this reset request expires.
+    int64 expires_at_unix_sec = 5;
+}
+
+// PendingEmailCode is an outstanding one-time code issued to an email
+// address to prove the requester can receive mail there.
+//
+// The code itself is never stored — only a hash of it, the same way a
+// refresh token is stored. A row is consumed on first successful use and
+// carries its own attempt counter, so a code is single-use and guessing
+// is bounded per issued code rather than per address.
+message PendingEmailCode {
+    // Unique identifier for this pending code.
+    string id = 1;
+
+    // The normalized email address the code was sent to. This is not a
+    // user ID: a code may be issued for an address that has no account,
+    // which is what makes the same flow serve both sign-up and sign-in.
+    string email = 2;
+
+    // Hash of the one-time code. The code is only ever in transit and in
+    // the recipient's mailbox.
+    string code_hash = 3;
+
+    // Timestamp when this code was issued.
+    int64 created_at_unix_sec = 4;
+
+    // Timestamp after which this code is no longer accepted.
+    int64 expires_at_unix_sec = 5;
+
+    // Number of failed attempts made against this code. Once it reaches
+    // the server's limit the code is dead and a new one must be issued.
+    int32 attempts = 6;
+
+    // Timestamp when this code was successfully used. Absent means the
+    // code is still outstanding; a used code is never accepted again.
+    optional int64 consumed_at_unix_sec = 7;
+}

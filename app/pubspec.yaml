@@ -1,0 +1,123 @@
+name: ripls
+description: "Stop waiting for community. Start building it."
+publish_to: "none"
+version: 0.31.0
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  add_2_calendar: ^3.0.1
+  app_badge_plus: ^1.1.6
+  cached_network_image: ^3.4.1
+  camera: ^0.12.0
+  connectivity_plus: ^7.0.0
+  connectrpc: ^1.0.0
+  # cross_file is the cross-platform XFile type used by image_picker
+  # and camera. We depend on it directly so MediaService (service
+  # layer) can accept XFile without importing a UI picker.
+  cross_file: ^0.3.4
+  cupertino_icons: ^1.0.2
+  device_info_plus: ^13.1.0
+  dotted_border: ^3.1.0
+  emoji_picker_flutter: ^4.4.0
+  firebase_analytics: ^12.0.4
+  # Supplies the Firebase installation ID that RegisterDeviceToken reports.
+  # FCM deprecated addressing a push by registration token in favour of the
+  # installation ID (#3043); the server falls back to the token when this is
+  # unavailable.
+  firebase_app_installations: ^0.4.3
+  firebase_auth: ^6.2.0
+  firebase_core: ^4.2.0
+  firebase_crashlytics: ^5.0.5
+  firebase_messaging: ^16.0.3
+  firebase_performance: ^0.11.1+2
+  fixnum: ^1.1.0
+  fl_chart: ^1.0.0
+  flutter:
+    sdk: flutter
+  flutter_cache_manager: ^3.4.1
+  flutter_launcher_icons: ^0.14.4
+  flutter_local_notifications: ^22.0.0
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^3.3.2
+  flutter_secure_storage: ^11.0.0
+  flutter_slidable: ^4.0.3
+  flutter_timezone: ^5.1.0
+  flutter_typeahead: ^6.0.0
+  flutter_web_plugins:
+    sdk: flutter
+  freezed_annotation: ^3.1.0
+  gal: ^2.3.0
+  geolocator: ^14.0.2
+  go_router: ^18.0.0
+  google_maps_flutter: ^2.10.0
+  google_sign_in: ^7.2.0
+  http: ^1.2.2
+  image_picker: ^1.1.2
+  intl: ^0.20.1
+  keyboard_actions: ^4.2.0
+  logging: ^1.2.0
+  mapbox_maps_flutter: 2.19.1
+  mime: ^2.0.0
+  package_info_plus: ^10.1.0
+  play_install_referrer: ^0.5.0
+  protobuf: ^4.2.0
+  qr_flutter: ^4.1.0
+  reorderable_grid_view: ^2.2.8
+  share_plus: ^13.1.0
+  shared_preferences: ^2.3.5
+  stash: ^5.2.0
+  stash_memory: ^5.2.0
+  timeago: ^3.7.1
+  timezone: ^0.11.0
+  url_launcher: ^6.3.1
+  uuid: ^4.5.1
+  video_player: ^2.9.2
+
+dev_dependencies:
+  # Parser used by tool/dead_code.dart to build the import/export/part graph.
+  analyzer: ^13.3.0
+  build_runner: ^2.10.4
+  fake_async: ^1.3.3
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  freezed: ^4.0.0
+  mockito: ^5.8.1
+  # Path normalization for tool/dead_code.dart's URI resolution.
+  path: ^1.9.1
+  # Needed for MockPlatformInterfaceMixin in geolocator tests.
+  plugin_platform_interface: ^2.1.8
+  # Needed for InMemorySharedPreferencesAsync in AuthStateNotifier tests.
+  shared_preferences_platform_interface: ^2.4.1
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/icon/icon_ios_1024.png
+    - assets/images/
+    - assets/map_styles/google_dark.json
+
+  fonts:
+    - family: Libre Baskerville
+      fonts:
+        - asset: fonts/LibreBaskerville-Regular.ttf
+        - asset: fonts/LibreBaskerville-Bold.ttf
+          weight: 700
+        - asset: fonts/LibreBaskerville-Italic.ttf
+          style: italic
+    - family: RiplsIcons
+      fonts:
+        - asset: fonts/RiplsIcons.ttf
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon_android_512.png"
+  image_path_ios: "assets/icon/icon_ios_1024.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/icon_android_512.png"
+  adaptive_icon_monochrome: "assets/icon/icon_android_monochrome_512.png"

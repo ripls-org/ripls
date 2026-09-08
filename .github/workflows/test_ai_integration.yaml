@@ -1,0 +1,122 @@
+name: AI Provider Integration Tests
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "server/ai/**"
+      - ".github/workflows/test_ai_integration.yaml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "server/ai/**"
+      - ".github/workflows/test_ai_integration.yaml"
+  schedule:
+    # Nightly run at 09:00 UTC (a little after midnight Pacific) catches
+    # provider regressions between PRs that don't touch server/ai.
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+env:
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+jobs:
+  # This workflow exists to exercise REAL providers. With no credentials there
+  # is nothing here to test, so skip the job outright rather than run 30
+  # minutes of setup so every test can self-skip — and rather than fail on the
+  # auth action, which errors on an empty input and is how this died in the
+  # open-source repo. A fork PR is in the same position: GitHub never passes
+  # secrets to one.
+  #
+  # A gate job rather than a job-level `if:`, because `secrets` is not a
+  # context available there. A skipped job reports success and satisfies a
+  # required check, the same pattern the `changes` gates use elsewhere.
+  credentials:
+    name: Detect provider credentials
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    outputs:
+      gcp: ${{ steps.check.outputs.gcp }}
+    steps:
+      - id: check
+        env:
+          KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+        run: |
+          set -euo pipefail
+          if [ -n "$KEY" ]; then
+            echo "gcp=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "gcp=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=AI integration tests skipped::GCP_SERVICE_ACCOUNT_KEY_DEV is unset, so there is no Vertex AI access to test against."
+          fi
+
+  test:
+    name: AI Integration Tests
+    needs: [credentials]
+    if: needs.credentials.outputs.gcp == 'true'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Ensure Git LFS files are pulled
+        run: |
+          git lfs install --local
+          git lfs pull
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      - name: Install gotestfmt
+        run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@v2.5.0
+
+      - name: Run AI provider integration tests
+        env:
+          CI: "true"
+          VERTEX_AI_PROJECT: ${{ vars.GCP_PROJECT_DEV }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -o pipefail
+          go test -v -json -tags="integration ai_providers" -timeout 20m -run TestProviderIntegration ./server/ai/... \
+            | stdbuf -oL tee test-output.json \
+            | gotestfmt --hide=empty-packages,successful-tests
+
+      - name: Upload raw test output
+        # Only needed to debug failures; skip the upload on green runs to
+        # conserve the org's Actions storage quota.
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: go-test-output-ai
+          path: test-output.json
+          retention-days: 7
+
+      - name: Annotate failing tests on PR diff
+        if: failure()
+        shell: bash
+        run: python3 .github/scripts/annotate_go_test_failures.py test-output.json
+
+      - name: Clean up test postgres container
+        if: always()
+        uses: ./.github/actions/cleanup-test-postgres

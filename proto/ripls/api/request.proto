@@ -1,0 +1,203 @@
+// Request types for API responses.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+import "ripls/api/common.proto";
+import "ripls/api/transfer.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// RequestState represents the lifecycle state of a request for an item.
+enum RequestState {
+  REQUEST_STATE_UNSPECIFIED = 0;
+  REQUEST_STATE_ACTIVE = 1;
+  REQUEST_STATE_OFFERS_RECEIVED = 2;
+  REQUEST_STATE_FULFILLED = 4;
+  REQUEST_STATE_CANCELLED = 5;
+}
+
+// Request represents a request for an item in API responses.
+// Use this type when returning request information for display purposes.
+message Request {
+  // Unique identifier for the request.
+  string id = 1;
+
+  // Title/summary of the request.
+  string title = 2;
+
+  // Description of what is being requested.
+  string description = 3;
+
+  // Current state of the request.
+  RequestState state = 4;
+
+  // User who created the request.
+  User requester = 5;
+
+  // Users who have offered to fulfill this request.
+  repeated User offerers = 6;
+
+  // ID of the conversation for this request. Set after the first offer.
+  optional string conversation_id = 7;
+
+  // List of users (excluding the requester) who have posted messages in the conversation.
+  // Populated for all requests with active conversations.
+  repeated User conversation_participants = 14;
+
+  // Images associated with the request.
+  repeated string media_ids = 8;
+
+  // Location ID where the item is needed.
+  string location_id = 9;
+
+  // Location name (flattened from Location).
+  string location_name = 10;
+
+  // Unix timestamp (seconds) when the request was created.
+  int64 created_at_unix_sec = 11;
+
+  // Latitude of the request location (flattened from Location).
+  double latitude_deg = 12;
+
+  // Longitude of the request location (flattened from Location).
+  double longitude_deg = 13;
+
+  // Number of messages in the conversation.
+  int32 message_count = 15;
+
+  // AI-generated summary of how the request was resolved.
+  optional string resolution_summary = 16;
+
+  // ID of the community where this request was posted.
+  string community_id = 17;
+
+  // List of all community IDs where this request is shared.
+  // For multi-community requests, this includes all communities.
+  // For single-community requests, this contains only the community_id.
+  repeated string shared_community_ids = 18;
+
+  // IDs of users confirmed as main helpers by the requester.
+  // Populated when the request is marked as fulfilled.
+  repeated string confirmed_helper_ids = 19;
+
+  // Unix timestamp (seconds) when the request was fulfilled.
+  optional int64 fulfilled_at_unix_sec = 20;
+
+  // Number of unread messages in the conversation for the current user.
+  int32 unread_count = 21;
+
+  // Truncated text of the most recent user message (~100 chars).
+  optional string last_message_text = 22;
+
+  // The user who sent the most recent message.
+  optional User last_message_sender = 23;
+
+  // Relative time string for the most recent message (e.g., "2h", "3d").
+  optional string last_message_time_ago = 24;
+
+  // Up to 3 most recent unique commenters, ordered by recency.
+  repeated User recent_commenters = 25;
+
+  // Communities this request is shared with that the caller is an active
+  // member of. Used for the community-switcher dropdown and the access ring.
+  // Owners always receive the full list. Non-owner callers receive only the
+  // communities they belong to; use total_shared_community_count to learn
+  // the item's full reach without leaking names or avatars of communities
+  // the caller is not in.
+  repeated SharedCommunity shared_communities = 26;
+
+  // Total number of distinct users across all communities this request is
+  // shared with. Accounts for users who belong to more than one of those
+  // communities. Covers the full sharing scope regardless of which
+  // communities appear in shared_communities.
+  int32 total_distinct_member_count = 27;
+
+  // Total number of communities this request is shared with, regardless of
+  // whether the caller is a member of each community. Use this alongside
+  // shared_communities (the caller-scoped subset) to compute how many
+  // additional communities exist beyond those visible to the caller.
+  int32 total_shared_community_count = 28;
+
+  // People individually invited to this request's own ad-hoc origin community
+  // (the contacts the requester invited one by one), excluding the requester.
+  // The "Shared with" surface lists these as individuals, whereas named
+  // communities stay collapsed to their member count. Scoped to the origin
+  // community (only surfaced to callers who can see it) and capped. (#2492)
+  repeated User invited_individuals = 30;
+
+  // Optional date the help is needed by (Unix timestamp in seconds). When
+  // set, the request is placed on this date in the Home Up-next agenda and
+  // calendar. Zero/absent for undated requests.
+  optional int64 needed_by_unix_sec = 29;
+
+  // Gear-backed offers on this request: live or completed transfers created
+  // by helpers offering their actual item toward the request. Ordered newest
+  // first. Empty when no helper has offered gear.
+  repeated RequestGearOffer gear_offers = 31;
+}
+
+// RequestGearOffer summarizes a transfer created as a gear-backed offer on a
+// request — its supply side. Read-only; populated on request reads.
+message RequestGearOffer {
+  // The transfer's unique identifier.
+  string transfer_id = 1;
+
+  // Loan or giveaway.
+  TransferType transfer_type = 2;
+
+  // Current transfer state.
+  TransferState state = 3;
+
+  // The gear being offered.
+  string gear_id = 4;
+
+  // Display name of the gear.
+  string gear_name = 5;
+
+  // Primary media ID of the gear for thumbnails. Empty when the gear has no media.
+  string gear_media_id = 6;
+
+  // The helper offering the gear.
+  User helper = 7;
+
+  // The planning contribution this offer escalated, when linked.
+  optional string contribution_id = 8;
+
+  // The need the linked contribution claims, when any.
+  optional string need_id = 9;
+
+  // When the requester accepted this offer ("this one works"). Unix seconds.
+  // Absent when the offer has not been accepted.
+  optional int64 accepted_at_unix_sec = 10;
+}
+
+// RequestNeedResponse is an enriched planning need for Request-scope API responses.
+message RequestNeedResponse {
+  string id = 1;
+  string request_id = 2;
+  User proposer = 3;
+  string name = 4;
+  optional string note = 5;
+  int32 slots = 6;
+  int32 slots_remaining = 7;
+  int64 created_at_unix_sec = 8;
+}
+
+// RequestContributionResponse is an enriched planning contribution for Request-scope API responses.
+message RequestContributionResponse {
+  string id = 1;
+  string request_id = 2;
+  User contributor = 3;
+  string title = 4;
+  optional string description = 5;
+  optional string from_need_id = 6;
+  optional string original_need_name = 7;
+  optional string original_need_note = 8;
+  int64 created_at_unix_sec = 9;
+  optional int64 updated_at_unix_sec = 10;
+  // Optional Gear item the contributor linked to this contribution.
+  optional string gear_id = 11;
+}

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="{{.Lang}}" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.OGTitle}}</title>
+
+  <!-- Open Graph metadata for link previews -->
+  <meta property="og:title" content="{{.OGTitle}}">
+  <meta property="og:description" content="{{.OGDescription}}">
+  <meta property="og:image" content="{{.HeroImageURL}}">
+  <meta property="og:url" content="{{.BaseURL}}/go/{{.ShortCode}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{.Brand.Name}}">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{.OGTitle}}">
+  <meta name="twitter:description" content="{{.OGDescription}}">
+  <meta name="twitter:image" content="{{.HeroImageURL}}">
+
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/event.css">
+</head>
+<body>
+  <header class="event-hero">
+    {{if .HeroImageURL}}<img src="{{.HeroImageURL}}" alt="">{{end}}
+    <div class="event-hero-inner">
+      <div class="event-kicker">{{if .CommunityIsNamed}}{{.CommunityName}} · {{end}}{{.Kicker}}</div>
+      <h1>{{.RequestTitle}}</h1>
+    </div>
+  </header>
+
+  <main class="event-main">
+    <a id="item-open-in-app"
+       class="event-open-in-app hidden"
+       href="#"
+       aria-label="{{.Str.OpenInApp}}"
+       data-short-code="{{.ShortCode}}"
+       data-request-id="{{.RequestID}}"
+       data-android-package="{{.AndroidPackage}}"
+       data-app-host="{{.Brand.AppHost}}"
+       data-scheme="{{.Brand.DeepLinkScheme}}"
+       data-base-host="{{.BaseURL}}">{{.Str.OpenInApp}}</a>
+
+    {{if .NeedsSummary}}
+    <div class="event-meta-pill" aria-label="What's needed">
+      <span class="event-meta-item">
+        <span class="event-meta-icon" aria-hidden="true">📋</span>{{.NeedsSummary}}
+      </span>
+    </div>
+    {{end}}
+
+    {{if .RequestDescription}}
+    <p class="event-description">{{.RequestDescription}}</p>
+    {{end}}
+
+    <div class="event-host">
+      <div class="event-avatar">
+        {{if .RequesterAvatarURL -}}
+        <img src="{{.RequesterAvatarURL}}" alt="">
+        {{- else -}}
+        <span class="event-avatar-fallback" aria-hidden="true">{{.RequesterInitial}}</span>
+        {{- end}}
+      </div>
+      <div class="event-host-text">
+        <strong>{{.RequesterName}}</strong> <span class="role">{{.RoleText}}</span>
+      </div>
+    </div>
+  </main>
+
+  {{if .IsAtCapacity}}
+  <div class="event-cta-full" role="status" aria-live="polite">
+    <strong>{{.Str.Capacity.Title}}</strong>
+    {{.Str.Capacity.Body}}
+    {{.Str.Capacity.Ask}}
+  </div>
+  {{else}}
+  <nav class="event-cta-bar" id="item-cta-bar" aria-label="{{.CtaLabel}}">
+    <div class="event-cta-bar-inner">
+      <a class="event-cta event-cta-primary"
+         href="/need/{{.RequestID}}?intent={{.IntentValue}}&amp;code={{.ShortCode}}&amp;n={{.RequestTitle}}{{if .HasHeroImage}}&amp;img={{.HeroImageURL}}{{end}}"
+         aria-label="{{.CtaAria}}">{{.CtaLabel}}</a>
+    </div>
+  </nav>
+  <script>
+  // Open-in-app hint — identical mechanics to event.html (see its comment).
+  // The custom-scheme deep link carries request_id so the app routes to the
+  // request detail.
+  (function () {
+    var link = document.getElementById('item-open-in-app');
+    if (!link) return;
+    var ua = navigator.userAgent;
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
+    if (!isIOS && !isAndroid) return;
+    var code = link.dataset.shortCode;
+    var requestId = link.dataset.requestId;
+    if (!code || !requestId) return;
+    var scheme = link.dataset.scheme || '';
+    var appHost = (link.dataset.appHost || '').split(':')[0];
+    if (isAndroid) {
+      var pkg = link.dataset.androidPackage;
+      var host = (link.dataset.baseHost || '').replace(/^https?:\/\//, '');
+      if (!pkg) return;
+      var fallback = 'https://play.google.com/store/apps/details?id=' + encodeURIComponent(pkg);
+      if (appHost && host.split(':')[0] === appHost) {
+        link.href = 'intent://' + host + '/go/' + encodeURIComponent(code)
+          + '#Intent;scheme=https'
+          + ';package=' + pkg
+          + ';S.browser_fallback_url=' + encodeURIComponent(fallback)
+          + ';end';
+      } else {
+        if (!scheme) return;
+        link.href = 'intent://invite?token=' + encodeURIComponent(code)
+          + '&request_id=' + encodeURIComponent(requestId)
+          + '#Intent;scheme=' + scheme
+          + ';package=' + pkg
+          + ';S.browser_fallback_url=' + encodeURIComponent(fallback)
+          + ';end';
+      }
+    } else {
+      if (!scheme) return;
+      link.href = scheme + '://invite?token=' + encodeURIComponent(code)
+        + '&request_id=' + encodeURIComponent(requestId);
+    }
+    link.classList.remove('hidden');
+  })();
+  </script>
+  {{end}}
+</body>
+</html>

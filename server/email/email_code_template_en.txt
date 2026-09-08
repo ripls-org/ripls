@@ -1,0 +1,10 @@
+Your Ripls sign-in code
+
+Enter this code to sign in to Ripls:
+
+{{.Code}}
+
+This code expires in {{.ExpiresInMinutes}} minutes and can only be used once.
+
+If you didn't try to sign in, you can safely ignore this email. Nobody can
+access your account without this code.

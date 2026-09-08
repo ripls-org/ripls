@@ -1,0 +1,12 @@
+{
+  "id": "heaviest",
+  "axis": "glass",
+  "label": "Heaviest scrim (80% / 8%)",
+  "description": "Worst-case composite grey 67, white-on-glass 9.89:1. Comfortably legible over any photo; the question the sheet answers is whether it still reads as glass or just as a dark panel.",
+  "glass": {
+    "scrim": { "$value": "#CC000000" },
+    "scrim-heavy": { "$value": "#E6000000" },
+    "scrim-tint": { "$value": "#80000000" },
+    "surface": { "$value": "#14FFFFFF" }
+  }
+}

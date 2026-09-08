@@ -1,0 +1,31 @@
+{
+  "name": "@ripls/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Playwright Test harness driving the Flutter Web bundle. See ./README.md.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "install:browsers": "playwright install --with-deps chromium webkit",
+    "report": "playwright show-report",
+    "test:lib": "tsx --test lib/*.test.ts",
+    "env:start": "tsx scripts/investigate_env.ts start",
+    "env:stop": "tsx scripts/investigate_env.ts stop",
+    "env:status": "tsx scripts/investigate_env.ts status"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@bufbuild/protobuf": "2.14.1",
+    "@connectrpc/connect": "2.1.2",
+    "@connectrpc/connect-web": "2.1.2",
+    "@connectrpc/connect-node": "2.1.2",
+    "firebase-tools": "15.29.0",
+    "tsx": "4.23.12",
+    "typescript": "6.0.3",
+    "@types/node": "22.20.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

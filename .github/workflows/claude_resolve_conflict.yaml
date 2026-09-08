@@ -1,0 +1,451 @@
+name: Claude Resolve PR Conflicts
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    # Hourly safety net: GitHub recomputes mergeability lazily, so a PR can
+    # become CONFLICTING without any push or PR event firing. Run every hour
+    # to catch stragglers.
+    - cron: "0 * * * *"
+  repository_dispatch:
+    types: [claude-resolve-conflict]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to resolve conflicts on
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  # Serialize per PR so back-to-back enumerations or repeated dispatches
+  # don't race against the same branch. Listener invocations (no PR number)
+  # use the run id so they don't block each other or the resolver.
+  group: claude-resolve-conflict-${{ github.event.inputs.pr_number || github.event.client_payload.pr_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  # Of the claude_* workflows, this one and claude_refresh_docs are the two
+  # that fire with no human in the loop — push, pull_request and an hourly
+  # cron here. In a repo without CLAUDE_WORKFLOW_PAT that means a permanently
+  # red check plus a failing run every hour, forever: the open-source repo's
+  # first push produced exactly that (`gh: To use GitHub CLI in a GitHub
+  # Actions workflow, set the GH_TOKEN environment variable`, exit 4).
+  #
+  # OSS-7 (#2959) reshapes these workflows properly. Until then this keeps
+  # them quiet where they cannot work, which costs one trivial job per run.
+  credentials:
+    name: Detect Claude workflow credentials
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - id: check
+        env:
+          PAT: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+        run: |
+          set -euo pipefail
+          if [ -n "$PAT" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Conflict resolution disabled::CLAUDE_WORKFLOW_PAT is unset in this repository."
+          fi
+
+  enumerate:
+    needs: [credentials]
+    # Listener: fires on push / pull_request / schedule. Finds open
+    # claude/* PRs that GitHub reports as CONFLICTING, then fires a per-PR
+    # repository_dispatch so the resolve job runs in a context the
+    # claude-code-action accepts (it rejects `push` events with
+    # "Unsupported event type"). Manual workflow_dispatch and incoming
+    # repository_dispatch invocations skip this job and go straight to
+    # resolve.
+    #
+    # We use repository_dispatch (not workflow_dispatch) because firing
+    # workflow_dispatch via the API requires `actions:write` /
+    # `workflow` scope on the PAT, which CLAUDE_WORKFLOW_PAT lacks.
+    # repository_dispatch only requires `repo` / `Contents: write`, which
+    # the PAT already has (it pushes commits).
+    if: |
+      needs.credentials.outputs.available == 'true' &&
+      github.event_name != 'workflow_dispatch' &&
+      github.event_name != 'repository_dispatch' && (
+        github.event_name != 'pull_request' ||
+        startsWith(github.event.pull_request.head.ref, 'claude/')
+      )
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    steps:
+      - id: list
+        env:
+          # Use the workflow PAT — the default GITHUB_TOKEN cannot trigger
+          # downstream workflows (GitHub's loop-prevention rule), so a
+          # repository_dispatch fired with it would silently no-op.
+          GH_TOKEN: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+          GH_REPO: ${{ github.repository }}
+          PR_EVENT_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          if [ -n "${PR_EVENT_NUMBER:-}" ]; then
+            # pull_request event: only consider the triggering PR. Poll
+            # mergeability so a freshly-opened PR isn't spuriously treated
+            # as conflicting before GitHub computes the status.
+            STATUS=""
+            for _ in 1 2 3 4 5 6 7 8 9 10; do
+              STATUS=$(gh pr view "$PR_EVENT_NUMBER" --json mergeable --jq '.mergeable')
+              if [ "$STATUS" != "UNKNOWN" ]; then break; fi
+              sleep 3
+            done
+            if [ "$STATUS" = "CONFLICTING" ]; then
+              CONFLICTING=$(jq -nc --arg n "$PR_EVENT_NUMBER" '[$n]')
+            else
+              CONFLICTING="[]"
+              echo "PR #$PR_EVENT_NUMBER mergeable=$STATUS; nothing to do."
+            fi
+          else
+            PR_LIST=$(gh pr list --state open --limit 100 \
+              --json number,headRefName \
+              --jq '[.[] | select(.headRefName | startswith("claude/")) | .number]')
+            CONFLICTING="[]"
+            for n in $(echo "$PR_LIST" | jq -r '.[]'); do
+              # GitHub computes mergeability lazily; viewing the PR primes
+              # it, then we poll until UNKNOWN resolves.
+              STATUS=""
+              for _ in 1 2 3 4 5 6 7 8 9 10; do
+                STATUS=$(gh pr view "$n" --json mergeable --jq '.mergeable')
+                if [ "$STATUS" != "UNKNOWN" ]; then break; fi
+                sleep 3
+              done
+              if [ "$STATUS" = "CONFLICTING" ]; then
+                CONFLICTING=$(echo "$CONFLICTING" | jq --arg n "$n" '. + [$n]')
+              fi
+            done
+            COUNT=$(echo "$CONFLICTING" | jq 'length')
+            echo "Found $COUNT conflicting claude/* PR(s)."
+          fi
+          # Fan out a per-PR repository_dispatch for each conflict so the
+          # resolve job runs with a supported event type.
+          for n in $(echo "$CONFLICTING" | jq -r '.[]'); do
+            echo "Dispatching resolve workflow for PR #$n"
+            jq -nc --arg n "$n" '{event_type: "claude-resolve-conflict", client_payload: {pr_number: $n}}' \
+              | gh api "repos/$GH_REPO/dispatches" --method POST --input -
+          done
+
+  resolve:
+    # Runs on repository_dispatch (fired by enumerate) or workflow_dispatch
+    # (manual invocation). Both event types are accepted by
+    # claude-code-action as automation events.
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.pr_number != '') ||
+      (github.event_name == 'repository_dispatch' && github.event.action == 'claude-resolve-conflict' && github.event.client_payload.pr_number != '')
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    env:
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+      PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.client_payload.pr_number }}
+
+    steps:
+      - name: Resolve PR refs
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh pr view "$PR_NUMBER" \
+            --json headRefName,headRefOid,baseRefName,state \
+            > /tmp/pr.json
+          STATE=$(jq -r '.state' /tmp/pr.json)
+          HEAD_REF=$(jq -r '.headRefName' /tmp/pr.json)
+          HEAD_SHA=$(jq -r '.headRefOid' /tmp/pr.json)
+          BASE_REF=$(jq -r '.baseRefName' /tmp/pr.json)
+          if [ "$STATE" != "OPEN" ]; then
+            echo "::notice::PR #$PR_NUMBER is $STATE; skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          case "$HEAD_REF" in
+            claude/*) ;;
+            *)
+              echo "::notice::PR #$PR_NUMBER head $HEAD_REF is not claude/*; skipping."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+          esac
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "head_ref=$HEAD_REF" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "base_ref=$BASE_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout PR head
+        if: steps.pr.outputs.skip != 'true'
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.pr.outputs.head_sha }}
+          fetch-depth: 0
+          lfs: true
+          token: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+
+      - name: Fix git ownership (self-hosted runner)
+        if: steps.pr.outputs.skip != 'true'
+        run: git config --global --add safe.directory '*'
+
+      - name: Ensure Git LFS files are pulled
+        if: steps.pr.outputs.skip != 'true'
+        run: |
+          git lfs install --local
+          git lfs pull
+
+      - name: Setup git identity
+        if: steps.pr.outputs.skip != 'true'
+        run: |
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
+
+      - name: Move to PR branch
+        if: steps.pr.outputs.skip != 'true'
+        env:
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+        run: git checkout -B "$HEAD_REF"
+
+      - name: Try mechanical merge of base
+        id: merge
+        if: steps.pr.outputs.skip != 'true'
+        env:
+          BASE_REF: ${{ steps.pr.outputs.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch origin "$BASE_REF"
+          if git merge-base --is-ancestor "origin/$BASE_REF" HEAD; then
+            echo "::notice::PR #$PR_NUMBER already contains origin/$BASE_REF."
+            echo "outcome=already_up_to_date" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git merge --no-edit --no-ff "origin/$BASE_REF"; then
+            echo "outcome=clean_merge" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Merge of origin/$BASE_REF into PR #$PR_NUMBER conflicts; escalating to Claude."
+            git merge --abort || true
+            echo "outcome=needs_claude" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push clean merge
+        if: steps.pr.outputs.skip != 'true' && steps.merge.outputs.outcome == 'clean_merge'
+        env:
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+          BASE_REF: ${{ steps.pr.outputs.base_ref }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git push origin "$HEAD_REF"
+          gh pr comment "$PR_NUMBER" --body "Caught up to \`$BASE_REF\` via clean merge (no conflicts)."
+
+      - name: Authenticate to Google Cloud
+        if: steps.pr.outputs.skip != 'true' && steps.merge.outputs.outcome == 'needs_claude'
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+
+      - name: Install npm dependencies
+        if: steps.pr.outputs.skip != 'true' && steps.merge.outputs.outcome == 'needs_claude'
+        run: npm install
+
+      - name: Generate code from protos
+        if: steps.pr.outputs.skip != 'true' && steps.merge.outputs.outcome == 'needs_claude'
+        run: npm run generate:proto
+
+      - name: Install Flutter dependencies
+        if: steps.pr.outputs.skip != 'true' && steps.merge.outputs.outcome == 'needs_claude'
+        run: cd app && flutter pub get
+
+      - name: Generate Dart freezed/mockito code
+        if: steps.pr.outputs.skip != 'true' && steps.merge.outputs.outcome == 'needs_claude'
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Capture conflict context
+        if: steps.pr.outputs.skip != 'true' && steps.merge.outputs.outcome == 'needs_claude'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_REF: ${{ steps.pr.outputs.base_ref }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/conflict
+          mkdir -p /tmp/conflict
+          gh pr view "$PR_NUMBER" \
+            --json number,title,body,url,headRefName,baseRefName,comments,files \
+            > /tmp/conflict/pr.json
+          gh pr diff "$PR_NUMBER" > /tmp/conflict/pr.diff || true
+          # Probe-merge to surface conflict markers, then abort so Claude starts
+          # from a clean working tree.
+          git merge --no-edit --no-ff "origin/$BASE_REF" || true
+          git status --short > /tmp/conflict/status.txt || true
+          git diff --diff-filter=U > /tmp/conflict/conflicts.diff || true
+          git merge --abort || true
+
+      - name: Capture pre-run state
+        id: pre
+        if: steps.pr.outputs.skip != 'true' && steps.merge.outputs.outcome == 'needs_claude'
+        run: echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code to resolve conflicts
+        if: steps.pr.outputs.skip != 'true' && steps.merge.outputs.outcome == 'needs_claude'
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        env:
+          # Deliberately no ANTHROPIC_API_KEY: Claude Code prefers it over
+          # claude_code_oauth_token, silently billing runs per-token instead
+          # of to the subscription. AI integration tests skip without it.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          VERTEX_AI_PROJECT: ${{ vars.GCP_PROJECT_DEV }}
+          CI: "true"
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            PR #${{ env.PR_NUMBER }} in ${{ github.repository }} has merge
+            conflicts with `${{ steps.pr.outputs.base_ref }}`. A mechanical
+            merge already failed in this checkout (it was aborted before Claude
+            ran).
+
+            PR JSON:        /tmp/conflict/pr.json
+            PR diff:        /tmp/conflict/pr.diff (PR vs base)
+            Conflict files: /tmp/conflict/status.txt (from a probe merge that
+                            was aborted; tells you which paths conflict)
+            Conflict diff:  /tmp/conflict/conflicts.diff
+            PR branch:      ${{ steps.pr.outputs.head_ref }} (already checked
+                            out, working tree clean)
+            Base branch:    ${{ steps.pr.outputs.base_ref }} (fetched as
+                            origin/${{ steps.pr.outputs.base_ref }})
+
+            ## Mission
+
+            Catch this PR up to `${{ steps.pr.outputs.base_ref }}` by merging
+            `origin/${{ steps.pr.outputs.base_ref }}` into the PR branch and
+            resolving the conflicts. The run is **only complete** when one of:
+
+              (a) you merged `origin/${{ steps.pr.outputs.base_ref }}` into
+                  ${{ steps.pr.outputs.head_ref }}, the working tree is clean,
+                  tests pass for the affected areas, you pushed the merge
+                  commit, and you commented on the PR, or
+              (b) you commented on the PR explaining why you can't safely
+                  resolve the conflict and what a human should do.
+
+            **Prefer a merge** (`git merge`). If a merge produces a tangle that
+            you genuinely can't resolve cleanly but a rebase would, you may
+            rebase instead — but only as a fallback, and you must say so in the
+            PR comment because rebase requires a force-push.
+
+            ## Process
+
+            Use TodoWrite to track these steps.
+
+            1. Read /tmp/conflict/pr.json (title, body) and
+               /tmp/conflict/pr.diff to understand what the PR is doing. Read
+               /tmp/conflict/status.txt and /tmp/conflict/conflicts.diff to see
+               which paths conflict.
+            2. Run `git merge --no-edit origin/${{ steps.pr.outputs.base_ref }}`.
+               This will produce conflict markers in the working tree.
+            3. For each conflicting file: read both sides, understand the
+               intent, and resolve so the result keeps the PR's changes AND the
+               new code from `${{ steps.pr.outputs.base_ref }}`. Generated
+               files (server/gen/**, app/lib/data/gen/**) are not checked in
+               — if they show up, take whichever side and rerun
+               `npm run generate:proto` afterward.
+            4. `git add` the resolved paths and `git commit --no-edit`
+               (or `git merge --continue`).
+            5. Re-run the relevant tests:
+                 - Always: `npm run generate:proto && npm run build`
+                 - Go files touched: `go test -tags=integration -timeout 20m ./...`
+                 - Flutter files touched: `cd app && flutter test --reporter github`
+               Iterate until green. If you can't get them green within a few
+               honest attempts, skip to step 9.
+            6. Push the merge:
+
+                   git push origin ${{ steps.pr.outputs.head_ref }}
+
+            7. Comment on the PR:
+
+                   gh pr comment ${{ env.PR_NUMBER }} --body "Resolved conflicts with \`${{ steps.pr.outputs.base_ref }}\` in <merge SHA>. Conflicts in: <list>. Tests: <which suites + outcomes>."
+
+               Then exit. Do not merge the PR.
+
+            8. **Fallback to rebase (optional).** If the merge truly tangled,
+               run `git merge --abort`, then
+               `git rebase origin/${{ steps.pr.outputs.base_ref }}`, resolve as
+               you go, push with `git push --force-with-lease`, and comment
+               saying you rebased (and why merge wouldn't work).
+
+            9. **Blocked exit.** Post a comment and exit:
+
+                   gh pr comment ${{ env.PR_NUMBER }} --body "<what conflicted, what I tried, why I can't resolve, what a human should do>"
+
+            ## Hard rules
+
+            - Do not modify the PR title or body.
+            - Do not change anything beyond what's needed to resolve the merge
+              and keep tests green. No "while I'm here" cleanup.
+            - Do not merge the PR.
+            - No "Co-Authored-By" / "Generated with Claude" branding in commit
+              messages.
+            - Do not stop with a summary message before doing step 7, 8, or 9.
+          claude_args: >-
+            --max-turns 120
+            --verbose
+            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash(git:*),Bash(gh:*),Bash(go:*),Bash(flutter:*),Bash(npm:*),Bash(npx:*),Bash(cd app*),Bash(jq:*),Bash(golangci-lint:*),Bash(gofumpt:*),Bash(cat:*),Bash(ls:*)"
+
+      - name: Stage execution log for artifact
+        if: always() && steps.merge.outputs.outcome == 'needs_claude'
+        run: |
+          DEBUG_DIR="${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}"
+          rm -rf "$DEBUG_DIR"
+          mkdir -p "$DEBUG_DIR"
+          if [ -f "${{ runner.temp }}/claude-execution-output.json" ]; then
+            cp "${{ runner.temp }}/claude-execution-output.json" "$DEBUG_DIR/"
+          fi
+          if [ -f "${{ runner.temp }}/claude-prompts/claude-prompt.txt" ]; then
+            cp "${{ runner.temp }}/claude-prompts/claude-prompt.txt" "$DEBUG_DIR/"
+          fi
+          cp -r /tmp/conflict "$DEBUG_DIR/" 2>/dev/null || true
+          ls -la "$DEBUG_DIR/" || true
+
+      - name: Upload Claude execution log
+        if: always() && steps.merge.outputs.outcome == 'needs_claude'
+        uses: actions/upload-artifact@v7
+        with:
+          name: claude-resolve-conflict-log-pr${{ env.PR_NUMBER }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Clean up test postgres container
+        if: always() && steps.merge.outputs.outcome == 'needs_claude'
+        uses: ./.github/actions/cleanup-test-postgres
+
+      - name: Assert deliverable
+        if: success() && steps.merge.outputs.outcome == 'needs_claude'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+          PRE_SHA: ${{ steps.pre.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          REMOTE_SHA=$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')
+          if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" != "$PRE_SHA" ]; then
+            echo "PR branch advanced; deliverable (a) satisfied."
+            exit 0
+          fi
+          THIRTY_MIN_AGO=$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+            || date -u -v-30M +%Y-%m-%dT%H:%M:%SZ)
+          RECENT_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
+            --jq "[.comments[] | select(.createdAt > \"$THIRTY_MIN_AGO\")] | length")
+          if [ "$RECENT_COMMENT" -gt 0 ]; then
+            echo "Recent comment posted on PR #$PR_NUMBER; deliverable (b) satisfied."
+            exit 0
+          fi
+          echo "::error::Claude finished without deliverable on PR #$PR_NUMBER. See claude-resolve-conflict-log artifact."
+          exit 1

@@ -1,0 +1,64 @@
+// RPC service for administrative operations
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request to clean up simulation data (dev mode only).
+message CleanupSimulationRequest {
+  // The simulation run ID to clean up. Deletes all users and communities
+  // with this simulation_id, plus all associated data (gear, transfers,
+  // requests, experiences, chat, events, etc.).
+  string simulation_id = 1;
+}
+
+// Response from simulation cleanup.
+message CleanupSimulationResponse {
+  // Number of users deleted.
+  int64 users_deleted = 1;
+
+  // Number of communities deleted.
+  int64 communities_deleted = 2;
+
+  // Total number of associated records deleted across all tables.
+  int64 records_deleted = 3;
+
+  // Time taken in milliseconds.
+  int64 duration_milliseconds = 4;
+}
+
+// Request to list all simulation runs (dev mode only).
+message ListSimulationsRequest {}
+
+// Info about a single simulation run.
+message SimulationInfo {
+  // The simulation ID (e.g., "sim-suburban-neighborhood").
+  string simulation_id = 1;
+
+  // Number of users with this simulation_id.
+  int64 user_count = 2;
+
+  // Number of communities with this simulation_id.
+  int64 community_count = 3;
+}
+
+// Response listing all simulation runs.
+message ListSimulationsResponse {
+  // All distinct simulation runs found in the database.
+  repeated SimulationInfo simulations = 1;
+}
+
+// Service for administrative operations.
+service AdminService {
+  // Remove all data created by a specific simulation run (dev mode only).
+  // Cascades through all associated records: gear, transfers, requests,
+  // experiences, chat, events, memberships, etc.
+  rpc CleanupSimulation(CleanupSimulationRequest)
+      returns (CleanupSimulationResponse) {}
+
+  // List all simulation runs in the database (dev mode only).
+  rpc ListSimulations(ListSimulationsRequest)
+      returns (ListSimulationsResponse) {}
+}

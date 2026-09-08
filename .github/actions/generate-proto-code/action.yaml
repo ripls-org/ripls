@@ -1,0 +1,32 @@
+name: "Generate Proto Code"
+description: "Generates Go and Dart code from Protocol Buffer definitions"
+
+# Toolchain setup is delegated to ./setup-toolchain rather than repeated here.
+# This action used to pin `go-version: "1.26.6"` and `node-version: "24"` as
+# literals — a second copy of versions.env that nothing checked, because
+# scripts/check_versions.js scans workflows and Dockerfiles, not composite
+# actions. It also carried its own `go install …@latest` for the protoc
+# plugins, which is now setup-toolchain's `protoc-plugins` input.
+#
+# Both callers (release_app, test_ios_build) are private-bound, so this action
+# ships to the open-source repo with no callers at all. Keeping it means
+# keeping it correct; it is a working example of the proto-generation sequence
+# and the sequence is the same one a fork needs.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup toolchain
+      uses: ./.github/actions/setup-toolchain
+      with:
+        go: "true"
+        node: "true"
+        protoc-plugins: "true"
+
+    - name: Install npm dependencies
+      shell: bash
+      run: npm install
+
+    - name: Generate code from protos
+      shell: bash
+      run: npm run generate:proto

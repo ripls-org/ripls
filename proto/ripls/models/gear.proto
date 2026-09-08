@@ -1,0 +1,84 @@
+// An item of shared gear.
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+import "ripls/models/common.proto";
+import "ripls/models/value.proto";
+
+// Possible states of gear availability.
+enum GearState {
+    GEAR_STATE_UNSPECIFIED = 0;
+    GEAR_STATE_UNAVAILABLE = 1;  // Not available for borrowing
+    GEAR_STATE_AVAILABLE = 2;    // Available for borrowing
+    GEAR_STATE_GIVEN_AWAY = 4;   // Permanently transferred via giveaway
+}
+
+// Storage representation of an item of gear.
+message Gear {
+    // A unique identifier for the gear.
+    string id = 1;
+
+    // The name of the gear.
+    string name = 3;
+
+    // A description of the gear.
+    string description = 4;
+
+    // The unique ID of the user who owns this gear.
+    string owner_id = 5;
+
+    // Media items associated with this gear.
+    repeated string media_ids = 6;
+
+    // Current availability state of the gear.
+    GearState state = 7;
+
+    // Location where this gear is stored (typically owner's primary residence).
+    string location_id = 8;
+
+    // Source URL where gear info was originally extracted from (URL mode only).
+    // Provides attribution and allows users to visit the original product page.
+    string source_url = 9;
+
+    // LLM-generated value estimate with confidence and reasoning.
+    // Used for impact metrics (savings calculations, total community value).
+    ValueEstimate value_estimate = 10;
+
+    // Embodied carbon computed at GenGear time from material and weight.
+    // Used by CalculateEmissionsPrevented() at transaction creation.
+    CarbonEstimate embodied_carbon = 16;
+
+    // Soft deletion metadata.
+    optional DeletedMetadata deleted = 20;
+
+    // Product category (e.g., "Power Tools", "Camping & Outdoors").
+    TrackedString category = 21;
+
+    // Brand name (e.g., "DeWalt", "Coleman").
+    TrackedString brand = 22;
+
+    // Model identifier (e.g., "DCD771C2").
+    TrackedString model = 23;
+
+    // Material composition category for carbon estimation table lookup.
+    TrackedMaterialCategory material_category = 24;
+
+    // Estimated weight (used for carbon).
+    TrackedEstimate weight_grams = 25;
+
+    // When this gear was created (Unix timestamp in seconds).
+    int64 created_at_unix_sec = 26;
+
+    // Perpetual conversation for this gear item (community-wide discussion).
+    // Previously stored on CommunityGear.conversation_id; migrated here so the
+    // conversation is scoped to the gear itself rather than to a specific community.
+    string conversation_id = 27;
+
+    // Fields 11-15 were bare types (string, string, string, MaterialCategory enum,
+    // Estimate) before provenance migration to tracked wrapper types.
+    reserved 11, 12, 13, 14, 15;
+}

@@ -1,0 +1,30 @@
+# Flutter Web bundle gzipped baselines (in bytes).
+#
+# Read by scripts/check_web_bundle_size.sh. Two non-comment lines:
+#
+#   line 1: initial-chunk baseline — for the --wasm build, the gzipped
+#           sum of flutter_bootstrap.js + main.dart.mjs + main.dart.wasm
+#           (what a WASM-capable browser downloads; the main.dart.js
+#           fallback is not counted). Gate tolerance +10%.
+#   line 2: total-bundle baseline — gzipped sum of every file under
+#           app/build/web/ except precompressed *.br/*.gz siblings.
+#           Includes both renderers (skwasm + the JS-fallback canvaskit)
+#           and the *.symbols maps, so it is ~10x the initial chunk.
+#           Gate tolerance +20%.
+#
+# These are gzipped *build-artifact* sizes used as a stable size budget.
+# In production the bytes are served brotli/gzip-precompressed
+# (scripts/precompress_web_bundle.js + the negotiation in
+# server/services/web/app_handler.go), so the actual gzip wire size ~=
+# the initial-chunk number and brotli is a bit smaller (~2.25 MB for
+# main.dart.wasm).
+#
+# Either line set to 0 disables that gate; the script prints the current
+# measurement so a PR can pick a number. To reset after an intentional
+# jump, run `bash scripts/check_web_bundle_size.sh` and copy the emitted
+# "current measurement" numbers here.
+#
+# Baselines below were measured on the first --wasm build (#2119),
+# Flutter 3.44.0.
+3050210
+28528266

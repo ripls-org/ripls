@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/common.proto";
+import "ripls/models/experience.proto";
+import "ripls/models/impact_estimate.proto";
+import "ripls/models/value.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// RequestState represents the lifecycle state of a request for an item.
+enum RequestState {
+  REQUEST_STATE_UNSPECIFIED = 0;
+
+  // Request is publicly visible and awaiting offers from community members
+  REQUEST_STATE_ACTIVE = 1;
+
+  // One or more people have offered to fulfill the request
+  REQUEST_STATE_OFFERS_RECEIVED = 2;
+
+  // Request was successfully fulfilled and marked as such by the requester
+  REQUEST_STATE_FULFILLED = 4;
+
+  // Request was cancelled by the requester
+  REQUEST_STATE_CANCELLED = 5;
+}
+
+// Request represents a user's request for an item from the community.
+// A request can be shared with multiple communities via CommunityRequest junction table.
+message Request {
+  // Unique identifier for the request
+  string id = 1;
+
+  // ID of the user who created the request
+  string requester_id = 2;
+
+  // Description of what the user is requesting
+  string description = 3;
+
+  // Current state of the request (global across all communities)
+  RequestState state = 4;
+
+  // Images associated with the request
+  repeated string media_ids = 10;
+
+  // Title/summary of the request
+  string title = 11;
+
+  // Location where the item is needed
+  string location_id = 12;
+
+  // AI-generated summary of how the request was resolved.
+  optional string resolution_summary = 13;
+
+  // Reserved field 14 (was temporarily used for string category, now retired to avoid conflicts).
+  reserved 14;
+
+  // IDs of users confirmed as main helpers by the requester.
+  // Stored when the request is marked as fulfilled.
+  repeated string confirmed_helper_ids = 16;
+
+  // Estimated impact of fulfilling this request (money saved, emissions prevented, time saved).
+  ImpactEstimate impact_estimate = 15;
+
+  // When set, the money/emissions/time components of impact_estimate were
+  // adopted from this gear-backed offer transfer at fulfillment (#2702).
+  // They are display copies: aggregation counts those dimensions once, on the
+  // transfer, and takes only Quality Time from this request. Cleared when the
+  // fulfillment is undone. Server-only; not exposed on the API.
+  optional string impact_adopted_from_transfer_id = 29;
+
+  // AI-generated estimated monetary value of the help being requested.
+  ValueEstimate value_estimate = 17;
+
+  // AI-detected category (e.g., "Power Tools", "Home Repair", "Transportation").
+  string category = 18;
+
+  // Unix timestamp (seconds) when the request was fulfilled.
+  // Zero/absent if not yet fulfilled.
+  optional int64 fulfilled_at_unix_sec = 21;
+
+  // When the request was created (Unix timestamp in seconds). Used as the
+  // anchor by the request-followup-prompt reconciler. Zero on pre-existing
+  // rows; the reconciler skips those via the backlog-grace check.
+  int64 created_at_unix_sec = 27;
+
+  // Optional date the help is needed by (Unix timestamp in seconds). When
+  // set, the request is placed on this date in the Home tab's Up-next agenda
+  // and calendar. Zero/absent for undated requests, which never appear on the
+  // calendar. Set at creation/edit time; not all requests have one.
+  optional int64 needed_by_unix_sec = 28;
+
+  // Soft deletion metadata.
+  optional DeletedMetadata deleted = 20;
+
+  // Owner-overridden social context for Quality Time computation.
+  // Stored as int32 to avoid cross-package enum imports (mirrors api enums).
+  // Fields: tie_strength=1, reciprocity=2, novelty=3, vulnerability=4, modality=5.
+  // Zero value means not set for that dimension (use config default).
+  SocialContext social_context = 22;
+
+  // Conversation for this request (community-wide discussion).
+  // Previously stored on CommunityRequest.conversation_id; migrated here so the
+  // conversation is scoped to the request itself rather than to a specific community.
+  string conversation_id = 23;
+
+  // LLM-generated suggestion chips for the Plan tab.
+  // additional_asks: things that round out the request (owner chip strip).
+  // breakdown_pieces: sub-tasks that make the request more claimable (owner chip strip).
+  // offer_ideas: ways helpers can contribute (helper chip strip).
+  // Generated best-effort at submit time; lazily filled on first ListRequestNeedsAndContributions.
+  repeated string additional_asks = 24;
+  repeated string breakdown_pieces = 25;
+  repeated string offer_ideas = 26;
+}
+
+// RequestOffer represents a community member's offer to fulfill a request.
+// Each offer is tied to a specific community where it was made.
+message RequestOffer {
+  // Unique identifier for the offer
+  string id = 1;
+
+  // ID of the request being offered for
+  string request_id = 2;
+
+  // ID of the user making the offer
+  string user_id = 3;
+
+  // ID of the community where this offer was made
+  string community_id = 4;
+
+  // Optional message from the offerer
+  string message = 5;
+
+  // When the offer was created (Unix timestamp in seconds)
+  int64 created_at_unix_sec = 6;
+
+  // Whether this offer was withdrawn by the user
+  bool withdrawn = 7;
+}

@@ -1,0 +1,106 @@
+name: Terraform Tests
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/test_terraform.yaml'
+  # No path filter on PRs: this is a required check, so it must report on every
+  # PR. The `changes` job gates the real work — a PR that doesn't touch terraform
+  # skips the `test` job, which reports success and satisfies the required check
+  # (the GitHub-recommended pattern for path-scoped required checks; #2287).
+  pull_request:
+    branches: [main]
+  # Manually runnable. Replacing a repository's root commit leaves GitHub with
+  # no resolvable `before` to diff against, so every path-filtered workflow
+  # silently declines to fire — which is exactly the situation in a freshly
+  # published repo, the one place you most want to ask "does this actually
+  # work here?". Dispatch is the only way to find out (#2953).
+  workflow_dispatch:
+
+jobs:
+  changes:
+    name: Detect terraform changes
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'terraform/**'
+              - '.github/workflows/test_terraform.yaml'
+
+  test:
+    name: Terraform Tests
+    needs: [changes]
+    # Push/dispatch: always run. PR: run only when terraform changed; otherwise
+    # the job skips and reports success, satisfying the required check.
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.relevant == 'true') }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "~1.5"
+
+      - name: Format Terraform code
+        run: terraform fmt -recursive -check terraform/
+
+      # Validate whatever this repo actually contains, rather than naming dev
+      # and prod outright.
+      #
+      # terraform/environments/ is private-bound (#2953, OSS-6 #2958) while
+      # terraform/modules/ ships publicly, so hardcoding the two environment
+      # paths made this a guaranteed failure in the open-source repo — `cd:
+      # terraform/environments/dev: No such file or directory` on its very
+      # first run. Discovering the directories fixes that, and closes a real
+      # gap on this side too: the modules are the shared substrate every
+      # environment builds on and nothing validated them anywhere.
+      #
+      # An empty environments/ is fine and expected; an empty modules/ is not,
+      # so that one fails loudly rather than passing vacuously.
+      - name: Validate Terraform modules
+        run: |
+          set -euo pipefail
+          found=0
+          for dir in terraform/modules/*/; do
+            [ -f "$dir/main.tf" ] || continue
+            found=1
+            echo "::group::$dir"
+            terraform -chdir="$dir" init -backend=false
+            terraform -chdir="$dir" validate
+            echo "::endgroup::"
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "::error::no Terraform modules found under terraform/modules/ — did the layout change?"
+            exit 1
+          fi
+
+      - name: Validate Terraform environments
+        run: |
+          set -euo pipefail
+          for dir in terraform/environments/*/; do
+            [ -f "$dir/main.tf" ] || continue
+            echo "::group::$dir"
+            terraform -chdir="$dir" init -backend=false
+            terraform -chdir="$dir" validate
+            echo "::endgroup::"
+          done

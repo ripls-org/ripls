@@ -1,0 +1,168 @@
+// RPC service for unified search across gear, requests, experiences, and users.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/gear.proto";
+import "ripls/api/request.proto";
+import "ripls/api/experience.proto";
+import "ripls/api/profile_service.proto";
+import "ripls/api/user.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Search strategy determines how queries are matched.
+enum SearchStrategy {
+    // Default: uses SEMANTIC strategy.
+    SEARCH_STRATEGY_UNSPECIFIED = 0;
+
+    // Try to match items based on semantic similarity.
+    SEARCH_STRATEGY_SEMANTIC = 1;
+
+    // Case-insensitive partial string matching on name/title.
+    SEARCH_STRATEGY_EXACT = 2;
+}
+
+// Request to search for items within a community.
+message SearchRequest {
+    // The search query string to match against item names and descriptions.
+    // When empty, returns all items in the community, most recent first.
+    string query = 1;
+
+    // Search strategy to use. If unset, uses semantic.
+    SearchStrategy strategy = 2;
+
+    // Latitude of the user's current location in degrees, range [-90, 90].
+    double latitude_deg = 4;
+
+    // Longitude of the user's current location in degrees, range [-180, 180].
+    double longitude_deg = 5;
+
+    // Filter to specific item types. If empty, returns all types.
+    repeated SearchItemType item_types = 6;
+
+    // Maximum number of results to return (default: 50).
+    int32 max_results = 7;
+
+    // When true, include completed/fulfilled/cancelled items in results.
+    // Default (false) returns only active items.
+    bool include_completed = 8;
+
+    // Community IDs to search within. Returns the union of results across all
+    // specified communities, deduplicated by item ID. The user must be a member
+    // of every community listed. When non-empty, community_id is ignored.
+    repeated string community_ids = 9;
+
+    reserved 3;
+    reserved "community_id";
+}
+
+// Response containing unified search results.
+message SearchResponse {
+    // List of search results sorted by score (descending).
+    repeated SearchResultItem results = 1;
+}
+
+// Item type enum for client-side filtering.
+enum SearchItemType {
+    SEARCH_ITEM_TYPE_UNSPECIFIED = 0;
+    SEARCH_ITEM_TYPE_GEAR = 1;
+    SEARCH_ITEM_TYPE_REQUEST = 2;
+    SEARCH_ITEM_TYPE_EXPERIENCE = 3;
+    SEARCH_ITEM_TYPE_USER = 4;
+}
+
+// A search result item that can be gear, request, or experience.
+message SearchResultItem {
+    // The type of this item (for easy client-side filtering without parsing oneof).
+    SearchItemType item_type = 1;
+
+    // Overall relevance score (0.0 to 1.0, higher is better).
+    // This is an opaque composite of semantic relevance and geographic proximity.
+    // Results are sorted by this score in descending order.
+    double composite_score = 2;
+
+    // Semantic similarity score from vector search (0.0 to 1.0).
+    // For text search fallback, this will be 1.0.
+    // Client can use this for custom ranking that prioritizes semantic relevance.
+    double semantic_similarity = 3;
+
+    // Distance from the user's location in meters.
+    // Client can use this for custom ranking that prioritizes proximity.
+    double distance_meters = 4;
+
+    // The actual item data (one of these will be set based on item_type).
+    oneof item {
+        Gear gear = 5;
+        Request request = 6;
+        Experience experience = 7;
+        User user = 8;
+    }
+}
+
+// Request for the universal search entry point: one keyword index over
+// everything in the caller's communities and nothing else. Carries no
+// community scope on purpose — the server derives it from the caller's
+// own memberships, so a client can never widen the search beyond them.
+message UniversalSearchRequest {
+    // Keyword query to match against item names/titles and member names.
+    // Must be non-empty.
+    string query = 1;
+
+    // Maximum results per group. Values <= 0 use the server default (10);
+    // values above the server ceiling (25) are clamped.
+    optional int32 max_results_per_group = 2;
+}
+
+// Grouped universal search results. Grouping is the ranking: each group
+// is sorted by relevance, and clients render the groups in a fixed
+// order (library, plans, people) rather than interleaving.
+message UniversalSearchResponse {
+    // Things: gear plus open requests, best match first.
+    repeated SearchResultItem library_results = 1;
+
+    // Happenings: experiences (rendered as "events"), best match first.
+    repeated SearchResultItem plans_results = 2;
+
+    // Members of the caller's communities whose name matches.
+    repeated SearchResultItem people_results = 3;
+}
+
+// Request for personalized search suggestions to surface in an idle
+// search panel (before the user types a query). Carries no fields —
+// the server derives every signal from the authenticated caller's
+// own community memberships and portfolio.
+message GetSearchSuggestionsRequest {}
+
+// Personalized search suggestions for the caller. Each list is capped
+// server-side at a small number of entries (currently 5 each); clients
+// should render whatever is returned without re-trimming.
+message GetSearchSuggestionsResponse {
+    // Up to 5 category labels drawn from the caller's "known for"
+    // signal (the categories the caller's portfolio is most associated
+    // with), ordered by weight descending. May be empty for new users.
+    repeated string top_known_for_categories = 1;
+
+    // Up to 5 communities the caller is a member of, most recently
+    // joined first. May be empty if no community memberships overlap
+    // the requested scope.
+    repeated SharedCommunityRef top_communities = 2;
+}
+
+// RPC service for searching gear, requests, and experiences.
+service SearchService {
+    // Unified search across all item types within a community.
+    rpc Search(SearchRequest) returns (SearchResponse);
+
+    // Universal search across everything in the caller's communities,
+    // returned as fixed groups (library / plans / people). The scope is
+    // always the caller's own memberships — there is no way to request
+    // a wider or different scope.
+    rpc UniversalSearch(UniversalSearchRequest) returns (UniversalSearchResponse);
+
+    // Returns personalized suggestions to seed the idle search panel:
+    // the caller's top "known for" categories and a short list of
+    // their communities. Intended to be called once per panel open.
+    rpc GetSearchSuggestions(GetSearchSuggestionsRequest) returns (GetSearchSuggestionsResponse);
+}

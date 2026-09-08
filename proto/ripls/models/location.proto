@@ -1,0 +1,109 @@
+// Physical location with geodetic and human-readable address information.
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+import "ripls/models/common.proto";
+
+// Geolocation represents a point on Earth using latitude and longitude.
+message Geolocation {
+    // Latitude in degrees, range [-90, 90].
+    double latitude_deg = 1;
+
+    // Longitude in degrees, range [-180, 180].
+    double longitude_deg = 2;
+}
+
+// Address represents a human-readable postal address.
+// Loosely modeled after Google's postal_address.proto.
+message Address {
+    // CLDR region code (e.g., "US", "GB", "JP").
+    string region_code = 1;
+
+    // Postal code (e.g., "94043", "SW1A 1AA").
+    string postal_code = 2;
+
+    // City or locality name (e.g., "Austin", "London").
+    string locality = 3;
+
+    // Street address lines (e.g., ["506 Monroe St", "Building 41"]).
+    repeated string address_lines = 4;
+
+    // Neighborhood name (e.g., "Capitol Hill", "SoHo").
+    optional string neighborhood = 5;
+
+    // County or equivalent administrative division (e.g., "Boulder County", "King County").
+    optional string county = 6;
+
+    // State/province/administrative area (e.g., "Colorado", "California", "Ontario").
+    optional string administrative_area = 7;
+}
+
+// Region represents a geographic region with hierarchical relationships.
+// Used for organizing communities by location (city, county, state, country).
+message Region {
+    // Unique identifier for this region.
+    string id = 1;
+
+    // Type of region (e.g., "city", "county", "state", "country", "neighborhood").
+    string region_type = 2;
+
+    // Name of the region (e.g., "Boulder", "Colorado", "United States").
+    string region_name = 3;
+
+    // Region code (e.g., "CO" for Colorado, "US" for United States).
+    optional string region_code = 4;
+
+    // Parent region ID for hierarchical relationships.
+    // Empty for top-level regions (e.g., countries).
+    optional string parent_region_id = 5;
+
+    // Hierarchical path from root to this region (comma-separated IDs).
+    // Enables efficient ancestor queries.
+    // Example: "country_id,state_id,city_id"
+    string path = 6;
+
+    // Timestamp when the region was created.
+    int64 created_at_unix_sec = 7;
+
+    // Timestamp when the region was last updated.
+    int64 updated_at_unix_sec = 8;
+}
+
+// Location combines geodetic coordinates with a human-readable address.
+message Location {
+    // Unique identifier for this location.
+    string id = 1;
+
+    // Geodetic coordinates.
+    Geolocation geolocation = 2;
+
+    // Human-readable address.
+    Address address = 3;
+
+    // Timestamp when the location was created.
+    int64 created_at_unix_sec = 4;
+
+    // Timestamp when the location was last updated.
+    int64 updated_at_unix_sec = 5;
+
+    // Human-readable name of the location (e.g., "Empower Field at Mile High", "Central Park").
+    optional string name = 6;
+
+    // Provider-specific opaque identifier for this place. Paired with
+    // external_place_provider, used for deduplication: two locations with
+    // the same (external_place_id, external_place_provider) are the same
+    // real-world place.
+    optional string external_place_id = 7;
+
+    // The provider that issued external_place_id (e.g., "mapbox", "google").
+    // Empty string means no external provider identifier is available for
+    // this location; dedup falls back to coordinate proximity.
+    optional string external_place_provider = 8;
+
+    // Soft deletion metadata.
+    optional DeletedMetadata deleted = 20;
+}

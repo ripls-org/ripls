@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// The topic of a conversation — the entity being discussed.
+// Exactly one field in the oneof must be set.
+message ConversationTopic {
+    oneof topic_id {
+        // A conversation about a specific transfer.
+        string transfer_id = 3;
+
+        // A conversation about a specific request.
+        string request_id = 4;
+
+        // A conversation about a specific experience.
+        string experience_id = 8;
+
+        // A conversation about a specific gear item (community-wide, perpetual).
+        string gear_id = 9;
+
+        // A community-wide conversation (one per community, perpetual).
+        string community_id = 10;
+    }
+}

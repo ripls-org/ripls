@@ -1,0 +1,149 @@
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/community.proto";
+import "ripls/models/transfer.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// A notification to be sent to a user
+message Notification {
+  // Title for display
+  string title = 1;
+
+  // Body text for display
+  string body = 2;
+
+  // Type-specific payload
+  oneof payload {
+    CommunityEventPayload community_event = 10;
+    ChatMessagePayload chat_message = 12;
+  }
+
+  // LoanEventPayload removed — all notifications route via community events.
+  reserved 11;
+  reserved "loan_request";
+}
+
+// Payload for community event notifications
+message CommunityEventPayload {
+  // The community where the event occurred
+  string community_id = 1;
+
+  // The event ID
+  string event_id = 2;
+
+  // Which notification this is, selecting its copy in the server l10n catalog.
+  //
+  // Two vocabularies share this field. Events published on the community bus
+  // carry a CommunityEventType enum name ("COMMUNITY_EVENT_TYPE_GEAR_SHARED").
+  // System-generated notifications — reminders, close prompts, nudges — have no
+  // bus event and no actor, so their producers mint a synthetic string
+  // ("EXPERIENCE_REMINDER_TWO_HOUR"); nothing is persisted under it and no enum
+  // value backs it.
+  //
+  // Every value of either kind must map to a copy kind in
+  // notifications/notification_content. An unmapped value renders the generic
+  // default line, which for an actorless notification used to mean texting the
+  // recipient "Ripls:  posted an update in " (#2896).
+  string event_type = 3;
+
+  // Human-readable name of the gear involved (if applicable)
+  string gear_name = 5;
+
+  // Human-readable title of the request involved (if applicable)
+  string request_title = 6;
+
+  // The gear ID for deep linking to gear detail screen (if applicable)
+  string gear_id = 7;
+
+  // The experience ID for deep linking (if applicable)
+  optional string experience_id = 8;
+
+  // The request ID for deep linking to request detail screen (if applicable)
+  optional string request_id = 9;
+
+  // Whether the experience time changed (set on EXPERIENCE_UPDATED events).
+  optional bool time_changed = 10;
+
+  // Whether the experience location changed (set on EXPERIENCE_UPDATED events).
+  optional bool location_changed = 11;
+
+  // Human-readable name of the actor who caused the event (e.g. "Sam"). Carried
+  // so off-app renderers (SMS/email) can compose self-contained copy — "Sam is
+  // attending 'Backyard BBQ'" — instead of reusing the push title/body.
+  string actor_name = 12;
+
+  // Human-readable name of the experience involved (if applicable). Resolved
+  // once when the notification is built; off-app renderers read it for the
+  // entity-inline copy without a second lookup.
+  string experience_name = 13;
+
+  // Human-readable name of the community the event occurred in. Set when the
+  // copy references it (membership / lifecycle events) and for off-app context.
+  string community_name = 14;
+
+  // Availability of the shared gear (set on GEAR_SHARED). Lets off-app copy say
+  // "giving away" + Claim vs "lending out" + Borrow without a second lookup.
+  Availability gear_availability = 15;
+
+  // Whether the transfer is a loan or a giveaway (set on TRANSFER_* events).
+  // Same purpose as gear_availability: a loan that just started and a giveaway
+  // that just completed are different sentences, and resolving which from the
+  // payload keeps every surface rendering the same one.
+  TransferType transfer_type = 17;
+
+  // Set on TRANSFER_CANCELLED when a gear-backed offer stood down because the
+  // request no longer needs it — covered by another offer or closed by the
+  // requester (#2702) — rather than because someone backed out. The friendlier
+  // copy that distinction earns was previously push-only, because deciding it
+  // requires a Transfer read the off-app senders do not do.
+  bool transfer_offer_covered = 18;
+
+  // Name of the planning need/contribution (set on PLANNING_* events) so off-app
+  // copy can say what was needed or brought.
+  string planning_item_name = 16;
+
+  // conversation_id removed — routing uses entity IDs (gear_id, experience_id, request_id)
+  reserved 4;
+  reserved "conversation_id";
+}
+
+// Payload for chat message notifications
+message ChatMessagePayload {
+  // The conversation ID
+  string conversation_id = 1;
+
+  // The message ID
+  string message_id = 2;
+
+  // The sender's user ID
+  string sender_user_id = 3;
+
+  // The sender's display name
+  string sender_name = 4;
+
+  // Preview of the message content (first 100 chars)
+  string preview_text = 5;
+
+  // The community where the conversation belongs
+  string community_id = 6;
+
+  // The experience ID if the conversation is about an experience
+  optional string experience_id = 7;
+
+  // The gear ID if the conversation is about a gear item or transfer
+  optional string gear_id = 8;
+
+  // The request ID if the conversation is about a request
+  optional string request_id = 9;
+
+  // Human-readable title of the conversation's topic (gear name, experience
+  // name, request title, or community name for community-wide conversations).
+  // Used by the client to render the notification heading on Android
+  // (MessagingStyle conversationTitle) and the alert subtitle on iOS so
+  // multi-sender threads can show a stable identifier instead of just the
+  // latest sender's name.
+  optional string conversation_title = 10;
+}

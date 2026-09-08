@@ -1,0 +1,50 @@
+# Controls buf linting / validation.
+version: v2
+
+modules:
+  - path: proto
+
+# Options for all modules.
+lint:
+  use:
+    - STANDARD
+  except:
+    - PACKAGE_VERSION_SUFFIX
+breaking:
+  # WIRE — the binary wire format, which is the only compatibility surface this
+  # repo actually has (#2828).
+  #
+  # Nothing reads proto-JSON for storage or for the app: models are persisted in
+  # the binary_proto column, and the Flutter client's transport is configured
+  # with `codec: const ProtoCodec()`. The single protojson caller in the tree is
+  # the CheckHealth handler, read by uptime probes.
+  #
+  # This was measured, not assumed. Run against history:
+  #
+  #                       WIRE_JSON   WIRE
+  #   since 2026-05-21       13         0
+  #   since 2026-05-15       47        16
+  #
+  # Every one of the 13 is the in-place shadow_user_id → provisional_user_id
+  # rename. Renames cannot break binary proto — field *numbers* are the wire
+  # identity — so under WIRE the repo's add / migrate / delete-with-reserve
+  # practice passes untouched, which FILE and WIRE_JSON both punished.
+  #
+  # The 16 are real: the #625 rewrite of models/scheduled_notification.proto
+  # deleted fields without reserving their numbers and changed field 4 from enum
+  # to int64 and field 6 from string to int64. Harmless then (a dev-stage
+  # table), corrupting on a populated one. That class is what this gate is for.
+  #
+  # So WIRE still rejects: changing a field's type or cardinality in place,
+  # deleting without reserving the *number*, moving a field in or out of a
+  # oneof, and changing an RPC's request or response type. It permits renames
+  # and reserving only the number rather than number-and-name.
+  #
+  # Known gap: RPC_NO_DELETE, SERVICE_NO_DELETE and MESSAGE_NO_DELETE are
+  # FILE/PACKAGE only, so this does not stop an RPC (or its request/response
+  # messages) being removed. A green gate is therefore not evidence that
+  # dropping an RPC is safe. Policy for that — prove no caller, then wait one
+  # shipped release plus about a day — is in docs/proto_conventions.md
+  # → Removing an RPC.
+  use:
+    - WIRE

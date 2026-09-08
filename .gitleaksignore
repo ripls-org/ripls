@@ -1,0 +1,14 @@
+# gitleaks allowlist: known leaks pending cleanup.
+#
+# Each line is a fingerprint in the format <file>:<rule>:<line> (working-tree
+# scan) or <commit>:<file>:<rule>:<line> (history scan).
+#
+# DRAIN PROTOCOL (per #1772 and umbrella #1766):
+# When a Phase 2 cleanup PR removes one of these leaks, it MUST also remove
+# the corresponding line(s) below in the same PR. CI passes on that PR with
+# the line removed = proof the secret is actually gone. When this file is
+# empty, the system is at full blocking with no exceptions.
+#
+# DO NOT add new entries without an issue link explaining why. The whole
+# point is that this list shrinks; new entries should require a code review
+# that questions whether the leak should be cleaned up rather than allowlisted.

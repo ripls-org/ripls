@@ -1,0 +1,220 @@
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/feed_service.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request to get user information by user ID.
+message GetUserRequest {
+  string user_id = 1;
+}
+
+// Response containing user information.
+message GetUserResponse {
+  string user_id = 1;
+  string email = 2;
+
+  // The account's verified phone number in E.164 format (e.g.
+  // "+15551234567"), or empty if none is set. Returned only to the user
+  // themselves; empty when requesting any other user.
+  string phone_number = 11;
+
+  string name = 3;
+  string primary_residence_location_id = 4;
+  repeated string other_location_ids = 5;
+  // Primary profile image media ID (synced with media_ids[0]).
+  string media_id = 6;
+  string description = 7;
+  // All profile image media IDs (first element synced with media_id).
+  repeated string media_ids = 8;
+  // User's preferred timezone for displaying all events.
+  // IANA timezone string (e.g., "America/New_York").
+  // Optional: falls back to device timezone if not set.
+  string preferred_timezone = 9;
+
+  // User's preferred language for server-rendered content (push
+  // notifications, emails). BCP-47 tag (e.g. "en", "es"). Empty
+  // string means the server resolves the locale from each
+  // request's Accept-Language header.
+  string preferred_language = 10;
+}
+
+// Request to save (update) user information.
+// Only fields that are set in the request are updated; omitted fields are ignored.
+// Set an optional scalar to update it (empty string clears the field); omit entirely to leave it unchanged.
+// Repeated fields (like other_location_ids and media_ids) are replaced entirely, not appended.
+message SaveUserRequest {
+  // The unique identifier of the user to update (required).
+  string user_id = 1;
+
+  // Display name. Set to clear or update; omit to leave unchanged.
+  optional string name = 2;
+
+  // Primary residence location ID. Set to clear or update; omit to leave unchanged.
+  optional string primary_residence_location_id = 3;
+
+  // Other locations associated with the user (optional update - replaces all).
+  repeated string other_location_ids = 4;
+
+  // Primary profile image media ID. Set to clear or update; omit to leave unchanged.
+  // Server will sync this with media_ids[0].
+  optional string media_id = 5;
+
+  // User bio/description. Set to clear or update; omit to leave unchanged.
+  optional string description = 6;
+
+  // All profile image media IDs (optional update - replaces all).
+  // Server will sync media_ids[0] with media_id.
+  // First element is the primary profile image.
+  repeated string media_ids = 7;
+
+  // Preferred timezone for displaying all events. Set to clear or update; omit to leave unchanged.
+  // IANA timezone string (e.g., "America/New_York").
+  // Server validates this is a valid IANA timezone when non-empty.
+  optional string preferred_timezone = 8;
+
+  // Preferred language for server-rendered content (push
+  // notifications, emails). Set to a BCP-47 tag (e.g. "en", "es"),
+  // or to an empty string to clear and revert to header-based
+  // resolution. Omit to leave unchanged. The server normalizes
+  // unsupported tags to "en".
+  optional string preferred_language = 9;
+}
+
+// Response after saving user information.
+message SaveUserResponse {
+  string user_id = 1;
+}
+
+// Request to delete the current user's account.
+// The caller can only delete their own account.
+message DeleteUserRequest {}
+
+// Response after deleting a user account.
+message DeleteUserResponse {}
+
+// Request to add a verified phone number to the calling user's account.
+// The number is read from the verification token; it always applies to the
+// authenticated caller and cannot target another account.
+message AddPhoneNumberRequest {
+  string firebase_id_token = 1;  // Firebase ID token from phone OTP verification.
+}
+
+// Response after adding a phone number.
+message AddPhoneNumberResponse {
+  // The phone number now set on the account, in E.164 format.
+  string phone_number = 1;
+}
+
+// Request to get aggregate user statistics.
+message GetUserStatsRequest {
+  string user_id = 1;
+}
+
+// Response containing aggregate user statistics and impact metrics.
+message GetUserStatsResponse {
+  // Count metrics
+  int32 community_count = 1;
+  int32 item_count = 2;  // Total gear + requests + experiences
+  int32 loans_count = 3;  // Total loans (as lender)
+  int32 borrows_count = 4;  // Total borrows (as borrower)
+  int32 giveaways_count = 5;  // Items given away
+  int32 help_offered_count = 6;  // Request fulfillments
+  int32 events_hosted_count = 7;  // Experiences hosted
+
+  // Value metrics
+  float total_items_value_usd = 9;  // Sum of estimated values of all owned items
+
+  // Savings metrics
+  UserSavings savings = 10;
+}
+
+// User savings metrics across all activities.
+message UserSavings {
+  float cost_saved_usd = 1;  // Total money saved in USD
+  int32 time_saved_hours = 2;  // Total time saved in hours
+  float co2_saved_kg = 3;  // Total CO2 saved in kilograms
+}
+
+// Request to list stories for a user.
+message ListUserStoriesRequest {
+  // User ID to get stories for.
+  string user_id = 1;
+
+  // Maximum number of stories to return (default: 10, max: 50).
+  int32 limit = 2;
+}
+
+// Response containing user stories.
+message ListUserStoriesResponse {
+  // Ordered stories (most recent first).
+  repeated StoryPayload stories = 1;
+}
+
+// User-scoped (not per-community) notification preferences. Each
+// `optional bool` follows the "unset = on" rule.
+message UserNotificationPreferences {
+  // Notify on scheduled loan-return reminders (1 day before due,
+  // due-day, and overdue).
+  optional bool notify_loan_return_reminders = 1;
+
+  // Notify on the post-event prompt that asks the host to mark an
+  // Experience completed.
+  optional bool notify_event_close_prompts = 2;
+}
+
+// Request to read the calling user's user-scoped notification
+// preferences.
+message GetUserNotificationPreferencesRequest {}
+
+// Response containing the calling user's preferences.
+message GetUserNotificationPreferencesResponse {
+  UserNotificationPreferences preferences = 1;
+}
+
+// Request to update the calling user's user-scoped notification
+// preferences. Only fields explicitly set in `preferences` are
+// updated; fields left unset preserve their existing value.
+message UpdateUserNotificationPreferencesRequest {
+  UserNotificationPreferences preferences = 1;
+}
+
+// Response containing the updated preferences.
+message UpdateUserNotificationPreferencesResponse {
+  UserNotificationPreferences preferences = 1;
+}
+
+// UserService provides user information
+service UserService {
+  // Gets user information by user ID
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+
+  // Updates user information
+  rpc SaveUser(SaveUserRequest) returns (SaveUserResponse);
+
+  // Deletes the current user's account (soft delete with anonymization).
+  // Only the authenticated user can delete their own account.
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+
+  // Adds a verified phone number to the calling user's account as an
+  // additional sign-in method; the account's existing sign-in method
+  // continues to work. Fails if the number already belongs to a different
+  // account.
+  rpc AddPhoneNumber(AddPhoneNumberRequest) returns (AddPhoneNumberResponse);
+
+  // Gets aggregate statistics and impact metrics for a user.
+  rpc GetUserStats(GetUserStatsRequest) returns (GetUserStatsResponse);
+
+  // Lists stories for a user (most recent first).
+  rpc ListUserStories(ListUserStoriesRequest) returns (ListUserStoriesResponse);
+
+  // Reads the calling user's user-scoped notification preferences.
+  // Returns a row with all-unset fields if none exists yet.
+  rpc GetUserNotificationPreferences(GetUserNotificationPreferencesRequest) returns (GetUserNotificationPreferencesResponse);
+
+  // Updates the calling user's user-scoped notification preferences.
+  // Only the authenticated user can update their own preferences.
+  rpc UpdateUserNotificationPreferences(UpdateUserNotificationPreferencesRequest) returns (UpdateUserNotificationPreferencesResponse);
+}

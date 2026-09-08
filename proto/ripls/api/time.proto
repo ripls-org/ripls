@@ -1,0 +1,90 @@
+// API types for time-related messages.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// TimeConfidence indicates how certain the AI was about extracted time.
+enum TimeConfidence {
+  TIME_CONFIDENCE_UNSPECIFIED = 0;
+  TIME_CONFIDENCE_EXPLICIT = 1; // User gave specific time (e.g., "3pm", "2:30")
+  TIME_CONFIDENCE_INFERRED = 2; // User gave fuzzy time (e.g., "morning", "afternoon")
+  TIME_CONFIDENCE_UNKNOWN = 3; // No time mentioned
+}
+
+// ExperienceTime represents when an experience will occur.
+message ExperienceTime {
+  oneof time_type {
+    SpecificTime specific = 1;
+    TimeRange range = 2;
+    TimeTBD tbd = 3;
+  }
+
+  // Human-friendly informal description (e.g., "next weekend", "Friday evening").
+  // This is what the user typed or selected, stored for display.
+  string informal_description = 4;
+
+  // Confidence level for time extraction (when LLM-generated).
+  TimeConfidence confidence = 5;
+}
+
+// SpecificTime represents a precise datetime.
+message SpecificTime {
+  int64 unix_timestamp_sec = 1;
+  string timezone = 2; // IANA timezone (e.g., "America/Los_Angeles")
+  int32 duration_minutes = 3; // Optional duration in minutes (0 = not specified)
+  bool is_all_day = 4; // True if this is an all-day event (no specific time, date only)
+}
+
+// TimeRange represents a flexible time window.
+message TimeRange {
+  string description = 1; // Human-readable description
+  optional int64 start_unix_sec = 2; // Start of the time range.
+  optional int64 end_unix_sec = 3; // End of the time range.
+  string timezone = 6; // IANA timezone (e.g., "America/Denver"). Empty when unknown.
+  int32 duration_minutes = 4; // Duration in minutes (0 = not specified).
+  bool is_all_day = 5; // True if this is an all-day event range (no specific times, dates only)
+}
+
+// TimeTBD represents time to be determined.
+message TimeTBD {
+  // Empty message - presence indicates TBD state
+}
+
+// TimeVoteStatus represents a user's vote on a time proposal.
+enum TimeVoteStatus {
+  TIME_VOTE_STATUS_UNSPECIFIED = 0;
+  TIME_VOTE_STATUS_YES = 1;
+  TIME_VOTE_STATUS_NO = 2;
+  TIME_VOTE_STATUS_NONE_WORK = 3;
+
+  // The voter is flexible: any proposed time works for them. A flexible vote
+  // counts toward every proposal in the poll, so it is shown as supporting
+  // all options rather than attached to a single one.
+  TIME_VOTE_STATUS_FLEXIBLE = 4;
+}
+
+// TimeVote represents a user's vote on a time proposal (API type with enriched user data).
+message TimeVote {
+  User user = 1;
+  TimeVoteStatus status = 2;
+}
+
+// TimeProposal represents a proposed time slot with votes (API type with enriched data).
+message TimeProposal {
+  string id = 1;
+  User proposed_by = 2;
+  ExperienceTime time = 3;
+  repeated TimeVote votes = 4;
+  bool is_confirmed = 5;
+  int64 proposed_at_unix_sec = 6;
+  // Identifier of the poll this proposal belongs to. All proposals created
+  // during the same "Ask the group" run share the same poll_id, which lets
+  // the client list every poll an experience has had as its own group.
+  // Optional for backwards compatibility — older proposals predate this field.
+  optional string poll_id = 7;
+}

@@ -1,0 +1,16 @@
+{
+  "id": "deeper-neutrals",
+  "axis": "palette",
+  "label": "Deeper neutrals",
+  "description": "Pushes the secondary and faint text steps further from their backgrounds, targeting the flat-surface failures the gate found (text-secondary 2.53:1, text-faint 1.27:1). Brand values are untouched, so any change on glass isolates the neutral ramp.",
+  "color": {
+    "light": {
+      "text-secondary": { "$value": "#3A423C" },
+      "text-faint": { "$value": "#5F665F" }
+    },
+    "dark": {
+      "text-secondary": { "$value": "#C4CCC4" },
+      "text-faint": { "$value": "#99A199" }
+    }
+  }
+}

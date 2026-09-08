@@ -1,0 +1,133 @@
+// API types for the gear booking ("who's using it" calendar) flow: a
+// community member claims a range of days, sees who has the gear which days,
+// and coordinates the pickup/drop-off hand-off.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Lifecycle state of a gear booking (mirrors models.GearBookingState).
+enum GearBookingState {
+    GEAR_BOOKING_STATE_UNSPECIFIED = 0;
+    GEAR_BOOKING_STATE_RESERVED = 1;   // Days claimed, not yet picked up.
+    GEAR_BOOKING_STATE_ACTIVE = 2;     // Item picked up, currently held.
+    GEAR_BOOKING_STATE_COMPLETED = 3;  // Item returned.
+    GEAR_BOOKING_STATE_CANCELLED = 4;  // Booking released before use.
+}
+
+// A reservation of a piece of gear for an inclusive range of calendar days,
+// shaped for display (resolved borrower + hand-off place names).
+message GearBooking {
+    // A unique identifier for the booking.
+    string id = 1;
+
+    // The ID of the gear being booked.
+    string gear_id = 2;
+
+    // The community the booking was made in.
+    string community_id = 3;
+
+    // The user holding the booking.
+    User borrower = 4;
+
+    // Inclusive booked range, unix seconds at local midnight.
+    int64 start_date_unix_sec = 5;
+    int64 end_date_unix_sec = 6;
+
+    // Current lifecycle state.
+    GearBookingState state = 7;
+
+    // Hand-off — pickup. The client resolves the place name from the id (as it
+    // does for the gear's main location).
+    optional string pickup_location_id = 8;
+    optional int64 pickup_time_unix_sec = 9;
+
+    // Hand-off — drop-off.
+    optional string dropoff_location_id = 10;
+    optional int64 dropoff_time_unix_sec = 11;
+
+    // Whether the viewing user owns this booking (may drop / edit hand-off).
+    bool is_mine = 12;
+
+    // Whether this is an owner-created reservation still awaiting acceptance via
+    // a link (no recipient yet). The days are held; anyone with the link can
+    // accept. When true, borrower is unset.
+    bool is_pending = 13;
+
+    // Whether the booking's recipient is the gear owner — a self-block ("I'm
+    // using it"), held out of the lending pool rather than lent to a borrower.
+    bool is_owner_block = 14;
+
+    // The token a link recipient passes to AcceptGearBooking to claim a pending
+    // reservation. Only populated for the owner on a pending booking.
+    optional string accept_token = 15;
+}
+
+// Request to list all (non-cancelled) bookings for a gear item in a community.
+message ListGearBookingsRequest {
+    string gear_id = 1;
+    string community_id = 2;
+}
+
+message ListGearBookingsResponse {
+    repeated GearBooking bookings = 1;
+}
+
+// Request to claim an inclusive range of days. By default the caller becomes
+// the recipient (a borrower booking). The gear owner may instead reserve on
+// someone's behalf:
+//   - recipient_id set      → reserve for that user (or the owner, for a block);
+//   - pending = true         → hold the days unassigned and mint an accept link.
+// recipient_id and pending are mutually exclusive and owner-only.
+message ClaimGearDaysRequest {
+    string gear_id = 1;
+    string community_id = 2;
+    int64 start_date_unix_sec = 3;
+    int64 end_date_unix_sec = 4;
+
+    // Owner-only: reserve these days for this user instead of the caller. Pass
+    // the owner's own id to block the days for personal use.
+    optional string recipient_id = 5;
+
+    // Owner-only: hold the days unassigned and return an accept token/link.
+    bool pending = 6;
+}
+
+message ClaimGearDaysResponse {
+    GearBooking booking = 1;
+}
+
+// Request for a link recipient to accept (claim) a pending reservation.
+message AcceptGearBookingRequest {
+    string booking_id = 1;
+    string accept_token = 2;
+}
+
+message AcceptGearBookingResponse {
+    GearBooking booking = 1;
+}
+
+// Request to release (drop) a booking the authenticated user owns.
+message ReleaseGearBookingRequest {
+    string booking_id = 1;
+}
+
+message ReleaseGearBookingResponse {}
+
+// Request to set/clear the pickup and drop-off hand-off on a booking. Only the
+// fields present are changed; an explicitly-empty location id clears it.
+message UpdateGearBookingHandoffRequest {
+    string booking_id = 1;
+    optional string pickup_location_id = 2;
+    optional int64 pickup_time_unix_sec = 3;
+    optional string dropoff_location_id = 4;
+    optional int64 dropoff_time_unix_sec = 5;
+}
+
+message UpdateGearBookingHandoffResponse {
+    GearBooking booking = 1;
+}

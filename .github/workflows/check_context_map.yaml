@@ -1,0 +1,43 @@
+name: Check Context Map
+
+# Enforces that docs/llms.txt is regenerated from per-doc `context:` frontmatter
+# and that every context block is valid (scripts/gen_context_map.js --check).
+# Runs on every PR to main (no path filter) so drift introduced anywhere — a doc
+# edited without updating its block, or llms.txt left stale — is caught, and is
+# intended to be a REQUIRED status check. See docs/context_map.md.
+#
+# Unlike check_versions.js, the generator parses YAML via js-yaml, so this job
+# runs `npm install` before the check.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-context-map:
+    name: Check Context Map
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Check docs/llms.txt is current and all context blocks valid
+        run: npm run lint:context-map

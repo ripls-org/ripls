@@ -1,0 +1,37 @@
+// RPC service for managing waitlist signups.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request to join the waitlist.
+message JoinWaitlistRequest {
+  // Email address to add to the waitlist.
+  string email = 1;
+
+  // Name of the person signing up (optional).
+  optional string name = 2;
+
+  // How the person heard about Ripls (optional).
+  optional string referral_source = 3;
+
+  // What the person wants to use Ripls for (optional).
+  optional string intended_use = 4;
+}
+
+// Response after attempting to join the waitlist.
+message JoinWaitlistResponse {
+  // Human-readable message for the user.
+  string message = 1;
+
+  // True if this email was already on the waitlist.
+  bool already_registered = 2;
+}
+
+// Service for waitlist management.
+service WaitlistService {
+  // JoinWaitlist adds an email to the waitlist.
+  rpc JoinWaitlist(JoinWaitlistRequest) returns (JoinWaitlistResponse);
+}

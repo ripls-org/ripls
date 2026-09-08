@@ -1,0 +1,14 @@
+// Template for Prod.xcconfig — copy it to `Prod.xcconfig` and fill in your own
+// values. Release.xcconfig `#include`s that name, so release builds will not
+// configure until it exists.
+//
+// See Dev.example.xcconfig for what each setting is and where to find it.
+
+PRODUCT_BUNDLE_IDENTIFIER = org.example.app
+DISPLAY_NAME = Example
+
+DEVELOPMENT_TEAM = ABCDE12345
+
+// From the same Firebase project as ios/config/release/GoogleService-Info.plist.
+GOOGLE_IOS_CLIENT_ID = 000000000000-example.apps.googleusercontent.com
+GOOGLE_IOS_REVERSED_CLIENT_ID = com.googleusercontent.apps.000000000000-example

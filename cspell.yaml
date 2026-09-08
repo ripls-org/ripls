@@ -1,0 +1,75 @@
+# cSpell config — editor-only (no CI gate), auto-discovered by the VS Code
+# "Code Spell Checker" extension. Intentionally small: just obvious project
+# jargon + a few non-prose path excludes. The goal is to silence the *obvious*
+# false positives, NOT to suppress every unknown word — cspell stays useful for
+# catching real typos in docs and comments.
+#
+# To add a word: cursor on the squiggle → quick-fix "Add: <word> to workspace
+# dictionary" (appends to `words` below), or edit this list directly. cSpell
+# matches case-insensitively and handles plurals/possessives ("dedup" covers
+# "Dedup"; "Partiful" covers "Partiful's").
+version: "0.2"
+language: en
+
+words:
+  # Product / brand
+  - Ripls
+  - Partiful
+
+  # Vendors / services named in code + docs (real names per repo convention)
+  - Twilio
+  - Mailgun
+  - Mapbox
+  - Pexels
+  - Unsplash
+  - Firestore
+  - Crashlytics
+  - Renovate
+  - Riverpod
+  - CanvasKit
+  - gitleaks
+  - protobuf
+  - Metabase
+
+  # Repo-internal artifacts referenced by path
+  - llms
+  - evals
+
+  # SMS / messaging compliance acronyms
+  - A2P
+  - TCPA
+  - CEMA
+
+  # Codebase jargon / identifiers that recur across Go + Dart
+  - adhoc
+  - connecterr
+  - protosql
+  - viewmodels
+  - deeplink
+  - optout
+  - dedup
+
+# Skip generated, translated, dependency, and data files — spell-checking these
+# is pure noise, not real coverage.
+ignorePaths:
+  - "node_modules/**"
+  - "**/build/**"
+  # generated code
+  - "**/gen/**"
+  - "**/*.pb.go"
+  - "**/*.pb.dart"
+  - "**/*.connect.go"
+  - "**/*.g.dart"
+  - "**/*.freezed.dart"
+  - "app/lib/l10n/app_localizations*.dart"
+  # translated (Spanish) localization catalogs
+  - "app/lib/l10n/app_es.arb"
+  - "server/l10n/source/es.toml"
+  # dependency / lock files
+  - "**/go.sum"
+  - "**/*.lock"
+  - "package-lock.json"
+  # ML training data + tokenizer vocab, test fixtures, raw crash-log dumps
+  - "model_tuning/**"
+  - "**/testdata/**"
+  - "docs/crashlytics/**"

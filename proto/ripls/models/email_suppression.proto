@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// EmailSuppression records an email address that has opted out of platform
+// email (CAN-SPAM one-click unsubscribe) but has no registered account — e.g.
+// an email invitee who unsubscribed before signing up. Registered users opt out
+// via User.off_app_email_opted_out instead. The platform must never send to a
+// suppressed address; checked before every off-app invite email.
+message EmailSuppression {
+  // Unique identifier.
+  string id = 1;
+
+  // Normalized (lowercased) email address that opted out. PII: never log
+  // unmasked.
+  string email = 2;
+
+  // When the address opted out (Unix seconds).
+  int64 opted_out_at_unix_sec = 3;
+}

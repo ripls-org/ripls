@@ -1,0 +1,11 @@
+# route-names allowlist.
+#
+# Each entry is a file:line path that contains a GoRoute() declaration
+# without a name: argument. The allowlist can SHRINK but never GROW on
+# main — CI enforces this ratchet.
+#
+# Fix: add name: '<screen_name>' to each listed GoRoute, using the
+# conceptual screen name in snake_case (e.g. name: 'gear_detail').
+#
+# Regenerate from current state with:
+#   node scripts/check_route_names.js --update-baseline

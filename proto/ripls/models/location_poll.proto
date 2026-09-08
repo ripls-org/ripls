@@ -1,0 +1,62 @@
+// Storage models for location-poll types (parallel to time.proto).
+
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/common.proto";
+import "ripls/models/location.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// LocationVoteStatus represents a user's vote on a location proposal.
+enum LocationVoteStatus {
+  LOCATION_VOTE_STATUS_UNSPECIFIED = 0;
+  LOCATION_VOTE_STATUS_YES = 1;
+  LOCATION_VOTE_STATUS_NO = 2;
+  LOCATION_VOTE_STATUS_NONE_WORK = 3;
+
+  // The voter is flexible: any proposed spot works. Counts toward every
+  // proposal in the poll rather than a single one.
+  LOCATION_VOTE_STATUS_FLEXIBLE = 4;
+}
+
+// LocationVote represents a user's vote on a location proposal.
+message LocationVote {
+  string id = 1;
+  string proposal_id = 2;
+  string user_id = 3;
+  LocationVoteStatus status = 4;
+  int64 voted_at_unix_sec = 5;
+}
+
+// ExperienceLocationProposal represents a proposed location for an experience.
+//
+// A proposal either references a saved Location (via location_id) or carries
+// an inline geocoded location (drop-pin / search result not yet saved). On
+// confirm, the inline geocoded form is materialized into a stored Location
+// and the experience.location_id is updated to point at it.
+message ExperienceLocationProposal {
+  string id = 1;
+  string experience_id = 2;
+  string proposed_by_user_id = 3;
+
+  // Reference to a saved Location row. Mutually exclusive with
+  // [geocoded_location]. Exactly one of the two is set.
+  string location_id = 4;
+
+  // Inline geocoded location (drop-pin / unsaved). Mutually exclusive with
+  // [location_id]. Materialized into a stored Location on confirm.
+  Location geocoded_location = 5;
+
+  int64 proposed_at_unix_sec = 6;
+  bool is_confirmed = 7;
+
+  // Identifier of the poll this proposal belongs to. All proposals created
+  // during the same poll run share the same poll_id. Optional for legacy data.
+  optional string poll_id = 8;
+
+  // Soft deletion metadata. Set when the parent experience is deleted so
+  // this proposal stops surfacing on participant location-poll screens.
+  optional DeletedMetadata deleted = 9;
+}

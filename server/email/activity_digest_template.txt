@@ -1,0 +1,95 @@
+{{.Title}}
+
+Covering {{.WindowLabel}} ({{.TimezoneName}}).
+
+ENGAGEMENT
+
+{{- if .HasNewUsers}}
+New users {{.PeriodWord}} ({{len .NewUsers}}{{if .NewUsersDelta}}, {{.NewUsersDelta}}{{end}}): {{.NewUserBreakdownLine}}.
+{{- range .NewUsers}}
+  - {{.Name}} <{{.Email}}> via {{.AuthMethodLabel}}{{if .PrimaryCommunityName}} (primary: {{.PrimaryCommunityName}}){{end}}
+{{- end}}
+{{- else}}
+No new users {{.PeriodWord}}.
+{{- end}}
+
+{{- if .ActiveUsersKnown}}
+Active users {{.PeriodWord}}: {{.ActiveUserCount}}{{if .ActiveUsersDelta}} ({{.ActiveUsersDelta}}){{end}} (any authenticated activity); {{.ActiveContributorCount}}{{if .ContributorsDelta}} ({{.ContributorsDelta}}){{end}} contributed an action or chat message.
+{{- else}}
+Active contributors {{.PeriodWord}}: {{.ActiveContributorCount}}{{if .ContributorsDelta}} ({{.ContributorsDelta}}){{end}} (action or chat). App-active tracking does not cover this window yet.
+{{- end}}
+
+{{- if gt .InteractiveSignInCount 0}}
+{{.InteractiveSignInCount}} returning user{{if ne .InteractiveSignInCount 1}}s{{end}} signed in interactively {{.PeriodWord}}.
+{{- else}}
+No returning interactive sign-ins {{.PeriodWord}}.
+{{- end}}
+
+{{- if .HasDailyActives}}
+
+Actives by day:
+{{- range .DayActiveRows}}
+  {{.Label}}   {{.ActiveLabel}} active / {{.Contributors}} contributing
+{{- end}}
+{{- end}}
+
+{{- if .HasWaitlistSignups}}
+
+Waitlist signups ({{len .WaitlistSignups}}):
+{{- range .WaitlistSignups}}
+  - {{.Email}}{{if .Name}} ({{.Name}}){{end}}{{if .IntendedUse}} — wants to: {{.IntendedUse}}{{end}}
+{{- end}}
+{{- end}}
+
+{{- if gt .PasswordResetCount 0}}
+
+{{.PasswordResetCount}} password reset request(s).
+{{- end}}
+
+ACTIVITY
+
+{{- if not .HasActivity}}
+No tracked activity in the window.
+{{- else}}
+{{- range .ActivityRows}}
+  {{printf "%4d  %s" .Count .Label}}{{if .Delta}} ({{.Delta}}){{end}}{{if .Detail}}  —  {{.Detail}}{{end}}
+{{- end}}
+{{- end}}
+
+CHAT
+
+{{- if not .HasChatActivity}}
+No chat messages in the window.
+{{- else}}
+  Total user messages: {{.ChatTotal}}
+{{- range .ChatRows}}
+    {{printf "%4d  %s" .Count .Label}}{{if .Ratio}}  —  {{.Ratio}}{{end}}
+{{- end}}
+{{- end}}
+
+{{- if .HasCommunities}}
+
+TOP COMMUNITIES
+{{- range .CommunityRows}}
+  {{.Title}}  —  {{.Detail}}
+{{- end}}
+{{- if .NamedRollupLine}}
+  {{.NamedRollupLine}}
+{{- end}}
+{{- if .AdHocRollupLine}}
+  {{.AdHocRollupLine}}
+{{- end}}
+{{- end}}
+
+TOTALS
+
+  Member actions:      {{.TotalMemberActionCount}}{{if .TotalActionsDelta}} ({{.TotalActionsDelta}}){{end}}
+  User chat messages:  {{.TotalUserMessageCount}}{{if .TotalMessagesDelta}} ({{.TotalMessagesDelta}}){{end}}
+{{- if .ExcludedFooterLine}}
+  ({{.ExcludedFooterLine}})
+{{- end}}
+{{- if .PriorWindowLabel}}
+  Deltas compare to {{.PriorWindowLabel}}.
+{{- end}}
+
+Generated {{.GeneratedAtLabel}} ({{.TimezoneName}}).

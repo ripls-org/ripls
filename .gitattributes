@@ -1,0 +1,19 @@
+*.onnx filter=lfs diff=lfs merge=lfs -text
+e2e/fixtures/*.mp4 filter=lfs diff=lfs merge=lfs -text
+# Published walkthrough reel clips are large (~60MB total) — store in LFS.
+# The website deploy checkouts fetch LFS (lfs: true) so rsync ships real files.
+website/content/walkthroughs/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
+
+# Mark binary media as binary so tools (incl. Renovate's hidden-unicode scan)
+# don't read them as text and false-flag byte sequences as bidi/zero-width.
+*.mov -text
+*.webm -text
+*.heic -text
+*.mp4 -text
+
+# Composited-contrast comparison renders (#2770). Phone-shaped 2x captures of
+# the real Flutter Web bundle, one per candidate x surface x theme x backdrop —
+# the evidence behind the palette/material decision, so they are kept rather
+# than regenerated. LFS for the same reason as the walkthrough reels: they are
+# large binaries that would otherwise bloat every clone.
+docs/concepts/theme/**/*.png filter=lfs diff=lfs merge=lfs -text

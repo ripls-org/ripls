@@ -1,0 +1,148 @@
+// Storage model for scheduled (future-dated) push notifications. The
+// reconciler keeps the table in sync with current entity state; the
+// dispatcher renders copy from current entity state at fire time and
+// hard-deletes the row on successful send. Record-of-send lives in
+// structured logs.
+//
+// See docs/issues/625-scheduled-notifications.md for the broader
+// design.
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// ExperienceNotificationPurpose identifies why an Experience-anchored
+// notification is being sent. Time-of-notification is a separate
+// dimension (ExperienceNotification.offset_seconds_from_anchor) so a
+// reconciler can issue multiple notifications of the same purpose at
+// different offsets (e.g. two reminders before start, one day apart)
+// without enum growth.
+enum ExperienceNotificationPurpose {
+  EXPERIENCE_NOTIFICATION_PURPOSE_UNSPECIFIED = 0;
+
+  // Remind a participant about an upcoming Experience they have
+  // RSVPed to. Negative offset (fires before start).
+  EXPERIENCE_NOTIFICATION_PURPOSE_REMINDER_BEFORE_START = 1;
+
+  // Prompt the host to mark a finished Experience completed. Positive
+  // offset (fires after start).
+  EXPERIENCE_NOTIFICATION_PURPOSE_CLOSE_PROMPT = 2;
+
+  // Suggest scheduling another instance of a past Experience. Large
+  // positive offset (fires well after start).
+  EXPERIENCE_NOTIFICATION_PURPOSE_RECURRENCE_REMINDER = 3;
+}
+
+// ExperienceNotification fully describes a notification anchored to
+// an Experience: which one, what purpose, and how far from the
+// Experience's start time it fires.
+message ExperienceNotification {
+  // The Experience this notification is about.
+  string experience_id = 1;
+
+  // Why this notification is being sent.
+  ExperienceNotificationPurpose purpose = 2;
+
+  // Offset in seconds relative to the Experience's start time.
+  // Negative = before start, positive = after start. The reconciler
+  // computes fire_at_unix_sec as experience.start_unix_sec + offset.
+  int64 offset_seconds_from_anchor = 3;
+}
+
+// LoanNotificationPurpose identifies why a loan-anchored notification
+// is being sent. Like the Experience purpose, the timing dimension is
+// separated out so that "remind a day before due", "on the due day",
+// and "after overdue" are all the same purpose at different offsets.
+enum LoanNotificationPurpose {
+  LOAN_NOTIFICATION_PURPOSE_UNSPECIFIED = 0;
+
+  // Remind the borrower about the loan's expected return time. Offset
+  // sign distinguishes upcoming (negative) from overdue (positive).
+  LOAN_NOTIFICATION_PURPOSE_RETURN_REMINDER = 1;
+}
+
+// LoanNotification fully describes a notification anchored to a loan
+// Transfer: which one, what purpose, and how far from the loan's
+// expected return time it fires.
+message LoanNotification {
+  // The Transfer (loan) this notification is about.
+  string transfer_id = 1;
+
+  // Why this notification is being sent.
+  LoanNotificationPurpose purpose = 2;
+
+  // Offset in seconds relative to the loan's expected_return_unix_sec.
+  // Negative = before due, positive = after due. The reconciler
+  // computes fire_at_unix_sec as transfer.expected_return + offset.
+  int64 offset_seconds_from_anchor = 3;
+}
+
+// RequestNotificationPurpose identifies why a request-anchored
+// notification is being sent.
+enum RequestNotificationPurpose {
+  REQUEST_NOTIFICATION_PURPOSE_UNSPECIFIED = 0;
+
+  // Prompt the requester to mark a still-open request fulfilled or
+  // cancelled. Fires every 3 days from creation while the request
+  // remains in ACTIVE or OFFERS_RECEIVED state.
+  REQUEST_NOTIFICATION_PURPOSE_FOLLOWUP_PROMPT = 1;
+}
+
+// RequestNotification fully describes a notification anchored to a
+// Request: which one, what purpose, and how far from the request's
+// created_at time it fires.
+message RequestNotification {
+  // The Request this notification is about.
+  string request_id = 1;
+
+  // Why this notification is being sent.
+  RequestNotificationPurpose purpose = 2;
+
+  // Offset in seconds relative to the request's created_at_unix_sec.
+  // Always positive (fires after creation). The reconciler computes
+  // fire_at_unix_sec as request.created_at_unix_sec + offset.
+  int64 offset_seconds_from_anchor = 3;
+}
+
+// ScheduledNotification is a planned future push for a specific
+// recipient.
+message ScheduledNotification {
+  // A unique identifier for this scheduled notification.
+  string id = 1;
+
+  // The user who will receive the push.
+  string recipient_user_id = 2;
+
+  // The community context, when the notification is bound to a single
+  // community (used for per-community preference gating and for deep
+  // linking). Unset for kinds that span multiple communities.
+  optional string community_id = 3;
+
+  // Absolute UTC unix seconds when this notification should fire. The
+  // dispatcher selects rows whose fire_at <= now.
+  int64 fire_at_unix_sec = 4;
+
+  // IANA timezone used by the dispatcher to evaluate quiet hours for
+  // this recipient. Unset means quiet hours are not applied to this
+  // row.
+  optional string quiet_hours_timezone = 5;
+
+  // When the reconciler first wrote this row.
+  int64 created_at_unix_sec = 6;
+
+  // When the reconciler last touched this row (fire_at update).
+  int64 updated_at_unix_sec = 7;
+
+  // The notification item: which entity it's anchored to and the
+  // per-item-type configuration. The oneof variant fully identifies
+  // both the item type and its parameters. The reconciler's
+  // uniqueness key is
+  // (recipient_user_id, item.<variant_id>, purpose, offset).
+  oneof item {
+    ExperienceNotification experience = 10;
+    LoanNotification loan = 11;
+    RequestNotification request = 12;
+  }
+}

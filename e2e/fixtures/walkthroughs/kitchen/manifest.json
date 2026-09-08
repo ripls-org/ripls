@@ -1,0 +1,10 @@
+{
+  "pack": "kitchen",
+  "source": {
+    "fabricated": true,
+    "consent": "Fully fabricated content (#2687): the cast, communities, items, and chat are invented for the walkthrough — no real people, no prod extraction. Not subject to the real-content consent/purge rules.",
+    "purgeIfRepoGoesPublic": false
+  },
+  "note": "Images live in the parent stock set (e2e/fixtures/walkthroughs/food-*.jpg, avatar-*.jpg) with Unsplash attribution in ../manifest.json; this pack holds only the screenplay (content.json) and the walkthrough page copy (walkthrough.md). The food-* filenames are load-bearing: the e2e AI provider (server/ai/provider_e2e.go) keys its deterministic listings on them.",
+  "files": []
+}

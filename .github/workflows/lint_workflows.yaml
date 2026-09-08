@@ -1,0 +1,124 @@
+name: Lint Workflows
+
+# Correctness gate for the GitHub Actions workflows themselves, plus every
+# standalone shell script in the repo. Runs on any change under .github/ or to
+# any *.sh, and lints every workflow (not just the changed ones, so a rename
+# that breaks a `needs:`/`uses:` reference elsewhere is caught):
+#
+#   - actionlint: Actions schema, ${{ }} expression validity, runs-on labels,
+#     job `needs` graph, matrix refs, cron syntax, deprecated workflow commands,
+#     and embedded shellcheck on `run:` scripts (warning+; info/style excluded
+#     so the gate stays green on existing scripts while catching real bugs).
+#   - shellcheck (`npm run lint:shell`): the ~45 tracked standalone *.sh files,
+#     at the same warning+ threshold as the embedded check above. Added by
+#     #1611 — before it, a script only got linted if it happened to be pasted
+#     into a workflow `run:` block.
+#   - yamllint: YAML-level correctness — duplicate keys (a silent override),
+#     bad truthy values, octal surprises, parse errors. Config:
+#     .github/yamllint.yaml.
+#   - extension guard: enforce the repo's .yaml-not-.yml convention (CLAUDE.md).
+#
+# Tools are installed at runtime (actionlint via `go install`, shellcheck via
+# its pinned release tarball, yamllint via a venv). If self-hosted-runner image
+# churn becomes a concern they can be baked into the image instead, like
+# Chrome/Firebase were (#2251).
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - ".github/actionlint.yaml"
+      - ".github/yamllint.yaml"
+      # The shellcheck step below covers every tracked *.sh in the repo.
+      - "**/*.sh"
+      - "package.json"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - ".github/actionlint.yaml"
+      - ".github/yamllint.yaml"
+      # The shellcheck step below covers every tracked *.sh in the repo.
+      - "**/*.sh"
+      - "package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-workflows:
+    name: Lint Workflows
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Enforce .yaml extension (not .yml)
+        run: |
+          set -o pipefail
+          stray="$(find .github/workflows -type f -name '*.yml' || true)"
+          if [ -n "$stray" ]; then
+            echo "::error::Workflow files must use the .yaml extension (CLAUDE.md). Rename:"
+            echo "$stray"
+            exit 1
+          fi
+
+      - name: Install actionlint
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+      - name: Run actionlint
+        env:
+          # Embedded shellcheck runs at warning+ severity: real script bugs
+          # (SC2164 unchecked cd, SC2046 unquoted command-sub, etc.) fail the
+          # gate, while info/style advisories are skipped on purpose. Several
+          # of those advisories are false positives on idiomatic code here —
+          # e.g. exit-safe `grep … | wc -l` (grep -c would exit 1 on zero
+          # matches under set -e) and `ls -t *.log | head -1` on controlled
+          # filenames — so this is a deliberate threshold, not a blanket mute.
+          SHELLCHECK_OPTS: "--severity=warning"
+        run: |
+          "$(go env GOPATH)/bin/actionlint" -color
+
+      # actionlint above shellchecks scripts embedded in workflow `run:` blocks.
+      # The repo's ~45 standalone .sh files were never checked by anything; this
+      # closes that at the same warning+ threshold, so the two are consistent.
+      #
+      # shellcheck is not baked into the runner image, so fetch the pinned
+      # release binary. (If it gets baked in later, drop this step — actionlint
+      # picks up whatever is on PATH.)
+      - name: Install shellcheck
+        run: |
+          set -euo pipefail
+          version=v0.11.0
+          case "$(uname -m)" in
+            x86_64) arch=x86_64 ;;
+            aarch64|arm64) arch=aarch64 ;;
+            *) echo "::error::unsupported arch $(uname -m)"; exit 1 ;;
+          esac
+          url="https://github.com/koalaman/shellcheck/releases/download/${version}/shellcheck-${version}.linux.${arch}.tar.xz"
+          curl -fsSL "$url" | tar -xJ -C /tmp
+          mkdir -p "$HOME/.local/bin"
+          mv "/tmp/shellcheck-${version}/shellcheck" "$HOME/.local/bin/shellcheck"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run shellcheck on standalone shell scripts
+        run: npm run lint:shell
+
+      - name: Install yamllint
+        run: |
+          python3 -m venv /tmp/yamllint-venv
+          /tmp/yamllint-venv/bin/pip install --quiet yamllint==1.38.0
+
+      - name: Run yamllint
+        run: /tmp/yamllint-venv/bin/yamllint -c .github/yamllint.yaml .github/

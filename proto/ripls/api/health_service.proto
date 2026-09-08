@@ -1,0 +1,55 @@
+// Health check API types for server observability.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request for health check.
+message CheckHealthRequest {}
+
+// Response from health check.
+message CheckHealthResponse {
+  // Time when the health check was performed (Unix milliseconds).
+  int64 timestamp_ms = 1;
+
+  // Server version.
+  string version = 2;
+
+  // Overall health status. False if any critical dependency is unhealthy.
+  bool healthy = 3;
+
+  // Server uptime since startup (milliseconds).
+  int64 uptime_ms = 4;
+
+  // Health status of each dependency.
+  repeated DependencyStatus dependencies = 5;
+}
+
+// Health status of a single dependency.
+message DependencyStatus {
+  // Dependency name (e.g., "database", "storage", "email", "ai", "stock_imagery").
+  string name = 1;
+
+  // Backend implementation (e.g., "gcs", "local", "mailgun", "postgresql", "anthropic", "pexels").
+  string backend = 2;
+
+  // Whether the dependency is healthy and responding.
+  bool healthy = 3;
+
+  // Time taken to check this specific dependency (milliseconds).
+  int64 latency_ms = 4;
+
+  // Error message if unhealthy. Empty if healthy.
+  string error = 5;
+
+  // Additional details (e.g., bucket name, connection pool stats).
+  map<string, string> details = 6;
+}
+
+// Service for server health checks.
+service HealthService {
+  // CheckHealth returns the health status of the server and its dependencies.
+  rpc CheckHealth(CheckHealthRequest) returns (CheckHealthResponse);
+}

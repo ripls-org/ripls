@@ -1,0 +1,10 @@
+Tu código de acceso de Ripls
+
+Introduce este código para entrar en Ripls:
+
+{{.Code}}
+
+Este código caduca en {{.ExpiresInMinutes}} minutos y solo se puede usar una vez.
+
+Si no intentaste iniciar sesión, puedes ignorar este correo de forma segura. Nadie
+puede acceder a tu cuenta sin este código.

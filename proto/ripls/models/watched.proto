@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// WatchedItem tracks a user's interest in a specific item for inbox display.
+// Each entry represents one user watching one item globally (not per community).
+message WatchedItem {
+  // Unique identifier for this watch entry.
+  string id = 1;
+
+  // The user who is watching this item.
+  string user_id = 2;
+
+  // The type of item being watched.
+  WatchedItemType item_type = 3;
+
+  // The ID of the watched item (gear ID, experience ID, or request ID).
+  string item_id = 4;
+
+  // Whether the user has seen the latest state of this item.
+  bool is_read = 5;
+
+  // When the watch was created (Unix seconds).
+  int64 created_at_unix_sec = 6;
+
+  // When the watch was last marked unread (Unix seconds).
+  int64 updated_at_unix_sec = 7;
+
+  // When the watch was dismissed (soft-delete for future manual unwatch).
+  // Null means the watch is active.
+  optional int64 dismissed_at_unix_sec = 8;
+}
+
+// WatchedItemType identifies the type of item being watched.
+// Watches track the underlying item, not the relationship type.
+// Transfers and giveaways are watched via GEAR (the item they derive from).
+enum WatchedItemType {
+  WATCHED_ITEM_TYPE_UNSPECIFIED = 0;
+
+  // Covers shared gear listings, transfers, and giveaways.
+  WATCHED_ITEM_TYPE_GEAR = 1;
+
+  // An experience the user created or RSVPed to.
+  WATCHED_ITEM_TYPE_EXPERIENCE = 2;
+
+  // A request the user created or offered help on.
+  WATCHED_ITEM_TYPE_REQUEST = 3;
+
+  // An open decision in the Home tab's Needs-you queue (#2435). Only the
+  // dismissed state is meaningful for this type: a dismissed entry records
+  // "Not now" so the decision stays out of the queue while remaining
+  // actionable on the item's detail screen. Decision entries are never
+  // auto-watched and never count toward unread badges.
+  WATCHED_ITEM_TYPE_DECISION = 4;
+}

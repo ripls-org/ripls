@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="{{.Lang}}" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Str.Title}}</title>
+
+  <!-- Open Graph metadata for link previews -->
+  <meta property="og:title" content="{{.Str.OGTitle}}">
+  <meta property="og:description" content="{{.Str.OGDescription}}">
+  <meta property="og:image" content="{{.CommunityImageURL}}">
+  <meta property="og:url" content="{{.BaseURL}}/go/{{.ShortCode}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{.Brand.Name}}">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{.Str.OGTitle}}">
+  <meta name="twitter:description" content="{{.Str.OGDescription}}">
+  <meta name="twitter:image" content="{{.CommunityImageURL}}">
+
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/shared.css">
+  <link rel="stylesheet" href="/css/deeplink.css">
+</head>
+<body>
+  <header>
+    <img src="/assets/logo.png" alt="{{.Str.LogoAlt}}" class="logo-image">
+    <div class="logo-text">ripls</div>
+  </header>
+
+  <!--
+    The shared share-link error surface. Every *valid* link — community,
+    event, gear, request — renders its own phone-first landing (#2875);
+    this page is only reached when the code can't be resolved to a live
+    target, so it leads with the failure and then offers the two recovery
+    paths a stranded recipient has: install the app, or re-tap / hand-enter
+    the code once they have it.
+  -->
+  <main class="deeplink-container">
+    <div class="deeplink-card">
+      <h1>{{.Str.InvalidHeading}}</h1>
+      <p>{{.ErrorMessage}}</p>
+
+      <p>{{.Str.ErrorHelp}}</p>
+
+      <div id="app-buttons" class="buttons">
+        <div class="store-links">
+          {{if .Brand.AppStoreURL}}
+          <a
+            id="testflight-link"
+            href="{{.Brand.AppStoreURL}}"
+            target="_blank"
+            rel="noopener"
+            class="store-btn"
+          >
+            <svg class="store-btn-icon" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            <span class="store-btn-text">
+              <span class="store-btn-label">{{.Str.TestFlightLbl}}</span>
+              <span class="store-btn-store">TestFlight</span>
+            </span>
+          </a>
+          {{end}}
+          {{if .Brand.PlayStoreURL}}
+          <a
+            id="play-store-link"
+            href="{{.Brand.PlayStoreURL}}"
+            target="_blank"
+            rel="noopener"
+            class="store-btn"
+          >
+            <svg class="store-btn-icon" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+              <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+            </svg>
+            <span class="store-btn-text">
+              <span class="store-btn-label">{{.Str.PlayLbl}}</span>
+              <span class="store-btn-store">Google Play</span>
+            </span>
+          </a>
+          {{end}}
+        </div>
+      </div>
+
+      <div id="reopen-cta" class="buttons hidden">
+        <a id="reopen-link" href="#" class="btn btn-secondary">
+          {{.Str.Reopen}}
+        </a>
+      </div>
+
+      <div id="invite-code-display" class="invite-code hidden">
+        <p class="invite-code-label">{{.Str.CodeLabel}}</p>
+        <p class="invite-code-value" id="invite-code-value"></p>
+        <p class="invite-code-hint">{{.Str.CodeHint}}</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      {{if .Brand.LegalEntityName}}<p>{{.Brand.LegalEntityName}}</p>{{end}}
+      {{if .Brand.PrivacyPolicyURL}}<p><a href="{{.Brand.PrivacyPolicyURL}}">{{.Str.PrivacyPolicy}}</a></p>{{end}}
+    </div>
+  </footer>
+
+  <script>
+    // Short code injected by Go template. Empty when the request carried no
+    // code at all, in which case there is nothing to re-tap or hand-enter.
+    const code = "{{.ShortCode}}";
+
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isAndroid = /Android/i.test(navigator.userAgent);
+
+    // Instance identity, injected by the Go template. Any of these can be
+    // empty on a deployment that hasn't configured it; every use below is
+    // guarded rather than assuming a value.
+    const playStoreUrl = "{{.Brand.PlayStoreURL}}";
+    const deepLinkScheme = "{{.Brand.DeepLinkScheme}}";
+    const appBaseUrl = "{{.BaseURL}}";
+
+    // Encode referrer into the Play Store URL so the app can recover the
+    // code after install via the Install Referrer API.
+    function buildPlayStoreUrl() {
+      if (!playStoreUrl) return "";
+      if (!code) return playStoreUrl;
+      const referrer = encodeURIComponent(
+        "utm_source=" + encodeURIComponent(deepLinkScheme || "app")
+        + "&utm_content=" + encodeURIComponent(code));
+      const sep = playStoreUrl.indexOf("?") === -1 ? "?" : "&";
+      return playStoreUrl + sep + "referrer=" + referrer;
+    }
+
+    // On iOS, copy the deep link URL to clipboard before the user leaves for
+    // the App Store. The app reads UIPasteboard on first launch to recover
+    // the invite context (iOS 16+ shows a paste permission banner).
+    function copyDeepLinkToClipboard() {
+      if (!code || !deepLinkScheme || !navigator.clipboard) return;
+      const deepLink = deepLinkScheme + "://invite?token=" + encodeURIComponent(code);
+      navigator.clipboard.writeText(deepLink).catch(function() {
+        // Clipboard write can fail silently (e.g. non-HTTPS, permissions).
+        // The re-tap and manual code fallbacks still work.
+      });
+    }
+
+    function showPostInstallHelpers() {
+      if (!code) return;
+
+      // Show the "Already installed? Tap here" CTA (Universal Links re-tap).
+      var reopenCta = document.getElementById("reopen-cta");
+      var reopenLink = document.getElementById("reopen-link");
+      if (!appBaseUrl) return;
+      reopenLink.href = appBaseUrl + "/go/" + encodeURIComponent(code);
+      reopenCta.classList.remove("hidden");
+
+      // Show the code for manual entry.
+      document.getElementById("invite-code-value").textContent = code;
+      document.getElementById("invite-code-display").classList.remove("hidden");
+    }
+
+    // Either store link is absent when this deployment hasn't configured that
+    // listing, so every lookup below is null-guarded — a fork with only one
+    // published build still gets a working page.
+    const playLink = document.getElementById("play-store-link");
+    const iosLink = document.getElementById("testflight-link");
+
+    // Show only the relevant store link on mobile.
+    if (isIOS) {
+      if (playLink) playLink.style.display = "none";
+    } else if (isAndroid) {
+      if (iosLink) iosLink.style.display = "none";
+    }
+
+    if (code) {
+      if (playLink) {
+        const url = buildPlayStoreUrl();
+        if (url) playLink.href = url;
+      }
+      if (isIOS && iosLink) {
+        iosLink.addEventListener("click", copyDeepLinkToClipboard);
+      }
+      showPostInstallHelpers();
+    }
+  </script>
+</body>
+</html>

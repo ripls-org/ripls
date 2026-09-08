@@ -1,0 +1,89 @@
+name: gitleaks-push
+
+# Scan every push to any branch (not just PRs) so direct pushes and
+# force-pushes are also covered. This is the closest substitute we have
+# for the server-side push protection that paid GitHub Secret Protection
+# provides — we cannot block at receive time, but we detect within seconds
+# and fail the workflow loudly so rotation can start immediately.
+#
+# DIY notes (#1772):
+# - GitHub Actions runs *after* the push lands. A leaked secret is in the
+#   commit DB the moment the push is accepted — workflow failure does not
+#   prevent exposure.
+# - Treat any failure of this workflow as a real leak: open the rotation
+#   rotation runbook for the affected provider and start the procedure.
+
+# Serialize scans per ref. On feature branches (Renovate rebases, force-pushes)
+# supersede the in-progress scan — the old commit is gone, scanning it is moot.
+# On `main`, never cancel: each merged commit must be scanned to completion, so
+# rapid merges queue rather than drop coverage.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+on:
+  push:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Gitleaks (push)
+    # The old gitleaks-action crashed on the self-hosted fleet during SARIF
+    # upload (a /github/workspace vs /tmp/runner/work path mapping), which is
+    # why this was pinned to GitHub-hosted. The binary has no such problem, so
+    # this can move to `vars.CI_RUNNER_LINUX` whenever the fleet wants it —
+    # left hosted for now because it is a tiny job and keeping it off the
+    # fleet means a fleet outage still leaves secret scanning running.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Scan only what this push added — the rest of the history was scanned
+      # by the run that added it.
+      #
+      # "Scan everything when unsure" sounds like the safe default and is not:
+      # this history carries 327 findings predating the gate, so a full scan
+      # fails on other people's old commits instead of on the push under
+      # examination, and does it on every new branch. Nobody can act on that,
+      # and a check that is always red stops being read. The fallbacks below
+      # narrow the range instead of widening it.
+      - name: Determine scan range
+        id: range
+        run: |
+          set -euo pipefail
+          before='${{ github.event.before }}'
+          head='${{ github.sha }}'
+          zero='0000000000000000000000000000000000000000'
+
+          # checkout at fetch-depth 0 should already have this, but be
+          # explicit: falling through to a full-history scan for want of one
+          # ref is precisely the outcome this step exists to prevent.
+          git fetch --no-tags --quiet origin +refs/heads/main:refs/remotes/origin/main 2>/dev/null || true
+
+          if [ -n "$before" ] && [ "$before" != "$zero" ] \
+             && git cat-file -e "${before}^{commit}" 2>/dev/null; then
+            # The normal case: exactly the commits this push moved the ref over.
+            range="${before}..${head}"
+          elif [ '${{ github.ref }}' != 'refs/heads/main' ] \
+               && git rev-parse --verify --quiet origin/main >/dev/null; then
+            # A branch's first push reports an all-zero "before", and after a
+            # force-push the old tip may be gone. Either way, what this branch
+            # adds on top of main is the thing worth scanning.
+            range="origin/main..${head}"
+          else
+            # Only reachable on main with no usable predecessor — a brand-new
+            # repository, where the whole history IS the push.
+            range=""
+          fi
+
+          echo "scan range: ${range:-<full history>}"
+          echo "log-opts=$range" >> "$GITHUB_OUTPUT"
+
+      - uses: ./.github/actions/gitleaks-scan
+        with:
+          log-opts: ${{ steps.range.outputs.log-opts }}

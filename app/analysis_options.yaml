@@ -1,0 +1,110 @@
+# Dart analyzer configuration for the Ripls Flutter app.
+#
+# `flutter analyze` (not `dart analyze`) is the gate, and it defaults
+# `--fatal-infos` to ON — so every rule below is a hard CI failure the moment
+# it reports. There is no advisory tier: a rule flip must land with its fixes.
+# See docs/client/conventions.md → "Analyzer and lint rules".
+#
+# Rules adopted, declined, and the measurements behind each: #2794.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    # Bare `List`/`StreamSubscription` silently become `<dynamic>` and take the
+    # whole expression with them. Cheap to keep at zero.
+    strict-raw-types: true
+    # Implicit `dynamic` -> typed conversions. Every finding in this codebase
+    # traced back to a hand-written `dynamic` in a signature, not to inference.
+    strict-casts: true
+  exclude:
+    - '**/*.mocks.dart'
+    # Generated protobuf code. Excluding from analysis prevents
+    # warnings on @Deprecated annotations the generator adds for
+    # proto fields marked `[deprecated = true]` (e.g. the #2012
+    # EntityCardCore dual-population window tracked by #2020).
+    - 'lib/data/gen/**'
+    # Generated design tokens (scripts/gen_design_tokens.js). Unlike the proto
+    # output these files ARE committed, and `npm run lint:design-tokens`
+    # requires them to match the generator byte for byte — so a lint that
+    # rewrites them makes CI red with no way to satisfy both. `dart fix`
+    # did exactly that: prefer_int_literals turned the emitted `24.0` into
+    # `24` in glass_tokens.gen.dart (#2794). Fix the generator, not the output.
+    - 'lib/core/theme/gen/**'
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+
+linter:
+  rules:
+    # Disable implementation_imports for generated protobuf code
+    implementation_imports: false
+
+    # --- Type safety -------------------------------------------------------
+    # Companion to strict-casts: catches method calls *through* a dynamic,
+    # which strict-casts only sees at assignment boundaries.
+    avoid_dynamic_calls: true
+
+    # --- Async correctness -------------------------------------------------
+    # An unawaited Future inside an `async` body is an ordering bug until
+    # proven otherwise. The teardown sequence in docs/client/logout.md is the
+    # canonical example of code this protects.
+    unawaited_futures: true
+    unnecessary_await_in_return: true
+    avoid_slow_async_io: true
+
+    # --- Resource lifecycle ------------------------------------------------
+    close_sinks: true
+    cancel_subscriptions: true
+
+    # --- Error handling ----------------------------------------------------
+    # Throwing a non-Error loses the stack trace at the catch site.
+    only_throw_errors: true
+    throw_in_finally: true
+
+    # --- Null safety -------------------------------------------------------
+    cast_nullable_to_non_nullable: true
+    use_if_null_to_convert_nulls_to_bools: true
+    avoid_returning_null_for_void: true
+
+    # --- Correctness traps -------------------------------------------------
+    test_types_in_equals: true
+    no_adjacent_strings_in_list: true
+    missing_whitespace_between_adjacent_strings: true
+    unnecessary_statements: true
+
+    # --- Style / consistency -----------------------------------------------
+    directives_ordering: true
+    always_declare_return_types: true
+    prefer_final_locals: true
+    prefer_int_literals: true
+    unnecessary_parenthesis: true
+    join_return_with_assignment: true
+    prefer_constructors_over_static_methods: true
+    use_late_for_private_fields_and_variables: true
+    sort_pub_dependencies: true
+
+    # --- Deliberately NOT enabled ------------------------------------------
+    # Each was measured against this tree and declined; see #2794 for the
+    # numbers and the reasoning. Listed here so they are not re-proposed
+    # without reading that issue first.
+    #
+    # discarded_futures (382 sites) — fires on non-async bodies, where
+    #   fire-and-forget is usually correct (Crashlytics inside the synchronous
+    #   FlutterError.onError handler physically cannot be awaited). The fix is
+    #   `unawaited(...)` ceremony that would bury the 73 real unawaited_futures
+    #   signals. Follow-up: #2823.
+    # strict-inference (175 findings) — purely mechanical type arguments with
+    #   no measured defect behind any of them. Follow-up: #2824.
+    # avoid_positional_boolean_parameters (19) — 17 are single-bool setters,
+    #   which docs/reviews/code_quality_review_prompt.md §11 explicitly
+    #   tolerates ("flag any function with 2+ bool params").
+    # one_member_abstracts (1) — its only finding is
+    #   UnifiedCreateStreamingActions, a deliberate single-method test seam
+    #   that fakes substitute for. docs/client/testing.md builds on exactly
+    #   that pattern, so the rule would cost a suppression on working code
+    #   rather than prevent anything.

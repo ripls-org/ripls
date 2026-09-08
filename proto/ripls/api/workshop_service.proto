@@ -1,0 +1,447 @@
+// RPC service for the Workshop tab — proactive host's curation layer.
+//
+// The Workshop surfaces an AI-generated daily brief (GetWorkshopBrief) that
+// synthesizes the host's Workshop-surface nudges into a prose paragraph with
+// inline tappable levers, a season-totals synthesis view (GetWorkshopSynthesis),
+// and a draft prefill helper (GenerateWorkshopDraft).
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/impact_service.proto";
+import "ripls/api/item.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request to generate an experience draft from a Workshop action card.
+message GenerateWorkshopDraftRequest {
+  // The prior-instance experience the action card references — i.e.
+  // the experience whose name, description, location, media, and
+  // attendee list seed the new draft. Must be an experience id; the
+  // server returns NOT_FOUND when no experience matches.
+  string experience_id = 1;
+}
+
+// Response carrying the prefilled draft fields the client should hydrate
+// into the experience creation preview modal. All optional fields are
+// best-effort: the server populates what it can from the prior instance,
+// and the host edits before publishing.
+message GenerateWorkshopDraftResponse {
+  // Draft event name (typically the prior instance's name, possibly with
+  // "Round N+1" prefix when the slot is active-quest).
+  string name = 1;
+
+  // Draft long-form body — the host-voiced "hey y'all, round N is ready"
+  // copy. Pre-localized; rendered as-is.
+  string description = 2;
+
+  // Suggested start time in Unix seconds: the prior instance's weekday and
+  // wall-clock time at the next such slot in the future, stepped in the
+  // prior instance's own timezone so the hour survives a DST boundary.
+  // Empty when the prior instance doesn't give a clean inference (its time
+  // was TBD or unset); the host picks a time in the modal.
+  optional int64 time_unix_sec = 3;
+
+  // Location id from the prior instance. Empty when the prior instance
+  // had no fixed location or the location is no longer valid.
+  optional string location_id = 4;
+
+  // Media ids from the prior instance to inherit on the new draft.
+  repeated string media_ids = 5;
+
+  // User ids the host should re-invite by default — typically the prior
+  // instance's RSVP.attended == YES set.
+  repeated string participant_ids = 6;
+}
+
+// Request for the "Together this season" synthesis surface.
+message GetWorkshopSynthesisRequest {
+  // Communities to synthesize — the union of these is the scope.
+  repeated string community_ids = 1;
+}
+
+// One narrative panel rendered on "Together this season". Each panel
+// covers a different angle (what-the-circle-has-done, what-sharing-replaced,
+// together-time). The lede is the bold one-liner; the body is the
+// follow-on prose. Both are pre-localized server-side.
+message SynthesisPanel {
+  // Stable id for the panel kind. Keeps the client agnostic about
+  // ordering and lets future panels slot in. Values: "done",
+  // "replaced", "time", "co2".
+  string kind = 1;
+
+  // Section label rendered as small caps above the lede (e.g.,
+  // "What this circle has done").
+  string label = 2;
+
+  // Bold lede sentence (e.g., "The Sunday smoker is your through-line.").
+  string lede = 3;
+
+  // Follow-on body, 1-2 sentences (e.g., "Five Saturdays in a row, Mike
+  // hosting most of them. Three trail mornings landed in between.").
+  string body = 4;
+
+  // Per-circle breakdown rows rendered under the panel body in the
+  // SeasonReportScreen. Each row carries a community id, a display
+  // name, and a pre-formatted value string ("23h", "~$340",
+  // "~190 lbs"). Empty when the panel doesn't have a meaningful
+  // per-circle breakdown.
+  repeated SynthesisPanelBreakdown breakdown = 5;
+}
+
+// One row in a SynthesisPanel's per-circle breakdown.
+message SynthesisPanelBreakdown {
+  // Community id this row applies to. Used by the client to look up
+  // the circle color for the small dot indicator.
+  string community_id = 1;
+
+  // Display name of the community (denormalized for client copy).
+  string display_name = 2;
+
+  // Pre-formatted value (e.g., "23h", "~$340", "~190 lbs"). Already
+  // rounded / abbreviated server-side so the client renders as-is.
+  string formatted_value = 3;
+}
+
+// Response carrying the synthesis panels. Empty `panels` means no
+// notable synthesis (quiet month) — the client renders nothing.
+message GetWorkshopSynthesisResponse {
+  // Three panels in canonical order (done / replaced / time) when
+  // populated. Phase 3 ships templated copy keyed off impact_metrics
+  // aggregates; future iterations layer AI per-circle phrasing.
+  repeated SynthesisPanel panels = 1;
+}
+
+// A single text or lever segment within the brief's prose paragraph.
+// Segments are rendered in order to form the full prose text with
+// inline tappable levers.
+message BriefSegment {
+  oneof content {
+    // Plain prose text, rendered without interaction.
+    string text_span = 1;
+
+    // An inline tappable lever rendered with underline styling.
+    BriefLever lever_span = 2;
+  }
+}
+
+// An inline lever within the brief prose paragraph. Tapping fires the
+// associated action so the host can act without leaving the screen.
+message BriefLever {
+  reserved 1, 2;
+  reserved "visible_text", "cta_action";
+
+  // Entity id the action applies to (experience id, gear id, etc.).
+  // Empty when the action does not require a specific entity.
+  optional string context_id = 3;
+
+  // The action verb associated with this lever. BriefLever values
+  // are exclusively non-entity action verbs; responses that reference
+  // an entity embed [Item] on the surrounding message instead.
+  // Values: "schedule_repeat", "revive_experience", "seed_subhost",
+  // "adjust_event", "post_in_chat", "ask_for_help".
+  optional string action_name = 4;
+}
+
+// The Workshop tab's home payload. Carries the season-stat hero, the
+// three-column ticker beneath it, and the photo-led action postcards
+// the host can tap to schedule their next move.
+message BriefPayload {
+  // DEPRECATED: kicker label was the "Good Thursday morning" greeting
+  // that sat above the AI prose brief. The home design no longer
+  // renders an AI prose brief; the field is retained for wire
+  // compatibility but is no longer populated.
+  string kicker_label = 1 [deprecated = true];
+
+  // DEPRECATED: brief prose segments were the inline-lever paragraph
+  // produced by the AI. The home design no longer renders prose;
+  // postcards (cta_rows) carry the signal instead.
+  repeated BriefSegment segments = 2 [deprecated = true];
+
+  // DEPRECATED: the closing line summarized season totals as a single
+  // italic sentence. The home design renders the same signal as a
+  // structured stat hero (since_unix_sec / hours_together) plus the
+  // ticker fields. Field retained for wire compatibility.
+  optional string closing_line = 3 [deprecated = true];
+
+  // DEPRECATED: legacy "see the season →" link label that paired with
+  // closing_line. The new hero block has its own link copy.
+  optional string metrics_link_label = 4 [deprecated = true];
+
+  // Action postcards. Each row is a single host action — schedule
+  // again, plan ahead, revive a rhythm — with a thumbnail, an
+  // atmosphere line, and a tappable lever.
+  repeated BriefCTARow cta_rows = 5;
+
+  // Anchor date for the stat-hero "Since X" label (e.g., "Since
+  // August 2024"). Earliest community-creation date across the
+  // requested scope. Empty when the scope is empty.
+  optional int64 since_unix_sec = 6;
+
+  // Stat-hero number — total hours together across the requested
+  // scope. Rendered as the big serif numeral above "hours together".
+  optional int32 hours_together = 7;
+
+  // Ticker — total events count across the requested scope.
+  optional int32 events_count = 8;
+
+  // Ticker — total replaced-cost dollars (rounded to whole dollars).
+  optional int32 replaced_cost_usd = 9;
+
+  // Ticker — total CO₂ kept off the road, in pounds (rounded).
+  optional int32 co2_avoided_pounds = 10;
+
+  // Ticker — total acts across the requested scope. An act is one
+  // community participation row: items shared, help requested, help
+  // offered, events created, RSVPs (yes), planning pitch-ins, and
+  // completed loans/giveaways. Broader than [events_count], which
+  // counts only completed experiences.
+  optional int32 acts_count = 11;
+
+  // Ticker — total unique people across the communities included in
+  // this brief. A person who belongs to multiple included communities
+  // is counted once.
+  optional int32 unique_people_count = 12;
+
+  // Capability tags describing what the requested scope is known for —
+  // e.g. ["Power Tools lender", "Camping lender"]. Derived from
+  // completed-loan history across the scope's communities; a category
+  // surfaces here when it clears a small repeat-loan threshold.
+  // Capped at six tags. Empty when no category clears the bar.
+  repeated string specialties = 13;
+
+  // Currently-available entities across the requested scope: gear
+  // available to borrow, open help requests, upcoming experiences,
+  // and giveaways. Ordered most-recent first (with soonest-first for
+  // upcoming experiences within their bucket). Capped at twelve.
+  repeated Item available_now_items = 14;
+
+  // Ticker — "problems handled" numerator across the requested scope:
+  // completed loans + fulfilled requests + claimed planning needs. Narrower
+  // and more concrete than [acts_count]; the X in the Workshop overview's
+  // "X of Y problems" figure and its deep-dive.
+  optional int32 problems_solved_count = 15;
+
+  // "Problems potential" denominator across the requested scope: all
+  // non-cancelled loan transfers + all non-cancelled requests + all posted
+  // planning needs. The Y in the "X of Y problems" figure — the universe of
+  // requests that could be handled, regardless of outcome. Always >=
+  // [problems_solved_count].
+  optional int32 problems_potential_count = 16;
+}
+
+// A secondary CTA row in the Workshop home payload. Each row
+// represents a lower-priority action the host can take.
+//
+// When the action references a domain entity (gear / experience /
+// request), the underlying entity is carried on [item]. When the
+// action is a non-entity verb (e.g. "schedule_repeat"), the verb is
+// carried on [action_name] and [item] is absent.
+message BriefCTARow {
+  reserved 4, 5, 6, 8, 9, 10;
+  reserved "action_label", "cta_action", "context_id", "thumbnail_media_id",
+    "thumbnail_caption", "headline_emphasis";
+
+  // Short uppercase kicker or circle chip label
+  // (e.g., "CURIOUS WHAT THE CREW THINKS").
+  optional string kicker = 1;
+
+  // Main headline for the row (e.g., "Linda hasn't been around in 5
+  // weeks — worth a ping?").
+  string headline = 2;
+
+  // Atmosphere / sub-headline line (e.g., "Last joined 6 weeks ago").
+  optional string atmosphere_line = 3;
+
+  // Community id this row belongs to. Surfaced on the wire so the row
+  // can render a right-aligned circle chip with the community color
+  // and short name. Empty when the action is not community-scoped.
+  optional string community_id = 7;
+
+  // True for the highest-priority row — the one that gets the filled
+  // pill button instead of the ghost arrow lever. At most one row in
+  // the response carries this flag.
+  bool is_primary = 11;
+
+  // The entity this row's action references. Absent when the row's
+  // action is a non-entity verb (see [action_name]).
+  Item item = 12;
+
+  // The non-entity action verb for this row, when the row does not
+  // reference an entity. Mutually exclusive with [item]: when
+  // [item.context_id] is non-empty the action targets an entity;
+  // otherwise [action_name] carries the verb (e.g. "schedule_repeat",
+  // "revive_experience"). Mirrors the split applied to [BriefLever].
+  optional string action_name = 13;
+}
+
+// Selects between per-user and per-community aggregation for the
+// known-for category detail lookup. Mirrors the server-side
+// known_for.Mode enum so the RPC can address both surfaces — the
+// workshop community-scope surface and the user-profile per-user
+// surface — without a parallel RPC.
+enum KnownForMode {
+  KNOWN_FOR_MODE_UNSPECIFIED = 0;
+  // Drill into a single user's contribution to a category across the
+  // requested community scope.
+  KNOWN_FOR_MODE_PER_USER = 1;
+  // Drill into a community's (or aggregate-across-communities)
+  // contribution to a category, regardless of owner.
+  KNOWN_FOR_MODE_PER_COMMUNITY = 2;
+}
+
+// Request for the per-category detail surface that opens when a
+// "known for" chip is tapped. Returns the ten most recent items in
+// the category plus the people behind them.
+message GetCategoryDetailRequest {
+  // Which surface is asking — community vs. per-user.
+  KnownForMode mode = 1;
+
+  // Required when [mode] is KNOWN_FOR_MODE_PER_USER. The target
+  // whose contributions are being summarized. Empty for per-community
+  // requests.
+  optional string owner_id = 2;
+
+  // Communities in scope. The union of these defines the rows the
+  // server reads. An empty slice yields an empty result.
+  repeated string community_ids = 3;
+
+  // The capability tag the chip surfaced. Matched against the
+  // normalized category key (case/whitespace folded), so the value
+  // sent here can be the chip's display string.
+  string category = 4;
+}
+
+// Response carrying the per-category detail payload. Items are
+// recency-ranked (newest first) and capped at 10. Members are
+// de-duplicated and capped at 24.
+message GetCategoryDetailResponse {
+  // Representative items in the category — gear, experiences, and
+  // requests in scope whose category matches. Ordered newest first
+  // by the entity's most recent meaningful activity timestamp.
+  // Reuses RecentActivity (same shape the impact-metric detail
+  // screens carry) so the client can render with the existing
+  // RecentItemsList widget. The `value` field is intentionally left
+  // empty on this surface — the chip-detail screen has no metric
+  // column.
+  repeated RecentActivity items = 1;
+
+  // The people behind the items. On per-community responses these
+  // are the contributing owners / hosts / requesters. On per-user
+  // responses these are the people the target has shared with for
+  // this category (loan borrowers, experience attendees, request
+  // fulfillers) — not the target themselves.
+  repeated string member_ids = 2;
+
+  // True when the category has been hidden or permanently removed
+  // for the requested scope. Clients render a "this skill has been
+  // removed" empty state distinct from the generic "no items" empty
+  // state. Absent or false when the category is still active.
+  optional bool suppressed = 3;
+}
+
+// Scope discriminator for known-for suppression mutations. Mirrors
+// the storage-side SuppressionScope enum (ripls/models). Kept on
+// WorkshopService so clients don't have to import a models package
+// they otherwise never touch.
+enum SuppressionScope {
+  SUPPRESSION_SCOPE_UNSPECIFIED = 0;
+  SUPPRESSION_SCOPE_USER = 1;
+  SUPPRESSION_SCOPE_COMMUNITY = 2;
+}
+
+// Request to hide a "known for" category for one scope. Reversible
+// via [UndoHideKnownForCategory] within the snackbar-undo window.
+message HideKnownForCategoryRequest {
+  SuppressionScope scope_kind = 1;
+  string scope_id = 2;
+  string category = 3;
+}
+
+// Response carrying the id of the suppression row written. Returned
+// so the client can pass it back to [UndoHideKnownForCategoryRequest]
+// without round-tripping through the chip derivation.
+message HideKnownForCategoryResponse {
+  string suppression_id = 1;
+}
+
+// Request to undo a recent hide. Targets the suppression row by id.
+message UndoHideKnownForCategoryRequest {
+  string suppression_id = 1;
+}
+
+// Response shape for the undo operation. Empty — success surfaces
+// through the absence of an error.
+message UndoHideKnownForCategoryResponse {}
+
+// Request to permanently remove a "known for" category for one
+// scope. Irreversible — clients should surface a confirmation
+// dialog before calling.
+message PermanentlyRemoveKnownForCategoryRequest {
+  SuppressionScope scope_kind = 1;
+  string scope_id = 2;
+  string category = 3;
+}
+
+// Response shape for the permanent-remove operation. Empty — success
+// surfaces through the absence of an error.
+message PermanentlyRemoveKnownForCategoryResponse {}
+
+// Request for the AI-generated daily brief.
+message GetWorkshopBriefRequest {
+  // Communities to generate the brief for. Mirrors
+  // GetWorkshopSynthesisRequest.community_ids — the union of these is
+  // the scope.
+  repeated string community_ids = 1;
+}
+
+// Response carrying the daily brief for the Workshop tab.
+message GetWorkshopBriefResponse {
+  // The generated brief. Absent when there is no signal to brief on
+  // (quiet host, no recently completed events).
+  optional BriefPayload brief = 1;
+}
+
+// Service for the Workshop tab's curation layer.
+service WorkshopService {
+  // Generate a prefilled experience draft from a Hero card. The client
+  // hydrates the resulting fields into the experience creation preview
+  // modal so the host edits-and-publishes rather than starting from
+  // scratch.
+  rpc GenerateWorkshopDraft(GenerateWorkshopDraftRequest) returns (GenerateWorkshopDraftResponse);
+
+  // Get the "Together this season" synthesis for the host's circles.
+  // Reuses the existing impact_metrics aggregates to compute
+  // counts / replaced-cost / together-time, contextualized in
+  // pre-localized narrative copy (template-shaped in v1; AI in
+  // a later iteration).
+  rpc GetWorkshopSynthesis(GetWorkshopSynthesisRequest) returns (GetWorkshopSynthesisResponse);
+
+  // Get the AI-generated daily brief for the Workshop tab. Returns a
+  // prose paragraph synthesizing the top 2-3 host priorities as inline
+  // tappable levers, plus secondary CTA rows for lower-priority items.
+  rpc GetWorkshopBrief(GetWorkshopBriefRequest) returns (GetWorkshopBriefResponse);
+
+  // Get the per-category detail payload that backs the chip-detail
+  // screen. Returns up to ten representative items and the people
+  // behind them for a single capability tag, scoped to a single
+  // community set and optional owner.
+  rpc GetCategoryDetail(GetCategoryDetailRequest) returns (GetCategoryDetailResponse);
+
+  // Hide a "known for" category for the requested scope. The chip
+  // disappears from future derivations until [UndoHideKnownForCategory]
+  // or a manual Unhide UI re-enables it. Reversible via the snackbar
+  // undo path.
+  rpc HideKnownForCategory(HideKnownForCategoryRequest) returns (HideKnownForCategoryResponse);
+
+  // Undo a recent hide by suppression-row id. Returns success when
+  // the row exists and belongs to the caller; rejects with
+  // PermissionDenied otherwise.
+  rpc UndoHideKnownForCategory(UndoHideKnownForCategoryRequest) returns (UndoHideKnownForCategoryResponse);
+
+  // Permanently remove a "known for" category for the requested
+  // scope. Same as Hide but with the permanent flag set; clients
+  // should confirm at action time.
+  rpc PermanentlyRemoveKnownForCategory(PermanentlyRemoveKnownForCategoryRequest) returns (PermanentlyRemoveKnownForCategoryResponse);
+}

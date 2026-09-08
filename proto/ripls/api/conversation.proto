@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/transfer.proto";
+import "ripls/api/gear.proto";
+import "ripls/api/conversation_topic.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Context information for a conversation, used for UI display.
+// This provides lightweight metadata about a conversation's topic without
+// requiring full object fetches.
+message ConversationContext {
+    // The conversation ID.
+    string conversation_id = 1;
+
+    // The topic title (gear name, experience name, etc.).
+    string topic_title = 2;
+
+    // The topic subtitle (optional additional context).
+    string topic_subtitle = 3;
+
+    // The topic description (optional, used for gear info cards in giveaway conversations).
+    string topic_description = 8;
+
+    // The topic thumbnail media ID (for client to fetch presigned URL).
+    string topic_image_media_id = 4;
+
+    // Number of messages in the conversation.
+    int32 message_count = 5;
+
+    // For transfer conversations: the transfer type (loan vs giveaway).
+    // Client uses this enum for i18n labeling.
+    TransferType transfer_type = 6;
+
+    // For gear conversations: the availability type (loan vs giveaway).
+    // Client uses this enum for i18n labeling.
+    Availability availability = 7;
+
+    // The topic of the conversation (for navigation).
+    ConversationTopic topic = 14;
+
+    // For gear conversations with loan transfers: context about user's transfer state and available actions.
+    // This allows the conversation UI to show contextual workflow actions (request, approve, complete, etc.).
+    GearTransferContext gear_transfer_context = 20;
+
+    // Old inline topic_id oneof fields — replaced by ConversationTopic message.
+    reserved 10, 11, 12, 13;
+    reserved "transfer_id", "request_id", "experience_id", "gear_id";
+}

@@ -1,0 +1,73 @@
+name: Flutter Web Bundle
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/lib/**'
+      - 'app/web/**'
+      - 'app/pubspec.yaml'
+      - 'app/pubspec.lock'
+      - 'proto/**'
+      - 'scripts/check_web_bundle_size.sh'
+      - '.github/workflows/test_flutter_web.yaml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/lib/**'
+      - 'app/web/**'
+      - 'app/pubspec.yaml'
+      - 'app/pubspec.lock'
+      - 'proto/**'
+      - 'scripts/check_web_bundle_size.sh'
+      - '.github/workflows/test_flutter_web.yaml'
+  # See test_terraform for why: a freshly published repo's root commit gives
+  # GitHub no `before` to diff paths against, so path-filtered workflows never
+  # fire there and dispatch is the only way to verify them (#2953).
+  workflow_dispatch:
+
+env:
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+jobs:
+  bundle-size:
+    name: Flutter Web Bundle Size
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      # No-op on the baked runner image (#2959).
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-toolchain
+        with:
+          go: "true"
+          node: "true"
+          flutter: "true"
+          protoc-plugins: "true"
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      - name: Install Flutter dependencies
+        run: cd app && flutter pub get
+
+      - name: Generate freezed and mockito code
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Check Flutter Web bundle size
+        run: bash scripts/check_web_bundle_size.sh

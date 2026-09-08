@@ -1,0 +1,167 @@
+// Transfer types for API responses.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Type of transfer.
+enum TransferType {
+  TRANSFER_TYPE_UNSPECIFIED = 0;
+  TRANSFER_TYPE_LOAN = 1;     // Temporary loan (item will be returned)
+  TRANSFER_TYPE_GIVEAWAY = 2; // Permanent transfer of ownership
+}
+
+// GiveawayPhase represents the overall state of a giveaway conversation.
+// Server-computed because non-selected participants cannot infer global state
+// from their own user_transfer alone (e.g., they stay INTEREST_EXPRESSED even
+// after a recipient is chosen).
+enum GiveawayPhase {
+  GIVEAWAY_PHASE_UNSPECIFIED = 0;
+  GIVEAWAY_PHASE_OPEN = 1;              // Accepting interest expressions
+  GIVEAWAY_PHASE_RECIPIENT_SELECTED = 2; // Owner has chosen a recipient
+  GIVEAWAY_PHASE_COMPLETED = 3;         // Giveaway completed
+  GIVEAWAY_PHASE_CANCELLED = 4;         // Giveaway cancelled
+}
+
+// TransferState represents the lifecycle state of a transfer.
+enum TransferState {
+  TRANSFER_STATE_UNSPECIFIED = 0;
+  TRANSFER_STATE_INTEREST_EXPRESSED = 1;  // Someone has shown interest (chat started)
+  TRANSFER_STATE_RECIPIENT_SELECTED = 2;  // Sharer chose a recipient
+  TRANSFER_STATE_ACTIVE = 3;              // Item handed over (loan active or in transfer)
+  TRANSFER_STATE_COMPLETED = 4;           // Transfer completed successfully
+  TRANSFER_STATE_CANCELLED = 5;           // Transfer cancelled
+}
+
+// Transfer represents a transfer (loan or giveaway) in API responses.
+// Use this type when returning transfer information for display purposes.
+message Transfer {
+  // The unique identifier of the transfer.
+  string id = 1;
+
+  // The ID of the gear being transferred.
+  string gear_id = 2;
+
+  // The name of the gear.
+  string gear_name = 3;
+
+  // The primary media ID for the gear (for displaying thumbnails).
+  string gear_media_id = 15;
+
+  // The owner of the gear.
+  User owner = 4;
+
+  // The recipient. Only populated after a recipient is selected.
+  optional User recipient = 5;
+
+  // Type of transfer (loan or giveaway).
+  TransferType transfer_type = 6;
+
+  // Current state of the transfer.
+  TransferState state = 7;
+
+  // ID of the conversation for this transfer.
+  optional string conversation_id = 8;
+
+  // Unix timestamp (seconds) of the most recent interest expression for this transfer.
+  int64 latest_request_unix_sec = 9;
+
+  // Number of participants in the transfer conversation (giveaways only).
+  // For loans, this will be 0. For giveaways, this is the count of users who have expressed interest.
+  int32 participant_count = 10;
+
+  // Estimated pickup time (Unix timestamp in seconds).
+  optional int64 estimated_pickup_unix_sec = 11;
+
+  // Actual pickup time (Unix timestamp in seconds). Set when item is picked up.
+  optional int64 actual_pickup_unix_sec = 12;
+
+  // Estimated loan duration in days (loans only).
+  optional int32 loan_duration_days = 13;
+
+  // Actual return time (Unix timestamp in seconds). Set when item is returned.
+  optional int64 actual_return_unix_sec = 14;
+
+  // The community this transfer is scoped to. Use this value for
+  // community-scoped follow-up calls (e.g., fetching transfer context
+  // for the gear) — for gear shared into multiple communities, this is
+  // the authoritative community for the transfer.
+  string community_id = 16;
+
+  // The entity this transfer sprang from, when it was created as a targeted
+  // offer rather than through the normal interest flow. Absent for transfers
+  // created through the interest flow.
+  oneof origin {
+    // The request this transfer fulfills — a gear-backed offer on a community
+    // request.
+    string origin_request_id = 17;
+
+    // The experience this transfer was brought to — a participant lending or
+    // giving their gear for an event.
+    string origin_experience_id = 18;
+  }
+}
+
+// Context for gear conversations that have loan transfers.
+// Provides information about the user's transfer status and available workflow actions.
+message GearTransferContext {
+  // The current transfer for the viewing user.
+  optional Transfer user_transfer = 1;
+
+  // Available actions for the current user based on their role and transfer state.
+  repeated TransferAction available_actions = 2;
+
+  // List of all pending requests (INTEREST_EXPRESSED state).
+  // Visible to all users (owner and non-owner) per Decision 1 for transparency.
+  // Empty only if no pending requests exist.
+  repeated TransferRequest pending_requests = 3;
+
+  // Whether the current user is the owner of the gear.
+  // Used by client to determine UI behavior (e.g., hide interest buttons for owner).
+  bool is_owner = 4;
+
+  // The selected recipient (giveaways only). Set when a transfer reaches
+  // RECIPIENT_SELECTED state.
+  optional TransferRequest selected_recipient = 5;
+
+  // Server-computed overall phase of the giveaway (giveaways only).
+  // Required because non-selected participants cannot derive global state
+  // from their own user_transfer field alone.
+  GiveawayPhase overall_phase = 6;
+}
+
+// Represents a pending transfer request.
+// Visible to all users (owner and non-owner) for transparency.
+message TransferRequest {
+  // The transfer ID.
+  string transfer_id = 1;
+
+  // The borrower who made the request.
+  User borrower = 2;
+
+  // When the request was made.
+  int64 requested_at_unix_sec = 3;
+
+  // Booking window (inclusive days) when the request is a calendar
+  // booking. Unset for undated interest requests. Lets clients render
+  // which days each request covers, so multiple bookings by the same
+  // borrower are distinguishable.
+  optional int64 estimated_pickup_unix_sec = 4;
+  optional int64 expected_return_unix_sec = 5;
+}
+
+// Actions available to the user for this transfer/gear.
+// These determine which workflow buttons are shown in the conversation UI.
+enum TransferAction {
+  TRANSFER_ACTION_UNSPECIFIED = 0;
+  TRANSFER_ACTION_EXPRESS_INTEREST = 1;    // Borrower: request to borrow
+  TRANSFER_ACTION_WITHDRAW_INTEREST = 2;   // Borrower: withdraw request
+  TRANSFER_ACTION_CANCEL = 3;              // Either: cancel transfer
+  TRANSFER_ACTION_SELECT_RECIPIENT = 4;    // Owner: approve request
+  TRANSFER_ACTION_START_LOAN = 5;          // Owner: mark handoff complete
+  TRANSFER_ACTION_COMPLETE = 6;            // Either: mark returned
+}

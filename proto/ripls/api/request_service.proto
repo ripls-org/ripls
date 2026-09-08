@@ -1,0 +1,847 @@
+// RPC service for managing community requests for items.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/request.proto";
+import "ripls/api/location.proto";
+import "ripls/api/social.proto";
+import "ripls/api/user.proto";
+import "ripls/api/impact_estimate.proto";
+import "ripls/api/value.proto";
+import "ripls/api/gen_stream.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// AI-generated metadata for a request.
+message RequestMetadata {
+  // Estimated monetary value of the help being requested.
+  ValueEstimate value_estimate = 1;
+
+  // AI-detected category (e.g., "Power Tools", "Home Repair", "Transportation").
+  string category = 2;
+}
+
+// GenRequestRequest generates AI suggestions for a request.
+message GenRequestRequest {
+  // User's description of what they need.
+  string prompt = 1;
+
+  // Optional community context (for location suggestions).
+  string community_id = 2;
+
+  // Optional user's current latitude for location proximity bias.
+  double latitude_deg = 3;
+
+  // Optional user's current longitude for location proximity bias.
+  double longitude_deg = 4;
+
+  // Optional user's current/default location ID for AI context.
+  // Helps AI understand the user's area for better location extraction.
+  string location_id = 5;
+}
+
+// GenRequestResponse returns AI-generated request data.
+message GenRequestResponse {
+  // AI-generated title (e.g., "Power Drill").
+  string title = 1;
+
+  // AI-enhanced description.
+  string description = 2;
+
+  // Stock image media IDs from Unsplash.
+  repeated string media_ids = 3;
+
+  // AI-extracted tags/categories.
+  repeated string tags = 5;
+
+  // Location query extracted from user input (e.g., "near downtown", "at my house").
+  string location_query = 6;
+
+  // Geocoded location data (not yet stored in DB - client can preview and save on confirm).
+  GeocodedLocation geocoded_location = 7;
+
+  // AI-generated metadata (value estimate, embodied carbon, category).
+  RequestMetadata metadata = 8;
+
+  // Owner-facing chip suggestions for the compose / Plan flow:
+  // things the requester might also need that round out their request.
+  // 1-4 word labels, never full sentences. Same shape as the chips
+  // returned post-publish on ListRequestNeedsAndContributionsResponse.
+  repeated string additional_asks = 9;
+
+  // Owner-facing chip suggestions: pieces the task can be split into
+  // for separate helpers to claim. These seed the compose sheet's
+  // "tap to add" suggestions for breaking down the request into discrete
+  // pieces (Needs).
+  repeated string breakdown_pieces = 10;
+
+  // Helper-facing chip suggestions: ways a helper could contribute.
+  repeated string offer_ideas = 11;
+
+  // The claimable things the request's text plainly names, as short labels
+  // (e.g. ["Picture books", "Whiteboard", "Storage bins"]), most important
+  // first. Pass to SubmitRequest as seed_need_names so the request is born
+  // with one claimable need per entry. Contains a single entry for a request
+  // that names one thing, several when the text enumerates a list, and is
+  // empty when the text names nothing concrete (the request is then born with
+  // no needs). At most 8 entries.
+  repeated string seed_needs = 12;
+}
+
+// GenRequestFromMediaRequest generates AI suggestions from an uploaded image.
+message GenRequestFromMediaRequest {
+  // Media ID of the uploaded image showing what the user needs.
+  string media_id = 1;
+
+  // Optional community context (for location suggestions).
+  string community_id = 2;
+
+  // Optional: user's current/default location ID for AI context.
+  // Helps AI understand the user's area for better location extraction.
+  string location_id = 3;
+}
+
+// GenRequestFromMediaResponse returns AI-generated request data from image analysis.
+// Uses the same response structure as GenRequestResponse.
+message GenRequestFromMediaResponse {
+  // AI-generated title (e.g., "Power Drill").
+  string title = 1;
+
+  // AI-enhanced description extracted from image.
+  string description = 2;
+
+  // Original uploaded media IDs.
+  repeated string media_ids = 3;
+
+  // AI-extracted tags/categories from image.
+  repeated string tags = 5;
+
+  // Geocoded location data (not yet stored in DB - client can preview and save on confirm).
+  GeocodedLocation geocoded_location = 7;
+
+  // AI-generated metadata (value estimate, embodied carbon, category).
+  RequestMetadata metadata = 8;
+
+  // Owner-facing chip suggestions: things the requester might also need.
+  // Same shape and source as the chips on GenRequestResponse.
+  repeated string additional_asks = 9;
+
+  // Owner-facing chip suggestions: pieces the task can be split into for
+  // separate helpers to claim. Seed the compose sheet's "tap to add" row.
+  repeated string breakdown_pieces = 10;
+
+  // Helper-facing chip suggestions.
+  repeated string offer_ideas = 11;
+
+  // The claimable things the request's text plainly names, as short labels,
+  // most important first. Pass to SubmitRequest as seed_need_names so the
+  // request is born with one claimable need per entry. Empty when the text
+  // names nothing concrete. At most 8 entries.
+  repeated string seed_needs = 12;
+}
+
+// SubmitRequestRequest creates a new request. The request always lands in its
+// own per-item community (provisioned at creation, #2492). Sharing into
+// additional existing communities goes through CommunityService.ShareItem
+// (share_to_community_ids), the uniform path for every item type.
+message SubmitRequestRequest {
+  // Field 1 was community_id — an optional existing community to also post the
+  // request to. Removed in #2529: extra-community sharing now goes through
+  // CommunityService.ShareItem (share_to_community_ids), so this request-only
+  // duplicate is gone.
+  reserved 1;
+  reserved "community_id";
+
+  // Description of what the user is requesting.
+  string description = 2;
+
+  // Optional media IDs (if user wants to provide their own images).
+  // If not provided, a stock image from Unsplash will be fetched.
+  repeated string media_ids = 3;
+
+  // Title/summary of the request.
+  string title = 4;
+
+  // Location where the item is needed.
+  string location_id = 5;
+
+  // AI-generated metadata from Gen response (value estimate, embodied carbon, category).
+  RequestMetadata metadata = 6;
+
+  // Optional date the help is needed by (Unix timestamp in seconds). Places
+  // the request on the Home calendar/Up-next agenda. Omitted for undated
+  // requests.
+  optional int64 needed_by_unix_sec = 7;
+
+  // Names for the request's initial claimable needs, one need created per
+  // entry, usually the seed_needs from GenRequest. Most important first. When
+  // empty, the request is born with no needs (helpers add them, or the
+  // requester names them in the compose flow). Entries are trimmed, de-duped
+  // case-insensitively, and capped at 8 by the server.
+  repeated string seed_need_names = 8;
+}
+
+// SubmitRequestResponse returns the ID of the newly created request.
+message SubmitRequestResponse {
+  // ID of the created request.
+  string request_id = 1;
+
+  // The request's per-item community (#2492), provisioned host-only the moment
+  // the request is created and the request shared into it. The client opens the
+  // share/invite sheet against this community.
+  optional string item_community_id = 2;
+}
+
+// ListRequestsRequest lists requests in a community with optional filtering.
+message ListRequestsRequest {
+  // ID of the community to list requests from.
+  string community_id = 1;
+
+  // Optional filter by request state (if unspecified, returns active requests).
+  RequestState state = 2;
+}
+
+// ListRequestsResponse returns a list of requests.
+message ListRequestsResponse {
+  // List of requests matching the filter criteria.
+  repeated Request requests = 1;
+}
+
+// OfferToFulfillRequest expresses interest in fulfilling a request.
+// This creates the group conversation if it doesn't exist yet.
+message OfferToFulfillRequest {
+  // ID of the request to offer help for.
+  string request_id = 1;
+
+  // ID of the community where the offer is being made.
+  // Required for multi-community requests to associate the offer with the correct community.
+  string community_id = 2;
+}
+
+// OfferToFulfillResponse returns the full request details.
+message OfferToFulfillResponse {
+  // Full request details with current state and conversation ID.
+  Request request = 1;
+}
+
+// MarkRequestFulfilled indicates the request has been fulfilled.
+message MarkRequestFulfilledRequest {
+  // ID of the request being fulfilled.
+  string request_id = 1;
+
+  // Optional resolution summary (AI-generated or manually entered).
+  optional string resolution_summary = 2;
+
+  // IDs of users confirmed as main helpers by the requester.
+  // These users are highlighted in the completion message and receive credit.
+  repeated string confirmed_helper_ids = 3;
+
+  // Total confirmed helper count including provisional users. When > 0, this
+  // overrides len(confirmed_helper_ids) for group-size computation so the
+  // fulfilled impact matches what PreviewRequestImpact showed in the modal.
+  int32 confirmed_helper_count = 8;
+
+  // Unix timestamp (seconds) when the request was fulfilled.
+  // Defaults to the current server time when not provided.
+  optional int64 fulfilled_at_unix_sec = 4;
+
+  // User-supplied quality time attribute overrides from the fulfillment modal.
+  // When present, these replace the LLM-drafted values for the named attributes.
+  // Composite values (quality_time_minutes) are always server-computed from these inputs.
+  optional QualityTimeAttributes quality_time_overrides = 5;
+  // User-supplied money savings input overrides from the fulfillment modal.
+  optional MoneySavings money_savings_overrides = 6;
+  // User-supplied emissions input overrides from the fulfillment modal.
+  optional PreventedEmissions emissions_overrides = 7;
+}
+
+// MarkRequestFulfilledResponse acknowledges fulfullment.
+message MarkRequestFulfilledResponse {
+  // The updated request with resolution details.
+  Request request = 1;
+  // Impact estimate for this transaction.
+  ImpactEstimate impact = 2;
+  // Identifier to pass to UndoMarkRequestFulfilled to reverse this call.
+  string community_event_id = 3;
+}
+
+// CancelRequestRequest cancels an active request.
+message CancelRequestRequest {
+  // ID of the request to cancel.
+  string request_id = 1;
+}
+
+// CancelRequestResponse confirms the request was cancelled.
+message CancelRequestResponse {
+  // Identifier to pass to UndoCancelRequest to reverse this call.
+  string community_event_id = 1;
+}
+
+// Request to undo a prior MarkRequestFulfilled call.
+message UndoMarkRequestFulfilledRequest {
+  // The CommunityEvent id returned by MarkRequestFulfilled. Required.
+  string community_event_id = 1;
+}
+
+// Response to UndoMarkRequestFulfilled. Empty on success. Failures are
+// returned as typed Connect error details (UndoErrorDetail).
+message UndoMarkRequestFulfilledResponse {}
+
+// Request to undo a prior CancelRequest call.
+message UndoCancelRequestRequest {
+  // The CommunityEvent id returned by CancelRequest. Required.
+  string community_event_id = 1;
+}
+
+// Response to UndoCancelRequest. Empty on success. Failures are
+// returned as typed Connect error details (UndoErrorDetail).
+message UndoCancelRequestResponse {}
+
+// ListMyRequestsRequest lists all requests created by the calling user.
+message ListMyRequestsRequest {
+  // Optional filter by community ID.
+  string community_id = 1;
+}
+
+// ListMyRequestsResponse returns the user's requests.
+message ListMyRequestsResponse {
+  // List of requests created by the user.
+  repeated Request requests = 1;
+}
+
+// UpdateRequestRequest updates the description of an active request.
+message UpdateRequestRequest {
+  // ID of the request to update.
+  string request_id = 1;
+
+  // New description for the request.
+  string description = 2;
+
+  // Optional title update.
+  string title = 3;
+
+  // Optional media update.
+  repeated string media_ids = 4;
+
+  // Optional location update.
+  string location_id = 5;
+
+  // Optional owner-overridden social context for Quality Time computation.
+  // When set, overrides LLM-inferred or config-default social attribute tiers.
+  optional SocialContext social_context = 6;
+
+  // Optional update to the needed-by date (Unix timestamp in seconds). Set to
+  // a positive value to schedule the request; the server treats it as a
+  // present-but-zero clear when explicitly zero.
+  optional int64 needed_by_unix_sec = 7;
+}
+
+// UpdateRequestResponse confirms the request was updated.
+message UpdateRequestResponse {}
+
+// GetRequestRequest retrieves details of a specific request.
+message GetRequestRequest {
+  // ID of the request to retrieve.
+  string request_id = 1;
+
+  // Optional: Community context for getting community-specific conversation_id.
+  // If not provided, returns the first community's conversation_id.
+  string community_id = 2;
+}
+
+// GetRequestResponse returns the request details.
+message GetRequestResponse {
+  // The requested item details.
+  Request request = 1;
+
+  // AI-generated metadata (value estimate, embodied carbon, category).
+  RequestMetadata metadata = 2;
+}
+
+// WithdrawOfferRequest withdraws the user's offer to fulfill a request.
+// This removes the user from the offerers list and the conversation.
+message WithdrawOfferRequest {
+  // ID of the request to withdraw offer from.
+  string request_id = 1;
+
+  // ID of the community where the offer was made.
+  // Required for multi-community requests to identify which offer to withdraw.
+  string community_id = 2;
+}
+
+// WithdrawOfferResponse confirms the offer was withdrawn.
+message WithdrawOfferResponse {}
+
+// AcceptRequestOfferRequest marks a gear-backed offer as the one the
+// requester wants ("this one works"). Toggle semantics: accepting an
+// already-accepted offer clears the acceptance instead.
+message AcceptRequestOfferRequest {
+  // ID of the request the offer was made on.
+  string request_id = 1;
+
+  // ID of the planning contribution carrying the gear-backed offer.
+  string contribution_id = 2;
+}
+
+// AcceptRequestOfferResponse returns the updated request, including the new
+// acceptance state on its gear offers.
+message AcceptRequestOfferResponse {
+  // The updated request.
+  Request request = 1;
+}
+
+// DeleteRequestRequest permanently deletes a request.
+// Only the request creator can delete their own requests.
+message DeleteRequestRequest {
+  // ID of the request to delete.
+  string request_id = 1;
+}
+
+// DeleteRequestResponse confirms the request was deleted.
+message DeleteRequestResponse {}
+
+// GenerateResolutionSummaryRequest generates an AI summary of the request resolution.
+message GenerateResolutionSummaryRequest {
+  // ID of the request to generate a summary for.
+  // The server will fetch the request details (title, description, conversation).
+  string request_id = 1;
+}
+
+// GenerateResolutionSummaryResponse returns the AI-generated summary.
+message GenerateResolutionSummaryResponse {
+  // AI-generated summary of how the request was resolved.
+  string summary = 1;
+}
+
+// Request to get people associated with a request.
+message GetRequestPeopleRequest {
+    // The unique identifier of the request.
+    string request_id = 1;
+
+    // Optional: Community context for filtering community-specific helpers.
+    // If not provided, returns people across all communities.
+    string community_id = 2;
+}
+
+// Response containing people associated with a request.
+message GetRequestPeopleResponse {
+    // The requester (person who created the request).
+    User requester = 1;
+
+    // Current helper (if request is being fulfilled).
+    User current_helper = 2;
+
+    // Past helpers (users who have helped fulfill this request before).
+    repeated User past_helpers = 3;
+
+    // Users who have offered to help.
+    repeated User offerers = 4;
+
+    // Total count of unique people associated with this request.
+    int32 total_count = 5;
+}
+
+// Request to get statistics for a request.
+message GetRequestStatsRequest {
+    // The unique identifier of the request.
+    string request_id = 1;
+
+    // Optional: Community context for community-specific stats.
+    // If not provided, returns aggregate stats across all communities.
+    string community_id = 2;
+}
+
+// Response containing statistics for a request.
+message GetRequestStatsResponse {
+    // Number of offers received for this request.
+    int32 offers_received = 1;
+
+    // Number of times this request has been fulfilled.
+    int32 times_fulfilled = 2;
+
+    // Total value of help received (estimated value × times fulfilled) in USD.
+    float help_value_usd = 3;
+
+    // Number of days the request has been open.
+    int32 days_open = 4;
+
+    // Aggregate impact estimate (cost, carbon, time).
+    ImpactEstimate impact = 5;
+
+    // Potential impact estimate for the first fulfillment (when times_fulfilled == 0).
+    // Shows what one fulfillment would create. Only populated when no transactions exist yet.
+    ImpactEstimate potential_impact = 6;
+}
+
+// Request to compute a live impact estimate for the fulfillment modal as
+// helpers are toggled. Returns the estimate without persisting anything.
+message PreviewRequestImpactRequest {
+  string request_id = 1;
+  // IDs of confirmed helpers (registered users only; provisional users contribute
+  // to group size via confirmed_helper_count instead).
+  repeated string confirmed_helper_ids = 2;
+  // Total confirmed helper count including provisional users. When > 0, this
+  // overrides len(confirmed_helper_ids) for group-size computation.
+  int32 confirmed_helper_count = 3;
+}
+
+// Response containing a real-formula impact estimate for the fulfillment modal.
+message PreviewRequestImpactResponse {
+  ImpactEstimate impact = 1;
+}
+
+// Request to list all needs and contributions for a request.
+message ListRequestNeedsAndContributionsRequest {
+  string request_id = 1;
+}
+
+// Response containing all needs and contributions for a request.
+message ListRequestNeedsAndContributionsResponse {
+  repeated RequestNeedResponse needs = 1;
+  repeated RequestContributionResponse contributions = 2;
+  // LLM-generated suggestion chips for the owner (additional requests + breakdown pieces).
+  repeated string additional_asks = 3;
+  repeated string breakdown_pieces = 4;
+  // LLM-generated suggestion chips for helpers (ways to contribute).
+  repeated string offer_ideas = 5;
+}
+
+// Request to add a need to a request (requester only).
+message AddRequestNeedRequest {
+  string request_id = 1;
+  string name = 2;
+  optional string note = 3;
+  int32 slots = 4;
+}
+
+// Response containing the created need.
+message AddRequestNeedResponse {
+  RequestNeedResponse need = 1;
+}
+
+// Request to remove a need from a request (requester only).
+message RemoveRequestNeedRequest {
+  string need_id = 1;
+  string request_id = 2;
+}
+
+// Response for remove request need (empty; action confirmed).
+message RemoveRequestNeedResponse {}
+
+// Request to update an existing need in place (proposer only). Any field
+// set on the request replaces the current value on the need; fields left
+// unset are preserved. Reducing slots below the current claim count
+// fails with FailedPrecondition — callers must release claims first.
+message UpdateRequestNeedRequest {
+  string need_id = 1;
+  string request_id = 2;
+  optional string name = 3;
+  optional string note = 4;
+  optional int32 slots = 5;
+}
+
+// Response containing the updated need.
+message UpdateRequestNeedResponse {
+  RequestNeedResponse need = 1;
+}
+
+// Request to nudge community members who have not yet contributed to a
+// request. Requester only. Sends a push notification to members of the
+// request's broadcast communities who have not created any contribution.
+message NudgeUncoveredRequestNeedClaimersRequest {
+  string request_id = 1;
+}
+
+// Response carrying the number of members the nudge was dispatched to.
+message NudgeUncoveredRequestNeedClaimersResponse {
+  int32 nudged_count = 1;
+}
+
+// A single need item in a batch add request.
+message RequestBatchNeedItem {
+  string name = 1;
+  optional string note = 2;
+  int32 slots = 3;
+}
+
+// Request to add multiple needs to a request in one call (requester only).
+message BatchAddRequestNeedsRequest {
+  string request_id = 1;
+  repeated RequestBatchNeedItem items = 2;
+}
+
+// Response containing all created needs.
+message BatchAddRequestNeedsResponse {
+  repeated RequestNeedResponse needs = 1;
+}
+
+// Request to claim a slot on a need, creating a contribution (anyone, including requester).
+message ClaimRequestNeedRequest {
+  string need_id = 1;
+  string request_id = 2;
+  optional string note = 3;
+  // Community the claimer is acting from. Used to auto-create a RequestOffer if none exists.
+  string community_id = 4;
+  // Optional Gear item the contributor is linking to this claim.
+  optional string gear_id = 5;
+}
+
+// Response containing the contribution created by the claim.
+message ClaimRequestNeedResponse {
+  RequestContributionResponse contribution = 1;
+}
+
+// Request to unclaim a previously claimed need slot (contributor only).
+message UnclaimRequestNeedRequest {
+  string contribution_id = 1;
+  string request_id = 2;
+}
+
+// Response for unclaim (empty; action confirmed).
+message UnclaimRequestNeedResponse {}
+
+// Request to add a free-form contribution to a request (anyone, including requester).
+message AddRequestContributionRequest {
+  string request_id = 1;
+  string title = 2;
+  optional string description = 3;
+  // Optional Gear item the contributor is linking to this contribution.
+  optional string gear_id = 4;
+}
+
+// Response containing the created contribution.
+message AddRequestContributionResponse {
+  RequestContributionResponse contribution = 1;
+}
+
+// Request to edit an existing contribution (contributor only).
+message EditRequestContributionRequest {
+  string contribution_id = 1;
+  string request_id = 2;
+  string title = 3;
+  optional string description = 4;
+  // Replacement gear link. Unset clears the existing link.
+  optional string gear_id = 5;
+}
+
+// Response containing the updated contribution.
+message EditRequestContributionResponse {
+  RequestContributionResponse contribution = 1;
+}
+
+// Request to remove a contribution (contributor only).
+message RemoveRequestContributionRequest {
+  string contribution_id = 1;
+  string request_id = 2;
+}
+
+// Response for remove contribution (empty; action confirmed).
+message RemoveRequestContributionResponse {}
+
+// A single pre-claim attempt in a batch. Mirrors the inputs of
+// ClaimRequestNeed minus the request_id (carried once on the parent
+// request) and the community_id (taken from the parent request).
+message BatchClaimRequestNeedItem {
+  // The need to claim.
+  string need_id = 1;
+
+  // Optional note the requester wants attached to the contribution.
+  optional string note = 2;
+
+  // Optional gear item the requester is linking to this claim.
+  optional string gear_id = 3;
+}
+
+// Request to claim several need slots on a single request in one call.
+// Used by the compose flow to apply the requester's "I've got this"
+// pre-claims after publishing.
+message BatchClaimRequestNeedsRequest {
+  // The request the needs belong to.
+  string request_id = 1;
+
+  // Optional community context. Used to auto-create a RequestOffer if
+  // none exists for the claimer in this community. When the caller is
+  // the requester (the common pre-claim case), this is unused.
+  string community_id = 2;
+
+  // One claim per need.
+  repeated BatchClaimRequestNeedItem claims = 3;
+}
+
+// Result for a single claim in a BatchClaimRequestNeeds call. Either
+// contribution is set (success) or error_message is set (failure);
+// never both.
+message BatchClaimRequestNeedResult {
+  // The need this result corresponds to.
+  string need_id = 1;
+
+  // The created contribution, when the claim succeeded.
+  RequestContributionResponse contribution = 2;
+
+  // Human-readable error message describing why this claim failed.
+  // Unset when the claim succeeded.
+  optional string error_message = 3;
+}
+
+// Response containing one result per submitted claim, in the same
+// order as the request's claims.
+message BatchClaimRequestNeedsResponse {
+  repeated BatchClaimRequestNeedResult results = 1;
+}
+
+// Request to generate request content with an incremental event stream.
+// Provide either prompt (text mode) or media_id (image mode), but not both.
+message StreamGenRequestRequest {
+  string prompt = 1;
+  string community_id = 2;
+  double latitude_deg = 3;
+  double longitude_deg = 4;
+  string location_id = 5;
+  string media_id = 6;
+}
+
+// One event in a StreamGenRequest stream. Terminated by exactly one of
+// `final` or `error`. Non-terminal events (`title`, `description`,
+// `geocoded`, `media_ready`) may arrive in any order before the terminal
+// event. No ordering between non-terminal events is guaranteed or implied
+// — clients must not depend on one event arriving before another.
+//
+// Variants are listed below in semantic order (identity → location →
+// media → terminal); field numbers reflect introduction order and must
+// not be reused.
+message StreamGenRequestResponse {
+  oneof event {
+    // Title for the request.
+    string title = 1;
+    // Description for the request.
+    string description = 6;
+    // Geocoded location for the request. Absent when no geocodable location
+    // was identified.
+    GeocodedLocation geocoded = 2;
+    // Media selected for the preview.
+    MediaReady media_ready = 3;
+    // Terminal: full GenRequestResponse in the same shape as the unary RPC.
+    GenRequestResponse final = 4;
+    // Terminal alternative.
+    GenStreamError error = 5;
+  }
+}
+
+// RequestService manages community requests for items.
+service RequestService {
+  // GenRequest generates AI suggestions for a request from text (does NOT save to DB).
+  rpc GenRequest(GenRequestRequest) returns (GenRequestResponse);
+
+  // Streaming variant of GenRequest. Same inputs, same final shape; emits
+  // title / geocoded / media_ready events as each resolves.
+  rpc StreamGenRequest(StreamGenRequestRequest) returns (stream StreamGenRequestResponse);
+
+  // GenRequestFromMedia generates AI suggestions from an uploaded image (does NOT save to DB).
+  rpc GenRequestFromMedia(GenRequestFromMediaRequest) returns (GenRequestFromMediaResponse);
+
+  // SubmitRequest creates a new request in a community.
+  rpc SubmitRequest(SubmitRequestRequest) returns (SubmitRequestResponse);
+
+  // ListRequests lists requests in a community with optional filtering.
+  rpc ListRequests(ListRequestsRequest) returns (ListRequestsResponse);
+
+  // OfferToFulfill expresses interest in fulfilling a request.
+  rpc OfferToFulfill(OfferToFulfillRequest) returns (OfferToFulfillResponse);
+
+  // MarkRequestFulfilled marks the request fulfilled.
+  rpc MarkRequestFulfilled(MarkRequestFulfilledRequest) returns (MarkRequestFulfilledResponse);
+
+  // Undo a previous MarkRequestFulfilled call, returning the request
+  // to the state it was in beforehand. Fails with FailedPrecondition +
+  // UndoErrorDetail when the action cannot be undone.
+  rpc UndoMarkRequestFulfilled(UndoMarkRequestFulfilledRequest) returns (UndoMarkRequestFulfilledResponse);
+
+  // CancelRequest cancels an active request.
+  rpc CancelRequest(CancelRequestRequest) returns (CancelRequestResponse);
+
+  // Undo a previous CancelRequest call, returning the request to the
+  // state it was in beforehand. Fails with FailedPrecondition +
+  // UndoErrorDetail when the action cannot be undone.
+  rpc UndoCancelRequest(UndoCancelRequestRequest) returns (UndoCancelRequestResponse);
+
+  // ListMyRequests lists all requests created by the calling user.
+  rpc ListMyRequests(ListMyRequestsRequest) returns (ListMyRequestsResponse);
+
+  // UpdateRequest updates the description of an active request.
+  rpc UpdateRequest(UpdateRequestRequest) returns (UpdateRequestResponse);
+
+  // GetRequest retrieves details of a specific request.
+  rpc GetRequest(GetRequestRequest) returns (GetRequestResponse);
+
+  // WithdrawOffer withdraws the user's offer to fulfill a request.
+  // Removes the user from the offerers list and the conversation.
+  // If this was the last offerer, request returns to ACTIVE state.
+  rpc WithdrawOffer(WithdrawOfferRequest) returns (WithdrawOfferResponse);
+
+  // AcceptRequestOffer marks a gear-backed offer as the one the requester
+  // wants ("this one works"). Requester only; toggle semantics (accepting an
+  // already-accepted offer clears it). Signals the chosen helper without
+  // changing request or transfer state — handoff still drives fulfillment.
+  rpc AcceptRequestOffer(AcceptRequestOfferRequest) returns (AcceptRequestOfferResponse);
+
+  // DeleteRequest permanently deletes a request.
+  // Only the request creator can delete their own requests.
+  // The request will no longer appear in listings or be accessible.
+  rpc DeleteRequest(DeleteRequestRequest) returns (DeleteRequestResponse);
+
+  // GenerateResolutionSummary generates an AI summary of how the request was resolved.
+  // Uses the conversation messages to create a summary.
+  rpc GenerateResolutionSummary(GenerateResolutionSummaryRequest) returns (GenerateResolutionSummaryResponse);
+
+  // Get people associated with a request (requester, helpers, offerers).
+  rpc GetRequestPeople(GetRequestPeopleRequest) returns (GetRequestPeopleResponse);
+
+  // Get statistics for a request (offers, fulfillments, help value, days open).
+  rpc GetRequestStats(GetRequestStatsRequest) returns (GetRequestStatsResponse);
+
+  // Compute a live impact estimate for the fulfillment modal as helpers are
+  // toggled. Read-only — does not persist.
+  rpc PreviewRequestImpact(PreviewRequestImpactRequest) returns (PreviewRequestImpactResponse);
+
+  // ListRequestNeedsAndContributions returns all active needs and contributions for a request.
+  rpc ListRequestNeedsAndContributions(ListRequestNeedsAndContributionsRequest) returns (ListRequestNeedsAndContributionsResponse);
+
+  // AddRequestNeed adds a need to a request (requester only).
+  rpc AddRequestNeed(AddRequestNeedRequest) returns (AddRequestNeedResponse);
+
+  // RemoveRequestNeed removes a need from a request (proposer only — requester).
+  rpc RemoveRequestNeed(RemoveRequestNeedRequest) returns (RemoveRequestNeedResponse);
+
+  // UpdateRequestNeed updates an existing need's name, note, or slot count in place (proposer only).
+  rpc UpdateRequestNeed(UpdateRequestNeedRequest) returns (UpdateRequestNeedResponse);
+
+  // NudgeUncoveredRequestNeedClaimers reminds community members who have not yet
+  // contributed (requester only).
+  rpc NudgeUncoveredRequestNeedClaimers(NudgeUncoveredRequestNeedClaimersRequest) returns (NudgeUncoveredRequestNeedClaimersResponse);
+
+  // BatchAddRequestNeeds adds multiple needs to a request in one call (requester only).
+  rpc BatchAddRequestNeeds(BatchAddRequestNeedsRequest) returns (BatchAddRequestNeedsResponse);
+
+  // ClaimRequestNeed claims a slot on a need, creating a contribution (anyone, including the requester).
+  rpc ClaimRequestNeed(ClaimRequestNeedRequest) returns (ClaimRequestNeedResponse);
+
+  // BatchClaimRequestNeeds claims slots on multiple needs in one call. Per-
+  // claim success/failure is reported in the response so partial successes
+  // are recoverable on the client. Used by the compose flow to apply the
+  // requester's pre-claims after a Request is published.
+  rpc BatchClaimRequestNeeds(BatchClaimRequestNeedsRequest) returns (BatchClaimRequestNeedsResponse);
+
+  // UnclaimRequestNeed releases a previously claimed need slot (contributor only).
+  rpc UnclaimRequestNeed(UnclaimRequestNeedRequest) returns (UnclaimRequestNeedResponse);
+
+  // AddRequestContribution adds a free-form contribution to a request (anyone, including the requester).
+  rpc AddRequestContribution(AddRequestContributionRequest) returns (AddRequestContributionResponse);
+
+  // EditRequestContribution updates a contribution's title and description (contributor only).
+  rpc EditRequestContribution(EditRequestContributionRequest) returns (EditRequestContributionResponse);
+
+  // RemoveRequestContribution removes a contribution (contributor only).
+  rpc RemoveRequestContribution(RemoveRequestContributionRequest) returns (RemoveRequestContributionResponse);
+}

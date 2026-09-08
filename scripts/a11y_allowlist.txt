@@ -1,0 +1,10 @@
+# Accessibility lint allowlist (Phase 2 baseline).
+#
+# Each entry is "<rule_name> <relative_path_to_file>". Files in this
+# allowlist are exempted from the named rule. The allowlist can SHRINK
+# but never GROW on main — adding a new entry requires removing one.
+# CI enforces this ratchet.
+#
+# Regenerate from current state with:
+#   node scripts/check_a11y.js --update-baseline
+

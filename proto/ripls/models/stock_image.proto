@@ -1,0 +1,64 @@
+// Stock imagery fetched from third-party providers.
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// Supported stock imagery providers.
+enum StockImageryProvider {
+  STOCK_IMAGERY_PROVIDER_UNSPECIFIED = 0;
+  STOCK_IMAGERY_PROVIDER_UNSPLASH = 1;
+  STOCK_IMAGERY_PROVIDER_FAKE = 2;
+  STOCK_IMAGERY_PROVIDER_PEXELS = 3;
+}
+
+// Information about the content creator from the provider platform.
+message CreatorInfo {
+  // Creator's display name.
+  string name = 1;
+
+  // Creator's username on the provider platform.
+  string username = 2;
+
+  // Full URL to the photographer's profile on the provider platform.
+  // Used for attribution links when username-based URL construction isn't possible.
+  string photographer_url = 3;
+}
+
+// Metadata about an image from the provider.
+message ProviderImage {
+  // The provider's original image ID.
+  string id = 1;
+
+  // The original URL from which the image was fetched.
+  string url = 2;
+
+  // Provider-supplied description of the image.
+  string description = 3;
+
+  // Provider-supplied alternative description.
+  string alt_description = 4;
+
+  // Information about the image creator.
+  CreatorInfo creator = 5;
+}
+
+// A stock image fetched from a third-party provider and cached locally.
+message StockImage {
+  // A unique identifier.
+  string id = 1;
+
+  // The provider this image was fetched from.
+  StockImageryProvider provider = 2;
+
+  // Metadata from the provider about this image.
+  ProviderImage provider_image = 3;
+
+  // Reference to the Media record storing the downloaded image.
+  string media_id = 4;
+
+  // When this record was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 5;
+}

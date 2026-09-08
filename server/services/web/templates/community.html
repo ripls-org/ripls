@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="{{.Lang}}" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.OGTitle}}</title>
+
+  <!-- Open Graph metadata for link previews -->
+  <meta property="og:title" content="{{.OGTitle}}">
+  <meta property="og:description" content="{{.OGDescription}}">
+  <meta property="og:image" content="{{.HeroImageURL}}">
+  <meta property="og:url" content="{{.BaseURL}}/go/{{.ShortCode}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{.Brand.Name}}">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{.OGTitle}}">
+  <meta name="twitter:description" content="{{.OGDescription}}">
+  <meta name="twitter:image" content="{{.HeroImageURL}}">
+
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/event.css">
+</head>
+<body>
+  <header class="event-hero">
+    {{if .HeroImageURL}}<img src="{{.HeroImageURL}}" alt="">{{end}}
+    <div class="event-hero-inner">
+      <div class="event-kicker">{{.Kicker}}</div>
+      <h1>{{.CommunityName}}</h1>
+    </div>
+  </header>
+
+  <main class="event-main">
+    <a id="item-open-in-app"
+       class="event-open-in-app hidden"
+       href="#"
+       aria-label="{{.Str.OpenInApp}}"
+       data-short-code="{{.ShortCode}}"
+       data-android-package="{{.AndroidPackage}}"
+       data-app-host="{{.Brand.AppHost}}"
+       data-scheme="{{.Brand.DeepLinkScheme}}"
+       data-base-host="{{.BaseURL}}">{{.Str.OpenInApp}}</a>
+
+    <div class="event-meta-pill" aria-label="{{.MembersSummary}}">
+      <span class="event-meta-item">
+        <span class="event-meta-icon" aria-hidden="true">👥</span>{{.MembersSummary}}
+      </span>
+    </div>
+
+    {{if .CommunityDescription}}
+    <p class="event-description">{{.CommunityDescription}}</p>
+    {{end}}
+
+    {{if .IsInviteFraming}}
+    <div class="event-host">
+      <div class="event-avatar">
+        {{if .InviterAvatarURL -}}
+        <img src="{{.InviterAvatarURL}}" alt="">
+        {{- else -}}
+        <span class="event-avatar-fallback" aria-hidden="true">{{.InviterInitial}}</span>
+        {{- end}}
+      </div>
+      <div class="event-host-text">
+        <strong>{{.InviterName}}</strong> <span class="role">{{.RoleText}}</span>
+      </div>
+    </div>
+    {{end}}
+  </main>
+
+  {{if .IsAtCapacity}}
+  <div class="event-cta-full" role="status" aria-live="polite">
+    <strong>{{.Str.Capacity.Title}}</strong>
+    {{.Str.Capacity.Body}}
+    {{.Str.Capacity.Ask}}
+  </div>
+  {{else}}
+  <nav class="event-cta-bar" id="item-cta-bar" aria-label="{{.CtaLabel}}">
+    <div class="event-cta-bar-inner">
+      <a class="event-cta event-cta-primary"
+         href="/group/{{.CommunityID}}?intent={{.IntentValue}}&amp;code={{.ShortCode}}&amp;n={{.CommunityName}}{{if .TabValue}}&amp;tab={{.TabValue}}{{end}}{{if .HasHeroImage}}&amp;img={{.HeroImageURL}}{{end}}"
+         aria-label="{{.CtaAria}}">{{.CtaLabel}}</a>
+    </div>
+  </nav>
+  <script>
+  // Open-in-app hint — identical mechanics to event.html (see its comment).
+  // The community invite carries no item id, so the custom-scheme deep link
+  // is the bare `<scheme>://invite?token=`, which the app routes to /invite.
+  //
+  // The Android fallback keeps the Play Install Referrer that the retired
+  // install-only landing used (#1099): a recipient who taps through without
+  // the app installed lands on the store listing with the short code
+  // attached, and the app recovers the invite context on first launch. The
+  // item landings have no equivalent because they hand off to the web
+  // instead; here the web hand-off is the CTA above and this is the
+  // residual install path.
+  (function () {
+    var link = document.getElementById('item-open-in-app');
+    if (!link) return;
+    var ua = navigator.userAgent;
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
+    if (!isIOS && !isAndroid) return;
+    var code = link.dataset.shortCode;
+    if (!code) return;
+    var scheme = link.dataset.scheme || '';
+    var appHost = (link.dataset.appHost || '').split(':')[0];
+    if (isAndroid) {
+      var pkg = link.dataset.androidPackage;
+      var host = (link.dataset.baseHost || '').replace(/^https?:\/\//, '');
+      if (!pkg) return;
+      var referrer = encodeURIComponent(
+        'utm_source=' + encodeURIComponent(scheme || 'app')
+        + '&utm_content=' + encodeURIComponent(code));
+      var fallback = 'https://play.google.com/store/apps/details?id='
+        + encodeURIComponent(pkg) + '&referrer=' + referrer;
+      if (appHost && host.split(':')[0] === appHost) {
+        link.href = 'intent://' + host + '/go/' + encodeURIComponent(code)
+          + '#Intent;scheme=https'
+          + ';package=' + pkg
+          + ';S.browser_fallback_url=' + encodeURIComponent(fallback)
+          + ';end';
+      } else {
+        if (!scheme) return;
+        link.href = 'intent://invite?token=' + encodeURIComponent(code)
+          + '#Intent;scheme=' + scheme
+          + ';package=' + pkg
+          + ';S.browser_fallback_url=' + encodeURIComponent(fallback)
+          + ';end';
+      }
+    } else {
+      if (!scheme) return;
+      link.href = scheme + '://invite?token=' + encodeURIComponent(code);
+    }
+    link.classList.remove('hidden');
+  })();
+  </script>
+  {{end}}
+</body>
+</html>

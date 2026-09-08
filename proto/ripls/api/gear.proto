@@ -1,0 +1,103 @@
+// Gear types for API responses.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Availability options for gear within a community.
+enum Availability {
+  AVAILABILITY_UNSPECIFIED = 0;
+  AVAILABILITY_FOR_LOAN = 1;     // Available for borrowing
+  AVAILABILITY_FOR_GIVEAWAY = 2; // Available to give away
+}
+
+// Active loan information for a gear item.
+message ActiveLoan {
+  // The borrower currently borrowing this gear.
+  User borrower = 1;
+
+  // When the loan is due (Unix timestamp in seconds).
+  optional int64 due_date_unix_sec = 2;
+
+  // The transfer ID for this active loan.
+  string transfer_id = 3;
+
+  // Status text for display (e.g., "On loan", "Overdue").
+  string status = 4;
+}
+
+// Gear represents a fully enriched gear item for API responses.
+// Use this type when returning gear information for display purposes.
+message Gear {
+  // A unique identifier for the gear.
+  string id = 1;
+
+  // The name of the gear.
+  string name = 2;
+
+  // A description of the gear.
+  string description = 3;
+
+  // The user who owns this gear.
+  User owner = 4;
+
+  // Media items associated with this gear.
+  repeated string media_ids = 5;
+
+  // The location where this gear is stored.
+  string location_id = 6;
+
+  // Latitude of gear's location in degrees.
+  double latitude_deg = 7;
+
+  // Longitude of gear's location in degrees.
+  double longitude_deg = 8;
+
+  // Availability setting for this gear in the community context.
+  Availability availability = 9;
+
+  // Conversation ID for this gear in its community context.
+  // This is a perpetual, community-wide discussion about the gear item.
+  string conversation_id = 10;
+
+  // Information about the current active loan, if any.
+  optional ActiveLoan active_loan = 11;
+
+  // Number of messages in the gear's conversation.
+  // Only populated when conversation_id is present.
+  int32 message_count = 12;
+
+  // The source URL this gear was originally imported from, if any.
+  // Populated when gear is created via SaveGearFromURLRequest.
+  optional string source_url = 13;
+
+  // Number of unread messages in the conversation for the current user.
+  int32 unread_count = 14;
+
+  // Truncated text of the most recent user message (~100 chars).
+  optional string last_message_text = 15;
+
+  // The user who sent the most recent message.
+  optional User last_message_sender = 16;
+
+  // Relative time string for the most recent message (e.g., "2h", "3d").
+  optional string last_message_time_ago = 17;
+
+  // Up to 3 most recent unique commenters, ordered by recency.
+  repeated User recent_commenters = 18;
+
+  // True if this gear has been deleted by its owner. Clients should
+  // render a placeholder card (e.g. "Item no longer available") instead
+  // of treating the response as a live gear. Set on responses that
+  // tolerate dangling references from transfer history; live gear
+  // responses leave this unset.
+  optional bool deleted = 19;
+
+  // The product category classification (e.g. "Power Tools",
+  // "Camping & Outdoors"). Absent when the item has no classification yet.
+  optional string category = 20;
+}

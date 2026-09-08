@@ -1,0 +1,672 @@
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+import "ripls/api/conversation.proto";
+import "ripls/api/conversation_topic.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request to start a new conversation about a topic.
+message StartConversationRequest {
+    // The community this conversation belongs to (required).
+    string community_id = 1;
+
+    // The topic of this conversation.
+    ConversationTopic topic = 5;
+
+    // Old inline topic oneof fields — replaced by ConversationTopic message.
+    reserved 2, 3, 4;
+    reserved "transfer_id", "request_id", "experience_id";
+}
+
+// Response after starting a conversation.
+message StartConversationResponse {
+    // The unique identifier for the conversation.
+    string conversation_id = 1;
+
+    // The conversation participants.
+    repeated User participants = 2;
+}
+
+// Request to send a message in a conversation.
+message SendMessageRequest {
+    // The conversation that this message contributes to (required).
+    string conversation_id = 1;
+
+    // The text content of the message.
+    string text = 2;
+
+    // Media content attached to the message.
+    repeated string media_ids = 3;
+
+    // When set, the message is a reply that quotes this earlier message in the
+    // same conversation.
+    optional string reply_to_message_id = 4;
+}
+
+// Response after sending a message.
+message SendMessageResponse {
+    // The unique identifier of the sent message.
+    string message_id = 1;
+
+    // When the message was sent (Unix timestamp in seconds).
+    int64 sent_at_unix_sec = 2;
+}
+
+// Request to stream messages for a conversation.
+message StreamMessagesRequest {
+    // The conversation to stream messages for.
+    string conversation_id = 1;
+}
+
+// Response message streamed from StreamMessages RPC.
+message StreamMessagesResponse {
+    // The unique identifier of the message.
+    string message_id = 1;
+
+    // The conversation of the message.
+    string conversation_id = 2;
+
+    // When the message was sent (Unix timestamp in seconds).
+    int64 sent_at_unix_sec = 3;
+
+    // Emoji reactions on this message.
+    repeated Reaction reactions = 4;
+
+    // The message content (exactly one will be set).
+    oneof message {
+        UserMessage user_message = 10;
+        SystemMessage system_message = 11;
+        ReactionUpdate reaction_update = 12;
+        SystemMessageUpdate system_message_update = 13;
+        UserMessageUpdate user_message_update = 14;
+        MessageDelete message_delete = 15;
+    }
+}
+
+// A lightweight update broadcast when a user edits an existing message. The
+// client replaces the text of the message it already holds, in place.
+message UserMessageUpdate {
+    // The message being edited.
+    string message_id = 1;
+
+    // The new text content.
+    string text = 2;
+
+    // When the edit happened (Unix timestamp in seconds).
+    int64 edited_at_unix_sec = 3;
+}
+
+// A lightweight update broadcast when a message is deleted. The client removes
+// the message it already holds.
+message MessageDelete {
+    // The message that was deleted.
+    string message_id = 1;
+}
+
+// An emoji reaction on a message, for API responses.
+message Reaction {
+    // The user who reacted.
+    User sender = 1;
+
+    // The emoji character (e.g., "👍", "❤️").
+    string emoji = 2;
+}
+
+// A lightweight update broadcast when reactions change on a message.
+message ReactionUpdate {
+    // The message whose reactions changed.
+    string message_id = 1;
+
+    // The updated set of reactions on the message.
+    repeated Reaction reactions = 2;
+}
+
+// A lightweight update broadcast when a system message is coalesced in place.
+// Sent instead of a new SystemMessage when the server updates an existing system
+// message within the coalesce window (e.g., RSVP YES→MAYBE→YES becomes one card).
+message SystemMessageUpdate {
+    // The existing message being updated.
+    string message_id = 1;
+
+    // Updated timestamp (Unix timestamp in seconds).
+    int64 sent_at_unix_sec = 2;
+
+    // The user who triggered the update.
+    User actor = 3;
+
+    // The updated action enum.
+    ChatSystemAction action = 4;
+
+    // Updated human-readable description.
+    string description = 5;
+
+    // Updated structured-template payload (see SystemMessage above).
+    // When set, the client re-renders the message from the catalog.
+    optional string template_key = 6;
+    map<string, string> template_params = 7;
+}
+
+// A user message for API responses.
+message UserMessage {
+    // The user who sent this message.
+    User sender = 1;
+
+    // The text content of the message.
+    string text = 2;
+
+    // Media associated with the message.
+    repeated string media_ids = 3;
+
+    // ID of the need whose note/description this message carries.
+    optional string need_id = 4;
+
+    // ID of the contribution whose description this message carries.
+    optional string contribution_id = 5;
+
+    // Display name of the referenced need (denormalized — set by the server so the chip
+    // renders without waiting for the needs list to load).
+    optional string need_name = 6;
+
+    // Display title of the referenced contribution (denormalized).
+    optional string contribution_title = 7;
+
+    // When the message text was last edited. Absent if never edited; the client
+    // renders an "edited" marker when present.
+    optional int64 edited_at_unix_sec = 8;
+
+    // When set, this message is a reply that quotes an earlier message. The
+    // client renders a quoted preview block above the reply text.
+    optional ReplyContext reply_to = 9;
+}
+
+// A denormalized snapshot of the message a reply quotes, for API responses. The
+// snippet is captured when the reply is sent and is not updated if the quoted
+// message later changes.
+message ReplyContext {
+    // ID of the message being replied to, for tap-to-scroll.
+    string reply_to_message_id = 1;
+
+    // User who authored the quoted message.
+    User quoted_sender = 2;
+
+    // Text snippet of the quoted message (may be truncated).
+    string quoted_text = 3;
+
+    // A representative media attachment from the quoted message, when it had no
+    // text. Absent otherwise.
+    optional string quoted_media_id = 4;
+}
+
+// A system message for API responses.
+message SystemMessage {
+    // The user who triggered this action (may be null for pure system messages).
+    User actor = 1;
+
+    // The action that occurred.
+    ChatSystemAction action = 2;
+
+    // Human-readable description of the action.
+    string description = 3;
+
+    // For time-poll system messages, identifies the specific poll that opened
+    // this message. Absent for non-poll system messages and for messages
+    // created before this field was introduced.
+    optional string poll_id = 4;
+
+    // Structured-template payload. When set, the client resolves the
+    // displayed text from its catalog using template_key +
+    // template_params; description stays populated as a transition
+    // fallback. Empty template_key means "render description
+    // verbatim" (pre-migration rows).
+    optional string template_key = 5;
+    map<string, string> template_params = 6;
+}
+
+// Request to get message history for a conversation.
+message GetConversationHistoryRequest {
+    // The conversation to get messages for.
+    string conversation_id = 1;
+
+    // Optional: Maximum number of messages to retrieve (default: 50).
+    int32 max_messages = 2;
+
+    // Optional: Get messages before this timestamp (for pagination).
+    int64 before_unix_sec = 3;
+}
+
+// Response containing message history.
+message GetConversationHistoryResponse {
+    // List of messages, ordered newest to oldest.
+    repeated MessageHistoryItem messages = 1;
+
+    // Whether there are more messages available (for pagination).
+    bool has_more = 3;
+
+    // The topic of the conversation.
+    ConversationTopic topic = 6;
+
+    // Old inline topic oneof fields — replaced by ConversationTopic message.
+    reserved 2, 4, 5;
+    reserved "transfer_id", "request_id", "experience_id";
+}
+
+// A single message in conversation history.
+message MessageHistoryItem {
+    // The unique identifier of the message.
+    string message_id = 1;
+
+    // When the message was sent (Unix timestamp in seconds).
+    int64 sent_at_unix_sec = 2;
+
+    // Whether the current user has read this message.
+    bool is_read = 3;
+
+    // Emoji reactions on this message.
+    repeated Reaction reactions = 4;
+
+    // The message content (exactly one will be set).
+    oneof message {
+        UserMessage user_message = 10;
+        SystemMessage system_message = 11;
+    }
+}
+
+// Request to mark messages as read.
+message MarkMessagesReadRequest {
+    // The conversation.
+    string conversation_id = 1;
+
+    // Optional: Mark messages up to this timestamp as read.
+    // If not specified, marks all messages as read.
+    int64 up_to_unix_sec = 2;
+}
+
+// Response after marking messages as read.
+message MarkMessagesReadResponse {
+    // Number of messages marked as read.
+    int32 messages_marked = 1;
+}
+
+// Request to list conversations for the current user.
+message ListConversationsRequest {
+    // If true, return archived conversations (done items with no unread messages).
+    // If false (default), return active conversations.
+    bool archived = 1;
+}
+
+// Response containing list of conversations.
+message ListConversationsResponse {
+    // List of conversations.
+    repeated ConversationItem conversations = 1;
+}
+
+// Request to get a specific conversation by ID.
+message GetConversationRequest {
+    // The conversation ID to retrieve.
+    string conversation_id = 1;
+}
+
+// Response containing a single conversation.
+message GetConversationResponse {
+    // The conversation.
+    ConversationItem conversation = 1;
+}
+
+// Request to get a conversation by transfer ID.
+message GetConversationForTransferRequest {
+    // The transfer ID to look up.
+    string transfer_id = 1;
+}
+
+// Response containing the conversation for a transfer.
+message GetConversationForTransferResponse {
+    // The conversation for the transfer.
+    ConversationItem conversation = 1;
+}
+
+// Request to get a conversation by request ID.
+message GetConversationForRequestRequest {
+    // The request ID to look up.
+    string request_id = 1;
+}
+
+// Response containing the conversation for a request.
+message GetConversationForRequestResponse {
+    // The conversation for the request.
+    ConversationItem conversation = 1;
+}
+
+// Request to get a conversation by experience ID.
+message GetConversationForExperienceRequest {
+    // The experience ID to look up.
+    string experience_id = 1;
+}
+
+// Response containing the conversation for an experience.
+message GetConversationForExperienceResponse {
+    // The conversation for the experience.
+    ConversationItem conversation = 1;
+}
+
+// Request to get the community-wide conversation for a community.
+message GetConversationForCommunityRequest {
+    // The community ID to look up.
+    string community_id = 1;
+}
+
+// Response containing the community-wide conversation.
+message GetConversationForCommunityResponse {
+    // The community-wide conversation.
+    ConversationItem conversation = 1;
+}
+
+// Request to get conversation context (topic details for display).
+message GetConversationContextRequest {
+    // The conversation ID to get context for.
+    string conversation_id = 1;
+}
+
+// Response with conversation context for UI display.
+message GetConversationContextResponse {
+    // The conversation context.
+    ConversationContext context = 1;
+}
+
+// Style of summary to generate.
+enum SummaryStyle {
+    // Unspecified style - defaults to SUMMARY_STYLE_PROGRESS.
+    SUMMARY_STYLE_UNSPECIFIED = 0;
+
+    // Progress summary: Third-person, objective summary of conversation so far.
+    // Used during active request/transfer phases to show what's happening.
+    SUMMARY_STYLE_PROGRESS = 1;
+
+    // Completion summary: First-person, solution-focused summary.
+    // Used during wrap-up to thank helpers and highlight the solution.
+    SUMMARY_STYLE_COMPLETION = 2;
+}
+
+// Request to generate an AI summary of a conversation.
+message GenConversationSummaryRequest {
+    // The conversation ID to summarize.
+    string conversation_id = 1;
+
+    // The style of summary to generate.
+    // If unspecified, defaults to SUMMARY_STYLE_PROGRESS.
+    SummaryStyle style = 2;
+}
+
+// Response containing the AI-generated conversation summary.
+message GenConversationSummaryResponse {
+    // The AI-generated summary of the conversation.
+    string summary = 1;
+
+    // The number of messages that were summarized.
+    int32 message_count = 2;
+
+    // The number of participants in the conversation (excluding the current user).
+    int32 participant_count = 3;
+}
+
+// A conversation item in the list.
+message ConversationItem {
+    // The conversation id.
+    string conversation_id = 1;
+
+    // The community this conversation belongs to.
+    string community_id = 6;
+
+    // The topic of this conversation.
+    ConversationTopic topic = 13;
+
+    // The other users in the conversation.
+    repeated User participants = 3;
+
+    // When the last message was sent.
+    int64 last_message_at_unix_sec = 4;
+
+    // Number of unread messages in this conversation.
+    int32 unread_count = 5;
+
+    // The text of the most recent message (truncated to ~150 chars).
+    string last_message_text = 8;
+
+    // The user who sent the most recent message.
+    User last_message_sender = 9;
+
+    // Whether the associated item (transfer/request/experience) is in a terminal state.
+    // Used by the client to determine if the conversation should be archived.
+    bool is_item_done = 11;
+
+    // Old inline topic oneof fields — replaced by ConversationTopic message.
+    reserved 2, 7, 10, 12;
+    reserved "transfer_id", "request_id", "experience_id", "gear_id";
+}
+
+// Enum representing the app's presence state.
+enum PresenceStatus {
+    // Default value (should not be used).
+    PRESENCE_STATUS_UNSPECIFIED = 0;
+
+    // The app is in the foreground and active.
+    PRESENCE_STATUS_FOREGROUND = 1;
+
+    // The app is in the background or minimized.
+    PRESENCE_STATUS_BACKGROUND = 2;
+}
+
+// Action that triggered a system message.
+// Aligned with TransferState, RequestState, and ExperienceState transitions.
+enum ChatSystemAction {
+    CHAT_SYSTEM_ACTION_UNSPECIFIED = 0;
+
+    // Transfer actions
+    CHAT_SYSTEM_ACTION_JOINED = 1;      // User expressed interest (joined conversation)
+    CHAT_SYSTEM_ACTION_LEFT = 2;        // User withdrew interest
+    CHAT_SYSTEM_ACTION_APPROVED = 3;    // Owner selected recipient
+    CHAT_SYSTEM_ACTION_DENIED = 4;      // Owner denied a specific user
+    CHAT_SYSTEM_ACTION_CANCELLED = 5;   // Transfer/request/experience cancelled
+    CHAT_SYSTEM_ACTION_STARTED = 6;     // Loan started (handed over) or experience in process
+    CHAT_SYSTEM_ACTION_COMPLETED = 7;   // Transfer/experience completed (returned/given away/finished)
+
+    // Request actions
+    CHAT_SYSTEM_ACTION_OFFERED = 8;     // User offered to help
+    CHAT_SYSTEM_ACTION_FULFILLED = 9;   // Request fulfilled
+
+    // Experience actions
+    CHAT_SYSTEM_ACTION_RSVP_YES = 10;   // User RSVPed Yes to experience
+    CHAT_SYSTEM_ACTION_RSVP_MAYBE = 11; // User RSVPed Maybe to experience
+    CHAT_SYSTEM_ACTION_RSVP_NO = 12;    // User RSVPed No to experience (left conversation)
+
+    // Mention actions
+    CHAT_SYSTEM_ACTION_ADDED_VIA_MENTION = 13; // User was added to conversation via @-mention
+
+    // Experience planning actions
+    CHAT_SYSTEM_ACTION_TIME_PROPOSED = 14;  // User proposed a new time for an experience
+    CHAT_SYSTEM_ACTION_DETAIL_CHANGED = 15; // Organizer updated experience time or location
+
+    // Request creation
+    CHAT_SYSTEM_ACTION_REQUEST_CREATED = 16; // Request was submitted (anchors request info card)
+
+    // Experience planning
+    CHAT_SYSTEM_ACTION_TIME_POLL_CANCELLED = 17; // Organizer cancelled the time poll
+
+    // Giveaway sharing
+    CHAT_SYSTEM_ACTION_GIVEAWAY_SHARED = 18; // Gear was shared for giveaway (anchors gear info card)
+
+    // Experience creation
+    CHAT_SYSTEM_ACTION_EXPERIENCE_CREATED = 19; // Experience was shared with community (anchors experience info pill)
+
+    // Loan sharing
+    CHAT_SYSTEM_ACTION_LOAN_SHARED = 20; // Gear was shared for loan (anchors gear info card)
+
+    // Location poll lifecycle.
+    CHAT_SYSTEM_ACTION_LOCATION_PROPOSED = 33;       // Participant proposed a new candidate location (first option opens the poll)
+    CHAT_SYSTEM_ACTION_LOCATION_POLL_CANCELLED = 34; // Organizer cancelled the location poll
+}
+
+// Request to add an emoji reaction to a message.
+message AddReactionRequest {
+    // The conversation containing the message.
+    string conversation_id = 1;
+
+    // The message to react to.
+    string message_id = 2;
+
+    // The emoji to react with (e.g., "👍", "❤️").
+    string emoji = 3;
+}
+
+// Response after adding a reaction.
+message AddReactionResponse {
+    // The updated set of reactions on the message.
+    repeated Reaction reactions = 1;
+}
+
+// Request to remove the current user's reaction from a message.
+message RemoveReactionRequest {
+    // The conversation containing the message.
+    string conversation_id = 1;
+
+    // The message to remove the reaction from.
+    string message_id = 2;
+}
+
+// Response after removing a reaction.
+message RemoveReactionResponse {
+    // The updated set of reactions on the message.
+    repeated Reaction reactions = 1;
+}
+
+// Request to edit the text of a message the caller authored.
+message EditMessageRequest {
+    // The conversation containing the message.
+    string conversation_id = 1;
+
+    // The message to edit. Must be a message the caller authored.
+    string message_id = 2;
+
+    // The new text content (required, non-empty).
+    string text = 3;
+}
+
+// Response after editing a message.
+message EditMessageResponse {
+    // When the edit was applied (Unix timestamp in seconds).
+    int64 edited_at_unix_sec = 1;
+}
+
+// Request to delete a message the caller authored.
+message DeleteMessageRequest {
+    // The conversation containing the message.
+    string conversation_id = 1;
+
+    // The message to delete. Must be a message the caller authored.
+    string message_id = 2;
+}
+
+// Response after deleting a message.
+message DeleteMessageResponse {
+    // Empty response, message deleted successfully.
+}
+
+// Request to update the user's presence status.
+message UpdatePresenceRequest {
+    // The current presence status of the app.
+    PresenceStatus status = 1;
+}
+
+// Response after updating presence.
+message UpdatePresenceResponse {
+    // Empty response, presence updated successfully.
+}
+
+// Request to get unread message counts aggregated by community and conversation.
+message GetUnreadCountsRequest {
+    // No parameters required - returns counts for the authenticated user.
+}
+
+// Response with unread message counts aggregated at different levels.
+message GetUnreadCountsResponse {
+    // Total unread count across all conversations.
+    int32 total_unread_count = 1;
+
+    // Unread counts grouped by community ID.
+    // Key: community_id, Value: unread count for that community
+    map<string, int32> community_id_to_unread_count = 2;
+
+    // Unread counts for each individual conversation.
+    // Key: conversation_id, Value: unread count for that conversation
+    map<string, int32> conversation_id_to_unread_count = 3;
+}
+
+// RPC service for user-to-user chat.
+service ChatService {
+    // Start a new conversation about a topic.
+    // Verifies the user has permission to create a conversation about the topic.
+    rpc StartConversation(StartConversationRequest) returns (StartConversationResponse);
+
+    // Send a message in a conversation.
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+
+    // Stream messages for a conversation in real-time.
+    // Returns existing messages immediately, then streams new messages as they arrive.
+    rpc StreamMessages(StreamMessagesRequest) returns (stream StreamMessagesResponse);
+
+    // Get conversation history for a topic.
+    rpc GetConversationHistory(GetConversationHistoryRequest) returns (GetConversationHistoryResponse);
+
+    // Mark messages as read.
+    rpc MarkMessagesRead(MarkMessagesReadRequest) returns (MarkMessagesReadResponse);
+
+    // List all conversations for the current user.
+    rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse);
+
+    // Get a specific conversation by ID.
+    rpc GetConversation(GetConversationRequest) returns (GetConversationResponse);
+
+    // Get the conversation associated with a transfer.
+    rpc GetConversationForTransfer(GetConversationForTransferRequest) returns (GetConversationForTransferResponse);
+
+    // Get the conversation associated with a request.
+    rpc GetConversationForRequest(GetConversationForRequestRequest) returns (GetConversationForRequestResponse);
+
+    // Get the conversation associated with an experience.
+    rpc GetConversationForExperience(GetConversationForExperienceRequest) returns (GetConversationForExperienceResponse);
+
+    // Get the community-wide conversation for a community.
+    // Creates the conversation if one does not yet exist.
+    rpc GetConversationForCommunity(GetConversationForCommunityRequest) returns (GetConversationForCommunityResponse);
+
+    // Get conversation context for UI display (topic title, image, message count, etc.).
+    rpc GetConversationContext(GetConversationContextRequest) returns (GetConversationContextResponse);
+
+    // Generate an AI summary of a conversation.
+    // Returns a summary of recent messages and participant count.
+    rpc GenConversationSummary(GenConversationSummaryRequest) returns (GenConversationSummaryResponse);
+
+    // Add an emoji reaction to a message.
+    // One reaction per user per message; adding a new one replaces the previous.
+    rpc AddReaction(AddReactionRequest) returns (AddReactionResponse);
+
+    // Remove the current user's reaction from a message.
+    rpc RemoveReaction(RemoveReactionRequest) returns (RemoveReactionResponse);
+
+    // Edit the text of a message the caller authored.
+    rpc EditMessage(EditMessageRequest) returns (EditMessageResponse);
+
+    // Delete a message the caller authored.
+    rpc DeleteMessage(DeleteMessageRequest) returns (DeleteMessageResponse);
+
+    // Update the user's app presence status (foreground/background).
+    // Used to determine when to send push notifications vs. relying on real-time streams.
+    rpc UpdatePresence(UpdatePresenceRequest) returns (UpdatePresenceResponse);
+
+    // Get unread message counts aggregated by community and conversation.
+    // Returns total unread count, per-community counts, and per-conversation counts.
+    // Excludes archived conversations (where is_item_done = true).
+    rpc GetUnreadCounts(GetUnreadCountsRequest) returns (GetUnreadCountsResponse);
+}

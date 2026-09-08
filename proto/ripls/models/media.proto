@@ -1,0 +1,42 @@
+// Media (images or video).
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+import "ripls/models/common.proto";
+
+// A picture or video stored in bucket storage.
+message Media {
+  // A unique identifier.
+  string id = 1;
+
+  // The unique ID of the user who uploaded this media.
+  string user_id = 2;
+
+  // Storage URL (from bucket storage, e.g., "s3://bucket/media/user123/media456").
+  // Not directly accessible - use presigned URLs for external access.
+  string storage_url = 3;
+
+  // Thumbnail storage URL, generated from large images on upload.
+  optional string thumbnail_storage_url = 8;
+
+  // MIME content type (e.g., "image/jpeg", "image/heic", "video/mp4").
+  string content_type = 4;
+
+  // File metadata.
+  optional string filename = 5;
+  optional string description = 6;
+  int64 size_bytes = 7;
+
+  // Reference to the StockImage record if this media was created from stock imagery.
+  optional string source_stock_image_id = 9;
+
+  // Unix timestamp (seconds) when this media was uploaded.
+  int64 created_at_unix_sec = 10;
+
+  // Soft deletion metadata.
+  optional DeletedMetadata deleted = 20;
+}

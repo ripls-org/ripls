@@ -1,0 +1,230 @@
+name: Flutter Tests
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'proto/**'
+      - 'scripts/check_a11y.js'
+      - 'scripts/a11y_allowlist.txt'
+      - 'scripts/check_ref_listen_in_build.js'
+      - 'scripts/ref_listen_allowlist.txt'
+      - 'scripts/check_route_names.js'
+      - 'scripts/route_names_allowlist.txt'
+      - 'scripts/check_l10n_parity.js'
+      - 'scripts/check_ephemeral_comments.js'
+      - 'scripts/check_todo_refs.js'
+      - '.github/workflows/test_flutter.yaml'
+  # No path filter on PRs: this is a required check, so it must report on every
+  # PR. The `changes` job gates the real work — a PR that doesn't touch Flutter
+  # paths skips the `test` job, which reports success and satisfies the required
+  # check (the GitHub-recommended pattern for path-scoped required checks; #2287).
+  pull_request:
+    branches: [main]
+  # See test_terraform for why: a freshly published repo's root commit gives
+  # GitHub no `before` to diff paths against, so path-filtered workflows never
+  # fire there and dispatch is the only way to verify them (#2953).
+  workflow_dispatch:
+
+env:
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+jobs:
+  changes:
+    name: Detect Flutter changes
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'app/**'
+              - 'proto/**'
+              - 'scripts/check_a11y.js'
+              - 'scripts/a11y_allowlist.txt'
+              - 'scripts/check_ref_listen_in_build.js'
+              - 'scripts/ref_listen_allowlist.txt'
+              - 'scripts/check_route_names.js'
+              - 'scripts/route_names_allowlist.txt'
+              - 'scripts/check_l10n_parity.js'
+              - 'scripts/check_ephemeral_comments.js'
+              - 'scripts/check_todo_refs.js'
+              - '.github/workflows/test_flutter.yaml'
+
+  test:
+    name: Flutter Tests
+    needs: [changes]
+    # Push/dispatch: always run. PR: run only when Flutter paths changed;
+    # otherwise the job skips and reports success, satisfying the required check.
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.relevant == 'true') }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      # No-op on the baked runner image. `npm run generate:proto` needs Go for
+      # the protoc plugins, so it is requested here too (#2959).
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-toolchain
+        with:
+          go: "true"
+          node: "true"
+          flutter: "true"
+          protoc-plugins: "true"
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      - name: Install Flutter dependencies
+        run: cd app && flutter pub get
+
+      - name: Generate freezed and mockito code
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze Flutter code
+        run: cd app && flutter analyze
+
+      - name: "Check Dart file sizes (issue #1324, #1293)"
+        run: npm run lint:dart:size
+
+      - name: "Check for unreachable Dart code (PR #827)"
+        run: npm run lint:dart:dead
+
+      - name: "Check viewmodel error.toString leaks (issue #1518)"
+        run: npm run lint:dart:errortostring
+
+      - name: Check accessibility lint (Phase 2 ratchet)
+        run: npm run lint:dart:a11y
+
+      - name: Verify accessibility allowlist did not grow
+        run: |
+          # The allowlist may shrink (entries removed as files are remediated)
+          # but must never grow on main. Compare against the base ref's
+          # allowlist size and fail if a new entry was added.
+          git fetch origin "${{ github.base_ref || 'main' }}":__a11y_base 2>/dev/null || true
+          if git rev-parse --verify __a11y_base > /dev/null 2>&1; then
+            BASE_COUNT=$(git show __a11y_base:scripts/a11y_allowlist.txt 2>/dev/null \
+              | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          else
+            BASE_COUNT=0
+          fi
+          HEAD_COUNT=$(grep -v '^#' scripts/a11y_allowlist.txt \
+            | grep -v '^$' | wc -l | tr -d ' ')
+          echo "base=$BASE_COUNT head=$HEAD_COUNT"
+          if [ "$HEAD_COUNT" -gt "$BASE_COUNT" ]; then
+            echo "::error::Accessibility allowlist grew from $BASE_COUNT to $HEAD_COUNT entries. The allowlist may only shrink on main; remove an existing entry before adding a new one."
+            exit 1
+          fi
+
+      - name: "Check hardcoded accent colors (issue #1946 ratchet)"
+        run: npm run lint:dart:colors
+
+      - name: Verify color allowlist did not grow
+        run: |
+          git fetch origin "${{ github.base_ref || 'main' }}":__color_base 2>/dev/null || true
+          if git rev-parse --verify __color_base > /dev/null 2>&1; then
+            BASE_COUNT=$(git show __color_base:scripts/color_allowlist.txt 2>/dev/null \
+              | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          else
+            BASE_COUNT=0
+          fi
+          HEAD_COUNT=$(grep -v '^#' scripts/color_allowlist.txt \
+            | grep -v '^$' | wc -l | tr -d ' ')
+          echo "base=$BASE_COUNT head=$HEAD_COUNT"
+          if [ "$HEAD_COUNT" -gt "$BASE_COUNT" ]; then
+            echo "::error::Color allowlist grew from $BASE_COUNT to $HEAD_COUNT entries. The allowlist may only shrink on main; route the color through AppColors instead of adding an entry."
+            exit 1
+          fi
+
+      - name: "Check ref.listen() in build() (issue #1527)"
+        run: npm run lint:dart:ref-listen-in-build
+
+      - name: Verify ref.listen allowlist did not grow
+        run: |
+          git fetch origin "${{ github.base_ref || 'main' }}":__ref_listen_base 2>/dev/null || true
+          if git rev-parse --verify __ref_listen_base > /dev/null 2>&1; then
+            BASE_COUNT=$(git show __ref_listen_base:scripts/ref_listen_allowlist.txt 2>/dev/null \
+              | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          else
+            BASE_COUNT=0
+          fi
+          HEAD_COUNT=$(grep -v '^#' scripts/ref_listen_allowlist.txt \
+            | grep -v '^$' | wc -l | tr -d ' ')
+          echo "base=$BASE_COUNT head=$HEAD_COUNT"
+          if [ "$HEAD_COUNT" -gt "$BASE_COUNT" ]; then
+            echo "::error::ref.listen allowlist grew from $BASE_COUNT to $HEAD_COUNT entries. Fix the ref.listen() call in build() instead of adding an allowlist entry."
+            exit 1
+          fi
+
+      - name: "Check GoRoute name presence (issue #1809)"
+        run: npm run lint:dart:route-names
+
+      - name: Verify route-names allowlist did not grow
+        run: |
+          git fetch origin "${{ github.base_ref || 'main' }}":__route_names_base 2>/dev/null || true
+          if git rev-parse --verify __route_names_base > /dev/null 2>&1; then
+            BASE_COUNT=$(git show __route_names_base:scripts/route_names_allowlist.txt 2>/dev/null \
+              | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          else
+            BASE_COUNT=0
+          fi
+          HEAD_COUNT=$(grep -v '^#' scripts/route_names_allowlist.txt \
+            | grep -v '^$' | wc -l | tr -d ' ')
+          echo "base=$BASE_COUNT head=$HEAD_COUNT"
+          if [ "$HEAD_COUNT" -gt "$BASE_COUNT" ]; then
+            echo "::error::route-names allowlist grew from $BASE_COUNT to $HEAD_COUNT entries. Add name: to each new GoRoute instead of adding an allowlist entry."
+            exit 1
+          fi
+
+      - name: "Check ViewModel test coverage (issue #1362)"
+        run: npm run lint:dart:viewmodel-tests
+
+      - name: "Check l10n key parity (issue #1972)"
+        run: npm run lint:dart:l10n-parity
+
+      - name: "Check for unreferenced ARB keys"
+        run: npm run lint:dart:arb-orphans
+
+      - name: Check navigation goes through the router or NavigationHelpers
+        run: npm run lint:nav
+
+      - name: Check for ephemeral phase labels in comments
+        run: npm run lint:ephemeral-comments
+
+      # Scans server/ *.go as well as app/lib *.dart; the sibling workflow runs
+      # the same check so whichever side a PR touches, the gate reports.
+      - name: Check TODOs reference an issue
+        run: npm run lint:todo-refs
+
+      # Flutter 3.47.0's Dart VM profiler segfaults flutter_tester at ~0.2% of
+      # process starts, which fails this job on a random, innocent test file
+      # (#2933). Nothing reads the samples here — flutter_tools runs the tester
+      # with --disable-vm-service — so the profiler is switched off until
+      # upstream fixes the stack walker.
+      - name: "Disable the flutter_tester Dart profiler (issue #2933)"
+        run: bash scripts/disable_flutter_tester_profiler.sh
+
+      - name: Run Flutter tests
+        run: cd app && flutter test --reporter github

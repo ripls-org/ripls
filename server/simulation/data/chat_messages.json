@@ -1,0 +1,310 @@
+{
+  "loan": [
+    {
+      "phase": "interest",
+      "messages": [
+        {"text": "Hey! I saw your {item_name} and would love to borrow it. Is it still available?"},
+        {"text": "Hi {owner_name}! Would it be possible to borrow your {item_name} this week?"},
+        {"text": "Your {item_name} is exactly what I need right now. Any chance I could borrow it?"},
+        {"text": "Hi there! I'm interested in borrowing the {item_name}. How long could I keep it?"},
+        {"text": "Hey {owner_name}, I've been looking for a {item_name} to borrow. Would that work?"},
+        {"text": "I noticed your {item_name} on the community page. Could I borrow it for a few days?"},
+        {"text": "Hi! I have a project coming up and your {item_name} would be perfect. Is it available?"},
+        {"text": "Hey! Quick question — could I borrow your {item_name}? I'd take great care of it."},
+        {"text": "{owner_name}, any chance I could use your {item_name}? I'll return it in great shape!"},
+        {"text": "I'd love to try out your {item_name} if you're open to lending it. Let me know!"},
+        {"text": "Hi {owner_name}! Your {item_name} caught my eye. Is it up for borrowing?"},
+        {"text": "I could really use a {item_name} this weekend. Mind if I borrow yours?"}
+      ]
+    },
+    {
+      "phase": "owner_reply",
+      "messages": [
+        {"text": "Sure thing! The {item_name} is available. When do you need it?"},
+        {"text": "Yeah, no problem! I'm not using it right now. Happy to lend it out."},
+        {"text": "Absolutely! It's just sitting in my garage. Want to pick it up this week?"},
+        {"text": "Of course! I just used it last week so it's in good shape. When works for you?"},
+        {"text": "Hey {borrower_name}! Sure, you can borrow it. I'm free most evenings for pickup."},
+        {"text": "Happy to help! The {item_name} works great. Just bring it back when you're done."},
+        {"text": "For sure! I love that people actually use this stuff. When do you want to grab it?"},
+        {"text": "Yes! Let me know when you'd like to pick it up. I'm usually home after 5."},
+        {"text": "You bet! I'll have it ready for you. Just let me know the day."},
+        {"text": "Glad someone can use it! It's available anytime this week."},
+        {"text": "No problem at all, {borrower_name}. Come by whenever works for you!"},
+        {"text": "Sure! Just a heads up — it needs new batteries, but otherwise works perfectly."}
+      ]
+    },
+    {
+      "phase": "logistics",
+      "messages": [
+        {"text": "Does tomorrow afternoon work for pickup? I'm free after 2pm."},
+        {"text": "I can swing by this evening if that works? Around 6?"},
+        {"text": "How about Saturday morning? I could pick it up on my way to the store."},
+        {"text": "I'll be in your area tomorrow. Want me to come by around noon?"},
+        {"text": "Would it work if I came by after work today? Say 5:30?"},
+        {"text": "I'm flexible — what time works best for you?"},
+        {"text": "Could we do Thursday evening? I'm off work early that day."},
+        {"text": "I'll text you when I'm heading over. Probably around 4pm?"},
+        {"text": "Let me check my schedule... How about Wednesday afternoon?"},
+        {"text": "Perfect, I'll plan on picking it up this weekend then!"},
+        {"text": "Great! I'll bring it back in about {duration}. Sound good?"},
+        {"text": "Works for me! I'll swing by around 3. Thanks so much!"}
+      ]
+    },
+    {
+      "phase": "logistics_confirm",
+      "messages": [
+        {"text": "That works! I'll have the {item_name} ready for you."},
+        {"text": "Sounds good! I'll leave it on the porch for you."},
+        {"text": "Perfect timing. I'll be home, just knock when you get here."},
+        {"text": "Great, see you then! It's all charged up and ready to go."},
+        {"text": "Works for me! I'll text you my address."},
+        {"text": "Awesome, {borrower_name}. I'll make sure it's clean and ready."},
+        {"text": "Sounds like a plan! I'll set it by the door."},
+        {"text": "That works perfectly. Just give me a heads up when you're on the way."},
+        {"text": "Sure thing! I'll have it packed up for you."},
+        {"text": "No problem! Swing by whenever. I'll be around all afternoon."},
+        {"text": "See you then! And no rush on returning it — take your time."},
+        {"text": "Excellent! I'll have the {item_name} out and ready for you."}
+      ]
+    },
+    {
+      "phase": "thanks",
+      "messages": [
+        {"text": "Got it! Thanks so much, {owner_name}. I'll take great care of it."},
+        {"text": "Returning the {item_name} now — thanks again! It worked perfectly."},
+        {"text": "Just brought it back. You're a lifesaver, thanks!"},
+        {"text": "Thanks for lending me the {item_name}! Saved me from having to buy one."},
+        {"text": "Returned! Really appreciate you sharing it. This community is awesome."},
+        {"text": "All done with the {item_name}. Thanks for being so generous!"},
+        {"text": "Back in your hands! Thanks {owner_name}, it was exactly what I needed."},
+        {"text": "Thank you!! The {item_name} worked like a charm."},
+        {"text": "Just dropped it off — thanks so much! Let me know if you ever need anything."},
+        {"text": "Appreciate you lending it out! I'll definitely return the favor sometime."},
+        {"text": "Thanks again! I owe you one. Seriously."},
+        {"text": "The {item_name} was perfect for my project. Thank you!"}
+      ]
+    }
+  ],
+  "giveaway": [
+    {
+      "phase": "interest",
+      "messages": [
+        {"text": "I'd love to take the {item_name} off your hands if it's still available!"},
+        {"text": "Oh nice, I've been looking for a {item_name}! Is anyone else interested?"},
+        {"text": "This would be perfect for me! I'd put it to good use."},
+        {"text": "Hey {owner_name}! I'd love the {item_name} if you haven't given it away yet."},
+        {"text": "I'm interested! What condition is it in?"},
+        {"text": "I could definitely use this. Is it still up for grabs?"},
+        {"text": "That's so generous of you! I'd happily take it."},
+        {"text": "Hi! My old one just broke so this is perfect timing. Still available?"},
+        {"text": "I've been meaning to get one of these. Would love to have it!"},
+        {"text": "If nobody else has claimed it, I'd be thrilled to take the {item_name}."},
+        {"text": "{owner_name}, I'm interested! Is there anything wrong with it or is it in good shape?"},
+        {"text": "Oh wow, yes please! I've been needing a {item_name}."}
+      ]
+    },
+    {
+      "phase": "owner_reply",
+      "messages": [
+        {"text": "It's yours! When can you come grab it?"},
+        {"text": "You got it, {borrower_name}! It's in great shape. When works for pickup?"},
+        {"text": "All yours! I'm around most evenings if you want to swing by."},
+        {"text": "Happy to give it to someone who'll use it! Come by anytime."},
+        {"text": "Great, it's yours! I just cleaned it up. When are you free?"},
+        {"text": "Awesome, glad someone wants it! I'm home this weekend if you want to pick it up."},
+        {"text": "It's still available and it's yours! Let me know when works."},
+        {"text": "Perfect! I'd rather it go to someone than sit in my closet. When can you come?"},
+        {"text": "You're first in line! When's a good time for you?"},
+        {"text": "{borrower_name}, it's all yours! I'm free tomorrow afternoon."},
+        {"text": "Great! It's in good condition — just needs a new home. When works for you?"},
+        {"text": "Sold! Well, given away! 😄 Let me know when to expect you."}
+      ]
+    },
+    {
+      "phase": "logistics",
+      "messages": [
+        {"text": "When would be a good time for me to come pick it up?"},
+        {"text": "I can come by anytime this week. What works for you?"},
+        {"text": "Happy to pick it up whenever is convenient for you!"},
+        {"text": "Would Saturday work? I have a car so I can come to you."},
+        {"text": "I'm in the neighborhood most afternoons. Just say when!"},
+        {"text": "Could I grab it this evening? I'm free after 6."},
+        {"text": "I can swing by tomorrow if that works?"},
+        {"text": "Let me know your schedule and I'll make it work!"},
+        {"text": "I'll bring a bag/box for it. Does tonight work?"},
+        {"text": "I'm flexible! Would this weekend be easier for you?"},
+        {"text": "I could come by after lunch today if you're around."},
+        {"text": "Just tell me when and where and I'll be there!"}
+      ]
+    },
+    {
+      "phase": "thanks",
+      "messages": [
+        {"text": "Got it! Thank you so much, {owner_name}! This is amazing."},
+        {"text": "You're the best! Thanks for giving this away instead of tossing it."},
+        {"text": "Thank you!! I love that our community does this."},
+        {"text": "So grateful! The {item_name} is going to a good home, I promise."},
+        {"text": "Just picked it up — thank you! It's in great shape."},
+        {"text": "This made my week! Thanks so much for the {item_name}."},
+        {"text": "Appreciate it! Let me know if you ever need anything."},
+        {"text": "Thank you {owner_name}! I'll pay it forward."},
+        {"text": "Got it, thanks! Already putting it to use!"},
+        {"text": "You're awesome for sharing this. Thank you!"},
+        {"text": "Thanks! I love that things find new homes instead of landfills."},
+        {"text": "So kind of you! The {item_name} is perfect. Thank you!"}
+      ]
+    }
+  ],
+  "request": [
+    {
+      "phase": "clarification",
+      "messages": [
+        {"text": "Hey! Can you tell me more about what you need? I might be able to help."},
+        {"text": "What size/type are you looking for specifically?"},
+        {"text": "When do you need this by? I might have something that works."},
+        {"text": "I might be able to help with that. How long would you need it?"},
+        {"text": "Is there a specific brand or model you're looking for?"},
+        {"text": "I have something similar — would that work for you?"},
+        {"text": "Just to clarify — do you need help with the task itself or just the tool?"},
+        {"text": "Any particular requirements? I want to make sure I can actually help."},
+        {"text": "Good timing! I was just about to post something similar. What part of town are you in?"},
+        {"text": "Could you share a bit more detail? I want to see if I have what you need."},
+        {"text": "How urgent is this? I can help but maybe not until this weekend."},
+        {"text": "I've got one but it's a bit older. Would that still work for you?"}
+      ]
+    },
+    {
+      "phase": "offer",
+      "messages": [
+        {"text": "I can help with that! I've got what you need."},
+        {"text": "Happy to help! I've done this before and have the right stuff."},
+        {"text": "Count me in! I'm free this weekend and would love to help."},
+        {"text": "I've got exactly what you need. Want me to bring it over?"},
+        {"text": "I'd be happy to help out! Just tell me when and where."},
+        {"text": "Oh, I can totally help with this! Let me know the details."},
+        {"text": "I have one you can use! It's in good condition."},
+        {"text": "Sign me up! I'm always happy to lend a hand."},
+        {"text": "I can definitely help. Been looking for a way to give back to the community!"},
+        {"text": "I've got experience with this — happy to pitch in!"},
+        {"text": "I can help! I'm available most days this week."},
+        {"text": "Love that you posted this here. I'm in — let me know what you need!"}
+      ]
+    },
+    {
+      "phase": "requester_reply",
+      "messages": [
+        {"text": "That would be perfect, thank you!"},
+        {"text": "Yes, that works! I really appreciate it."},
+        {"text": "That's exactly what I need. You're amazing!"},
+        {"text": "Oh wow, that would be so helpful! Thank you for offering."},
+        {"text": "Sounds great! I'm flexible on timing — whatever works for you."},
+        {"text": "Perfect! I don't need anything fancy, that'll do the trick."},
+        {"text": "Yes please! Even an older one would be totally fine."},
+        {"text": "That would be awesome. I only need it for a day or two."},
+        {"text": "Really? That's so kind of you! Let me know what works."},
+        {"text": "I'm so grateful! This community always comes through."},
+        {"text": "That's great news! Any version/model would work for me."},
+        {"text": "You're a lifesaver! I was worried nobody would have one."}
+      ]
+    },
+    {
+      "phase": "coordination",
+      "messages": [
+        {"text": "Let's figure out a time. When works best for you?"},
+        {"text": "I'm free most evenings this week. What day works?"},
+        {"text": "How about we meet up Saturday morning to get this sorted?"},
+        {"text": "I can come to you or we can meet somewhere in between."},
+        {"text": "Want to do this tomorrow? I'm free all afternoon."},
+        {"text": "Let me check my calendar... How about Thursday?"},
+        {"text": "I'm flexible! Just give me a day's notice and I'm there."},
+        {"text": "Would it help if I dropped it off at your place?"},
+        {"text": "Let's aim for this weekend. I'll bring everything we need."},
+        {"text": "I'm around tomorrow afternoon if that works for you?"},
+        {"text": "Perfect — I'll plan to come by after work. Sound good?"},
+        {"text": "Just text me when you're ready and I'll head over!"}
+      ]
+    },
+    {
+      "phase": "requester_thanks",
+      "messages": [
+        {"text": "Thank you so much! You really saved me here."},
+        {"text": "Wow, that was amazing! I appreciate the help so much."},
+        {"text": "Thanks everyone who offered to help! This community is incredible."},
+        {"text": "Can't believe how fast someone stepped up. Thank you!!"},
+        {"text": "You're a lifesaver! I really appreciate it."},
+        {"text": "All sorted now, thanks to your help! You're awesome."},
+        {"text": "Thank you! I'll definitely be paying this forward."},
+        {"text": "This community never disappoints. Thanks for the help!"},
+        {"text": "Couldn't have done it without you. Thank you so much!"},
+        {"text": "That was so kind of you. Really means a lot!"},
+        {"text": "Thanks for jumping in so quickly! Problem solved."},
+        {"text": "I owe you big time! Thanks for helping out."}
+      ]
+    }
+  ],
+  "experience": [
+    {
+      "phase": "rsvp_excitement",
+      "messages": [
+        {"text": "This sounds amazing! Can't wait!"},
+        {"text": "Count me in! I've been wanting to do something like this."},
+        {"text": "So excited for this! Thanks for organizing it, {owner_name}."},
+        {"text": "Yes!! This is going to be great."},
+        {"text": "This is exactly what I needed this week. Looking forward to it!"},
+        {"text": "Awesome! I'll definitely be there."},
+        {"text": "Sounds like a blast! Can't wait to meet everyone."},
+        {"text": "I've been hoping someone would organize something like this!"},
+        {"text": "Love this idea! See you there!"},
+        {"text": "Just signed up! Really looking forward to this."},
+        {"text": "This is going to be so fun! Thanks for putting it together."}
+      ]
+    },
+    {
+      "phase": "question",
+      "messages": [
+        {"text": "I'm there! Should I bring anything?"},
+        {"text": "Quick question — do I need to bring any equipment?"},
+        {"text": "Is this good for beginners? I've never done this before."},
+        {"text": "What should I wear/bring? Want to make sure I'm prepared."},
+        {"text": "Will there be parking nearby?"},
+        {"text": "Is it okay if I bring a friend who's not in the community yet?"},
+        {"text": "How long does it usually run? Just want to plan my day."},
+        {"text": "Any food/drinks provided or should I bring my own?"},
+        {"text": "What's the plan if it rains? Do we have a backup?"},
+        {"text": "Is there a minimum skill level for this?"},
+        {"text": "Should I bring anything to share? Snacks, drinks?"},
+        {"text": "What's the exact meeting spot? I'm not familiar with the area."},
+        {"text": "Do you need any help setting up beforehand?"}
+      ]
+    },
+    {
+      "phase": "host_reply",
+      "messages": [
+        {"text": "Great question! No special equipment needed, just come as you are."},
+        {"text": "Absolutely beginner-friendly! We'll walk through everything."},
+        {"text": "Just wear comfortable clothes and bring water. I'll handle the rest!"},
+        {"text": "There's a free lot right next to the venue. Easy parking!"},
+        {"text": "Friends are always welcome! The more the merrier."},
+        {"text": "Usually runs about 2 hours, but no pressure to stay the whole time."},
+        {"text": "I'll bring snacks and water, but feel free to bring your favorites!"},
+        {"text": "We'll move indoors if the weather's bad. I'll send an update day-of."},
+        {"text": "All levels welcome! We'll have experienced folks to help out."},
+        {"text": "If you want to bring snacks, that'd be awesome but not required!"},
+        {"text": "I'll drop a pin in the chat the day before. It's easy to find!"},
+        {"text": "I'd love help setting up! Come 30 min early if you can."}
+      ]
+    },
+    {
+      "phase": "mention_suggestion",
+      "messages": [
+        {"text": "Hey @[user:{mention_user_id}:{mention_user_name}], you should check this out!"},
+        {"text": "@[user:{mention_user_id}:{mention_user_name}] I think you'd love this!"},
+        {"text": "This seems right up your alley @[user:{mention_user_id}:{mention_user_name}]!"},
+        {"text": "@[user:{mention_user_id}:{mention_user_name}] — want to come to this? It'll be fun!"},
+        {"text": "Hey @[user:{mention_user_id}:{mention_user_name}], have you seen this? You should join!"},
+        {"text": "@[user:{mention_user_id}:{mention_user_name}] this would be perfect for you!"}
+      ]
+    }
+  ]
+}

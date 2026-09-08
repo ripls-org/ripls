@@ -1,0 +1,12 @@
+{
+  "id": "deeper",
+  "axis": "glass",
+  "label": "Deeper scrim (70% / 10%)",
+  "description": "Drives the worst-case composite from grey 175 to 94, lifting white-on-glass from 2.19:1 to 6.48:1. The sheet alpha drops so the scrim is not undone by white being layered back on top.",
+  "glass": {
+    "scrim": { "$value": "#B3000000" },
+    "scrim-heavy": { "$value": "#D9000000" },
+    "scrim-tint": { "$value": "#66000000" },
+    "surface": { "$value": "#1AFFFFFF" }
+  }
+}

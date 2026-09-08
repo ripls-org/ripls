@@ -1,0 +1,11 @@
+# Go packages allowed to have no tests, one import path per line.
+# This is a temporary exemption — see #1438 for the cleanup tracker.
+# Do not extend without first filing a follow-up issue to add tests.
+
+# Pure type / interface re-exports for the unified-create service-
+# isolation seam. The interface contracts are exercised by the per-
+# type single-create + unified-create integration test suites; no
+# in-package tests yet. Cleanup tracked in #1906.
+go.ripls.org/ripls/server/genai/experiencegen
+go.ripls.org/ripls/server/genai/geargen
+go.ripls.org/ripls/server/genai/requestgen

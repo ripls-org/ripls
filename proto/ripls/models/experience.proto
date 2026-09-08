@@ -1,0 +1,245 @@
+// Storage models for experiences (community events and activities).
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+import "ripls/models/common.proto";
+import "ripls/models/impact_estimate.proto";
+import "ripls/models/time.proto";
+import "ripls/models/value.proto";
+
+// PlanningNeed and PlanningContribution live in planning.proto.
+// Experiences use those shared types via experience_id scope.
+
+// ExperienceState represents the lifecycle state of an experience.
+enum ExperienceState {
+  EXPERIENCE_STATE_UNSPECIFIED = 0;
+  EXPERIENCE_STATE_ACTIVE = 1;
+  EXPERIENCE_STATE_JOINED = 2;
+  EXPERIENCE_STATE_IN_PROCESS = 3;
+  EXPERIENCE_STATE_COMPLETED = 4;
+  EXPERIENCE_STATE_CANCELLED = 5;
+}
+
+// Experience represents a community event stored in the database.
+message Experience {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  string description = 4;
+  ExperienceState state = 5;
+  repeated string media_ids = 6;
+  string location_id = 7;
+  ExperienceTime time = 8;
+  int32 max_participants = 9;
+  string conversation_id = 10;
+
+  // State transition timestamps.
+  optional int64 started_at_unix_sec = 11;    // When experience was marked as IN_PROCESS
+  optional int64 completed_at_unix_sec = 12;  // When experience was marked as COMPLETED
+
+  // Optional summary of how the experience went (owner-written, AI-generated).
+  // Added for completion tracking and summary generation.
+  optional string completion_summary = 13;
+
+  // Source URL if experience was created from a website (Eventbrite, Meetup, etc.)
+  optional string source_url = 14;
+
+  // Reserved field 15 (was temporarily used for string category, now retired to avoid conflicts).
+  reserved 15;
+
+  // Estimated impact of this experience (money saved, emissions prevented, time saved).
+  ImpactEstimate impact_estimate = 16;
+
+  // When set, the money/emissions/time dimensions of [impact_estimate] were
+  // adopted from this experience's gear-backed child transfers at completion
+  // (#2724, mirroring Request.impact_adopted_from_transfer_id). Those
+  // dimensions are display copies — aggregation counts them once, on the
+  // transfers — while Quality Time remains the experience's own contribution.
+  optional string impact_adopted_from_transfer_id = 36;
+
+  // AI-generated estimated commercial value of participating in this experience.
+  ValueEstimate value_estimate = 17;
+
+  // AI-detected category (e.g., "Fitness", "Cooking", "Art & Craft").
+  string category = 18;
+
+  // Soft deletion metadata.
+  optional DeletedMetadata deleted = 20;
+
+  // Whether the owner has started a time poll (Ask the Group flow).
+  // Set to true when the owner calls ProposeTime in poll mode.
+  // Cleared when the owner calls ConfirmTime or CancelTimePoll.
+  bool time_poll_active = 21;
+
+  // Whether a time poll has been completed (ended or cancelled after creation).
+  // Set to true by CancelTimePoll. Never cleared — once a poll has existed,
+  // this remains true so the client can distinguish poll proposals from
+  // direct time-set proposals.
+  optional bool time_poll_completed = 22;
+
+  // Identifier of the most recently started poll. Stamped on every proposal
+  // created while [time_poll_active] is true. When a brand-new poll starts a
+  // fresh UUID is generated so old proposals stay grouped under their
+  // original poll_id, giving the client a per-poll history.
+  optional string current_poll_id = 26;
+
+  // Owner-overridden social context for Quality Time computation.
+  // Stored as int32 to avoid cross-package enum imports (mirrors api enums).
+  // Fields: tie_strength=1, reciprocity=2, novelty=3, vulnerability=4, modality=5.
+  // Zero value means not set for that dimension (use config default).
+  SocialContext social_context = 23;
+
+  // LLM-generated suggestion chip labels for the Plan tab (e.g., "bring folding chairs").
+  // Generated eagerly at creation time; empty if generation failed or was unavailable.
+  repeated string suggestions = 24;
+
+  // Short human-readable category label generated alongside suggestions (e.g., "outdoor hike").
+  // May be empty if suggestions were not generated.
+  optional string category_hint = 25;
+
+  // Whether a location poll is currently active for this experience.
+  // Set to true when a participant calls ProposeLocation and no poll is
+  // already running. Cleared when the owner calls ConfirmLocation or
+  // CancelLocationPoll.
+  bool location_poll_active = 27;
+
+  // Whether a poll ended awaiting owner confirmation — proposals exist
+  // and the owner should pick a winner. Set when a deadline passes (future
+  // work) or via natural ending paths. Cleared by CancelLocationPoll
+  // (returns the experience to a fresh "no poll" state) and implicitly
+  // by ConfirmLocation (which sets [location_id] so the "needs picking"
+  // surface no longer applies).
+  optional bool location_poll_completed = 28;
+
+  // Identifier of the most recently started location poll. Stamped on every
+  // proposal created while [location_poll_active] is true. A brand-new poll
+  // mints a fresh UUID, so old proposals stay grouped under their original
+  // poll_id for per-poll history rendering on the client.
+  optional string current_location_poll_id = 29;
+
+  // Unix-second deadline by which participants should respond to the active
+  // location poll. Set via SetLocationPollDeadline; cleared when a fresh
+  // poll opens. Informational — the server does not auto-close at this time.
+  optional int64 location_poll_deadline_unix_sec = 30;
+
+  // When true, no new location proposals can be added to the active poll.
+  // Set via LockLocationProposals; cleared on poll start / confirm / cancel.
+  optional bool location_proposals_locked = 31;
+
+  // Unix-second deadline by which participants should respond to the active
+  // time poll. Set via SetTimePollDeadline; cleared when a fresh poll opens.
+  // Informational — the server does not auto-close at this time.
+  optional int64 time_poll_deadline_unix_sec = 32;
+
+  // When true, no new time proposals can be added to the active poll.
+  // Set via LockTimeProposals; cleared on poll start / confirm / cancel.
+  optional bool time_proposals_locked = 33;
+
+  // Anonymous count of "I'm out" presses from the public SSR event
+  // landing at /go/{code}. Incremented per press by the web service's
+  // RecordWebDecline handler. The host sees this counter in the app
+  // alongside member declines; no identity is captured. Rate-limited
+  // per request source by the existing middleware.
+  optional int32 web_decline_count = 34;
+
+  // When the experience was created (Unix seconds), set once on creation.
+  // Drives most-recent-first ordering of the owner's events in the Home
+  // "Yours" section, mirroring created_at_unix_sec on Request and Gear.
+  int64 created_at_unix_sec = 35;
+}
+
+// SocialContext stores owner-overridable social attribute tiers
+// used to compute Quality Time. Fields mirror SocialContext in the API
+// proto but use int32 to avoid cross-package enum imports.
+message SocialContext {
+  int32 tie_strength = 1;
+  int32 reciprocity = 2;
+  int32 novelty = 3;
+  int32 vulnerability = 4;
+  int32 modality = 5;
+}
+
+// ExperienceRSVP represents a user's RSVP to an experience.
+// RSVPs are community-specific to prevent cross-community data leakage.
+message ExperienceRSVP {
+  // Fields 5 and 6 were the string-typed intention/attended (#2829). The
+  // enum replacements below carry fresh numbers because the wire type
+  // changed (string is wire type 2, enum is wire type 0); the numbers can
+  // never be reused.
+  reserved 5, 6;
+
+  string id = 1;
+  string experience_id = 2;
+  string user_id = 3;
+  string community_id = 4;           // Community where user RSVPed (prevents cross-community leakage)
+
+  // The participant's stated intention before the experience.
+  RSVPIntention intention = 11;
+
+  // Whether the participant actually attended, recorded afterwards.
+  // ATTENDED_STATUS_UNKNOWN means "not yet recorded" and is distinct from
+  // UNSPECIFIED, which means a freshly created RSVP nobody has touched.
+  AttendedStatus attended = 12;
+
+  int64 rsvped_at_unix_sec = 7;      // When they first RSVPed
+  int64 last_updated_unix_sec = 8;   // When they last changed intention
+  // Provisional user ID for RSVPs on behalf of non-registered participants.
+  // Exactly one of user_id and provisional_user_id should be non-empty.
+  optional string provisional_user_id = 9;
+
+  // Soft deletion metadata. Set when the parent experience is deleted so
+  // this RSVP stops surfacing on participant "my upcoming events" screens.
+  optional DeletedMetadata deleted = 10;
+}
+
+// RSVPIntention is a participant's stated intention before an experience.
+// Mirrors api.RSVPIntention — the two packages never import each other
+// (docs/proto_conventions.md), so the storage side carries its own copy.
+enum RSVPIntention {
+  RSVP_INTENTION_UNSPECIFIED = 0;
+  RSVP_INTENTION_YES = 1;
+  RSVP_INTENTION_MAYBE = 2;
+  RSVP_INTENTION_NO = 3;
+}
+
+// AttendedStatus is whether a participant turned up, recorded after the
+// experience. UNKNOWN is the steady state between an RSVP and the host taking
+// attendance; UNSPECIFIED means attendance was never touched at all.
+enum AttendedStatus {
+  ATTENDED_STATUS_UNSPECIFIED = 0;
+  ATTENDED_STATUS_UNKNOWN = 1;
+  ATTENDED_STATUS_YES = 2;
+  ATTENDED_STATUS_NO = 3;
+}
+
+// ExperienceTime represents when an experience occurs (shared with API).
+message ExperienceTime {
+  oneof time_type {
+    SpecificTime specific = 1;
+    TimeRange range = 2;
+    TimeTBD tbd = 3;
+  }
+}
+
+// ExperienceTimeProposal represents a proposed time slot for an experience.
+message ExperienceTimeProposal {
+  string id = 1;
+  string experience_id = 2;
+  string proposed_by_user_id = 3;
+  ExperienceTime time = 4;
+  int64 proposed_at_unix_sec = 5;
+  bool is_confirmed = 6;  // Set to true when organizer confirms this slot
+  // Identifier of the poll this proposal belongs to. All proposals created
+  // during the same poll run share the same poll_id, allowing the client to
+  // group historical polls separately. Optional for backwards compatibility.
+  optional string poll_id = 7;
+
+  // Soft deletion metadata. Set when the parent experience is deleted so
+  // this proposal stops surfacing on participant time-poll screens.
+  optional DeletedMetadata deleted = 8;
+}
+

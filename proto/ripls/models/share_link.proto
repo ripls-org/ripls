@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/common.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// A shareable link scoped to a community that points at a specific
+// target — the community itself, or a particular item within it.
+// Created by an inviting member; resolvable by short_code; remains
+// usable until revoked.
+message ShareLink {
+  // A unique identifier for this share link.
+  string id = 1;
+
+  // Short alphanumeric code that identifies the link in URLs
+  // (e.g., "Xk9mN2pQ").
+  string short_code = 2;
+
+  // The user who created this share link.
+  string inviter_id = 3;
+
+  // The community this share link is scoped to. Always set, regardless
+  // of which target variant is populated.
+  string community_id = 4;
+
+  // Identifies what the link points at. Exactly one variant is set;
+  // the populated variant is itself the discriminator.
+  oneof target {
+    // The link points at the community itself (plain "join this
+    // community" invite). The value mirrors community_id.
+    string community_invite_id = 5;
+
+    // The link points at a specific gear item within the community.
+    string gear_id = 6;
+
+    // The link points at a specific transfer (loan or giveaway) within
+    // the community.
+    string transfer_id = 7;
+
+    // The link points at a specific request within the community.
+    string request_id = 8;
+
+    // The link points at a specific experience (event) within the
+    // community.
+    string experience_id = 9;
+  }
+
+  // Whether the share link has been manually revoked by its creator.
+  bool is_revoked = 10;
+
+  // When the share link was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 11;
+
+  // If set, this share link is tied to a specific provisional user account.
+  // When the recipient registers using this link, the provisional account
+  // is merged into their new real account.
+  optional string provisional_user_id = 12;
+
+  // Soft deletion metadata. Set when the parent community (or the
+  // target item, for non-community variants) is soft-deleted so the
+  // link stops working; cleared on restore. `is_revoked` is the
+  // user-facing kill switch and is independent — a link revoked by
+  // its inviter stays revoked across delete/restore cycles.
+  // Server-only; not exposed on the API.
+  optional DeletedMetadata deleted = 13;
+}

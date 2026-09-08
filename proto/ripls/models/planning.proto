@@ -1,0 +1,68 @@
+// Storage models for planning (needs and contributions) shared across
+// experiences and help requests.
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+import "ripls/models/common.proto";
+
+// PlanningNeed represents something still needed for an experience or request.
+// Anyone with the right permission for the scope can propose or remove their own needs;
+// slot counts allow multiple people to cover the same need.
+message PlanningNeed {
+  string id = 1;
+  string proposer_id = 2;
+  string name = 3;
+  optional string note = 4;
+  int32 slots = 5;           // Total slots requested (1–20).
+  int32 slots_remaining = 6; // Unclaimed slots; decremented on claim, incremented on unclaim.
+  int64 created_at_unix_sec = 7;
+  optional DeletedMetadata deleted = 8;
+
+  // Scope: exactly one of experience_id or request_id is set.
+  oneof scope {
+    string experience_id = 9;
+    string request_id = 10;
+  }
+}
+
+// PlanningContribution represents something a participant is bringing or doing
+// for an experience or request. Can be created free-form or by claiming a need.
+// When created from a claim the from_need_id and the original need name/note are
+// preserved so the contribution remains meaningful even if the parent need is later removed.
+message PlanningContribution {
+  string id = 1;
+  string contributor_id = 2;
+  string title = 3;
+  optional string description = 4;
+  optional string from_need_id = 5;          // Set when created by claiming a need.
+  optional string original_need_name = 6;    // Snapshot of need name at claim time.
+  optional string original_need_note = 7;    // Snapshot of need note at claim time.
+  int64 created_at_unix_sec = 8;
+  optional int64 updated_at_unix_sec = 9;
+  optional DeletedMetadata deleted = 10;
+
+  // Scope: exactly one of experience_id or request_id is set.
+  oneof scope {
+    string experience_id = 11;
+    string request_id = 12;
+  }
+
+  // Optional link to a Gear item the contributor is bringing or offering.
+  // At most one link per contribution; absence means the contribution is
+  // not linked to a specific item.
+  optional string gear_id = 13;
+
+  // Optional link to the Transfer created when this contribution escalated
+  // into a real loan/giveaway offer on the linked gear (#2702). Cleared when
+  // that transfer is cancelled.
+  optional string transfer_id = 14;
+
+  // When set, the scope owner (the requester) accepted this contribution's
+  // gear-backed offer ("this one works"). Unix seconds. Only meaningful on
+  // contributions carrying a transfer link.
+  optional int64 accepted_at_unix_sec = 15;
+}

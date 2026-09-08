@@ -1,0 +1,67 @@
+title = "Ripls gitleaks config"
+
+[extend]
+useDefault = true
+
+# Project-specific rule: server CLI flags that take credentials as their value.
+# Catches the exact pattern that leaked into package.json (#1768).
+[[rules]]
+id = "ripls-cli-flag-credential"
+description = "Credential passed as CLI flag value (e.g. --openai-api-key=...)"
+regex = '''--(openai-api-key|anthropic-api-key|mailgun-api-key|unsplash-access-key|pexels-api-key|pixabay-api-key|mapbox-access-token|jwt-signing-secret|fcm-credentials|metrics-auth-token|github-app-private-key)=([A-Za-z0-9+/=_\-\.]{16,})'''
+keywords = [
+  "openai-api-key",
+  "anthropic-api-key",
+  "mailgun-api-key",
+  "jwt-signing-secret",
+  "metrics-auth-token",
+  "fcm-credentials",
+]
+tags = ["credential", "ripls"]
+
+# Project-wide allowlist for known false positives and public-by-design client config.
+# Anything draining as Phase 2 cleanups land lives in .gitleaksignore, not here.
+[allowlist]
+description = "Permanent allowlist for false positives and public client config"
+
+paths = [
+  # Public-by-design Firebase client config.
+  '''app/lib/firebase_options\.dart$''',
+  '''app/android/app/.*google-services\.json$''',
+  # Build/install artifacts (also gitignored, but allowlist defensively).
+  '''app/build/''',
+  '''app/ios/Pods/''',
+  # Dependency lockfiles whose SHA hashes trip generic-api-key entropy detection.
+  '''.*Podfile\.lock$''',
+  '''app/ios/Pods/Manifest\.lock$''',
+  # Test fixtures with synthetic credentials. Scoped to *_test.* file suffixes.
+  '''.*_test\.go$''',
+  '''.*_test\.dart$''',
+  # Docs that contain placeholder example flag usage (--fcm-credentials=/path/to/...).
+  # Deployment-specific guidance (rotation runbooks, secret inventories). Kept
+  # out of the public export entirely; allowlisted as a subtree because these
+  # docs necessarily quote credential shapes and example flag values.
+  '''^docs/private/''',
+  '''docs/push_notifications\.md$''',
+  # Server READMEs containing token-format documentation examples.
+  '''server/README\.md$''',
+  '''server/logging/README\.md$''',
+]
+
+regexes = [
+  # Synthetic test prefixes used in test fixtures and sample documentation.
+  '''sk-ant-test''',
+  '''sk-proj-test''',
+  '''sk_test_''',
+  '''sk_live_abc''',
+  # AWS canonical example access key (RFC-equivalent).
+  '''AKIAIOSFODNN7EXAMPLE''',
+  # Specific synthetic test value in server/notifications/noop/provider_test.go.
+  '''abcdefghij1234567890klmnopqrst''',
+  # Secret Manager secret *names* (not values) referenced from Terraform
+  # for value_source.secret_key_ref wiring (#1770). Names, not credentials —
+  # they identify where a value lives, not what it is.
+  '''gear-db-password''',
+  '''ripls-db-password''',
+  '''metabase-admin-password''',
+]

@@ -1,0 +1,139 @@
+{{/*
+  Shared fragments for every HTML email. Parsed into each template by
+  parseEmailHTML, so a change here reaches all of them at once.
+
+  Only self-contained, balanced fragments belong here. html/template's
+  contextual escaper analyzes each define independently and rejects one that
+  ends mid-element, so "open the wrapper" / "close the wrapper" pairs are not
+  expressible — per-template copy (headings, body, footers) stays in the
+  templates.
+*/}}
+
+{{/*
+  The document head, including dark-mode support.
+
+  Declaring color-scheme is what stops Apple Mail from inventing its own dark
+  rendering by inverting our light one. That inversion has to be replaced, not
+  merely switched off: without the rules below, a dark-mode reader would get
+  the full-brightness light email instead.
+
+  The light palette stays inline on every element — the only form that survives
+  clients which strip <style> — and these rules override it where the client
+  supports both an embedded stylesheet and prefers-color-scheme (Apple Mail
+  does; Gmail largely does not, and simply keeps the light rendering it has
+  always had). !important is required because inline styles otherwise win.
+
+  Roles invert rather than mapping token-for-token: the page takes the deepest
+  Background and the card lifts off it in Surface, the reverse of light, and an
+  inset inside the card takes Border so it still clears the card. See
+  emailPalette in palette.go.
+*/}}
+{{define "head"}}<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
+  <style>
+    :root {
+      color-scheme: light dark;
+      supported-color-schemes: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      .r-page {
+        background: {{.Colors.Dark.Background}} !important;
+        color: {{.Colors.Dark.TextSecondary}} !important;
+      }
+      .r-card {
+        background-color: {{.Colors.Dark.Surface}} !important;
+      }
+      .r-inset {
+        background-color: {{.Colors.Dark.Border}} !important;
+      }
+      .r-chip {
+        background-color: {{.Colors.Dark.Border}} !important;
+        color: {{.Colors.Dark.TextPrimary}} !important;
+      }
+      .r-h {
+        color: {{.Colors.Dark.TextPrimary}} !important;
+      }
+      .r-t {
+        color: {{.Colors.Dark.TextSecondary}} !important;
+      }
+      .r-f {
+        color: {{.Colors.Dark.TextFaint}} !important;
+      }
+      .r-link {
+        color: {{.Colors.Dark.Primary}} !important;
+      }
+      .r-rule {
+        border-left-color: {{.Colors.Dark.Primary}} !important;
+      }
+      .r-bd {
+        border-color: {{.Colors.Dark.Border}} !important;
+      }
+      .r-num {
+        color: {{.Colors.Dark.Primary}} !important;
+      }
+      .r-num-alt {
+        color: {{.Colors.Dark.Info}} !important;
+      }
+      .r-btn {
+        background: linear-gradient(
+          135deg,
+          {{.Colors.Dark.Primary}} 0%,
+          {{.Colors.Dark.PrimaryHover}} 100%
+        ) !important;
+        color: {{.Colors.Dark.OnPrimary}} !important;
+      }
+    }
+  </style>
+</head>{{end}}
+
+{{/*
+  The header logo, and the smaller brand-bar variant. Centered by align= on the
+  table rather than by margin:auto on the image: Apple Mail honors width,
+  height and display on a block <img> but drops its auto margins, which
+  left-aligned this logo in six templates at once (#2927). The <td> zeroes
+  line-height and font-size so the block image leaves no descender gap.
+*/}}
+{{define "logo"}}<table
+  role="presentation"
+  align="center"
+  border="0"
+  cellpadding="0"
+  cellspacing="0"
+  style="margin: 0 auto"
+>
+  <tr>
+    <td style="padding: 0 0 20px; line-height: 0; font-size: 0">
+      <img
+        src="cid:logo.png"
+        alt="Ripls"
+        width="80"
+        height="80"
+        style="width: 80px; height: 80px; display: block; border: 0"
+      />
+    </td>
+  </tr>
+</table>{{end}}
+
+{{define "logo_brandbar"}}<table
+  role="presentation"
+  align="center"
+  border="0"
+  cellpadding="0"
+  cellspacing="0"
+  style="margin: 0 auto"
+>
+  <tr>
+    <td style="padding: 18px 0 0; line-height: 0; font-size: 0">
+      <img
+        src="cid:logo.png"
+        alt="Ripls"
+        width="40"
+        height="40"
+        style="width: 40px; height: 40px; display: block; border: 0"
+      />
+    </td>
+  </tr>
+</table>{{end}}

@@ -1,0 +1,472 @@
+name: Claude Plan Issue
+
+on:
+  issues:
+    types: [labeled, opened, assigned]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to plan
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+  id-token: write
+
+jobs:
+  discover:
+    # Trigger paths:
+    #   - workflow_dispatch (manual)
+    #   - issues labeled with `claude-fix`
+    #   - issues opened or assigned with @claude in title or body
+    #   - issue comments containing @claude (not PR review comments)
+    # Skip self-triggered events: when Opus posts "Plan drafted at PR #..."
+    # on the issue, the body contains `@claude` literally as part of the
+    # reviewer instructions. Without this guard the workflow re-fires on its
+    # own follow-up comment and the discover job's "plan PR already exists"
+    # message gets posted as noise.
+    # TRUSTED ACTORS ONLY. `issues` and `issue_comment` fire for anyone who can
+    # see the repo, so on a public repo the author_association check below is
+    # the entire security boundary: without it, any GitHub user could comment
+    # "@claude" and start a job holding CLAUDE_WORKFLOW_PAT (push + PR scope)
+    # and GCP_SERVICE_ACCOUNT_KEY_DEV. workflow_dispatch needs write access
+    # already, so it is trusted by construction. See #2953 / OSS-7 #2959.
+    if: |
+      github.actor != 'claude[bot]' && (
+        github.event_name == 'workflow_dispatch' ||
+        (
+          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association || github.event.issue.author_association) &&
+          (
+            (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'claude-fix') ||
+            (github.event_name == 'issues' && github.event.action != 'labeled' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))) ||
+            (github.event_name == 'issue_comment' && !github.event.issue.pull_request && contains(github.event.comment.body, '@claude'))
+          )
+        )
+      )
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    outputs:
+      should_run: ${{ steps.guard.outputs.should_run }}
+      issue_number: ${{ steps.guard.outputs.issue_number }}
+    steps:
+      - id: guard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Required: this job runs on a hosted runner without a checkout, so
+          # gh has no git remote to infer the repo from. Without GH_REPO,
+          # `gh pr list`/`gh issue comment` fail with "fatal: not a git repository".
+          GH_REPO: ${{ github.repository }}
+          INPUT_NUMBER: ${{ github.event.inputs.issue_number }}
+          EVENT_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          ISSUE_NUMBER="${INPUT_NUMBER:-$EVENT_NUMBER}"
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "::error::Could not resolve issue number from event."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          # Re-trigger guard: if any open PR (draft or otherwise) already
+          # carries the plan-PR marker for this issue, refuse to run a second
+          # planning pass and direct the human to the existing PR.
+          EXISTING=$(gh pr list \
+            --state open \
+            --search "in:body \"<!-- claude-plan-pr: ${ISSUE_NUMBER} -->\"" \
+            --json number,url,isDraft \
+            --jq '.[0]')
+          if [ -n "${EXISTING:-}" ] && [ "$EXISTING" != "null" ]; then
+            EXISTING_URL=$(echo "$EXISTING" | jq -r '.url')
+            EXISTING_NUM=$(echo "$EXISTING" | jq -r '.number')
+            echo "::notice::Plan PR #${EXISTING_NUM} already open for issue #${ISSUE_NUMBER} (${EXISTING_URL}); skipping."
+            gh issue comment "$ISSUE_NUMBER" --body "A plan PR already exists for this issue: ${EXISTING_URL}. Edit the plan there, then comment \`@claude implement\` on that PR to start implementation."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+
+  plan:
+    needs: discover
+    if: needs.discover.outputs.should_run == 'true'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    env:
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+      ISSUE_NUMBER: ${{ needs.discover.outputs.issue_number }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          lfs: true
+          token: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Ensure Git LFS files are pulled
+        run: |
+          git lfs install --local
+          git lfs pull
+
+      - name: Setup git identity
+        run: |
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
+
+      - name: Create fix branch
+        id: branch
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          BRANCH_NAME="claude/fix-issue-${ISSUE_NUMBER}-${RUN_ID}"
+          git checkout -b "$BRANCH_NAME"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      - name: Install Flutter dependencies
+        run: cd app && flutter pub get
+
+      - name: Generate Dart freezed/mockito code
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Fetch issue details
+        id: issue
+        run: |
+          gh issue view "$ISSUE_NUMBER" \
+            --json number,title,body,comments,labels,assignees,milestone,state,createdAt,updatedAt,url \
+            > /tmp/issue.json
+          {
+            echo "title<<__EOF__"
+            jq -r '.title' /tmp/issue.json
+            echo "__EOF__"
+          } >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ensure stage labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Idempotent: `gh label create` errors if the label already exists,
+          # so swallow that case. These labels drive routing between the plan,
+          # refine, and implement workflows.
+          gh label create claude-plan-pr \
+            --color '0E8A16' \
+            --description 'Draft plan PR awaiting review/refinement' 2>/dev/null || true
+          gh label create claude-implementing \
+            --color 'FBCA04' \
+            --description 'Sonnet is currently implementing the plan' 2>/dev/null || true
+          gh label create claude-implemented \
+            --color '5319E7' \
+            --description 'Plan implemented; ready for code review' 2>/dev/null || true
+
+      - name: Run Claude Code (Opus) to triage and plan
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        env:
+          # Deliberately no ANTHROPIC_API_KEY: Claude Code prefers it over
+          # claude_code_oauth_token, silently billing runs per-token instead
+          # of to the subscription. AI integration tests skip without it.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          VERTEX_AI_PROJECT: ${{ vars.GCP_PROJECT_DEV }}
+          CI: "true"
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ripls-alerts-bot is the dedicated GitHub App used by the
+          # cloud_functions/ codebase to file issues from Crashlytics +
+          # Cloud Monitoring (#1148+#1149). It is *not* ripls-feedback-bot
+          # (which the Go server's feedback service uses to file
+          # user-supplied feedback). Keeping the two identities separate
+          # means user-content issues filed by ripls-feedback-bot can
+          # never trigger Claude planning, even if they were ever
+          # accidentally tagged with claude-fix — only ripls-alerts-bot
+          # is allowlisted here.
+          allowed_bots: ripls-alerts-bot
+          prompt: |
+            You are an autonomous engineer triaging GitHub issue #${{ env.ISSUE_NUMBER }}
+            ("${{ steps.issue.outputs.title }}") in the ripls repository.
+
+            Repository: ${{ github.repository }}
+            Issue:      #${{ env.ISSUE_NUMBER }}
+            Branch:     ${{ steps.branch.outputs.branch_name }} (already created and checked out)
+            Issue JSON: /tmp/issue.json (full body + comments)
+
+            ## Mission
+
+            Pick the right path for this issue and execute it. Two paths exist:
+
+              **Fast path** — implement the fix end-to-end yourself and open a
+              regular (non-draft) PR. For trivial, unambiguous fixes only
+              (typos, named nil checks, one-line config tweaks, missing
+              imports, stack-traced off-by-ones).
+
+              **Plan path** — write a plan document, open a **draft** PR with
+              just the plan, and stop. A reviewer will edit the plan as
+              needed and trigger implementation by commenting `@claude implement`
+              on the draft PR. Use this for anything non-trivial: multi-file
+              changes, public-interface changes, real design tradeoffs, or
+              anything with more than one plausible approach.
+
+              When in doubt, take the plan path.
+
+            The run is **only complete** when one of:
+
+              (a) **Fast path**: you pushed `${{ steps.branch.outputs.branch_name }}`
+                  to origin, opened a regular PR with `gh pr create`, and
+                  commented on the issue linking to it.
+              (b) **Plan path**: you committed the plan file, pushed
+                  `${{ steps.branch.outputs.branch_name }}`, opened a **draft**
+                  PR with the required markers (see below), and commented on
+                  the issue linking to it.
+              (c) **Blocked**: you commented on the issue explaining what's
+                  stopping you and what a human should do.
+
+            Do not stop after analysis. Don't write a wrap-up message — push
+            commits and open a PR (a or b), or post a blocked comment (c).
+
+            ## Process
+
+            Use the TodoWrite tool to track items 1–N as you go.
+
+            1. Read /tmp/issue.json. Read every comment, not just the body.
+            2. Research the relevant code (Read, Grep, Bash). Identify the root
+               cause and the existing patterns your fix should follow
+               (CLAUDE.md is authoritative).
+            3. **Triage: fast path or plan path?** State your choice and a
+               one-line rationale.
+                 - **Fast path** → go to step 4F.
+                 - **Plan path** → go to step 4P.
+                 - When in doubt, plan path.
+
+            ### Fast path
+
+            4F. Implement the fix. Minimal, focused, root-cause. Add or update
+                tests that exercise the bug.
+            5F. Run the relevant test suites and iterate until green:
+                  - Proto changes: `npm run generate:proto` first
+                  - Go changes: `npm run build` and `go test -tags=integration -timeout 20m ./...`
+                  - Flutter changes: `cd app && flutter test --reporter github`
+                If tests still fail after several honest attempts, skip to
+                step 6X (blocked exit).
+            6F. Ship it. All in one go:
+
+                    git add -A
+                    git commit -m "<descriptive message; no Claude branding>"
+                    git push -u origin ${{ steps.branch.outputs.branch_name }}
+                    gh pr create --base main \
+                      --head ${{ steps.branch.outputs.branch_name }} \
+                      --title "<concise summary>" \
+                      --body "Fixes #${{ env.ISSUE_NUMBER }}
+
+                    <root cause + approach summary, list of test commands and outcomes>"
+                    gh issue comment ${{ env.ISSUE_NUMBER }} --body "Drafted a fix in <PR URL>."
+
+                A follow-up workflow step assigns the PR to the human who
+                triggered this run, so you don't need to do it yourself.
+
+                Then exit. Do not merge the PR.
+
+            ### Plan path
+
+            4P. Write a plan to `docs/issues/${{ env.ISSUE_NUMBER }}-<short-slug>.md`.
+                Use the exact template from `.claude/skills/ripls-issue/SKILL.md`
+                (Problem Statement, Context from Comments, Potential Solutions
+                with 2-3 options, Recommendation, Open Questions with
+                recommended answers, phased Implementation Plan, Related
+                Issues). The plan is the contract that a separate Sonnet agent
+                will execute — be specific about file paths, function names,
+                and acceptance criteria.
+            5P. Invoke the `ripls-audit` skill against the plan path. When the
+                skill returns, do NOT write a wrap-up message — apply any
+                blocking feedback inline and continue.
+            6P. **Confidence check.** Decide honestly: do you understand the
+                root cause? Is the recommended option clearly correct? If no,
+                skip to step 6X (blocked exit). Do not commit a half-baked
+                plan.
+            7P. Commit the plan and push. The plan file must be the **only**
+                change on this branch — do not implement anything yet:
+
+                    git add docs/issues/${{ env.ISSUE_NUMBER }}-*.md
+                    git commit -m "Plan for #${{ env.ISSUE_NUMBER }}: <one-line summary>"
+                    git push -u origin ${{ steps.branch.outputs.branch_name }}
+
+            8P. Open a **draft** PR. The body must:
+
+                  - Start with the two HTML-comment markers verbatim — they're
+                    how the refine and implement workflows find the plan and
+                    must survive every future edit:
+
+                        <!-- claude-plan-pr: ${{ env.ISSUE_NUMBER }} -->
+                        <!-- claude-plan-path: docs/issues/${{ env.ISSUE_NUMBER }}-<short-slug>.md -->
+
+                  - Contain a **~500-word standalone summary of the plan** so a
+                    reviewer can sign off from the PR landing page without
+                    opening the plan file. Use this section structure
+                    (omit "Risks / open questions" if there are none):
+
+                        ## Problem (~100 words)
+                        ## Approach (~150 words — recommended option, why over alternatives)
+                        ## Implementation outline (~200 words — bullet points of major steps Sonnet will take, named files / functions where they exist)
+                        ## Risks / open questions (~50 words, optional)
+
+                  - End with `Fixes #${{ env.ISSUE_NUMBER }}.` and a link to
+                    the full plan file in the branch
+                    (`docs/issues/${{ env.ISSUE_NUMBER }}-<short-slug>.md`).
+
+                  - **Do not** put reviewer instructions in the body. Those
+                    go in a separate comment in step 9P so the description
+                    can stay focused on the plan itself.
+
+                Open the PR and tag it with the plan-stage label so the
+                refine and implement workflows can route correctly:
+
+                    gh pr create --draft --base main \
+                      --head ${{ steps.branch.outputs.branch_name }} \
+                      --title "[plan] Fix #${{ env.ISSUE_NUMBER }}: <concise summary>" \
+                      --body "<the body above with markers + summary + Fixes line>"
+                    gh pr edit <PR-NUMBER> --add-label claude-plan-pr
+
+                A follow-up workflow step assigns the PR to the human who
+                triggered this run, so you don't need to do it yourself.
+
+            9P. Post a sticky reviewer-instructions comment on the new PR
+                (separate from the description so the description is reserved
+                for the plan summary), and comment on the issue:
+
+                    gh pr comment <PR-NUMBER> --body "**How to proceed**
+
+                    - **Iterate on the plan**: comment \`@claude <what to change>\` on this PR (e.g. \`@claude rewrite step 3 to use a JOIN\`). An Opus agent edits the plan, commits, and updates this PR description.
+                    - **Ask a question**: comment \`@claude <question>\`. Opus replies in a comment without editing.
+                    - **Edit by hand**: web editor or \`gh pr checkout\` and push.
+                    - **Start implementation**: comment \`@claude implement\` once you're satisfied. A Sonnet agent reads the current plan file as the contract, implements it, pushes commits, marks this PR ready for review, and rewrites the title/description as a normal code PR."
+
+                    gh issue comment ${{ env.ISSUE_NUMBER }} --body "Plan drafted at <PR URL>. See the PR description for a summary; comment \`@claude <change>\` to iterate or \`@claude implement\` when ready."
+
+                Then exit. Do not implement. Do not mark the PR ready for review.
+
+            ### Blocked exit
+
+            6X. Post a single detailed comment on the issue and exit:
+
+                    gh issue comment ${{ env.ISSUE_NUMBER }} --body "<what you tried, what's blocking you, what a human should look at next>"
+
+            ## Hard rules
+
+            - On the plan path, do not implement code. Only the plan markdown
+              file should be in your commit.
+            - On the plan path, the PR must be a draft and must include both
+              `claude-plan-pr` and `claude-plan-path` markers in the body
+              exactly as shown.
+            - Do not end your turn with a summary message unless you have
+              already done step 6F, 9P, or 6X.
+            - Do not include "Co-Authored-By" / "Generated with Claude"
+              branding in commits or PR bodies.
+            - Do not merge the PR.
+          claude_args: >-
+            --model claude-opus-4-7
+            --max-turns 200
+            --verbose
+            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Skill,Bash(git:*),Bash(gh:*),Bash(go:*),Bash(flutter:*),Bash(npm:*),Bash(npx:*),Bash(cd app*),Bash(jq:*),Bash(golangci-lint:*),Bash(gofumpt:*),Bash(cat:*),Bash(ls:*)"
+
+      - name: Assign requester to PR
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ steps.branch.outputs.branch_name }}
+          # The human who triggered this run (labeler, issue opener, commenter,
+          # or workflow dispatcher). Empty when the actor is a bot (`*[bot]`)
+          # — bots aren't assignable, so we leave the PR unassigned and surface
+          # it via the all-PRs view. Done in a runner step rather than inside
+          # the Claude prompt because Claude's Bash sandbox rejects shell
+          # variable expansion (e.g. `--add-assignee "$REQUESTER"`) even when
+          # the `gh` prefix is allowlisted.
+          REQUESTER: ${{ endsWith(github.actor, '[bot]') && '' || github.actor }}
+        run: |
+          set -euo pipefail
+          if [ -z "${REQUESTER}" ]; then
+            echo "REQUESTER unset (bot trigger); skipping assignee."
+            exit 0
+          fi
+          PR_NUMBER=$(gh pr list --head "${BRANCH_NAME}" --state open --json number --jq '.[0].number // empty')
+          if [ -z "${PR_NUMBER}" ]; then
+            echo "No open PR for ${BRANCH_NAME}; skipping assignee."
+            exit 0
+          fi
+          gh pr edit "${PR_NUMBER}" --add-assignee "${REQUESTER}" || \
+            echo "Failed to assign ${REQUESTER} to PR #${PR_NUMBER}; continuing."
+
+      - name: Stage execution log for artifact
+        if: always()
+        run: |
+          DEBUG_DIR="${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}"
+          rm -rf "$DEBUG_DIR"
+          mkdir -p "$DEBUG_DIR"
+          if [ -f "${{ runner.temp }}/claude-execution-output.json" ]; then
+            cp "${{ runner.temp }}/claude-execution-output.json" "$DEBUG_DIR/"
+          fi
+          if [ -f "${{ runner.temp }}/claude-prompts/claude-prompt.txt" ]; then
+            cp "${{ runner.temp }}/claude-prompts/claude-prompt.txt" "$DEBUG_DIR/"
+          fi
+          ls -la "$DEBUG_DIR/" || true
+
+      - name: Upload Claude execution log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: claude-plan-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Clean up test postgres container
+        if: always()
+        uses: ./.github/actions/cleanup-test-postgres
+
+      - name: Assert Claude produced a deliverable
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ steps.branch.outputs.branch_name }}
+        run: |
+          # The run is only meaningful if Claude either (a/b) opened a PR
+          # from the fix branch (regular for fast path or draft for plan
+          # path), or (c) posted a comment on the issue. Anything else is a
+          # silent no-op — fail loudly.
+          set -euo pipefail
+
+          REMOTE_SHA=$(git ls-remote origin "refs/heads/${BRANCH_NAME}" | awk '{print $1}')
+          if [ -n "${REMOTE_SHA}" ]; then
+            PR_COUNT=$(gh pr list --head "${BRANCH_NAME}" --state open --json number --jq 'length')
+            if [ "${PR_COUNT}" -gt 0 ]; then
+              echo "PR opened from ${BRANCH_NAME}; deliverable satisfied."
+              exit 0
+            fi
+          fi
+
+          THIRTY_MIN_AGO=$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+            || date -u -v-30M +%Y-%m-%dT%H:%M:%SZ)
+          RECENT_COMMENT=$(gh issue view "${ISSUE_NUMBER}" --json comments \
+            --jq "[.comments[] | select(.createdAt > \"${THIRTY_MIN_AGO}\")] | length")
+          if [ "${RECENT_COMMENT}" -gt 0 ]; then
+            echo "Recent comment posted on #${ISSUE_NUMBER}; deliverable satisfied."
+            exit 0
+          fi
+
+          echo "::error::Claude finished without producing a deliverable: no PR from ${BRANCH_NAME} and no recent comment on issue #${ISSUE_NUMBER}. See the claude-plan-log artifact."
+          exit 1

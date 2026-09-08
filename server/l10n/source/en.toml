@@ -1,0 +1,925 @@
+# English server l10n source catalog.
+#
+# Source of truth for every server-rendered user-visible string.
+# Every key here must have a matching entry in every other locale
+# under server/l10n/source/. CI parity check fails the build
+# otherwise.
+#
+# Key naming convention:
+#   notif.community_event.<event_kind>.{title,body}
+#   notif.chat.<role>
+#   email.<flow>.subject  (Phase 3)
+#   email.<flow>.<role>   (Phase 3, in-template snippets)
+#   common.<name>         (cross-surface strings)
+#
+# Values use go-i18n message format:
+#   [my.key]
+#   other = "Template with {{.Param}} substitution"
+#
+# Note: user-visible strings refer to scheduled gatherings as
+# "Event" (per CLAUDE.md § "UI Terminology: 'Event', not
+# 'Experience'"), even though the code identifier is Experience.
+
+# --- Transfer events ---
+
+[notif.community_event.transfer_interest_expressed.title]
+other = "Interest in {{.GearName}}"
+
+[notif.community_event.transfer_interest_withdrawn.title]
+other = "Interest withdrawn"
+
+[notif.community_event.transfer_recipient_selected.title]
+other = "Request approved"
+
+[notif.community_event.transfer_active_loan.title]
+other = "Loan started"
+
+[notif.community_event.transfer_active_giveaway.title]
+other = "Giveaway complete"
+
+[notif.community_event.transfer_cancelled_loan.title]
+other = "Loan cancelled"
+
+[notif.community_event.transfer_cancelled_giveaway.title]
+other = "Giveaway cancelled"
+
+[notif.community_event.transfer_cancelled_covered.title]
+other = "Offer closed"
+
+[notif.community_event.transfer_pickup_proposed.title]
+other = "Pickup proposed"
+
+# --- Request events ---
+
+[notif.community_event.request_offer_made.title]
+other = "Help offered"
+
+[notif.community_event.request_offer_selected.title]
+other = "Offer selected"
+
+[notif.community_event.request_offer_withdrawn.title]
+other = "Offer withdrawn"
+
+[notif.community_event.request_fulfilled.title]
+other = "Request fulfilled"
+
+[notif.community_event.request_cancelled.title]
+other = "Request cancelled"
+
+[notif.community_event.request_created.title]
+other = "New request"
+
+# --- Gear events ---
+# Split giveaway vs loan so the push is unambiguous (mirrors off-app); item
+# names are article-free, so the body supplies the article via GearWithArticle.
+
+[notif.community_event.gear_shared_giveaway.title]
+other = "New giveaway"
+
+[notif.community_event.gear_shared_loan.title]
+other = "New gear to borrow"
+
+# --- Experience (user-facing: "Event") events ---
+
+[notif.community_event.experience_rsvp_yes.title]
+other = "New RSVP"
+
+[notif.community_event.experience_rsvp_maybe.title]
+other = "New RSVP"
+
+[notif.community_event.experience_created.title]
+other = "New event"
+
+[notif.community_event.experience_completed.title]
+other = "Event completed"
+
+# --- Planning events ---
+
+[notif.community_event.planning_need_added.title]
+other = "New need"
+
+[notif.community_event.planning_need_claimed.title]
+other = "Need claimed"
+
+[notif.community_event.planning_contribution_added.title]
+other = "New contribution"
+
+# --- Community membership / lifecycle events ---
+
+[notif.community_event.invitation_link_used.title]
+other = "New member"
+
+[notif.community_event.community_deleted.title]
+other = "Community deleted"
+
+[notif.community_event.community_deleted_fallback.title]
+other = "Community deleted"
+
+[notif.community_event.community_restored.title]
+other = "Community restored"
+
+[notif.community_event.ownership_transferred.title]
+other = "You're now the owner"
+
+# --- Default / unrecognized event fallback ---
+
+[notif.community_event.default.title]
+other = "New activity"
+
+# --- Chat notifications ---
+
+[notif.chat.sender_fallback]
+other = "Someone"
+
+[notif.chat.mentioned_you]
+other = "{{.SenderName}} mentioned you"
+
+# --- Email subjects ---
+#
+# Body strings for these flows live in per-locale template files
+# under server/email/ (e.g. password_reset_template_es.html). Only
+# subjects are rendered through the localizer.
+
+[email.password_reset.subject]
+other = "Reset your Ripls password"
+
+[email.email_code.subject]
+other = "Your Ripls sign-in code"
+
+[email.waitlist_welcome.subject]
+other = "Welcome to the Ripls community"
+
+# Off-app invite email sent to someone invited to an item (event, etc.) by a
+# host who entered their email. {{.HostName}} is the host's display name.
+[email.invite.subject]
+other = "{{.HostName}} invited you on Ripls"
+
+[email.invite.body]
+other = "{{.HostName}} wants to share something with you on Ripls. Tap below to see it and join — no app required."
+
+# --- Off-app email rich-card summary (the email analogue of the SSR landing
+# page). Rendered in the recipient's locale by buildEmailExtras. ---
+
+[email.summary.eyebrow.event]
+other = "Event"
+
+[email.summary.eyebrow.giveaway]
+other = "Free to a good home"
+
+[email.summary.eyebrow.loan]
+other = "Available to borrow"
+
+[email.summary.eyebrow.request]
+other = "Request"
+
+[email.summary.hosted_by]
+other = "Hosted by {{.Name}}"
+
+[email.summary.shared_by]
+other = "Shared by {{.Name}}"
+
+[email.summary.requested_by]
+other = "Requested by {{.Name}}"
+
+[email.summary.going]
+other = "{{.Count}} going"
+
+# --- Cross-surface common strings ---
+
+# Public label for a nameless (ad-hoc) community on the SSR landing pages,
+# where rendering the empty Community.Name would produce broken copy/OG cards.
+[common.adhoc_community_name]
+other = "a Ripls group"
+
+# Generic fallback for an unknown/unnamed person on a public, pre-auth SSR
+# landing (e.g. an owner/requester whose name couldn't be resolved). First
+# names only ever appear on these pages; this is the no-name backstop.
+[common.someone]
+other = "Someone"
+
+# --- SSR web landing pages (#2090) ---
+#
+# The /go/{code} landing pages (invite.html, event.html, gear.html,
+# request.html) are a server-rendered surface: the Go web service is the
+# terminal emitter, so their copy lives here and renders in the visitor's
+# Accept-Language locale. Keys are web.<page>.<role>; strings shared across
+# pages use web.common.* / web.error.*.
+
+# Visitor-facing error copy shown on the shared invite.html error surface
+# when a share link can't be resolved to a live target. These are the
+# generic, safe messages that reach the wire — raw storage errors never do.
+[web.error.no_code]
+other = "No invitation code provided."
+
+[web.error.generic]
+other = "Something went wrong. Please try again."
+
+[web.error.link_invalid]
+other = "This invitation link is not valid."
+
+[web.error.link_revoked]
+other = "This invitation link has been revoked."
+
+[web.error.event_unavailable]
+other = "This event is no longer available."
+
+[web.error.item_unavailable]
+other = "This item is no longer available."
+
+[web.error.request_unavailable]
+other = "This request is no longer available."
+
+# Fallback place label on the event landing's meta-pill when the event has
+# no resolvable location.
+[web.event.location_tbd]
+other = "Location TBD"
+
+# --- Gear landing (loan / giveaway) copy. Split by flavor so word order and
+# verb differ correctly per locale (Spanish reorders subject/verb/object).
+# {{.Owner}} is the owner's first name; {{.Item}} is the item name. ---
+
+[web.gear.headline.giveaway]
+other = "{{.Owner}} is giving away {{.Item}}"
+[web.gear.headline.loan]
+other = "{{.Owner}} is lending {{.Item}}"
+
+# Kicker chip above the item name on the landing hero.
+[web.gear.kicker.giveaway]
+other = "Free"
+[web.gear.kicker.loan]
+other = "Borrow"
+
+# owner_line carries the name inline (OG/meta description); role is the bare
+# verb phrase rendered next to a separately-bolded name in the page body.
+[web.gear.owner_line.giveaway]
+other = "{{.Owner}} is giving this away"
+[web.gear.owner_line.loan]
+other = "{{.Owner}} is lending this"
+[web.gear.role.giveaway]
+other = "is giving this away"
+[web.gear.role.loan]
+other = "is lending this"
+
+# Primary CTA label + its accessible aria-label.
+[web.gear.cta_label.giveaway]
+other = "I want this"
+[web.gear.cta_label.loan]
+other = "Ask to borrow"
+[web.gear.cta_aria.giveaway]
+other = "Tell {{.Owner}} you want {{.Item}}"
+[web.gear.cta_aria.loan]
+other = "Ask {{.Owner}} to borrow {{.Item}}"
+
+# --- Request landing copy. {{.Requester}} is the requester's first name;
+# {{.Item}} is the request title. ---
+
+[web.request.kicker_wanted]
+other = "Wanted"
+[web.request.headline]
+other = "{{.Requester}} is looking for {{.Item}}"
+[web.request.requester_line]
+other = "{{.Requester}} is looking for this"
+[web.request.role]
+other = "is looking for this"
+[web.request.cta_label]
+other = "Offer to help"
+[web.request.cta_aria]
+other = "Offer to help {{.Requester}}"
+
+# Compact needs-summary line, e.g. "5 items · 1 still open". The plural forms
+# select on the item count and the open count respectively; {{.Items}} is the
+# already-rendered item count for the tail.
+[web.request.needs.items]
+one = "{{.Count}} item"
+other = "{{.Count}} items"
+[web.request.needs.all_covered]
+other = "{{.Items}} · all covered"
+[web.request.needs.open]
+one = "{{.Items}} · {{.Count}} still open"
+other = "{{.Items}} · {{.Count}} still open"
+
+# --- Community-invite landing (community.html): a plain "join this group"
+# share link, the fourth phone-first landing alongside event/gear/request
+# (#2875). {{.Inviter}} is the inviter's first name; {{.Community}} is the
+# community's display name (the generic "a Ripls group" label when nameless).
+# The page deliberately exposes no member names — only a count.
+
+[web.community.kicker]
+other = "Invitation"
+
+# headline carries both names inline (page <h1> is the community name itself,
+# so this is the OG/title line); inviter_line is the OG/meta description; role
+# is the bare verb phrase rendered beside the bolded inviter name.
+[web.community.headline]
+other = "{{.Inviter}} invited you to join {{.Community}}"
+[web.community.headline_unnamed]
+other = "{{.Inviter}} invited you to a Ripls group"
+[web.community.inviter_line]
+other = "{{.Inviter}} invited you"
+[web.community.role]
+other = "invited you"
+
+[web.community.cta_label]
+other = "Join the group"
+[web.community.cta_aria]
+other = "Join {{.Community}} on Ripls"
+
+# Member count under the hero. No names — a public, pre-auth page never
+# discloses who is in a group, only how many.
+[web.community.members]
+one = "{{.Count}} member"
+other = "{{.Count}} members"
+
+# Link-preview description. The tail invites the reader in; the sharing-oriented
+# second sentence is what makes an unfurled card legible to someone who has
+# never heard of Ripls.
+[web.community.og_desc]
+other = "{{.InviterLine}}. Share and borrow with people nearby."
+
+# --- Member-facing variant, selected by the `?to=discuss` destination hint
+# (#2876). Reached from a "say hi" notification, whose recipients are members
+# by construction — so the invitation framing is dropped: no "invited you", and
+# a CTA that opens the conversation the notification promised. ---
+[web.community.kicker_discussion]
+other = "Discussion"
+[web.community.cta_label_discussion]
+other = "Open the discussion"
+[web.community.cta_aria_discussion]
+other = "Open the discussion in {{.Community}}"
+[web.community.og_desc_discussion]
+other = "Say hi and see what people are up to."
+
+# --- Event attendee-line suffix, rendered after the bolded attendee names
+# (e.g. "<names> + 3 others going"). attendees_going selects on the shown-name
+# count so locales that conjugate the verb agree; attendees_overflow selects
+# on the overflow count. Values carry their own leading space. ---
+[web.event.attendees_going]
+one = " going"
+other = " going"
+[web.event.attendees_overflow]
+one = " + {{.Count}} other going"
+other = " + {{.Count}} others going"
+
+# --- Event date/time labels. Go's time.Format is not locale-aware, so the
+# weekday/month names come from the catalog and the *_format strings assemble
+# them per locale (Spanish reorders to "{Weekday}, {Day} de {Month}"). ---
+[web.when.soon]
+other = "Soon"
+[web.when.date_tbd]
+other = "Date TBD"
+[web.when.short_format]
+other = "{{.WeekdayAbbr}}, {{.MonthAbbr}} {{.Day}}"
+[web.when.summary_format]
+other = "{{.Weekday}}, {{.Month}} {{.Day}}"
+# 12-hour clock markers (both locales use 12h; es writes them "a. m."/"p. m.").
+[web.when.am]
+other = "AM"
+[web.when.pm]
+other = "PM"
+
+[web.when.weekday.sunday]
+other = "Sunday"
+[web.when.weekday.monday]
+other = "Monday"
+[web.when.weekday.tuesday]
+other = "Tuesday"
+[web.when.weekday.wednesday]
+other = "Wednesday"
+[web.when.weekday.thursday]
+other = "Thursday"
+[web.when.weekday.friday]
+other = "Friday"
+[web.when.weekday.saturday]
+other = "Saturday"
+
+[web.when.weekday_abbr.sunday]
+other = "Sun"
+[web.when.weekday_abbr.monday]
+other = "Mon"
+[web.when.weekday_abbr.tuesday]
+other = "Tue"
+[web.when.weekday_abbr.wednesday]
+other = "Wed"
+[web.when.weekday_abbr.thursday]
+other = "Thu"
+[web.when.weekday_abbr.friday]
+other = "Fri"
+[web.when.weekday_abbr.saturday]
+other = "Sat"
+
+[web.when.month.january]
+other = "January"
+[web.when.month.february]
+other = "February"
+[web.when.month.march]
+other = "March"
+[web.when.month.april]
+other = "April"
+[web.when.month.may]
+other = "May"
+[web.when.month.june]
+other = "June"
+[web.when.month.july]
+other = "July"
+[web.when.month.august]
+other = "August"
+[web.when.month.september]
+other = "September"
+[web.when.month.october]
+other = "October"
+[web.when.month.november]
+other = "November"
+[web.when.month.december]
+other = "December"
+
+[web.when.month_abbr.january]
+other = "Jan"
+[web.when.month_abbr.february]
+other = "Feb"
+[web.when.month_abbr.march]
+other = "Mar"
+[web.when.month_abbr.april]
+other = "Apr"
+[web.when.month_abbr.may]
+other = "May"
+[web.when.month_abbr.june]
+other = "Jun"
+[web.when.month_abbr.july]
+other = "Jul"
+[web.when.month_abbr.august]
+other = "Aug"
+[web.when.month_abbr.september]
+other = "Sep"
+[web.when.month_abbr.october]
+other = "Oct"
+[web.when.month_abbr.november]
+other = "Nov"
+[web.when.month_abbr.december]
+other = "Dec"
+
+# --- Shared landing chrome: the open-in-app hint and the at-capacity banner,
+# reused across the event/gear/request landings. body_rsvp vs body_respond
+# only differ in the action verb; {{.Num}}/{{.Max}} are the member counts. ---
+[web.common.open_in_app]
+other = "Open in the Ripls app"
+[web.common.on_ripls_title]
+other = "{{.Title}} on Ripls"
+[web.capacity.title]
+other = "This community is full"
+[web.capacity.body_rsvp]
+other = "Can't RSVP because the hosting community is full ({{.Num}} of {{.Max}} members)."
+[web.capacity.body_respond]
+other = "Can't respond because the hosting community is full ({{.Num}} of {{.Max}} members)."
+[web.capacity.body_join]
+other = "Can't join because this community is full ({{.Num}} of {{.Max}} members)."
+[web.capacity.ask_inviter]
+other = "Ask your inviter for options."
+
+# --- Event landing static labels + OG/title copy. og_title has an
+# in-community variant so the "in {Community}" clause drops cleanly for a
+# nameless community; {{.Host}}/{{.Event}}/{{.Community}} are the event data. ---
+[web.event.og_title]
+other = "Join {{.Host}} for {{.Event}}"
+[web.event.og_title_in_community]
+other = "Join {{.Host}} for {{.Event}} in {{.Community}}"
+[web.event.meta_aria]
+other = "Event details"
+[web.event.is_hosting]
+other = "is hosting"
+[web.event.rsvp_aria]
+other = "RSVP"
+[web.event.cta_in]
+other = "I'm in"
+[web.event.cta_in_aria]
+other = "RSVP yes to this event"
+[web.event.cta_maybe]
+other = "Maybe"
+[web.event.cta_maybe_aria]
+other = "Maybe attending this event"
+[web.event.cta_out]
+other = "I'm out"
+[web.event.cta_out_aria]
+other = "Decline this event"
+[web.event.decline_thanks]
+other = "Thanks — we'll let the host know."
+[web.event.decline_failed]
+other = "Couldn't reach the server. Your reply may not have been recorded."
+
+# --- Gear landing OG description. The in-community variant appends the
+# "in {Community}" clause; both close with a period. ---
+[web.gear.og_desc]
+other = "{{.OwnerLine}}."
+[web.gear.og_desc_in_community]
+other = "{{.OwnerLine}} in {{.Community}}."
+
+# --- Request landing OG description (adds the "Can you help?" prompt). ---
+[web.request.og_desc]
+other = "{{.RequesterLine}}. Can you help?"
+[web.request.og_desc_in_community]
+other = "{{.RequesterLine}} in {{.Community}}. Can you help?"
+
+# --- Shared share-link error surface (invite.html). Since #2875 every valid
+# link renders its own landing (community.html / event.html / gear.html /
+# request.html), so these keys are only the "this link didn't work" card and
+# its install / manual-code recovery affordances. No invite data is
+# interpolated — an unresolvable code has no community or inviter to name. ---
+[web.invite.title_invalid]
+other = "Ripls Invitation"
+[web.invite.og_title_invalid]
+other = "Join Ripls"
+[web.invite.og_desc_invalid]
+other = "Share and borrow with your community on Ripls."
+[web.invite.logo_alt]
+other = "Ripls Logo"
+[web.invite.invalid_heading]
+other = "Invalid Invitation"
+[web.invite.error_help]
+other = "Ask the friend who shared this link to send you a new one from the Ripls app. Invitation links can expire or be revoked by the person who created them."
+[web.invite.store_testflight_label]
+other = "Join Beta on"
+[web.invite.store_play_label]
+other = "Get it on"
+[web.invite.reopen]
+other = "Already installed? Tap here to open in Ripls"
+[web.invite.code_label]
+other = "Your invite code"
+[web.invite.code_hint]
+other = "You can also enter this code manually in the app"
+[web.invite.privacy_policy]
+other = "Privacy Policy"
+
+# --- SMS (text-message) copy ---
+#
+# Text messages are a server-rendered surface (docs/server/l10n.md render
+# boundary). {{.Message}} is the already-localized notification content;
+# {{.Url}} is the /go/{code} link. The STOP/HELP keywords are fixed,
+# carrier-recognized SMS commands and stay literal even in translated copy.
+#
+# Inbound STOP/HELP/START auto-replies are NOT here: Twilio's Messaging Service
+# opt-out management sends those (configured in the Twilio console), so our
+# webhook is persist-only and renders no reply (avoids double-texting).
+
+# The body of an outbound platform text: notification content and the link. The
+# STOP/HELP opt-out footer (sms.optout) is appended by the dispatcher only on the
+# first message and then ~monthly (notifications.shouldDiscloseOptOut), not here.
+[sms.notification.body]
+other = "{{.Message}}{{if .Url}} {{.Url}}{{end}}"
+
+# --- Off-app notification copy (NOTIF-1) -----------------------------------
+# Uniform SMS/email wrappers + per-kind self-contained message + CTA verb.
+# Rendered by server/notifications/notifcopy. The "Ripls:" prefix brands the
+# 10DLC long code on every message; the opt-out footer rides the first platform
+# SMS and then only ~monthly (the keywords are honored centrally regardless).
+
+[sms.brand_prefix]
+other = "Ripls:"
+
+[sms.optout]
+other = "Reply STOP to opt out, HELP for help."
+
+# One-time opt-in confirmation ("welcome") text, sent on first opt-in
+# (PhoneRegister) via the platform SMS/RCS channel. Self-contained: it carries
+# its own STOP/HELP, frequency, and rate disclosure, so the dispatcher must NOT
+# append sms.optout to it. Required as a sample for US RCS/A2P registration; the
+# live send also lets a carrier reviewer confirm the opt-in flow end-to-end.
+[sms.welcome.body]
+other = "Welcome to Ripls! Let's lean on each other. You'll get event invites and community updates. Message & data rates may apply. Message frequency varies. Reply HELP for help, STOP to opt out.{{if .AppURL}}\n\nConnect at {{.AppURL}}{{end}}"
+
+[notif.offapp.invitation.message]
+other = "{{.ActorName}} invited you to {{.ExperienceName}}"
+[notif.offapp.invitation.cta]
+other = "RSVP at"
+
+[notif.offapp.experience_created.message]
+other = "{{.ActorName}} created {{.ExperienceName}}"
+[notif.offapp.experience_created.cta]
+other = "RSVP at"
+
+[notif.offapp.experience_rsvp_yes.message]
+other = "{{.ActorName}} is attending {{.ExperienceName}}"
+[notif.offapp.experience_rsvp_yes.cta]
+other = "Manage RSVPs at"
+
+[notif.offapp.experience_rsvp_maybe.message]
+other = "{{.ActorName}} might attend {{.ExperienceName}}"
+[notif.offapp.experience_rsvp_maybe.cta]
+other = "Manage RSVPs at"
+
+[notif.offapp.experience_cancelled.message]
+other = "{{.ExperienceName}} was cancelled"
+[notif.offapp.experience_cancelled.cta]
+other = "View at"
+
+[notif.offapp.request_created.message]
+other = "{{.ActorName}} made a new request: {{.RequestTitle}}"
+[notif.offapp.request_created.cta]
+other = "Offer to help at"
+
+[notif.offapp.request_offer_made.message]
+other = "{{.ActorName}} offered to help with {{.RequestTitle}}"
+[notif.offapp.request_offer_made.cta]
+other = "View the offer at"
+
+[notif.offapp.gear_shared_giveaway.message]
+other = "{{.ActorName}} is giving away {{.GearWithArticle}}"
+[notif.offapp.gear_shared_giveaway.cta]
+other = "Claim it at"
+
+[notif.offapp.gear_shared_loan.message]
+other = "{{.ActorName}} is lending out {{.GearWithArticle}}"
+[notif.offapp.gear_shared_loan.cta]
+other = "Borrow it at"
+
+[notif.offapp.transfer_interest_expressed.message]
+other = "{{.ActorName}} wants to borrow your {{.GearName}}"
+[notif.offapp.transfer_interest_expressed.cta]
+other = "Respond at"
+
+[notif.offapp.invitation_link_used.message]
+other = "{{.ActorFirstName}} joined {{.CommunityName}}"
+[notif.offapp.invitation_link_used.cta]
+other = "Say hi at"
+
+[notif.offapp.experience_rsvp_no.message]
+other = "{{.ActorName}} can't make it to {{.ExperienceName}}"
+[notif.offapp.experience_rsvp_no.cta]
+other = "Manage RSVPs at"
+
+[notif.offapp.experience_started.message]
+other = "{{.ExperienceName}} is starting now"
+[notif.offapp.experience_started.cta]
+other = "View at"
+
+[notif.offapp.transfer_pickup_proposed.message]
+other = "{{.ActorName}} proposed a pickup time for {{.GearName}}"
+[notif.offapp.transfer_pickup_proposed.cta]
+other = "Confirm at"
+
+[notif.offapp.planning_need_added.message]
+other = "{{.ActorName}} needs {{.PlanningItemName}} for {{.ExperienceName}}"
+[notif.offapp.planning_need_added.cta]
+other = "Pitch in at"
+
+[notif.offapp.planning_need_claimed.message]
+other = "{{.ActorName}} offered to bring {{.PlanningItemName}} to {{.ExperienceName}}"
+[notif.offapp.planning_need_claimed.cta]
+other = "View at"
+
+[notif.offapp.planning_contribution_added.message]
+other = "{{.ActorName}} offered to bring {{.PlanningItemName}} to {{.ExperienceName}}"
+[notif.offapp.planning_contribution_added.cta]
+other = "View at"
+
+[notif.offapp.transfer_recipient_selected.message]
+other = "{{.ActorName}} picked you to receive the {{.GearName}}"
+[notif.offapp.transfer_recipient_selected.cta]
+other = "Arrange pickup at"
+
+[notif.offapp.transfer_interest_withdrawn.message]
+other = "{{.ActorName}} no longer wants to borrow your {{.GearName}}"
+[notif.offapp.transfer_interest_withdrawn.cta]
+other = "View at"
+
+[notif.offapp.request_cancelled.message]
+other = "{{.ActorName}} cancelled their request: {{.RequestTitle}}"
+[notif.offapp.request_cancelled.cta]
+other = "View at"
+
+[notif.offapp.request_offer_withdrawn.message]
+other = "{{.ActorName}} withdrew their offer on {{.RequestTitle}}"
+[notif.offapp.request_offer_withdrawn.cta]
+other = "View at"
+
+[notif.offapp.experience_completed.message]
+other = "{{.ExperienceName}} has wrapped up"
+[notif.offapp.experience_completed.cta]
+other = "View at"
+
+[notif.offapp.community_deleted.message]
+other = "{{.ActorFirstName}} deleted {{.CommunityName}} — you have 30 days to restore it"
+[notif.offapp.community_deleted.cta]
+other = "Restore it at"
+
+[notif.offapp.community_restored.message]
+other = "{{.ActorFirstName}} restored {{.CommunityName}} and is the new owner"
+[notif.offapp.community_restored.cta]
+other = "View at"
+
+[notif.offapp.ownership_transferred.message]
+other = "{{.ActorFirstName}} transferred ownership of {{.CommunityName}} to you"
+[notif.offapp.ownership_transferred.cta]
+other = "View at"
+
+[notif.offapp.experience_updated_time.message]
+other = "{{.ExperienceName}} has a new time"
+[notif.offapp.experience_updated_time.cta]
+other = "See details at"
+
+[notif.offapp.experience_updated_location.message]
+other = "{{.ExperienceName}} has a new location"
+[notif.offapp.experience_updated_location.cta]
+other = "See details at"
+
+[notif.offapp.experience_updated_both.message]
+other = "{{.ExperienceName}} has a new time and place"
+[notif.offapp.experience_updated_both.cta]
+other = "See details at"
+
+[notif.offapp.experience_updated_other.message]
+other = "{{.ExperienceName}} was updated"
+[notif.offapp.experience_updated_other.cta]
+other = "See details at"
+
+# --- System-generated notifications (reminders, prompts) ---
+#
+# These have no actor: a job produces them, not a person. Each carries all three
+# subkeys, so one sentence (.message) serves push, SMS and email, with .title
+# adding the push's category label and .cta the off-app link verb. Before #2896
+# their copy lived in fmt.Sprintf calls in the producers and never reached the
+# off-app surfaces at all, which is how a reminder text came out as
+# "Ripls:  posted an update in ".
+
+[notif.community_event.experience_reminder_day_before.title]
+other = "Event tomorrow"
+[notif.offapp.experience_reminder_day_before.message]
+other = "{{.ExperienceName}} is tomorrow"
+[notif.offapp.experience_reminder_day_before.cta]
+other = "See details at"
+
+[notif.community_event.experience_reminder_two_hour.title]
+other = "Event starting soon"
+[notif.offapp.experience_reminder_two_hour.message]
+other = "{{.ExperienceName}} starts in 2 hours"
+[notif.offapp.experience_reminder_two_hour.cta]
+other = "See details at"
+
+[notif.community_event.experience_reminder_starting.title]
+other = "Event starting now"
+[notif.offapp.experience_reminder_starting.message]
+other = "{{.ExperienceName}} is starting"
+[notif.offapp.experience_reminder_starting.cta]
+other = "See details at"
+
+# Fallback for a payload minted before the per-offset split, e.g. a push already
+# queued at FCM when the new binary rolled out.
+[notif.community_event.experience_reminder.title]
+other = "Upcoming event"
+[notif.offapp.experience_reminder.message]
+other = "{{.ExperienceName}} is coming up"
+[notif.offapp.experience_reminder.cta]
+other = "See details at"
+
+[notif.community_event.experience_close_prompt.title]
+other = "Wrap up your event"
+[notif.offapp.experience_close_prompt.message]
+other = "Mark {{.ExperienceName}} as completed when you're done"
+[notif.offapp.experience_close_prompt.cta]
+other = "Wrap it up at"
+
+# ActorName is the lender here — the person the borrower returns the item to.
+[notif.community_event.loan_return_reminder_upcoming.title]
+other = "Return tomorrow"
+[notif.offapp.loan_return_reminder_upcoming.message]
+other = "Return {{.GearName}} to {{.ActorName}} tomorrow"
+[notif.offapp.loan_return_reminder_upcoming.cta]
+other = "See the loan at"
+
+[notif.community_event.loan_return_reminder_due.title]
+other = "Return today"
+[notif.offapp.loan_return_reminder_due.message]
+other = "{{.GearName}} is due back today"
+[notif.offapp.loan_return_reminder_due.cta]
+other = "See the loan at"
+
+[notif.community_event.loan_return_reminder_overdue.title]
+other = "Overdue"
+[notif.offapp.loan_return_reminder_overdue.message]
+other = "{{.GearName}} is overdue — please return it to {{.ActorName}}"
+[notif.offapp.loan_return_reminder_overdue.cta]
+other = "See the loan at"
+
+[notif.community_event.loan_return_reminder.title]
+other = "Loan reminder"
+[notif.offapp.loan_return_reminder.message]
+other = "{{.GearName}} is due back to {{.ActorName}}"
+[notif.offapp.loan_return_reminder.cta]
+other = "See the loan at"
+
+[notif.community_event.request_followup_prompt.title]
+other = "Still need this?"
+[notif.offapp.request_followup_prompt.message]
+other = "You asked for {{.RequestTitle}} — did your community come through?"
+[notif.offapp.request_followup_prompt.cta]
+other = "Close it out at"
+
+# Nudges: a host asks the server to prod the people who haven't replied yet.
+# Every message names the plan it is about — off-app has no app context to lean
+# on, and the poll nudges' old push body ("The organizer is waiting on your
+# pick.") named nothing at all.
+[notif.community_event.experience_needs_nudge.title]
+other = "Who's bringing what?"
+[notif.offapp.experience_needs_nudge.message]
+other = "{{.ExperienceName}} still needs a few things"
+[notif.offapp.experience_needs_nudge.cta]
+other = "Claim one at"
+
+[notif.community_event.request_needs_nudge.title]
+other = "Can you help?"
+[notif.offapp.request_needs_nudge.message]
+other = "{{.RequestTitle}} still needs a hand"
+[notif.offapp.request_needs_nudge.cta]
+other = "Claim something at"
+
+[notif.community_event.experience_time_nudge.title]
+other = "When should we meet?"
+[notif.offapp.experience_time_nudge.message]
+other = "Pick a time that works for {{.ExperienceName}}"
+[notif.offapp.experience_time_nudge.cta]
+other = "Vote at"
+
+[notif.community_event.experience_location_nudge.title]
+other = "Where should we meet?"
+[notif.offapp.experience_location_nudge.message]
+other = "Pick a place for {{.ExperienceName}}"
+[notif.offapp.experience_location_nudge.cta]
+other = "Vote at"
+
+# The default line, used by any event type with no bespoke copy, in four
+# wordings picked by which names the payload actually carries (see
+# Content.messageKind). Only `default` has a .cta — all four share it.
+# `default_bare` is the one that matters: system-generated notifications have no
+# actor and no community, and before #2896 they rendered "  posted an update in ".
+[notif.offapp.default.message]
+other = "{{.ActorName}} posted an update in {{.CommunityName}}"
+[notif.offapp.default_actor.message]
+other = "{{.ActorName}} posted an update"
+[notif.offapp.default_community.message]
+other = "There's an update in {{.CommunityName}}"
+[notif.offapp.default_bare.message]
+other = "You have an update on Ripls"
+[notif.offapp.default.cta]
+other = "View at"
+
+# --- Name stand-ins ---
+#
+# Substituted for any name that resolved empty, so a missed storage lookup
+# renders "Someone is attending an event" rather than "  is attending ".
+# Applied in notification_content.params for push, SMS and email alike.
+[notif.standin.actor]
+other = "Someone"
+[notif.standin.experience]
+other = "an event"
+[notif.standin.gear]
+other = "an item"
+[notif.standin.request]
+other = "a request"
+[notif.standin.community]
+other = "your community"
+[notif.standin.planning_item]
+other = "something"
+
+# --- Merged copy: kinds whose sentence previously existed only as a push body ---
+[notif.offapp.transfer_active_loan.message]
+other = "Your loan of {{.GearName}} is now active"
+[notif.offapp.transfer_active_loan.cta]
+other = "View the loan at"
+[notif.offapp.transfer_active_giveaway.message]
+other = "{{.GearName}} is on its way to its new owner"
+[notif.offapp.transfer_active_giveaway.cta]
+other = "View it at"
+[notif.offapp.transfer_cancelled_loan.message]
+other = "The loan of {{.GearName}} was cancelled by {{.ActorName}}"
+[notif.offapp.transfer_cancelled_loan.cta]
+other = "View at"
+[notif.offapp.transfer_cancelled_giveaway.message]
+other = "The giveaway of {{.GearName}} was cancelled by {{.ActorName}}"
+[notif.offapp.transfer_cancelled_giveaway.cta]
+other = "View at"
+[notif.offapp.transfer_cancelled_covered.message]
+other = "{{.ActorFirstName}}'s request no longer needs {{.GearWithArticle}} — thanks for offering"
+[notif.offapp.transfer_cancelled_covered.cta]
+other = "View at"
+[notif.offapp.request_offer_selected.message]
+other = "{{.ActorName}} chose your offer for {{.RequestTitle}}"
+[notif.offapp.request_offer_selected.cta]
+other = "View at"
+[notif.offapp.request_fulfilled.message]
+other = "{{.RequestTitle}} was marked as fulfilled"
+[notif.offapp.request_fulfilled.cta]
+other = "View at"
+[notif.community_event.experience_started.title]
+other = "Event starting now"
+[notif.community_event.experience_cancelled.title]
+other = "Event cancelled"
+[notif.community_event.experience_updated_time.title]
+other = "Event updated"
+[notif.community_event.experience_updated_location.title]
+other = "Event updated"
+[notif.community_event.experience_updated_both.title]
+other = "Event updated"
+[notif.community_event.experience_updated_other.title]
+other = "Event updated"
+[notif.offapp.community_deleted_fallback.message]
+other = "A community you were a member of was deleted — you have 30 days to restore it"
+[notif.offapp.community_deleted_fallback.cta]
+other = "Restore it at"

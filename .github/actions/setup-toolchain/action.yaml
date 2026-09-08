@@ -1,0 +1,456 @@
+name: "Setup toolchain"
+description: >-
+  Installs Go, Node, Flutter, the JDK and/or the Go lint tools (golangci-lint,
+  gofumpt) at the versions pinned in versions.env — but only the ones whose
+  installed version does not already match.
+
+# WHY THIS EXISTS
+#
+# The self-hosted fleet runs a baked image (runners/Dockerfile, built from
+# versions.env) that already carries every toolchain. So test_go.yaml,
+# test_flutter.yaml and test_flutter_web.yaml install nothing at all: no
+# setup-go, no setup-node, no flutter-action. That works, it is fast, and it
+# is invisible until the same workflow runs somewhere without the baked image
+# — where it fails at its first step (#2953, OSS-7 #2959).
+#
+# WHY PRESENCE, NOT A RUNNER FLAG
+#
+# The obvious gate is `if: !vars.CI_RUNNER_LINUX` — "install when we are not
+# on our own fleet". That encodes *who is running* rather than *what is
+# missing*, so it is wrong in both directions: a baked image that drops a tool
+# would still skip the install, and a hosted runner that happens to have one
+# would reinstall it. Probing PATH states the actual precondition, needs no
+# configuration, and holds on any runner including ones nobody has thought of.
+#
+# WHY VERSION, NOT MERE PRESENCE
+#
+# The first version of this action probed only for the tool being on PATH,
+# reasoning that the baked image is built FROM versions.env so presence
+# implies the right version. That is true of the baked image and false
+# everywhere else: `ubuntu-latest` preinstalls Node 22 and JDK 17, so a
+# presence probe found them, skipped the install, and left the job running
+# against the wrong majors. verify_toolchain.yaml caught it on its first run.
+#
+# So the probe compares versions. That costs a little `--version` parsing —
+# four tools, four output formats, `go version`'s "go" prefix and Node's "v"
+# and Java's habit of printing to stderr — but the parsing is exercised on
+# every run of the verify workflow, which is what makes it safe to rely on.
+# The no-op property on the fleet is unchanged: its versions match, so every
+# step still skips.
+
+inputs:
+  go:
+    description: "Ensure the Go toolchain is available"
+    required: false
+    default: "false"
+  node:
+    description: "Ensure Node is available"
+    required: false
+    default: "false"
+  flutter:
+    description: "Ensure the Flutter SDK is available"
+    required: false
+    default: "false"
+  java:
+    description: "Ensure a JDK is available"
+    required: false
+    default: "false"
+  protoc-plugins:
+    description: >-
+      Ensure protoc-gen-go and protoc-gen-connect-go are on PATH for
+      `npm run generate:proto:go`. Implies the Go toolchain.
+    required: false
+    default: "false"
+  go-lint:
+    description: >-
+      Ensure golangci-lint and gofumpt are available at the versions.env pins.
+      Requires `go: true` — gofumpt is installed with `go install`, and neither
+      tool is useful without the Go toolchain anyway.
+    required: false
+    default: "false"
+  onnxruntime:
+    description: >-
+      Ensure the ONNX Runtime shared library is installed at the versions.env
+      pin. Needed by anything that starts the server or builds an embedder.
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Load pinned versions
+      shell: bash
+      run: |
+        set -euo pipefail
+        set -a
+        . "$GITHUB_WORKSPACE/versions.env"
+        set +a
+        {
+          echo "TOOLCHAIN_GO_VERSION=$GO_VERSION"
+          echo "TOOLCHAIN_NODE_MAJOR=$NODE_MAJOR"
+          echo "TOOLCHAIN_FLUTTER_VERSION=$FLUTTER_VERSION"
+          echo "TOOLCHAIN_JAVA_VERSION=$JAVA_VERSION"
+          echo "TOOLCHAIN_GOLANGCI_LINT_VERSION=$GOLANGCI_LINT_VERSION"
+          echo "TOOLCHAIN_GOFUMPT_VERSION=$GOFUMPT_VERSION"
+          echo "TOOLCHAIN_ONNXRUNTIME_VERSION=$ONNXRUNTIME_VERSION"
+        } >> "$GITHUB_ENV"
+
+    - name: Decide what is missing
+      id: probe
+      shell: bash
+      run: |
+        set -uo pipefail
+
+        # The installed version, or empty when the tool is not on PATH. Each
+        # tool reports differently: `go version` prints "go version go1.26.6
+        # linux/amd64"; node prefixes "v"; java writes to stderr; flutter's
+        # first line is "Flutter 3.47.1 • channel stable • …". Only Node's
+        # major is pinned, so only the major is compared.
+        installed() {
+          case "$1" in
+            go)
+              command -v go >/dev/null 2>&1 || return 0
+              go version 2>/dev/null | awk '{print $3}' | sed 's/^go//' ;;
+            node)
+              command -v node >/dev/null 2>&1 || return 0
+              node --version 2>/dev/null | sed 's/^v//' | cut -d. -f1 ;;
+            flutter)
+              command -v flutter >/dev/null 2>&1 || return 0
+              flutter --version 2>/dev/null | head -1 | awk '{print $2}' ;;
+            java)
+              command -v java >/dev/null 2>&1 || return 0
+              java -version 2>&1 | head -1 | sed -E 's/.*version "([0-9]+).*/\1/' ;;
+            golangci-lint)
+              # v1 prints "has version v1.64.8", v2 prints "has version 2.13.2"
+              # — the `v` moved. Match both, as scripts/doctor_versions.js does.
+              command -v golangci-lint >/dev/null 2>&1 || return 0
+              golangci-lint --version 2>/dev/null \
+                | sed -nE 's/.*has version v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' | head -1 ;;
+            gofumpt)
+              # `gofumpt --version` prints e.g. `v0.11.0 (go1.25.1)`.
+              command -v gofumpt >/dev/null 2>&1 || return 0
+              gofumpt --version 2>/dev/null | head -1 | sed -E 's/^v//' | awk '{print $1}' ;;
+          esac
+        }
+
+        # The Go release a binary was COMPILED WITH, as major.minor, or empty
+        # when the tool does not report it. Both Go lint tools embed this in
+        # their own `--version` line, so this needs no `go` on PATH — which
+        # matters, because this probe runs before the Set up Go step below.
+        build_go() {
+          case "$1" in
+            golangci-lint)
+              # "golangci-lint has version 2.13.2 built with go1.27.0 from …"
+              command -v golangci-lint >/dev/null 2>&1 || return 0
+              golangci-lint --version 2>/dev/null \
+                | sed -nE 's/.*built with go([0-9]+\.[0-9]+).*/\1/p' | head -1 ;;
+            gofumpt)
+              # "v0.11.0 (go1.25.1)"
+              command -v gofumpt >/dev/null 2>&1 || return 0
+              gofumpt --version 2>/dev/null \
+                | sed -nE 's/.*\(go([0-9]+\.[0-9]+).*/\1/p' | head -1 ;;
+          esac
+        }
+
+        # True when major.minor $1 is older than major.minor $2.
+        older_minor() {
+          [ "$1" = "$2" ] && return 1
+          [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -1)" = "$1" ]
+        }
+
+        # Logged per tool, with the three outcomes distinguished, so a
+        # surprising install or a surprising skip is visible in the job log
+        # rather than inferred from a step duration.
+        probe() {
+          local requested="$1" tool="$2" label="$3" key="$4" want="$5" got
+          local min_build_go="${6:-}" built
+          if [ "$requested" != "true" ]; then
+            echo "  $label: not requested"
+            echo "$key=false" >> "$GITHUB_OUTPUT"
+            return
+          fi
+          got="$(installed "$tool")"
+          if [ "$got" = "$want" ]; then
+            # A matching release version is not enough for the Go lint tools.
+            # golangci-lint refuses outright to analyse a module whose `go`
+            # directive is newer than the Go it was itself built with — "the Go
+            # language version (go1.26) used to build golangci-lint is lower
+            # than the targeted Go version (1.27.1)" — and gofumpt cannot parse
+            # syntax its own Go did not know. A Go-only bump leaves both pins
+            # untouched, so without this check the stale baked binaries are
+            # reused and the bump fails CI. That deadlocks: the fleet reroll
+            # that would rebake them is gated on the very PR that is red (#3036).
+            #
+            # Reinstalling clears it because the upstream golangci-lint release
+            # tarball is built with a current Go and gofumpt is rebuilt from
+            # source against the Go that Set up Go just installed. If upstream's
+            # own build ever lags the pin too, this reinstalls once per job
+            # without fixing it — wasted seconds, not a failure, and it resolves
+            # itself when upstream or the fleet catches up.
+            if [ -n "$min_build_go" ]; then
+              built="$(build_go "$tool")"
+              if [ -n "$built" ] && older_minor "$built" "$min_build_go"; then
+                echo "  $label: $want built with go$built, need go$min_build_go — reinstalling"
+                echo "$key=true" >> "$GITHUB_OUTPUT"
+                return
+              fi
+            fi
+            echo "  $label: $want already installed"
+            echo "$key=false" >> "$GITHUB_OUTPUT"
+          elif [ -n "$got" ]; then
+            echo "  $label: found $got, want $want — installing"
+            echo "$key=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "  $label: not installed, want $want — installing"
+            echo "$key=true" >> "$GITHUB_OUTPUT"
+          fi
+        }
+
+        # protoc-plugins needs `go install`, so it forces the Go request rather
+        # than trusting every caller to remember `go: true` alongside it. A
+        # caller that asked for both is unaffected — "true" either way.
+        want_go='${{ inputs.go }}'
+        if [ '${{ inputs.protoc-plugins }}' = 'true' ]; then
+          want_go=true
+        fi
+
+        # The `go` directive the lint tools will be pointed at is the pinned Go,
+        # and both compare at language-version granularity — go1.27.0 happily
+        # analyses a `go 1.27.1` module — so the patch is dropped here.
+        go_lang="$(echo "$TOOLCHAIN_GO_VERSION" | cut -d. -f1,2)"
+
+        echo "toolchain probe:"
+        probe "$want_go"              go      Go      go      "$TOOLCHAIN_GO_VERSION"
+        probe '${{ inputs.node }}'    node    Node    node    "$TOOLCHAIN_NODE_MAJOR"
+        probe '${{ inputs.flutter }}' flutter Flutter flutter "$TOOLCHAIN_FLUTTER_VERSION"
+        probe '${{ inputs.java }}'    java    JDK     java    "$TOOLCHAIN_JAVA_VERSION"
+        probe '${{ inputs.go-lint }}' golangci-lint golangci-lint golangci_lint "$TOOLCHAIN_GOLANGCI_LINT_VERSION" "$go_lang"
+        probe '${{ inputs.go-lint }}' gofumpt       gofumpt       gofumpt       "$TOOLCHAIN_GOFUMPT_VERSION"       "$go_lang"
+
+    - name: Set up Go
+      if: steps.probe.outputs.go == 'true'
+      uses: actions/setup-go@v7
+      with:
+        go-version: ${{ env.TOOLCHAIN_GO_VERSION }}
+        cache: false
+
+    - name: Set up Node
+      if: steps.probe.outputs.node == 'true'
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ env.TOOLCHAIN_NODE_MAJOR }}
+
+    - name: Set up JDK
+      if: steps.probe.outputs.java == 'true'
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: ${{ env.TOOLCHAIN_JAVA_VERSION }}
+
+    - name: Set up Flutter
+      if: steps.probe.outputs.flutter == 'true'
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.TOOLCHAIN_FLUTTER_VERSION }}
+        cache: true
+
+    # WHY PRESENCE HERE, WHEN THE PROBE ABOVE COMPARES VERSIONS
+    #
+    # The version-comparing probe exists because `ubuntu-latest` ships Node and
+    # a JDK preinstalled, so "it's on PATH" did not imply "it's the version we
+    # pinned". No runner preinstalls protoc-gen-go or protoc-gen-connect-go, so
+    # the only two states are "our baked image put them there" and "absent" —
+    # there is no wrong-version-already-present case to catch.
+    #
+    # And a version probe would actively cost us: runners/Dockerfile installs
+    # both at @latest on purpose, so a pinned comparison would never match and
+    # every Go and Flutter job on the fleet would reinstall them for nothing.
+    # A generator that genuinely mismatches the runtime library emits code that
+    # fails to compile against it, which is immediate and loud rather than
+    # silent drift.
+    - name: Install protoc plugins
+      if: inputs.protoc-plugins == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        missing=0
+        for plugin in protoc-gen-go protoc-gen-connect-go; do
+          if command -v "$plugin" >/dev/null 2>&1; then
+            echo "  $plugin: already on PATH"
+          else
+            echo "  $plugin: not installed — installing"
+            missing=1
+          fi
+        done
+        if [ "$missing" -eq 0 ]; then
+          exit 0
+        fi
+
+        # Versions come from go.mod rather than a new pin in versions.env, so
+        # the generators cannot drift away from the runtime libraries the code
+        # they emit links against. Read straight out of the file: `go list -m`
+        # would resolve the whole module graph, and this runs before
+        # `go mod download`.
+        version_of() {
+          local mod="$1" v
+          v="$(awk -v m="$mod" '$1 == m { print $2; exit }' "$GITHUB_WORKSPACE/go.mod")"
+          if [ -z "$v" ]; then
+            echo "setup-toolchain: $mod not found in go.mod — cannot pin its generator." >&2
+            exit 1
+          fi
+          echo "$v"
+        }
+
+        go install "google.golang.org/protobuf/cmd/protoc-gen-go@$(version_of google.golang.org/protobuf)"
+        go install "connectrpc.com/connect/cmd/protoc-gen-connect-go@$(version_of connectrpc.com/connect)"
+        echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+    # WHY THE GO LINT TOOLS ARE HERE AND NOT ONLY IN THE RUNNER IMAGE
+    #
+    # They are baked (runners/Dockerfile) and stay baked — that is the fast
+    # path, and on the fleet both probes above skip. But a baked tool only
+    # reaches CI after merge: build_runner_image rebuilds on push to main, then
+    # recreate_runners rolls the fleet. So a PR that bumps GOLANGCI_LINT_VERSION
+    # is linted by the OLD binary, and its own green tick proves nothing about
+    # the new one.
+    #
+    # For every other baked tool that is survivable. For golangci-lint it is
+    # not: v1 and v2 refuse each other's config outright ("you are using a
+    # configuration file for golangci-lint v2 with golangci-lint v1"), so the
+    # schema migration has no state that is green both before and after the
+    # fleet rolls — merging it would red every PR on main until the next
+    # recreate pass. `Validate Runner Candidate` does not cover this either;
+    # scripts/runner_candidate_checks.sh runs `go build`, never `npm run lint:go`.
+    #
+    # Installing on version MISMATCH makes the pin authoritative in the PR that
+    # changes it, which is the property the cutover needs (#3008). Steady-state
+    # cost is zero.
+    - name: Install golangci-lint at the pinned version
+      if: steps.probe.outputs.golangci_lint == 'true'
+      shell: bash
+      env:
+        VERSION: ${{ env.TOOLCHAIN_GOLANGCI_LINT_VERSION }}
+      run: |
+        set -euo pipefail
+
+        # Release tarball rather than `go install`: building golangci-lint from
+        # source takes minutes, and unlike gofumpt it is not a small program.
+        # The checksums file is what buys back the integrity that `go install`
+        # would have got from the module checksum database.
+        case "$(uname -s)" in
+          Linux)  os=linux ;;
+          Darwin) os=darwin ;;
+          *) echo "::error::unsupported OS $(uname -s) for golangci-lint install"; exit 1 ;;
+        esac
+        case "$(uname -m)" in
+          x86_64)          arch=amd64 ;;
+          aarch64|arm64)   arch=arm64 ;;
+          *) echo "::error::unsupported arch $(uname -m) for golangci-lint install"; exit 1 ;;
+        esac
+
+        name="golangci-lint-${VERSION}-${os}-${arch}"
+        base="https://github.com/golangci/golangci-lint/releases/download/v${VERSION}"
+        tmp="$(mktemp -d)"
+
+        curl -fsSL -o "$tmp/$name.tar.gz" "$base/$name.tar.gz"
+        curl -fsSL -o "$tmp/checksums.txt" "$base/golangci-lint-${VERSION}-checksums.txt"
+
+        # Verify before extracting, and fail loudly rather than falling through
+        # to an unverified binary. grep pins the line to this exact asset so a
+        # checksums file that stops listing it is an error, not a skip.
+        # macOS has `shasum` and no `sha256sum`; the runners are Linux, but the
+        # os case above accepts darwin so the check has to work there too.
+        if command -v sha256sum >/dev/null 2>&1; then
+          verify() { sha256sum -c -; }
+        else
+          verify() { shasum -a 256 -c -; }
+        fi
+        ( cd "$tmp" && grep " $name.tar.gz\$" checksums.txt | verify )
+
+        tar -C "$tmp" -xzf "$tmp/$name.tar.gz"
+        dest="${RUNNER_TEMP:-/tmp}/ripls-go-lint-bin"
+        mkdir -p "$dest"
+        install -m 0755 "$tmp/$name/golangci-lint" "$dest/golangci-lint"
+        rm -rf "$tmp"
+
+        # GITHUB_PATH prepends, so this wins over the baked copy for the rest
+        # of the job.
+        echo "$dest" >> "$GITHUB_PATH"
+        echo "installed golangci-lint $VERSION into $dest"
+
+    - name: Install gofumpt at the pinned version
+      if: steps.probe.outputs.gofumpt == 'true'
+      shell: bash
+      env:
+        VERSION: ${{ env.TOOLCHAIN_GOFUMPT_VERSION }}
+      run: |
+        set -euo pipefail
+
+        # `go install` rather than the release binary: gofumpt publishes bare
+        # binaries with no checksums file, whereas the module path is covered by
+        # the Go checksum database — stronger integrity, and gofumpt is small
+        # enough that building it costs seconds.
+        dest="${RUNNER_TEMP:-/tmp}/ripls-go-lint-bin"
+        mkdir -p "$dest"
+        GOBIN="$dest" go install "mvdan.cc/gofumpt@v${VERSION}"
+        echo "$dest" >> "$GITHUB_PATH"
+        echo "installed gofumpt $VERSION into $dest"
+
+    # THE THIRD THING THE RUNNER IMAGE QUIETLY SUPPLIES
+    #
+    # After the protoc plugins and the Go lint tools, this is the one that
+    # actually stopped Go Tests in the open-source repo: the embedder could not
+    # load ONNX Runtime, so the test server never became ready and every test
+    # that needs one failed behind `server did not become ready within 1m0s`.
+    # The message it starts from — "ONNX Runtime library not found" — is a
+    # single line in a 33-minute log, which is how a missing .so looks from the
+    # outside.
+    #
+    # runners/Dockerfile and the prod Dockerfile both install it to /usr/lib.
+    # server/ai/embedding/embedding.go searches a fixed path list containing
+    # that location, so matching where they put it is what makes this work
+    # rather than needing ONNXRUNTIME_LIB_PATH threaded through every caller.
+    #
+    # The probe looks for the VERSIONED filename, which makes presence and
+    # version the same check: an image built from a stale versions.env has
+    # libonnxruntime.so.<other version> and this installs the pinned one over
+    # it. That matters more here than for the other tools — the Go binding
+    # vendors one ORT_API_VERSION and refuses a native library older than it
+    # ("Error setting ORT API base"), so the pair is a correctness constraint.
+    - name: Install ONNX Runtime at the pinned version
+      if: inputs.onnxruntime == 'true'
+      shell: bash
+      env:
+        VERSION: ${{ env.TOOLCHAIN_ONNXRUNTIME_VERSION }}
+      run: |
+        set -euo pipefail
+
+        if [ -f "/usr/lib/libonnxruntime.so.${VERSION}" ]; then
+          echo "  ONNX Runtime: ${VERSION} already installed"
+          exit 0
+        fi
+        echo "  ONNX Runtime: want ${VERSION} — installing"
+
+        case "$(uname -m)" in
+          x86_64)        arch=x64 ;;
+          aarch64|arm64) arch=aarch64 ;;
+          *) echo "::error::unsupported architecture $(uname -m) for ONNX Runtime"; exit 1 ;;
+        esac
+
+        # The runner image runs as root and has no sudo; hosted runners are the
+        # other way round.
+        if [ "$(id -u)" -eq 0 ]; then sudo() { "$@"; }; fi
+
+        name="onnxruntime-linux-${arch}-${VERSION}"
+        tmp="$(mktemp -d)"
+        curl -fsSL --retry 3 -o "$tmp/ort.tgz" \
+          "https://github.com/microsoft/onnxruntime/releases/download/v${VERSION}/${name}.tgz"
+        tar -xzf "$tmp/ort.tgz" -C "$tmp"
+
+        sudo cp "$tmp/$name/lib/libonnxruntime.so.${VERSION}" /usr/lib/
+        sudo ln -sf "/usr/lib/libonnxruntime.so.${VERSION}" /usr/lib/libonnxruntime.so
+        sudo ldconfig
+        rm -rf "$tmp"
+
+        echo "installed ONNX Runtime ${VERSION} into /usr/lib"

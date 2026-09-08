@@ -1,0 +1,366 @@
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Supported OIDC authentication providers
+enum OIDCProvider {
+  OIDC_PROVIDER_UNSPECIFIED = 0;
+  OIDC_PROVIDER_GOOGLE = 1;
+  OIDC_PROVIDER_APPLE = 2;
+  OIDC_PROVIDER_MICROSOFT = 3;
+}
+
+// Tokens holds the access and refresh token pair issued after authentication,
+// following the OAuth 2.0 bearer token pattern (RFC 6749 §1.4 / §5.1).
+//
+// The access token is short-lived and must be sent as a Bearer token on every
+// authenticated request. The refresh token is long-lived and is used only to
+// obtain a new token pair when the access token expires — it must never be sent
+// on ordinary API calls.
+message Tokens {
+  // Short-lived JWT used to authorize requests. Send as `Authorization: Bearer <token>`.
+  string access_token = 1;
+
+  // Long-lived opaque token used only to obtain a new Tokens pair via RefreshToken.
+  // Store in encrypted platform storage (Keychain / EncryptedSharedPreferences).
+  // Rotated on every use — the previous refresh token is revoked when a new one is issued.
+  string refresh_token = 2;
+}
+
+// Request to create a new user.
+message EmailRegisterRequest {
+  string email = 1;
+  string name = 2;
+
+  // TODO(#2864): Ignored. Registration requires email_proof_token — a new
+  // account is only ever created for someone who proved they receive mail at
+  // the address, so no account created from here holds a password. Sending
+  // this field without a proof token fails with INVALID_ARGUMENT rather than
+  // creating a password account. The field remains on the wire only until the
+  // tag can be reserved; remove it (and reserve tag 3) once a release carrying
+  // the code flow has shipped and soaked.
+  string password = 3 [deprecated = true];
+
+  string short_code = 4;  // Required: short code from community invitation deep link
+  string gear_id = 5;  // Optional: gear ID for analytics tracking
+
+  // Optional: simulation run ID. When set, the created user is tagged for
+  // later cleanup via CleanupSimulation. Dev mode only.
+  optional string simulation_id = 6;
+
+  // Proof that the registrant can receive mail at `email`, obtained from
+  // VerifyEmailCode. Required — it is the only credential registration
+  // accepts.
+  string email_proof_token = 7;
+}
+
+// Request to log in an existing user.
+message EmailLoginRequest {
+  string email = 1;
+
+  // TODO(#2864): Sign-in is passwordless — the client sends email_proof_token.
+  // This field is still accepted for the accounts that already hold a password
+  // and for builds released before the code flow. Remove it (and reserve tag 2)
+  // once a release carrying the code flow has shipped, soaked, and password
+  // sign-ins have gone to zero.
+  string password = 2 [deprecated = true];
+
+  // Proof that the caller can receive mail at `email`, obtained from
+  // VerifyEmailCode. Supply this instead of a password. Exactly one of
+  // password or email_proof_token is required.
+  string email_proof_token = 3;
+}
+
+// Request to register a new user with an OIDC provider (Google, Apple, etc.)
+message OIDCRegisterRequest {
+  OIDCProvider provider = 1;  // Which OIDC provider issued the token
+  string id_token = 2;        // The OIDC ID token from the provider
+  string short_code = 3;  // Required: short code from community invitation deep link
+  string gear_id = 4;  // Optional: gear ID for analytics tracking
+}
+
+// Request to authenticate with an OIDC provider (Google, Apple, etc.)
+message OIDCLoginRequest {
+  OIDCProvider provider = 1;  // Which OIDC provider issued the token
+  string id_token = 2;        // The OIDC ID token from the provider
+}
+
+// The registration response.
+message EmailRegisterResponse {
+  User user = 1;
+  Tokens tokens = 2;
+}
+
+// The login response.
+message EmailLoginResponse {
+  User user = 1;
+  Tokens tokens = 2;
+}
+
+// The OIDC registration response.
+message OIDCRegisterResponse {
+  User user = 1;
+  Tokens tokens = 2;
+}
+
+// The OIDC login response.
+message OIDCLoginResponse {
+  User user = 1;
+  Tokens tokens = 2;
+}
+
+// Request to register a new user with a verified phone number (passwordless).
+// The client verifies phone ownership via Firebase Phone Auth OTP, then sends
+// the resulting Firebase ID token here for server-side validation.
+message PhoneRegisterRequest {
+  string firebase_id_token = 1;  // Firebase ID token from phone OTP verification
+  string name = 2;               // Display name for the new user
+  string short_code = 3;         // Required: short code from community invitation deep link
+  string gear_id = 4;            // Optional: gear ID for analytics tracking
+
+  // Optional: simulation run ID. When set, the created user is tagged for
+  // later cleanup via CleanupSimulation. Dev mode only.
+  optional string simulation_id = 5;
+}
+
+// Response after phone registration.
+message PhoneRegisterResponse {
+  User user = 1;
+  Tokens tokens = 2;
+}
+
+// Request to log in with a verified phone number (passwordless).
+// The client verifies phone ownership via Firebase Phone Auth OTP on every
+// login, then sends the resulting Firebase ID token here.
+message PhoneLoginRequest {
+  string firebase_id_token = 1;  // Firebase ID token from phone OTP verification
+}
+
+// Response after phone login.
+message PhoneLoginResponse {
+  User user = 1;
+  Tokens tokens = 2;
+}
+
+// Request to send a one-time code to an email address.
+//
+// The response is deliberately identical whether or not an account exists
+// for the address, so this cannot be used to discover who has an account.
+message RequestEmailCodeRequest {
+  string email = 1;  // Address to send the code to
+
+  // Fail with NOT_FOUND instead of sending, when no account exists for the
+  // address. Set by sign-in surfaces, where mailing a code to an address that
+  // cannot sign in only leads someone through a code they did not need to type
+  // to reach "no account found".
+  //
+  // Sign-up surfaces leave this false: there, an address with no account is
+  // the normal case.
+  //
+  // This deliberately makes the RPC disclose whether an address has an
+  // account. That is a trade, not an oversight — see the note on
+  // RequestEmailCode.
+  bool require_existing_account = 2;
+}
+
+// Response after requesting an email code. Success here means the request
+// was accepted and a code was sent — not that an account exists.
+message RequestEmailCodeResponse {
+  // Echo of the issued code. Only ever populated by a server running in
+  // development mode, so automated tests can complete the flow without a
+  // mailbox. Always absent otherwise.
+  optional string dev_code = 1;
+}
+
+// Request to exchange a one-time code for proof of address ownership.
+message VerifyEmailCodeRequest {
+  string email = 1;  // The address the code was sent to
+  string code = 2;   // The code as it appeared in the message
+}
+
+// Response carrying proof that the caller can receive mail at the address.
+message VerifyEmailCodeResponse {
+  // Short-lived, single-purpose token proving ownership of the address.
+  // Pass it to EmailRegister or EmailLogin in place of a password. It is
+  // not a session token and cannot be used to authorize requests.
+  string email_proof_token = 1;
+
+  // When the proof expires. Past this point a new code must be requested.
+  int64 expires_at_unix_sec = 2;
+
+  // Whether an account already exists for the address.
+  //
+  // Safe to disclose here and only here: the caller just proved they receive
+  // mail at this address, so this tells them nothing they could not already
+  // determine. RequestEmailCode, which anyone can call for any address,
+  // deliberately reveals nothing.
+  //
+  // Lets the client skip straight to signing in instead of collecting a
+  // display name a returning member has already chosen.
+  bool account_exists = 3;
+}
+
+// Request to check whether a phone number already has an account.
+//
+// Sign-in surfaces call this BEFORE starting phone verification. The one-time
+// code is sent by the identity provider from the client, so there is no
+// declining it afterwards: without this check, signing in with an unregistered
+// number sends a real text message that can never lead anywhere, at real cost,
+// and only then reports that no account exists.
+//
+// This reports account existence to a caller who has proven nothing, which the
+// registration paths do not. Accepted deliberately — there is no better answer
+// to "I tried to sign in and no such account exists" than saying so — and the
+// procedure is rate-limited per IP to bound bulk probing.
+message CheckPhoneRegisteredRequest {
+  string phone_number = 1;  // E.164 format, e.g. "+15551234567"
+}
+
+// Response reporting whether the number can sign in.
+message CheckPhoneRegisteredResponse {
+  bool is_registered = 1;
+}
+
+// Request to refresh an expired access token using a refresh token.
+message RefreshTokenRequest {
+  string refresh_token = 1;  // The long-lived refresh token
+}
+
+// Response containing a new token pair. The old refresh token is revoked.
+message RefreshTokenResponse {
+  Tokens tokens = 1;
+}
+
+// Request to check if an invitation short code is valid.
+message CheckInvitationRequest {
+  string short_code = 1;  // The invitation short code to validate.
+}
+
+// What kind of thing a share link points at. Clients use this to
+// choose the right landing surface (community join vs. event RSVP,
+// etc.).
+enum ShareLinkTargetKind {
+  SHARE_LINK_TARGET_KIND_UNSPECIFIED = 0;
+  SHARE_LINK_TARGET_KIND_COMMUNITY = 1;   // Plain "join this community" invite.
+  SHARE_LINK_TARGET_KIND_GEAR = 2;        // Points at a specific gear item.
+  SHARE_LINK_TARGET_KIND_TRANSFER = 3;    // Points at a specific transfer.
+  SHARE_LINK_TARGET_KIND_REQUEST = 4;     // Points at a specific request.
+  SHARE_LINK_TARGET_KIND_EVENT = 5;       // Points at a specific event.
+}
+
+// Response containing invitation validation status and details
+message CheckInvitationResponse {
+  bool is_valid = 1;           // Whether the token is valid and not revoked
+  string community_id = 2;     // Community they'll join (empty if invalid)
+  string community_name = 3;   // Community name for display (empty if invalid)
+  int32 num_members = 6;       // Current number of members in the community
+  int32 max_members = 7;       // Maximum number of members allowed in the community
+  string inviter_name = 4;     // Name of user who created the invite link (empty if invalid)
+  string error_message = 5;    // Human-readable error if is_valid is false
+  string community_image_url = 8;  // Presigned URL for community photo (for OG metadata)
+  // What kind of target the link points at. Absent for the
+  // bootstrap-user case.
+  optional ShareLinkTargetKind target_kind = 9;
+  // When target_kind is one of the item-scoped variants, the ID of
+  // the target item (gear / transfer / request / event). Absent for
+  // the COMMUNITY variant and for the bootstrap case.
+  optional string target_id = 10;
+}
+
+// Request to initiate a password reset
+//
+// TODO(#2864): The whole password-reset trio exists only for accounts that
+// still hold a password. A forgotten password is no longer a lockout — email
+// sign-in is a one-time code, which is the same recovery path a reset link was.
+// Remove all three RPCs (plus the reset screens, templates, and the
+// PendingPasswordReset model) once a release carrying the code flow has shipped
+// and soaked. The breaking-change gate does not police RPC deletion, so prove
+// there are no callers by hand first.
+message RequestPasswordResetRequest {
+  string email = 1;  // Email address of the user requesting password reset
+}
+
+// Response after initiating a password reset
+message RequestPasswordResetResponse {}
+
+// Request to check if a password reset token is valid
+//
+// TODO(#2864): Removed with the password-reset trio. This one also discloses
+// the account's email address to any holder of a reset token, which is a second
+// reason to be rid of it.
+message CheckResetPasswordTokenRequest {
+  string token = 1;  // The password reset token to validate
+}
+
+// Response containing reset token validation status
+message CheckResetPasswordTokenResponse {
+  bool is_valid = 1;        // Whether the token is valid and not expired
+  string email = 2;         // Email address associated with the token (empty if invalid)
+  string error_message = 3; // Human-readable error if is_valid is false
+}
+
+// Request to complete a password reset
+//
+// TODO(#2864): Removed with the password-reset trio.
+message ResetPasswordRequest {
+  string token = 1;         // The password reset token
+  string new_password = 2;  // The new password to set
+}
+
+// Response after completing a password reset
+message ResetPasswordResponse {}
+
+// LoginService provides user registration and authentication
+service LoginService {
+  // Creates a new user account with email/password
+  rpc EmailRegister(EmailRegisterRequest) returns (EmailRegisterResponse);
+
+  // Logs in an existing user with email/password
+  rpc EmailLogin(EmailLoginRequest) returns (EmailLoginResponse);
+
+  // Creates a new user account with an OIDC provider
+  rpc OIDCRegister(OIDCRegisterRequest) returns (OIDCRegisterResponse);
+
+  // Logs in an existing user with an OIDC provider
+  rpc OIDCLogin(OIDCLoginRequest) returns (OIDCLoginResponse);
+
+  // Creates a new user account with a verified phone number (passwordless)
+  rpc PhoneRegister(PhoneRegisterRequest) returns (PhoneRegisterResponse);
+
+  // Logs in an existing user with a verified phone number (passwordless)
+  rpc PhoneLogin(PhoneLoginRequest) returns (PhoneLoginResponse);
+
+  // Reports whether a phone number already has an account
+  rpc CheckPhoneRegistered(CheckPhoneRegisteredRequest) returns (CheckPhoneRegisteredResponse);
+
+  // Sends a one-time code to an email address
+  rpc RequestEmailCode(RequestEmailCodeRequest) returns (RequestEmailCodeResponse);
+
+  // Exchanges a one-time code for proof of email address ownership
+  rpc VerifyEmailCode(VerifyEmailCodeRequest) returns (VerifyEmailCodeResponse);
+
+  // Validates an invitation token and returns associated details
+  rpc CheckInvitation(CheckInvitationRequest) returns (CheckInvitationResponse);
+
+  // Initiates a password reset by sending an email with a reset link
+  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
+    option deprecated = true;
+  }
+
+  // Validates a password reset token and returns associated email
+  rpc CheckResetPasswordToken(CheckResetPasswordTokenRequest) returns (CheckResetPasswordTokenResponse) {
+    option deprecated = true;
+  }
+
+  // Completes a password reset with a new password
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse) {
+    option deprecated = true;
+  }
+
+  // Exchanges a refresh token for a new access token and rotated refresh token
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+}

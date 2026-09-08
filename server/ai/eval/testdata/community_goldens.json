@@ -1,0 +1,79 @@
+{
+  "description": "Golden eval cases for GenerateCommunityContent. Community generation produces ONLY image-search keywords — assertions cover stock-image keyword presence and relevance. Opt-in per field: fields omitted from 'expected' are not checked.",
+  "version": 2,
+  "defaults": {
+    "region": "Boulder, CO",
+    "min_search_keywords_jaccard": 0.2
+  },
+  "cases": [
+    {
+      "id": "cycling_group",
+      "tags": ["activity", "outdoor"],
+      "prompt": "a community for road cyclists in Boulder who want to organize weekend group rides",
+      "expected": {
+        "search_keywords_must_contain": ["cycl"],
+        "search_keywords_general": ["bike", "road", "outdoor", "cycl", "biking", "bicycle", "fitness", "ride"]
+      }
+    },
+    {
+      "id": "moms_neighborhood",
+      "tags": ["family", "local"],
+      "prompt": "neighborhood moms group for sharing kid stuff and play date coordination",
+      "expected": {
+        "search_keywords_general": ["parenting", "kids", "family", "neighborhood", "children", "mom", "playdate", "community", "toddler", "playground", "baby", "nursery", "stroller", "play"]
+      }
+    },
+    {
+      "id": "gardening_club",
+      "tags": ["activity", "hobby"],
+      "prompt": "people who garden in their backyards and want to share seeds, tools, and tips",
+      "expected": {
+        "search_keywords_general": ["plant", "seed", "veget", "outdoor", "horticult", "grow", "backyard", "homegrown", "garden", "harvest", "compost", "soil"]
+      }
+    },
+    {
+      "id": "boardgame_friends",
+      "tags": ["activity", "indoor"],
+      "prompt": "friends who like to get together once a month and play long strategy board games",
+      "expected": {
+        "search_keywords_must_contain": ["game"],
+        "search_keywords_general": ["games", "tabletop", "strategy", "indoor", "fun", "friends", "social", "hobby", "dice"]
+      }
+    },
+    {
+      "id": "young_pros_networking",
+      "tags": ["professional", "networking"],
+      "prompt": "young professionals in tech who want to network and grab coffee",
+      "expected": {
+        "search_keywords_general": ["professional", "career", "tech", "coffee", "young", "network", "industry", "meetup", "coworking", "laptop", "collaboration", "workspace", "remote", "startup"],
+        "min_general_matches": 2
+      }
+    },
+    {
+      "id": "rock_climbers",
+      "tags": ["activity", "outdoor", "fitness"],
+      "prompt": "rock climbers in Boulder who want a community for finding climbing partners",
+      "expected": {
+        "search_keywords_general": ["rock", "outdoor", "boulder", "fitness", "adventure", "climb", "partners", "sports", "beta", "crag", "send", "bouldering"]
+      }
+    },
+    {
+      "id": "vague_neighborhood",
+      "tags": ["vague"],
+      "prompt": "people who live around me and might want to do things together",
+      "expected": {
+        "search_keywords_general": ["community", "local", "neighbor", "social", "friend", "hangout"],
+        "min_general_matches": 1
+      }
+    },
+    {
+      "id": "book_club",
+      "tags": ["activity", "indoor"],
+      "prompt": "monthly book club focused on contemporary literary fiction",
+      "expected": {
+        "search_keywords_must_contain": ["book"],
+        "search_keywords_general": ["read", "literature", "fiction", "lit", "book", "library", "novel", "discussion"]
+      }
+    }
+  ]
+}

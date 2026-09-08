@@ -1,0 +1,11 @@
+source "https://rubygems.org"
+
+# Ruby 3.4 removed these from stdlib, but fastlane/cocoapods dependencies need them
+# See: https://github.com/fastlane/fastlane/issues/29183
+gem "nkf"       # provides kconv
+gem "base64"
+gem "abbrev"
+gem "mutex_m"
+
+gem "fastlane"
+gem "cocoapods"  # Required for iOS

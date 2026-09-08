@@ -1,0 +1,328 @@
+name: Web E2E
+
+# Playwright Test against the Flutter Web bundle (#2162). Runs the
+# specs in e2e/tests/ on mobile-Chromium and WebKit projects against
+# a real testcontainer Postgres + embedded server bundle.
+#
+# Replaces the prior chromedp smoke (server/cmd/web-smoke/) + its
+# workflow (test_web_smoke.yaml), both deleted in the same PR that
+# introduced this one. The Playwright suite is a superset: it ports
+# all three chromedp checks (/event/{fake-id}, /feed unauth,
+# /feed authed) as ported-smoke.spec.ts plus two richer scenarios
+# (video-on-event-hero — the #2155 regression test — and
+# guest-rsvp-confirm).
+#
+# Phone-first pivot (epic #2492): phone-rsvp-full-loop.spec.ts drives the whole
+# invite → web → REAL phone OTP → RSVP loop against the Firebase Auth Emulator
+# (booted by e2e/global-setup.ts via the pinned firebase-tools; needs Java).
+# Chromium-only (webkit phone-UI driving is out of scope).
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/lib/**'
+      - 'app/web/**'
+      - 'app/pubspec.yaml'
+      - 'app/pubspec.lock'
+      - 'proto/**'
+      - 'server/main.go'
+      - 'server/services/web/**'
+      - 'server/cmd/web-smoke-db/**'
+      - 'e2e/**'
+      - 'scripts/start_e2e_server.sh'
+      - 'scripts/fetch_secret.sh'
+      - '.github/workflows/test_web_e2e.yaml'
+  # No path filter on PRs: this is a required check, so it must report on every
+  # PR. The `changes` job gates the real work — a PR that doesn't touch the e2e
+  # paths skips the `e2e` job, which reports success and satisfies the required
+  # check (the GitHub-recommended pattern for path-scoped required checks; #2287).
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+jobs:
+  changes:
+    name: Detect e2e changes
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'app/lib/**'
+              - 'app/web/**'
+              - 'app/pubspec.yaml'
+              - 'app/pubspec.lock'
+              - 'proto/**'
+              - 'server/main.go'
+              - 'server/services/web/**'
+              - 'server/cmd/web-smoke-db/**'
+              - 'e2e/**'
+              - 'scripts/start_e2e_server.sh'
+              - 'scripts/fetch_secret.sh'
+              - '.github/workflows/test_web_e2e.yaml'
+
+  # Unlike Go Tests, this suite cannot degrade: build:web:local fetches the
+  # Firebase web API key and the Mapbox token from Secret Manager, so without
+  # credentials there is no web bundle to test. Skip the job rather than spend
+  # 35 minutes arriving at that conclusion — which is also the position every
+  # fork PR is in, since GitHub never passes secrets to one.
+  #
+  # A gate job rather than a job-level `if:`, because `secrets` is not a
+  # context available there, and `changes` cannot host the check because it
+  # only runs on pull_request.
+  credentials:
+    name: Detect Google Cloud credentials
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    outputs:
+      gcp: ${{ steps.check.outputs.gcp }}
+    steps:
+      - id: check
+        env:
+          KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+        run: |
+          set -euo pipefail
+          if [ -n "$KEY" ]; then
+            echo "gcp=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "gcp=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Web E2E skipped::GCP_SERVICE_ACCOUNT_KEY_DEV is unset, so the web bundle's Firebase and Mapbox keys cannot be fetched."
+          fi
+
+  e2e:
+    name: Web E2E
+    needs: [changes, credentials]
+    # Push/dispatch: always run. PR: run only when e2e paths changed; otherwise
+    # the job skips and reports success, satisfying the required check. Either
+    # way, no credentials means no run.
+    if: ${{ always() && needs.credentials.outputs.gcp == 'true' && (github.event_name != 'pull_request' || needs.changes.outputs.relevant == 'true') }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    # The suite legitimately runs ~26 min on the shared self-hosted runner
+    # (setup + web build + ~14 min Playwright + teardown). A 25-min cap tripped
+    # during teardown *after* the tests passed, marking the whole job
+    # "cancelled" — a false failure. 35 gives headroom over the real runtime.
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      # No-op on the baked runner image. Java is the one that bites elsewhere:
+      # the Firebase Auth Emulator is a Java process, and the step further down
+      # deliberately omits setup-java because the image bakes Temurin (#2959).
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-toolchain
+        with:
+          go: "true"
+          node: "true"
+          flutter: "true"
+          java: "true"
+          protoc-plugins: "true"
+          onnxruntime: "true"
+
+      - name: Ensure Git LFS files are pulled
+        # The server's embedding model files AND the e2e video fixture
+        # are LFS-tracked.
+        run: |
+          git lfs install --local
+          git lfs pull
+
+      - name: Authenticate to Google Cloud
+        # Same dev service-account the smoke workflow uses; needed for
+        # build:web:local's Firebase web API key + Mapbox token fetches.
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+
+      - name: Set up gcloud CLI
+        # build:web:local shells out to scripts/fetch_secret.sh which
+        # needs `gcloud secrets versions access`.
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Install Node 22
+        # Pin the job's Node explicitly so it does not drift with the
+        # runner image. Playwright and Connect-ES v2 run on Node 22 (LTS).
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      # No setup-java step: the runner image this repo's CI uses bakes Temurin
+      # (versions.env JAVA_VERSION) with JAVA_HOME + java on PATH, so the
+      # Firebase Auth Emulator — a Java process booted by e2e/global-setup.ts to
+      # drive real phone OTP in the phone-first spec — already has a JDK.
+      # Re-installing it via actions/setup-java was redundant and was the only
+      # Node 20 action in this job (deprecation warning).
+
+      - name: Install repo-level npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        # Generates Go + Dart + TS clients (the new TS codegen lands
+        # the @gen/* sources e2e/lib/seed/ imports).
+        run: npm run generate:proto
+
+      - name: Install Flutter dependencies
+        run: cd app && flutter pub get
+
+      - name: Generate freezed and mockito code
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Start Postgres via testcontainers
+        # Same helper the smoke workflow uses; the e2e suite reuses
+        # it unchanged per the Phase-1 plan.
+        env:
+          SMOKE_DB_NAME: ripls-web-e2e-pg-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+        run: |
+          go run ./server/cmd/web-smoke-db > /tmp/web-e2e-db.url
+          echo "E2E_DB_URL=$(cat /tmp/web-e2e-db.url)" >> "$GITHUB_ENV"
+          echo "SMOKE_DB_NAME=$SMOKE_DB_NAME" >> "$GITHUB_ENV"
+
+      - name: Build Flutter Web bundle (build:web:e2e)
+        # build:web:e2e == build:web:local + --dart-define=AUTH_EMULATOR_HOST so
+        # the phone-first spec can route Firebase Auth through the Auth Emulator.
+        # The define is inert for the other specs: the app wires the emulator
+        # LAZILY, only on the phone-register screen right before verifyPhoneNumber
+        # — NOT at startup. A startup useAuthEmulator does a network round-trip to
+        # the emulator on every page load, which slowed the suite enough to time
+        # out the 2-context multi-client spec. The bundle is embedded into the
+        # server binary via //go:embed at build time, so the server MUST be
+        # (re)built after this — see the next step.
+        # build:web:e2e fetches the Mapbox token via scripts/fetch_secret.sh,
+        # which now names the environment and resolves the project id through
+        # scripts/gcp_project.sh (#2953). OSS-7 (#2959) converts this literal
+        # to vars.GCP_PROJECT_DEV along with the rest of the workflow's project
+        # references.
+        env:
+          GCP_PROJECT_DEV: ${{ vars.GCP_PROJECT_DEV }}
+        run: npm run build:web:e2e
+
+      - name: Build server binary
+        # Re-embeds the fresh bundle (//go:embed app_assets). Always after the
+        # web build — a stale binary serves the previously-embedded bundle.
+        run: go build -o tmp/server ./server
+
+      - name: Install e2e npm dependencies
+        # Installs the pinned firebase-tools@15 (the Auth Emulator CLI) too. The
+        # Auth Emulator JAR has no separate `setup:emulators:*` command; it is
+        # fetched automatically on the first `emulators:start` in global-setup
+        # (covered by its 90s readiness timeout).
+        run: cd e2e && npm install
+
+      # e2e/tsconfig.json has always said `strict: true`, but nothing ever ran
+      # tsc, so 71 TypeScript files went unchecked. The first run found 144
+      # errors — including seed helpers setting proto fields that do not exist
+      # (protobuf-es drops unknown keys silently, so the seed quietly did not do
+      # what it said). Cheap, and catches that class before it reaches a flake.
+      - name: Typecheck e2e TypeScript
+        timeout-minutes: 5
+        run: npm run lint:e2e:types
+
+      - name: Run e2e harness unit tests
+        # Capped, because the first version of this step HUNG: a test leaked a
+        # listening socket on failure, node --test never exited, and it ate the
+        # job's whole 35-minute budget before Playwright started. A unit suite
+        # that cannot finish in two minutes is broken, and should say so fast.
+        timeout-minutes: 2
+        # The lib/ tests (tsx --test) cover the harness itself, not the app —
+        # the stale-server and port-in-use guards in lib/server.ts among them.
+        # They live here rather than in `npm run test:scripts` because tsx is an
+        # e2e devDependency, and Check Versions installs only root deps; running
+        # them there failed with "tsx: not found". This job is gated on `e2e/**`,
+        # so it fires exactly when these tests can regress. Before the browser
+        # install so a broken harness fails in seconds, not after a web build.
+        run: cd e2e && npm run test:lib
+
+      - name: Install Playwright browsers
+        # --with-deps installs apt-level libs Chromium + WebKit need
+        # (libgbm, libxss, etc.). Idempotent across runs.
+        run: cd e2e && npx playwright install --with-deps chromium webkit
+
+      - name: Run Playwright tests
+        # global-setup.ts starts the server (E2E_DB_URL points at the
+        # testcontainer). CI uses --log-format=json (per the #2162
+        # Phase-0 audit note) so failure-time grep finds structured
+        # fields. globalTeardown stops the server.
+        #
+        # Scope to the correctness projects — the `walkthrough` project
+        # (paced, hi-DPI, video-generating) is an on-demand deliverable, not a
+        # CI gate. The phone-first onboarding flow is gated by the standard
+        # workflow specs (e.g. phone-rsvp-full-loop) under mobile-chromium/webkit.
+        env:
+          CI: 'true'
+        run: cd e2e && npx playwright test --project=mobile-chromium --project=webkit
+
+      - name: Upload Playwright HTML report
+        # Only needed to debug failures. These reports plus the test-results
+        # videos/traces below were the largest live consumer of the org's 2 GB
+        # Actions storage quota; skip them on green runs. Video is also
+        # retain-on-failure in CI (playwright.config.ts videoMode, #2738), so the
+        # failure upload now carries only the failing test's clip. Short retention
+        # bounds accumulation across a burst of failing runs.
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-e2e-playwright-report
+          path: e2e/playwright-report
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Upload Playwright test results (videos, traces, screenshots)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-e2e-test-results
+          path: e2e/test-results
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Upload server log
+        # global-setup.ts writes the server's slog stream here. With
+        # --log-format=json a triager can `jq` it by request_id to
+        # find the entry that handled a failing Playwright RPC.
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-e2e-server-log
+          path: /tmp/ripls-e2e-server-*.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Dump server log tail on failure
+        if: failure()
+        run: |
+          echo "--- last 200 lines of the most recent server log ---"
+          latest=$(ls -t /tmp/ripls-e2e-server-*.log 2>/dev/null | head -n1 || true)
+          if [ -n "$latest" ]; then
+            tail -n 200 "$latest" || true
+          else
+            echo "no server log found"
+          fi
+
+      - name: Remove Postgres testcontainer
+        # Ryuk is disabled in server/cmd/web-smoke-db, so this is the
+        # only reaper.
+        if: always()
+        run: |
+          docker rm -fv "${SMOKE_DB_NAME:-}" 2>/dev/null || true

@@ -1,0 +1,11 @@
+# ARB orphan allowlist — keys exempt from `npm run lint:dart:arb-orphans`.
+#
+# One message key per line. Only for a key that is genuinely reachable in a
+# way the checker cannot see; a key kept "for later" is not that — delete it
+# and let git history hold it.
+#
+# This list may SHRINK but never GROW. Adding an entry needs a reason in the
+# PR description. The checker also fails on a stale entry (one whose key is
+# now used, or no longer in app_en.arb), so the list cannot rot.
+#
+# Currently empty: every key in app_en.arb is referenced.

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// SmsOptOut records the text-message preference for a phone number, keyed by
+// its normalized E.164 form. When a recipient texts STOP (or a related opt-out
+// keyword), opted_out is set true and the platform must never text that number
+// again, even on behalf of a different host; a later START resets it to false.
+// This is the global, per-number suppression state consulted before every
+// platform text message. The number is PII and must never be logged unmasked.
+message SmsOptOut {
+  // Unique identifier.
+  string id = 1;
+
+  // Normalized E.164 phone number this preference applies to (e.g.
+  // "+15551234567"). PII: never log unmasked.
+  string phone_number = 2;
+
+  // Whether the number has opted out of all platform text messages. True after
+  // a STOP keyword; reset to false after a START keyword.
+  bool opted_out = 3;
+
+  // When the number most recently opted out (Unix seconds); 0 if it has never
+  // opted out.
+  int64 opted_out_at_unix_sec = 4;
+
+  // When this preference record was last updated (Unix seconds).
+  int64 updated_at_unix_sec = 5;
+}

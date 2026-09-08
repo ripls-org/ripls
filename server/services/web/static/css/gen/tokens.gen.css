@@ -1,0 +1,85 @@
+/*
+ * GENERATED from design/tokens.json by scripts/gen_design_tokens.js — DO NOT EDIT.
+ * Edit design/tokens.json and run `npm run generate:design-tokens`. CI
+ * (`npm run lint:design-tokens`) fails if this file drifts from the source.
+ *
+ * Dark mode follows the visitor's OS preference via
+ * @media (prefers-color-scheme: dark), matching the app's auto-theming.
+ */
+
+:root {
+  --font-serif: 'Libre Baskerville', Baskerville, 'Times New Roman', serif;
+  --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --color-background: #FFFFFF;   /* Page background */
+  --color-surface: #F2F2EE;   /* Raised surface: cards, sheets, alternating sections */
+  --color-border: #DDDDD4;   /* Borders and dividers; cards are bordered, not shadowed */
+  --color-text-primary: #191C19;   /* Primary text */
+  --color-text-secondary: #4A524C;   /* Secondary text: body copy, descriptions */
+  --color-text-faint: #7C837C;   /* Faint text: placeholders, footnotes, timestamps */
+  --color-primary: #3E5A47;   /* Deep sage */
+  --color-on-primary: #F4F7F1;   /* Text and icons on primary fills */
+  --color-primary-hover: #2F4636;   /* Hover/pressed deepening of primary */
+  --color-accent: #1F2421;   /* Ink */
+  --color-on-accent: #F4F4EF;   /* Text and icons on accent fills (e.g */
+  --color-success: #2E7041;   /* Success status */
+  --color-warning: #8A6200;   /* Warning status */
+  --color-error: #B5492B;   /* Error status: form errors, destructive actions, failure banners */
+  --color-info: #3E6471;   /* Info status */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #141714;
+    --color-surface: #1F2421;
+    --color-border: #323832;
+    --color-text-primary: #F4F4EF;
+    --color-text-secondary: #ABB3AB;
+    --color-text-faint: #7B837B;
+    --color-primary: #9DBFA8;
+    --color-on-primary: #14241A;
+    --color-primary-hover: #B1CFBA;
+    --color-accent: #E6E8E1;
+    --color-on-accent: #191C19;
+    --color-success: #7A9B76;
+    --color-warning: #E8A661;
+    --color-error: #DB7F63;
+    --color-info: #7FA0A9;
+  }
+}
+
+/* Fixed-theme variables — for surfaces whose theme does NOT follow the OS
+ * preference (e.g. marketing photo-overlay sections are always dark, their
+ * light sections always light). These never switch. */
+:root {
+  --light-background: #FFFFFF;
+  --light-surface: #F2F2EE;
+  --light-border: #DDDDD4;
+  --light-text-primary: #191C19;
+  --light-text-secondary: #4A524C;
+  --light-text-faint: #7C837C;
+  --light-primary: #3E5A47;
+  --light-on-primary: #F4F7F1;
+  --light-primary-hover: #2F4636;
+  --light-accent: #1F2421;
+  --light-on-accent: #F4F4EF;
+  --light-success: #2E7041;
+  --light-warning: #8A6200;
+  --light-error: #B5492B;
+  --light-info: #3E6471;
+  --dark-background: #141714;
+  --dark-surface: #1F2421;
+  --dark-border: #323832;
+  --dark-text-primary: #F4F4EF;
+  --dark-text-secondary: #ABB3AB;
+  --dark-text-faint: #7B837B;
+  --dark-primary: #9DBFA8;
+  --dark-on-primary: #14241A;
+  --dark-primary-hover: #B1CFBA;
+  --dark-accent: #E6E8E1;
+  --dark-on-accent: #191C19;
+  --dark-success: #7A9B76;
+  --dark-warning: #E8A661;
+  --dark-error: #DB7F63;
+  --dark-info: #7FA0A9;
+}

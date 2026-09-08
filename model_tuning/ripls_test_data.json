@@ -1,0 +1,3432 @@
+[
+  {
+    "query": "want to find kids clothing",
+    "item_text": "Invisible fence system",
+    "score": 0.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Pet Supplies"
+  },
+  {
+    "query": "outdoor",
+    "item_text": "Disc golf outing",
+    "score": 0.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "I need garden and yard equipment",
+    "item_text": "Sunday service social",
+    "score": 0.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "looking for youth group meeting",
+    "item_text": "Interfaith dialogue dinner",
+    "score": 1.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "I need kids clothing",
+    "item_text": "Children's rain boots",
+    "score": 1.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Kids Clothing"
+  },
+  {
+    "query": "something like frozen vegetables",
+    "item_text": "Juneteenth celebration",
+    "score": 0.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Cultural and Holiday Events"
+  },
+  {
+    "query": "social gatherings to borrow",
+    "item_text": "Vintage car enthusiasts",
+    "score": 0.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "need academic",
+    "item_text": "Writing workshop",
+    "score": 1.0,
+    "query_category": "Language and Academic",
+    "item_category": "Language and Academic"
+  },
+  {
+    "query": "cheap kitchen appliances and cookware",
+    "item_text": "Snow cone maker",
+    "score": 1.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "looking for dance recital costume",
+    "item_text": "Running shoes",
+    "score": 1.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "looking for adult clothing",
+    "item_text": "STEM workshop for kids",
+    "score": 0.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "can I borrow kids programs",
+    "item_text": "Swimming clinic",
+    "score": 1.0,
+    "query_category": "Kids Programs",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "need string lights for backyard",
+    "item_text": "Children's rain boots",
+    "score": 0.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Kids Clothing"
+  },
+  {
+    "query": "need zumba class at community center",
+    "item_text": "Zoo trip with families",
+    "score": 0.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Family Activities"
+  },
+  {
+    "query": "appliance dolly",
+    "item_text": "Trail running group",
+    "score": 0.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Outdoor Adventures"
+  },
+  {
+    "query": "need produce",
+    "item_text": "Garden zucchini surplus",
+    "score": 1.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "need climbing at barton creek",
+    "item_text": "Group bike ride to Manor",
+    "score": 1.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Outdoor Adventures"
+  },
+  {
+    "query": "where can I find family activities",
+    "item_text": "Library story time",
+    "score": 1.0,
+    "query_category": "Family Activities",
+    "item_category": "Family Activities"
+  },
+  {
+    "query": "something like cat scratching post",
+    "item_text": "School beautification day",
+    "score": 0.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "need extra squash from garden",
+    "item_text": "Homegrown tomatoes",
+    "score": 1.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "disc golf outing",
+    "item_text": "Chafing dishes for buffet",
+    "score": 0.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "something like student violin",
+    "item_text": "New mom support circle",
+    "score": 0.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "can I borrow seasonal and weather gear",
+    "item_text": "Hand truck dolly",
+    "score": 0.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "can I borrow movies and music",
+    "item_text": "Classic rock vinyl collection",
+    "score": 1.0,
+    "query_category": "Movies and Music",
+    "item_category": "Movies and Music"
+  },
+  {
+    "query": "need trail running group",
+    "item_text": "Group bike ride to Manor",
+    "score": 1.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Outdoor Adventures"
+  },
+  {
+    "query": "something like marvel movie set",
+    "item_text": "Movies and Music",
+    "score": 1.0,
+    "query_category": "Movies and Music",
+    "item_category": "Movies and Music"
+  },
+  {
+    "query": "who has volunteer and service",
+    "item_text": "Folding wheelchair",
+    "score": 0.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "anyone have sports and recreation equipment",
+    "item_text": "Food bank volunteering",
+    "score": 0.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "tech help for seniors",
+    "item_text": "Basic home repair workshop",
+    "score": 1.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "looking for maternity clothes",
+    "item_text": "Lifetime portable basketball hoop",
+    "score": 0.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "sun hat",
+    "item_text": "Outdoor nativity set",
+    "score": 0.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "need garden",
+    "item_text": "Fresh eggs from chickens",
+    "score": 1.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "looking for patagonia down sleeping bag",
+    "item_text": "Pickleball at the park",
+    "score": 0.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "formal and special occasion",
+    "item_text": "Tuxedo rental",
+    "score": 1.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "dance recital",
+    "item_text": "Girl Scout troop meeting",
+    "score": 0.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "meals",
+    "item_text": "Callaway golf club set",
+    "score": 0.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "looking for thule bike rack",
+    "item_text": "Belly band",
+    "score": 0.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "looking for sat prep study group",
+    "item_text": "Peloton bike",
+    "score": 0.0,
+    "query_category": "Language and Academic",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "prayer group",
+    "item_text": "Interfaith dialogue dinner",
+    "score": 1.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "seasonal",
+    "item_text": "Sun hat",
+    "score": 1.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Seasonal and Weather Gear"
+  },
+  {
+    "query": "need ice cream",
+    "item_text": "Frozen fruit",
+    "score": 1.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Frozen Foods"
+  },
+  {
+    "query": "need tuxedo rental",
+    "item_text": "Quincea\u00f1era dress",
+    "score": 1.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "anyone have games and puzzles",
+    "item_text": "Settlers of Catan",
+    "score": 1.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "looking for baked bread loaf",
+    "item_text": "String light collection",
+    "score": 0.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "want to find cultural and holiday events",
+    "item_text": "Splash pad meetup",
+    "score": 0.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Family Activities"
+  },
+  {
+    "query": "something like sunday service social",
+    "item_text": "Disney princess dress",
+    "score": 0.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "something like maternity jeans",
+    "item_text": "Belly band",
+    "score": 1.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "projector",
+    "item_text": "DJI Mini drone",
+    "score": 1.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Electronics and Technology"
+  },
+  {
+    "query": "something like caregiver support group",
+    "item_text": "Support Groups",
+    "score": 1.0,
+    "query_category": "Support Groups",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "metal shelving unit",
+    "item_text": "Folding guest bed",
+    "score": 1.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Furniture and Large Items"
+  },
+  {
+    "query": "anyone have prepared meals and dishes",
+    "item_text": "Prepared Meals and Dishes",
+    "score": 1.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Prepared Meals and Dishes"
+  },
+  {
+    "query": "looking for 55-gallon aquarium",
+    "item_text": "Park cleanup day",
+    "score": 0.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "need choir practice",
+    "item_text": "Knitting and crochet circle",
+    "score": 0.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "want to find books",
+    "item_text": "Shower bench",
+    "score": 0.0,
+    "query_category": "Books",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "cheap sports and recreation",
+    "item_text": "DJI Mini drone",
+    "score": 0.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Electronics and Technology"
+  },
+  {
+    "query": "splash pad meetup",
+    "item_text": "Kids museum visit",
+    "score": 1.0,
+    "query_category": "Family Activities",
+    "item_category": "Family Activities"
+  },
+  {
+    "query": "cooking",
+    "item_text": "Bread baking workshop",
+    "score": 1.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "looking for neighborhood events",
+    "item_text": "Kid's Story time at library",
+    "score": 1.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Neighborhood Events"
+  },
+  {
+    "query": "need ryobi orbital sander",
+    "item_text": "Ski jacket and pants",
+    "score": 0.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "looking for chicken soup",
+    "item_text": "Chicken soup",
+    "score": 1.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Prepared Meals and Dishes"
+  },
+  {
+    "query": "where can I find arts and crafts classes",
+    "item_text": "Career dress-up set",
+    "score": 0.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "cheap family activities",
+    "item_text": "Family movie in the park",
+    "score": 1.0,
+    "query_category": "Family Activities",
+    "item_category": "Family Activities"
+  },
+  {
+    "query": "looking for homemade pie",
+    "item_text": "Kids Halloween costumes",
+    "score": 0.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "need dance",
+    "item_text": "Piano lessons for kids",
+    "score": 1.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "who has kids clothing",
+    "item_text": "Salsa dance class",
+    "score": 0.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "need music",
+    "item_text": "Piano lessons for kids",
+    "score": 1.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "need running shoes",
+    "item_text": "Cub Scout den meeting",
+    "score": 0.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "looking for homemade cookies",
+    "item_text": "Sourdough starter",
+    "score": 1.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "kids programs to borrow",
+    "item_text": "Cub Scout den meeting",
+    "score": 1.0,
+    "query_category": "Kids Programs",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "uno card game",
+    "item_text": "Ticket to Ride",
+    "score": 1.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "first aid training",
+    "item_text": "Community flea market",
+    "score": 0.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "want to find neighborhood events",
+    "item_text": "Craftsman socket set",
+    "score": 0.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Tools and Workshop Equipment"
+  },
+  {
+    "query": "skills",
+    "item_text": "Holiday craft fair",
+    "score": 0.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "need roland electronic drums",
+    "item_text": "Fender electric guitar",
+    "score": 1.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Musical Instruments"
+  },
+  {
+    "query": "dinner party",
+    "item_text": "Neighborhood happy hour",
+    "score": 1.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Social Gatherings"
+  },
+  {
+    "query": "lodge cast iron dutch oven",
+    "item_text": "Chair yoga for seniors",
+    "score": 0.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "something like sunday pickup basketball",
+    "item_text": "Tennis doubles mixer",
+    "score": 1.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "I need adult clothing",
+    "item_text": "Business casual blazer",
+    "score": 1.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Adult Clothing"
+  },
+  {
+    "query": "looking for kids museum visit",
+    "item_text": "Juneteenth celebration",
+    "score": 0.0,
+    "query_category": "Family Activities",
+    "item_category": "Cultural and Holiday Events"
+  },
+  {
+    "query": "anyone have fitness and wellness classes",
+    "item_text": "5K training group",
+    "score": 0.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "where can I find support groups",
+    "item_text": "Cancer survivor support",
+    "score": 1.0,
+    "query_category": "Support Groups",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "need photography walk",
+    "item_text": "Halloween inflatables",
+    "score": 0.0,
+    "query_category": "Interest Groups",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "cheap baked goods and homemade items",
+    "item_text": "Monopoly",
+    "score": 0.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "anyone have medical and mobility equipment",
+    "item_text": "Medical and Mobility Equipment",
+    "score": 1.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "do you have kids programs",
+    "item_text": "Girl Scout troop meeting",
+    "score": 1.0,
+    "query_category": "Kids Programs",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "woodworking",
+    "item_text": "Banana bread",
+    "score": 0.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "disc golf outing",
+    "item_text": "Callaway golf club set",
+    "score": 0.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "do you have cultural and holiday events",
+    "item_text": "Fourth of July picnic",
+    "score": 1.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Cultural and Holiday Events"
+  },
+  {
+    "query": "looking for arts and crafts classes",
+    "item_text": "Quilting bee",
+    "score": 1.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "skateboard",
+    "item_text": "Wilson tennis racket",
+    "score": 1.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "games and puzzles",
+    "item_text": "Basic home repair workshop",
+    "score": 0.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "need to borrow seasonal and weather gear",
+    "item_text": "Settlers of Catan",
+    "score": 0.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "something like superhero cape",
+    "item_text": "Addiction recovery meeting",
+    "score": 0.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "social gatherings available",
+    "item_text": "Kids snow pants",
+    "score": 0.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Kids Clothing"
+  },
+  {
+    "query": "frozen foods near me",
+    "item_text": "Frozen vegetables",
+    "score": 1.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Frozen Foods"
+  },
+  {
+    "query": "help needed",
+    "item_text": "Chair yoga for seniors",
+    "score": 0.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "something like poetry reading",
+    "item_text": "Hazardous Tales by Nathan Hale kids graphic novel",
+    "score": 0.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Books"
+  },
+  {
+    "query": "language and academic to borrow",
+    "item_text": "Fourth of July picnic",
+    "score": 0.0,
+    "query_category": "Language and Academic",
+    "item_category": "Cultural and Holiday Events"
+  },
+  {
+    "query": "kitchen appliances and cookware",
+    "item_text": "Snow cone maker",
+    "score": 1.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "anyone have movies and music",
+    "item_text": "Kids cooking camp",
+    "score": 0.0,
+    "query_category": "Movies and Music",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "need meal delivery for seniors",
+    "item_text": "Food bank volunteering",
+    "score": 1.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "who has garden and yard equipment",
+    "item_text": "Garden and Yard Equipment",
+    "score": 1.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Garden and Yard Equipment"
+  },
+  {
+    "query": "something like group bike ride to manor",
+    "item_text": "Stihl chainsaw",
+    "score": 0.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Garden and Yard Equipment"
+  },
+  {
+    "query": "need cereal boxes",
+    "item_text": "IKEA Antilop high chair",
+    "score": 0.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Baby and Kids Gear"
+  },
+  {
+    "query": "home repair tools",
+    "item_text": "Saturday farmers market",
+    "score": 0.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "learn to play guitar",
+    "item_text": "Tennis doubles mixer",
+    "score": 0.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "looking for backyard lemons",
+    "item_text": "Disney movie collection",
+    "score": 0.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Movies and Music"
+  },
+  {
+    "query": "I need sports and activity clothing",
+    "item_text": "White folding chairs",
+    "score": 0.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "something like graco 4ever car seat",
+    "item_text": "BOB jogging stroller",
+    "score": 1.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Baby and Kids Gear"
+  },
+  {
+    "query": "need ergobaby carrier",
+    "item_text": "Strider balance bike",
+    "score": 1.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Baby and Kids Gear"
+  },
+  {
+    "query": "anyone have life skills and practical",
+    "item_text": "Car maintenance workshop",
+    "score": 1.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "looking for summer potluck in the park",
+    "item_text": "Holiday light walk",
+    "score": 1.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Neighborhood Events"
+  },
+  {
+    "query": "sports and activity clothing",
+    "item_text": "Ski jacket and pants",
+    "score": 1.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "scaffolding",
+    "item_text": "Hand truck dolly",
+    "score": 1.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "something like outdoor nativity set",
+    "item_text": "Halloween inflatables",
+    "score": 1.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "need pasta and rice",
+    "item_text": "Pasta and rice",
+    "score": 1.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Pantry Items and Staples"
+  },
+  {
+    "query": "adult clothing available",
+    "item_text": "Vintage car enthusiasts",
+    "score": 0.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "frozen foods to borrow",
+    "item_text": "Popsicles",
+    "score": 1.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Frozen Foods"
+  },
+  {
+    "query": "anyone have games and puzzles",
+    "item_text": "Uno card game",
+    "score": 1.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "homemade cookies",
+    "item_text": "Caregiver support group",
+    "score": 0.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "puzzles",
+    "item_text": "Hospital gown for birth",
+    "score": 0.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "new parent group",
+    "item_text": "New mom support circle",
+    "score": 1.0,
+    "query_category": "Support Groups",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "scaffolding",
+    "item_text": "Cereal boxes",
+    "score": 0.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Pantry Items and Staples"
+  },
+  {
+    "query": "anyone have kids programs",
+    "item_text": "Girl Scout troop meeting",
+    "score": 1.0,
+    "query_category": "Kids Programs",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "something like wagner paint sprayer",
+    "item_text": "Disc golf outing",
+    "score": 0.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "something like zumba class at community center",
+    "item_text": "Homemade kimchi",
+    "score": 0.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "parenting books",
+    "item_text": "Holiday craft fair",
+    "score": 0.0,
+    "query_category": "Books",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "speakers for event",
+    "item_text": "Beverage dispenser",
+    "score": 1.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "baby swing",
+    "item_text": "Little Tikes slide",
+    "score": 1.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Baby and Kids Gear"
+  },
+  {
+    "query": "dia de los muertos gathering",
+    "item_text": "Hanukkah candle lighting",
+    "score": 1.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Cultural and Holiday Events"
+  },
+  {
+    "query": "cheap prepared meals and dishes",
+    "item_text": "Hardcover edition of Dune by Frank Herbert",
+    "score": 0.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Books"
+  },
+  {
+    "query": "looking for book discussion group",
+    "item_text": "Nursing scrubs",
+    "score": 0.0,
+    "query_category": "Language and Academic",
+    "item_category": "Adult Clothing"
+  },
+  {
+    "query": "baseball equipment",
+    "item_text": "Sports and Recreation Equipment",
+    "score": 1.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "frozen foods near me",
+    "item_text": "Frozen pizza",
+    "score": 1.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Frozen Foods"
+  },
+  {
+    "query": "sports and recreation equipment near me",
+    "item_text": "Sports and Recreation Equipment",
+    "score": 1.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "anyone have furniture and large items",
+    "item_text": "New parent support group",
+    "score": 0.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "want to find volunteer and service",
+    "item_text": "Mom's coffee morning",
+    "score": 0.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Social Gatherings"
+  },
+  {
+    "query": "looking for snow gloves",
+    "item_text": "Werner scaffolding",
+    "score": 0.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "do you have pantry items and staples",
+    "item_text": "Canned vegetables",
+    "score": 1.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Pantry Items and Staples"
+  },
+  {
+    "query": "need bowflex dumbbells",
+    "item_text": "Bowflex dumbbells",
+    "score": 1.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "support groups",
+    "item_text": "Grief and loss group",
+    "score": 1.0,
+    "query_category": "Support Groups",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "need group bike ride to manor",
+    "item_text": "Morning bird watching walk",
+    "score": 1.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Outdoor Adventures"
+  },
+  {
+    "query": "need to borrow maternity and nursing",
+    "item_text": "Maternity jeans",
+    "score": 1.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "book club",
+    "item_text": "Potluck dinner party",
+    "score": 1.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Social Gatherings"
+  },
+  {
+    "query": "hanukkah candle lighting",
+    "item_text": "Diwali celebration",
+    "score": 1.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Cultural and Holiday Events"
+  },
+  {
+    "query": "something like joy of cooking cookbook",
+    "item_text": "Dog Man graphic novels",
+    "score": 1.0,
+    "query_category": "Books",
+    "item_category": "Books"
+  },
+  {
+    "query": "men's dress shoes",
+    "item_text": "Choir practice",
+    "score": 0.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "prom dress",
+    "item_text": "Quincea\u00f1era dress",
+    "score": 1.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "who has kids clothing",
+    "item_text": "Banana bread",
+    "score": 0.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "something like cub scout den meeting",
+    "item_text": "Soccer camp",
+    "score": 1.0,
+    "query_category": "Kids Programs",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "kids clothing near me",
+    "item_text": "Kids snow pants",
+    "score": 1.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Kids Clothing"
+  },
+  {
+    "query": "power tools for project",
+    "item_text": "Makita circular saw",
+    "score": 1.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Tools and Workshop Equipment"
+  },
+  {
+    "query": "where can I find volunteer and service",
+    "item_text": "Meal delivery for seniors",
+    "score": 1.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "looking for poetry reading",
+    "item_text": "Local band show",
+    "score": 1.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Performances and Shows"
+  },
+  {
+    "query": "need hand truck dolly",
+    "item_text": "Home Improvement and Moving",
+    "score": 1.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "canned vegetables",
+    "item_text": "Pasta and rice",
+    "score": 1.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Pantry Items and Staples"
+  },
+  {
+    "query": "looking for invisible fence system",
+    "item_text": "Joy of Cooking cookbook",
+    "score": 0.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Books"
+  },
+  {
+    "query": "jigsaw puzzle",
+    "item_text": "Meal train contribution",
+    "score": 0.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Prepared Meals and Dishes"
+  },
+  {
+    "query": "looking for bird watching society",
+    "item_text": "Freezer-friendly casserole",
+    "score": 0.0,
+    "query_category": "Interest Groups",
+    "item_category": "Prepared Meals and Dishes"
+  },
+  {
+    "query": "neighborhood party",
+    "item_text": "Splash pad meetup",
+    "score": 0.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Family Activities"
+  },
+  {
+    "query": "cheap formal and special occasion",
+    "item_text": "Tuxedo rental",
+    "score": 1.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "need lifetime portable basketball hoop",
+    "item_text": "TRX suspension trainer",
+    "score": 1.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "need garden zucchini surplus",
+    "item_text": "Extra squash from garden",
+    "score": 1.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "something to do this weekend",
+    "item_text": "Community dance performance",
+    "score": 1.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Neighborhood Events"
+  },
+  {
+    "query": "need instant pot pressure cooker",
+    "item_text": "Snow cone maker",
+    "score": 1.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "anyone have prepared meals and dishes",
+    "item_text": "Meal train contribution",
+    "score": 1.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Prepared Meals and Dishes"
+  },
+  {
+    "query": "need outdoor movie screen",
+    "item_text": "Kids ski jacket",
+    "score": 0.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Kids Clothing"
+  },
+  {
+    "query": "bread baking workshop",
+    "item_text": "BBQ and smoking workshop",
+    "score": 1.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "items",
+    "item_text": "Kala ukulele",
+    "score": 0.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Musical Instruments"
+  },
+  {
+    "query": "need easter egg hunt",
+    "item_text": "Bissell steam mop",
+    "score": 0.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "looking for soccer camp",
+    "item_text": "Girl Scout troop meeting",
+    "score": 1.0,
+    "query_category": "Kids Programs",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "need to borrow language and academic",
+    "item_text": "Language and Academic",
+    "score": 1.0,
+    "query_category": "Language and Academic",
+    "item_category": "Language and Academic"
+  },
+  {
+    "query": "need board game night",
+    "item_text": "Social Gatherings",
+    "score": 1.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Social Gatherings"
+  },
+  {
+    "query": "who has maternity and nursing",
+    "item_text": "Peloton bike",
+    "score": 0.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "want to find neighborhood events",
+    "item_text": "Neighborhood Events",
+    "score": 1.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Neighborhood Events"
+  },
+  {
+    "query": "projector",
+    "item_text": "Hardcover edition of Dune by Frank Herbert",
+    "score": 0.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Books"
+  },
+  {
+    "query": "model train group",
+    "item_text": "Bird watching society",
+    "score": 1.0,
+    "query_category": "Interest Groups",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "looking for salsa dance class",
+    "item_text": "Line dancing lessons",
+    "score": 1.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "musical instruments near me",
+    "item_text": "Kala ukulele",
+    "score": 1.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Musical Instruments"
+  },
+  {
+    "query": "looking for nursing tops",
+    "item_text": "Nursing tops",
+    "score": 1.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "moving box kit",
+    "item_text": "Marvel movie set",
+    "score": 0.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Movies and Music"
+  },
+  {
+    "query": "fitness",
+    "item_text": "Sunday pickup basketball",
+    "score": 0.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "dance costume",
+    "item_text": "Grief and loss group",
+    "score": 0.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "something like caregiver support group",
+    "item_text": "Grief and loss group",
+    "score": 1.0,
+    "query_category": "Support Groups",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "who has furniture and large items",
+    "item_text": "Metal shelving unit",
+    "score": 1.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Furniture and Large Items"
+  },
+  {
+    "query": "canopy tent",
+    "item_text": "String lights for backyard",
+    "score": 1.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "need to borrow movies and music",
+    "item_text": "Classic rock vinyl collection",
+    "score": 1.0,
+    "query_category": "Movies and Music",
+    "item_category": "Movies and Music"
+  },
+  {
+    "query": "golf outing",
+    "item_text": "Quilting bee",
+    "score": 0.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "events",
+    "item_text": "Fourth of July picnic",
+    "score": 1.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Cultural and Holiday Events"
+  },
+  {
+    "query": "snow cone maker",
+    "item_text": "Bowflex dumbbells",
+    "score": 0.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "need park cleanup day",
+    "item_text": "Animal shelter volunteering",
+    "score": 1.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "need bosch jigsaw",
+    "item_text": "Homemade pie",
+    "score": 0.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "something like homemade kimchi",
+    "item_text": "Piano lessons for kids",
+    "score": 0.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "need strider balance bike",
+    "item_text": "Homemade pie",
+    "score": 0.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "anyone have cooking and food classes",
+    "item_text": "Canning and preserving class",
+    "score": 1.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "something like futon",
+    "item_text": "Girl Scout troop meeting",
+    "score": 0.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "cooking",
+    "item_text": "School play performance",
+    "score": 0.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Performances and Shows"
+  },
+  {
+    "query": "community service",
+    "item_text": "Park cleanup day",
+    "score": 1.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "marvel movie set",
+    "item_text": "Knee scooter",
+    "score": 0.0,
+    "query_category": "Movies and Music",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "do you have baby and kids gear",
+    "item_text": "Meetup at Stacy Park",
+    "score": 0.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Outdoor Adventures"
+  },
+  {
+    "query": "sunday service social",
+    "item_text": "Bible study group",
+    "score": 1.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "something like nursing scrubs",
+    "item_text": "PetSafe pet door",
+    "score": 0.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Pet Supplies"
+  },
+  {
+    "query": "looking for inflatable bounce house",
+    "item_text": "10x10 pop-up canopy",
+    "score": 1.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "something like outdoor nativity set",
+    "item_text": "String light collection",
+    "score": 1.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "flute",
+    "item_text": "Casio keyboard",
+    "score": 1.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Musical Instruments"
+  },
+  {
+    "query": "bowflex dumbbells",
+    "item_text": "Quilting bee",
+    "score": 0.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "need backyard lemons",
+    "item_text": "Artisan market",
+    "score": 0.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "outdoor activity",
+    "item_text": "Peanut butter",
+    "score": 0.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Pantry Items and Staples"
+  },
+  {
+    "query": "portable pa system",
+    "item_text": "Nursing scrubs",
+    "score": 0.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Adult Clothing"
+  },
+  {
+    "query": "something like summer potluck in the park",
+    "item_text": "Summer potluck in the park",
+    "score": 1.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Neighborhood Events"
+  },
+  {
+    "query": "where can I find seasonal and weather gear",
+    "item_text": "North Face winter jacket",
+    "score": 1.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Seasonal and Weather Gear"
+  },
+  {
+    "query": "talent show",
+    "item_text": "CPR certification class",
+    "score": 0.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "need uno card game",
+    "item_text": "Games and Puzzles",
+    "score": 1.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "lodge cast iron dutch oven",
+    "item_text": "Vitamix blender",
+    "score": 1.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "searching for performances and shows",
+    "item_text": "Stihl chainsaw",
+    "score": 0.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Garden and Yard Equipment"
+  },
+  {
+    "query": "looking for open mic night",
+    "item_text": "School play performance",
+    "score": 1.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Performances and Shows"
+  },
+  {
+    "query": "need math tutoring",
+    "item_text": "Homegrown tomatoes",
+    "score": 0.0,
+    "query_category": "Language and Academic",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "food processor",
+    "item_text": "Holiday craft fair",
+    "score": 0.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "can I borrow sports and recreation",
+    "item_text": "5K training group",
+    "score": 1.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "lunar new year dumplings",
+    "item_text": "Homemade kimchi",
+    "score": 1.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "who has life skills and practical",
+    "item_text": "Artificial Christmas tree",
+    "score": 0.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "graco 4ever car seat",
+    "item_text": "Ergobaby carrier",
+    "score": 1.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Baby and Kids Gear"
+  },
+  {
+    "query": "cheap social gatherings",
+    "item_text": "Evening gown",
+    "score": 0.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "want to find pantry items and staples",
+    "item_text": "Invisible fence system",
+    "score": 0.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Pet Supplies"
+  },
+  {
+    "query": "arts and crafts classes",
+    "item_text": "Quilting bee",
+    "score": 1.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "medical and mobility equipment",
+    "item_text": "Walking boot",
+    "score": 1.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "looking for cancer survivor support",
+    "item_text": "Caregiver support group",
+    "score": 1.0,
+    "query_category": "Support Groups",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "classes",
+    "item_text": "Bread baking workshop",
+    "score": 1.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "need family",
+    "item_text": "Belly band",
+    "score": 0.0,
+    "query_category": "Family Activities",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "anyone have sports and recreation equipment",
+    "item_text": "Interview suit",
+    "score": 0.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Adult Clothing"
+  },
+  {
+    "query": "looking for sat prep books",
+    "item_text": "Goodnight Moon board book",
+    "score": 1.0,
+    "query_category": "Books",
+    "item_category": "Books"
+  },
+  {
+    "query": "string light collection",
+    "item_text": "Frozen pizza",
+    "score": 0.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Frozen Foods"
+  },
+  {
+    "query": "do you have party and event supplies",
+    "item_text": "6-foot folding tables",
+    "score": 1.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "kids",
+    "item_text": "REI half dome tent",
+    "score": 0.0,
+    "query_category": "Kids Programs",
+    "item_category": "Outdoor and Camping Gear"
+  },
+  {
+    "query": "need classes",
+    "item_text": "Knitting and crochet circle",
+    "score": 1.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "electronics and technology available",
+    "item_text": "5K training group",
+    "score": 0.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "non-perishables",
+    "item_text": "GoPro action camera",
+    "score": 0.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Electronics and Technology"
+  },
+  {
+    "query": "need lessons",
+    "item_text": "Free guitar lessons",
+    "score": 1.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "need to borrow costumes and dress-up",
+    "item_text": "REI half dome tent",
+    "score": 0.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Outdoor and Camping Gear"
+  },
+  {
+    "query": "need superhero cape",
+    "item_text": "Turkey roasting pan",
+    "score": 0.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "need fourth of july picnic",
+    "item_text": "Freezer-friendly casserole",
+    "score": 0.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Prepared Meals and Dishes"
+  },
+  {
+    "query": "herbs from garden",
+    "item_text": "Werner scaffolding",
+    "score": 0.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "can I borrow fitness and wellness classes",
+    "item_text": "Morning walking group",
+    "score": 1.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "something like goodnight moon board book",
+    "item_text": "Snow cone maker",
+    "score": 0.0,
+    "query_category": "Books",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "need women's holiday sweater",
+    "item_text": "Adult soccer league game",
+    "score": 0.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "need arts",
+    "item_text": "Arts and Crafts Classes",
+    "score": 1.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "need bird watching society",
+    "item_text": "Bird watching society",
+    "score": 1.0,
+    "query_category": "Interest Groups",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "something like maternity clothes",
+    "item_text": "Maternity clothes",
+    "score": 1.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Adult Clothing"
+  },
+  {
+    "query": "best sports and recreation",
+    "item_text": "Adult soccer league game",
+    "score": 1.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "need medical",
+    "item_text": "Folding wheelchair",
+    "score": 1.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "looking for cooking and food classes",
+    "item_text": "Kids cooking camp",
+    "score": 1.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "looking for walking boot",
+    "item_text": "Career dress-up set",
+    "score": 0.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "looking for music and dance lessons",
+    "item_text": "Salsa dance class",
+    "score": 1.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "workshop",
+    "item_text": "Flour and sugar",
+    "score": 0.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Pantry Items and Staples"
+  },
+  {
+    "query": "need family",
+    "item_text": "Book discussion group",
+    "score": 0.0,
+    "query_category": "Family Activities",
+    "item_category": "Language and Academic"
+  },
+  {
+    "query": "frozen pizza",
+    "item_text": "GoPro action camera",
+    "score": 0.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Electronics and Technology"
+  },
+  {
+    "query": "something like snow gloves",
+    "item_text": "Sun hat",
+    "score": 1.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Seasonal and Weather Gear"
+  },
+  {
+    "query": "searching for family activities",
+    "item_text": "Family Activities",
+    "score": 1.0,
+    "query_category": "Family Activities",
+    "item_category": "Family Activities"
+  },
+  {
+    "query": "pearl drum kit",
+    "item_text": "Roland electronic drums",
+    "score": 1.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Musical Instruments"
+  },
+  {
+    "query": "need kitchenaid stand mixer",
+    "item_text": "Board game night",
+    "score": 0.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Social Gatherings"
+  },
+  {
+    "query": "something like moving box kit",
+    "item_text": "Wagner paint sprayer",
+    "score": 1.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "shower bench",
+    "item_text": "Knee scooter",
+    "score": 1.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "looking for halloween inflatables",
+    "item_text": "Portable fire pit",
+    "score": 1.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "need amateur radio club",
+    "item_text": "Bird watching society",
+    "score": 1.0,
+    "query_category": "Interest Groups",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "fresh produce and garden surplus to borrow",
+    "item_text": "Fresh herbs bundle",
+    "score": 1.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "something like turkey roasting pan",
+    "item_text": "Lodge cast iron dutch oven",
+    "score": 1.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "need diwali sweets",
+    "item_text": "Park cleanup day",
+    "score": 0.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "who has volunteer and service",
+    "item_text": "Yoga pants",
+    "score": 0.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "something like pasta and rice",
+    "item_text": "Flour and sugar",
+    "score": 1.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Pantry Items and Staples"
+  },
+  {
+    "query": "can I borrow medical and mobility equipment",
+    "item_text": "Shower bench",
+    "score": 1.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "goods",
+    "item_text": "Baked Goods and Homemade Items",
+    "score": 1.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "searching for home improvement and moving",
+    "item_text": "Packing blankets",
+    "score": 1.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "looking for stem workshop for kids",
+    "item_text": "Cub Scout den meeting",
+    "score": 1.0,
+    "query_category": "Kids Programs",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "need equipment",
+    "item_text": "Mantis tiller cultivator",
+    "score": 1.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Garden and Yard Equipment"
+  },
+  {
+    "query": "need coleman camping stove",
+    "item_text": "Thule bike rack",
+    "score": 1.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Outdoor and Camping Gear"
+  },
+  {
+    "query": "home repair tools",
+    "item_text": "Craftsman socket set",
+    "score": 1.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Tools and Workshop Equipment"
+  },
+  {
+    "query": "anyone have prepared meals and dishes",
+    "item_text": "Evening gown",
+    "score": 0.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "looking for tamales for holidays",
+    "item_text": "Passover matzo",
+    "score": 1.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "something like morning walking group",
+    "item_text": "Fitness and Wellness Classes",
+    "score": 1.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "sat prep books",
+    "item_text": "SAT prep books",
+    "score": 1.0,
+    "query_category": "Books",
+    "item_category": "Books"
+  },
+  {
+    "query": "need holiday",
+    "item_text": "Turkey fryer",
+    "score": 1.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "maternity jeans",
+    "item_text": "Hospital gown for birth",
+    "score": 1.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "looking for climbing at barton creek",
+    "item_text": "Jewelry making class",
+    "score": 0.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "party decorations",
+    "item_text": "Amateur radio club",
+    "score": 0.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "looking for fresh herbs bundle",
+    "item_text": "What to Expect When You're Expecting",
+    "score": 0.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Books"
+  },
+  {
+    "query": "looking for electronics and technology",
+    "item_text": "Ring doorbell",
+    "score": 1.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Electronics and Technology"
+  },
+  {
+    "query": "need morning walking group",
+    "item_text": "BOB jogging stroller",
+    "score": 0.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Baby and Kids Gear"
+  },
+  {
+    "query": "need artisan market",
+    "item_text": "Swimming clinic",
+    "score": 0.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "what to expect when you're expecting",
+    "item_text": "SAT prep books",
+    "score": 1.0,
+    "query_category": "Books",
+    "item_category": "Books"
+  },
+  {
+    "query": "performances and shows to borrow",
+    "item_text": "Bosch jigsaw",
+    "score": 0.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Tools and Workshop Equipment"
+  },
+  {
+    "query": "need large wire dog crate",
+    "item_text": "Meetup at Stacy Park",
+    "score": 0.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Outdoor Adventures"
+  },
+  {
+    "query": "adventures",
+    "item_text": "Outdoor Adventures",
+    "score": 1.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Outdoor Adventures"
+  },
+  {
+    "query": "anyone have maternity and nursing",
+    "item_text": "Local band show",
+    "score": 0.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Performances and Shows"
+  },
+  {
+    "query": "need special",
+    "item_text": "Men's dress shoes",
+    "score": 1.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "kids programs near me",
+    "item_text": "Portable PA system",
+    "score": 0.0,
+    "query_category": "Kids Programs",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "cheap furniture and large items",
+    "item_text": "Folding guest bed",
+    "score": 1.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Furniture and Large Items"
+  },
+  {
+    "query": "baked bread loaf",
+    "item_text": "Sourdough starter",
+    "score": 1.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "something like moving box kit",
+    "item_text": "Packing blankets",
+    "score": 1.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "concept2 rowing machine",
+    "item_text": "Concept2 rowing machine",
+    "score": 1.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "food bank volunteering",
+    "item_text": "Habitat for Humanity build",
+    "score": 1.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "I need costumes and dress-up",
+    "item_text": "SAT prep books",
+    "score": 0.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Books"
+  },
+  {
+    "query": "kids clothing to borrow",
+    "item_text": "Kids snow pants",
+    "score": 1.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Kids Clothing"
+  },
+  {
+    "query": "something like car maintenance workshop",
+    "item_text": "Budgeting and finance class",
+    "score": 1.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "games and puzzles",
+    "item_text": "Games and Puzzles",
+    "score": 1.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "I need outdoor and camping gear",
+    "item_text": "Yakima kayak carrier",
+    "score": 1.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Outdoor and Camping Gear"
+  },
+  {
+    "query": "summer potluck in the park",
+    "item_text": "Chicken soup",
+    "score": 0.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Prepared Meals and Dishes"
+  },
+  {
+    "query": "something like 80s theme outfit",
+    "item_text": "80s theme outfit",
+    "score": 1.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "gatherings",
+    "item_text": "80s theme outfit",
+    "score": 0.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "looking for yoga pants",
+    "item_text": "Ski jacket and pants",
+    "score": 1.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "need superhero cape",
+    "item_text": "Fresh cinnamon rolls",
+    "score": 0.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "looking for gardening club meeting",
+    "item_text": "Dog Man graphic novels",
+    "score": 0.0,
+    "query_category": "Interest Groups",
+    "item_category": "Books"
+  },
+  {
+    "query": "want to find holiday and seasonal items",
+    "item_text": "10x10 pop-up canopy",
+    "score": 0.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "something like smartphone basics for seniors",
+    "item_text": "New parent support group",
+    "score": 1.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "55-gallon aquarium",
+    "item_text": "PetSafe pet door",
+    "score": 1.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Pet Supplies"
+  },
+  {
+    "query": "something like nursing tops",
+    "item_text": "Hospital gown for birth",
+    "score": 1.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "looking for ergobaby carrier",
+    "item_text": "Strider balance bike",
+    "score": 1.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Baby and Kids Gear"
+  },
+  {
+    "query": "nursing",
+    "item_text": "Portable PA system",
+    "score": 0.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "something like hunter rain boots",
+    "item_text": "Spanish conversation group",
+    "score": 0.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Language and Academic"
+  },
+  {
+    "query": "dress-up",
+    "item_text": "Kids Halloween costumes",
+    "score": 1.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "do you have frozen foods",
+    "item_text": "Bird watching society",
+    "score": 0.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "looking for pickleball at the park",
+    "item_text": "Sunday pickup basketball",
+    "score": 1.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "looking for marvel movie set",
+    "item_text": "Bird watching society",
+    "score": 0.0,
+    "query_category": "Movies and Music",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "can I borrow baked goods and homemade items",
+    "item_text": "Baked bread loaf",
+    "score": 1.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "need cub scout den meeting",
+    "item_text": "Kids Programs",
+    "score": 1.0,
+    "query_category": "Kids Programs",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "who has neighborhood events",
+    "item_text": "Neighborhood block party",
+    "score": 1.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Neighborhood Events"
+  },
+  {
+    "query": "looking for toddler shoes",
+    "item_text": "Bird watching society",
+    "score": 0.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "baby clothes",
+    "item_text": "Children's rain boots",
+    "score": 1.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Kids Clothing"
+  },
+  {
+    "query": "looking for kids cooking camp",
+    "item_text": "Diwali sweets",
+    "score": 0.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "cheap kids clothing",
+    "item_text": "STEM workshop for kids",
+    "score": 0.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "need piano lessons for kids",
+    "item_text": "Banana bread",
+    "score": 0.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "want to find pet supplies",
+    "item_text": "Cub Scout den meeting",
+    "score": 0.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "looking for ego leaf blower",
+    "item_text": "Caregiver support group",
+    "score": 0.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "arts",
+    "item_text": "Watercolor painting class",
+    "score": 1.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "something like homemade kimchi",
+    "item_text": "Nursing tops",
+    "score": 0.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "who has baked goods and homemade items",
+    "item_text": "Morning walking group",
+    "score": 0.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "need classes",
+    "item_text": "Monopoly",
+    "score": 0.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "stihl chainsaw",
+    "item_text": "Frozen pizza",
+    "score": 0.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Frozen Foods"
+  },
+  {
+    "query": "cheap musical instruments",
+    "item_text": "Flour and sugar",
+    "score": 0.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Pantry Items and Staples"
+  },
+  {
+    "query": "need sunday service social",
+    "item_text": "Youth group meeting",
+    "score": 1.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "family fun",
+    "item_text": "Splash pad meetup",
+    "score": 1.0,
+    "query_category": "Family Activities",
+    "item_category": "Family Activities"
+  },
+  {
+    "query": "something like outdoor nativity set",
+    "item_text": "Plastic storage bins",
+    "score": 0.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Furniture and Large Items"
+  },
+  {
+    "query": "bazaar",
+    "item_text": "Writing workshop",
+    "score": 0.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Language and Academic"
+  },
+  {
+    "query": "need special",
+    "item_text": "Formal and Special Occasion",
+    "score": 1.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "do you have life skills and practical",
+    "item_text": "Community dance performance",
+    "score": 0.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Neighborhood Events"
+  },
+  {
+    "query": "do you have adult clothing",
+    "item_text": "Men's work pants",
+    "score": 1.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Adult Clothing"
+  },
+  {
+    "query": "sun joe pressure washer",
+    "item_text": "Kids ski jacket",
+    "score": 0.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Kids Clothing"
+  },
+  {
+    "query": "games and puzzles near me",
+    "item_text": "Dungeons and Dragons set",
+    "score": 1.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "ice cream",
+    "item_text": "Bowflex dumbbells",
+    "score": 0.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "looking for ski jacket and pants",
+    "item_text": "Salsa dance class",
+    "score": 0.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "looking for musical instruments",
+    "item_text": "Musical Instruments",
+    "score": 1.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Musical Instruments"
+  },
+  {
+    "query": "best specialty and cultural foods",
+    "item_text": "Open mic night",
+    "score": 0.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Performances and Shows"
+  },
+  {
+    "query": "do you have cultural and holiday events",
+    "item_text": "Passover matzo",
+    "score": 0.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "goodnight moon board book",
+    "item_text": "Hardcover edition of Dune by Frank Herbert",
+    "score": 1.0,
+    "query_category": "Books",
+    "item_category": "Books"
+  },
+  {
+    "query": "looking for cancer survivor support",
+    "item_text": "Watercolor painting class",
+    "score": 0.0,
+    "query_category": "Support Groups",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "do you have sports and activity clothing",
+    "item_text": "Cycling jersey",
+    "score": 1.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "searching for seasonal and weather gear",
+    "item_text": "Snow cone maker",
+    "score": 0.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "where can I find medical and mobility equipment",
+    "item_text": "Kids art workshop",
+    "score": 0.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "something like osprey 65l backpack",
+    "item_text": "Garden zucchini surplus",
+    "score": 0.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "Christmas decorations",
+    "item_text": "Dia de los Muertos gathering",
+    "score": 0.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Cultural and Holiday Events"
+  },
+  {
+    "query": "looking for bird watching society",
+    "item_text": "Saturday farmers market",
+    "score": 0.0,
+    "query_category": "Interest Groups",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "need homemade kimchi",
+    "item_text": "Lunar New Year dumplings",
+    "score": 1.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "something like school play performance",
+    "item_text": "School play performance",
+    "score": 1.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Performances and Shows"
+  },
+  {
+    "query": "something like plastic storage bins",
+    "item_text": "Metal shelving unit",
+    "score": 1.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Furniture and Large Items"
+  },
+  {
+    "query": "need photography walk",
+    "item_text": "Amateur radio club",
+    "score": 1.0,
+    "query_category": "Interest Groups",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "need interfaith dialogue dinner",
+    "item_text": "Religious and Spiritual Gatherings",
+    "score": 1.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "something like yakima kayak carrier",
+    "item_text": "Cycling jersey",
+    "score": 0.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "want to find arts and crafts classes",
+    "item_text": "Troy-Bilt rototiller",
+    "score": 0.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Garden and Yard Equipment"
+  },
+  {
+    "query": "looking for tools and workshop equipment",
+    "item_text": "Disney princess dress",
+    "score": 0.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "fairs",
+    "item_text": "Saturday farmers market",
+    "score": 1.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "career dress-up set",
+    "item_text": "Youth group meeting",
+    "score": 0.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "something like card table set",
+    "item_text": "Meal delivery for seniors",
+    "score": 0.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Volunteer and Service"
+  },
+  {
+    "query": "something like bread baking workshop",
+    "item_text": "Kids cooking camp",
+    "score": 1.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "tech help for seniors",
+    "item_text": "Life Skills and Practical",
+    "score": 1.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "queen air mattress",
+    "item_text": "Queen air mattress",
+    "score": 1.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Furniture and Large Items"
+  },
+  {
+    "query": "large wire dog crate",
+    "item_text": "Invisible fence system",
+    "score": 1.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Pet Supplies"
+  },
+  {
+    "query": "something like morning bird watching walk",
+    "item_text": "Outdoor Adventures",
+    "score": 1.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Outdoor Adventures"
+  },
+  {
+    "query": "can I borrow outdoor adventures",
+    "item_text": "Trail running group",
+    "score": 1.0,
+    "query_category": "Outdoor Adventures",
+    "item_category": "Outdoor Adventures"
+  },
+  {
+    "query": "book discussion group",
+    "item_text": "Spanish conversation group",
+    "score": 1.0,
+    "query_category": "Language and Academic",
+    "item_category": "Language and Academic"
+  },
+  {
+    "query": "looking for disney movie collection",
+    "item_text": "Children's audiobooks",
+    "score": 1.0,
+    "query_category": "Movies and Music",
+    "item_category": "Movies and Music"
+  },
+  {
+    "query": "bbq and smoking workshop",
+    "item_text": "Bread baking workshop",
+    "score": 1.0,
+    "query_category": "Cooking and Food Classes",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "enchiladas",
+    "item_text": "DJI Mini drone",
+    "score": 0.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Electronics and Technology"
+  },
+  {
+    "query": "social",
+    "item_text": "Knitting and crochet circle",
+    "score": 0.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "looking for music and dance lessons",
+    "item_text": "Free guitar lessons",
+    "score": 1.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Music and Dance Lessons"
+  },
+  {
+    "query": "need to borrow costumes and dress-up",
+    "item_text": "Career dress-up set",
+    "score": 1.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "need equipment",
+    "item_text": "Raised toilet seat",
+    "score": 1.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "need groups",
+    "item_text": "Addiction recovery meeting",
+    "score": 1.0,
+    "query_category": "Support Groups",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "something like cotton candy machine",
+    "item_text": "KitchenAid stand mixer",
+    "score": 1.0,
+    "query_category": "Kitchen Appliances and Cookware",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "need fourth of july picnic",
+    "item_text": "Zumba class at community center",
+    "score": 0.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "medical and mobility equipment to borrow",
+    "item_text": "Homemade cookies",
+    "score": 0.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "need foods",
+    "item_text": "5K training group",
+    "score": 0.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Sports and Recreation"
+  },
+  {
+    "query": "something like harry potter series",
+    "item_text": "Dog Man graphic novels",
+    "score": 1.0,
+    "query_category": "Books",
+    "item_category": "Books"
+  },
+  {
+    "query": "need to borrow fitness and wellness classes",
+    "item_text": "Tai chi for beginners",
+    "score": 1.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "hunter rain boots",
+    "item_text": "Sun hat",
+    "score": 1.0,
+    "query_category": "Seasonal and Weather Gear",
+    "item_category": "Seasonal and Weather Gear"
+  },
+  {
+    "query": "where can I find prepared meals and dishes",
+    "item_text": "Quilting bee",
+    "score": 0.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "need adult",
+    "item_text": "Women's holiday sweater",
+    "score": 1.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Adult Clothing"
+  },
+  {
+    "query": "popsicles",
+    "item_text": "Frozen fruit",
+    "score": 1.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Frozen Foods"
+  },
+  {
+    "query": "looking for furniture and large items",
+    "item_text": "Futon",
+    "score": 1.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Furniture and Large Items"
+  },
+  {
+    "query": "need maternity jeans",
+    "item_text": "Hospital gown for birth",
+    "score": 1.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "farmers market",
+    "item_text": "PetSafe pet door",
+    "score": 0.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Pet Supplies"
+  },
+  {
+    "query": "something like school fundraiser fair",
+    "item_text": "Artisan market",
+    "score": 1.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "need knitting and crochet circle",
+    "item_text": "Quilting bee",
+    "score": 1.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "need to borrow adult clothing",
+    "item_text": "Tamales for holidays",
+    "score": 0.0,
+    "query_category": "Adult Clothing",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "need markets",
+    "item_text": "Homemade kimchi",
+    "score": 0.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "tuxedo rental",
+    "item_text": "Gorilla cart wheelbarrow",
+    "score": 0.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Garden and Yard Equipment"
+  },
+  {
+    "query": "looking for tamales for holidays",
+    "item_text": "Tamales for holidays",
+    "score": 1.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "hedge trimmer",
+    "item_text": "Marvel movie set",
+    "score": 0.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Movies and Music"
+  },
+  {
+    "query": "instruments",
+    "item_text": "Yamaha acoustic guitar",
+    "score": 1.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Musical Instruments"
+  },
+  {
+    "query": "tools and workshop equipment to borrow",
+    "item_text": "Craftsman socket set",
+    "score": 1.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Tools and Workshop Equipment"
+  },
+  {
+    "query": "flea market",
+    "item_text": "Nintendo Switch",
+    "score": 0.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Electronics and Technology"
+  },
+  {
+    "query": "need dad's group meetup",
+    "item_text": "Neighborhood happy hour",
+    "score": 1.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Social Gatherings"
+  },
+  {
+    "query": "want to find outdoor and camping gear",
+    "item_text": "Patagonia down sleeping bag",
+    "score": 1.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Outdoor and Camping Gear"
+  },
+  {
+    "query": "need superhero cape",
+    "item_text": "Banana bread",
+    "score": 0.0,
+    "query_category": "Costumes and Dress-up",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "searching for electronics and technology",
+    "item_text": "Frozen vegetables",
+    "score": 0.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Frozen Foods"
+  },
+  {
+    "query": "looking for epson home projector",
+    "item_text": "Mom's coffee morning",
+    "score": 0.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Social Gatherings"
+  },
+  {
+    "query": "can I borrow language and academic",
+    "item_text": "Spanish conversation group",
+    "score": 1.0,
+    "query_category": "Language and Academic",
+    "item_category": "Language and Academic"
+  },
+  {
+    "query": "single parent meetup",
+    "item_text": "Single parent meetup",
+    "score": 1.0,
+    "query_category": "Support Groups",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "something like cat scratching post",
+    "item_text": "Baked bread loaf",
+    "score": 0.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "need splash pad meetup",
+    "item_text": "Caregiver support group",
+    "score": 0.0,
+    "query_category": "Family Activities",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "looking for gorilla cart wheelbarrow",
+    "item_text": "Black+Decker hedge trimmer",
+    "score": 1.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Garden and Yard Equipment"
+  },
+  {
+    "query": "need adult soccer league game",
+    "item_text": "Settlers of Catan",
+    "score": 0.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "need sun joe pressure washer",
+    "item_text": "Maternity clothes",
+    "score": 0.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Adult Clothing"
+  },
+  {
+    "query": "need to borrow markets and fairs",
+    "item_text": "Saturday farmers market",
+    "score": 1.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "looking for home improvement and moving",
+    "item_text": "Rug Doctor carpet cleaner",
+    "score": 1.0,
+    "query_category": "Home Improvement and Moving",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "need walking boot",
+    "item_text": "Snow gloves",
+    "score": 0.0,
+    "query_category": "Medical and Mobility Equipment",
+    "item_category": "Seasonal and Weather Gear"
+  },
+  {
+    "query": "need werner extension ladder",
+    "item_text": "Kids museum visit",
+    "score": 0.0,
+    "query_category": "Tools and Workshop Equipment",
+    "item_category": "Family Activities"
+  },
+  {
+    "query": "religious and spiritual gatherings near me",
+    "item_text": "Community meditation",
+    "score": 1.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "something like youth group meeting",
+    "item_text": "Community meditation",
+    "score": 1.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "need drum circle",
+    "item_text": "Cornhole boards",
+    "score": 0.0,
+    "query_category": "Music and Dance Lessons",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "language and academic",
+    "item_text": "SAT prep study group",
+    "score": 1.0,
+    "query_category": "Language and Academic",
+    "item_category": "Language and Academic"
+  },
+  {
+    "query": "looking for formal and special occasion",
+    "item_text": "SAT prep study group",
+    "score": 0.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Language and Academic"
+  },
+  {
+    "query": "life skills and practical near me",
+    "item_text": "Budgeting and finance class",
+    "score": 1.0,
+    "query_category": "Life Skills and Practical",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "need open mic night",
+    "item_text": "String light collection",
+    "score": 0.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "looking for frozen foods",
+    "item_text": "SAT prep books",
+    "score": 0.0,
+    "query_category": "Frozen Foods",
+    "item_category": "Books"
+  },
+  {
+    "query": "something like soccer cleats",
+    "item_text": "Ski jacket and pants",
+    "score": 1.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "casserole to share",
+    "item_text": "Freezer-friendly casserole",
+    "score": 1.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Prepared Meals and Dishes"
+  },
+  {
+    "query": "markets and fairs available",
+    "item_text": "Gardening club meeting",
+    "score": 0.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Interest Groups"
+  },
+  {
+    "query": "baby",
+    "item_text": "Cancer survivor support",
+    "score": 0.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "looking for yamaha acoustic guitar",
+    "item_text": "Lunar New Year dumplings",
+    "score": 0.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Specialty and Cultural Foods"
+  },
+  {
+    "query": "baby carrier",
+    "item_text": "Ergobaby carrier",
+    "score": 1.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Baby and Kids Gear"
+  },
+  {
+    "query": "looking for cat scratching post",
+    "item_text": "Superhero cape",
+    "score": 0.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "looking for kelty camp chair",
+    "item_text": "Outdoor and Camping Gear",
+    "score": 1.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Outdoor and Camping Gear"
+  },
+  {
+    "query": "something like fiskars garden tools",
+    "item_text": "Mantis tiller cultivator",
+    "score": 1.0,
+    "query_category": "Garden and Yard Equipment",
+    "item_category": "Garden and Yard Equipment"
+  },
+  {
+    "query": "golf outing",
+    "item_text": "Large wire dog crate",
+    "score": 0.0,
+    "query_category": "Sports and Recreation",
+    "item_category": "Pet Supplies"
+  },
+  {
+    "query": "something like pasta and rice",
+    "item_text": "Knee scooter",
+    "score": 0.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "franklin soccer goal",
+    "item_text": "Lifetime portable basketball hoop",
+    "score": 1.0,
+    "query_category": "Sports and Recreation Equipment",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "fourth of july picnic",
+    "item_text": "Juneteenth celebration",
+    "score": 1.0,
+    "query_category": "Cultural and Holiday Events",
+    "item_category": "Cultural and Holiday Events"
+  },
+  {
+    "query": "party and event supplies available",
+    "item_text": "String lights for backyard",
+    "score": 1.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Party and Event Supplies"
+  },
+  {
+    "query": "something like plastic storage bins",
+    "item_text": "Card table set",
+    "score": 1.0,
+    "query_category": "Furniture and Large Items",
+    "item_category": "Furniture and Large Items"
+  },
+  {
+    "query": "movies and music near me",
+    "item_text": "Morning walking group",
+    "score": 0.0,
+    "query_category": "Movies and Music",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "do you have neighborhood events",
+    "item_text": "Fresh oranges",
+    "score": 0.0,
+    "query_category": "Neighborhood Events",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "support group",
+    "item_text": "Single parent meetup",
+    "score": 1.0,
+    "query_category": "Support Groups",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "something like ski jacket and pants",
+    "item_text": "Sports and Activity Clothing",
+    "score": 1.0,
+    "query_category": "Sports and Activity Clothing",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "religious and spiritual gatherings available",
+    "item_text": "Career dress-up set",
+    "score": 0.0,
+    "query_category": "Religious and Spiritual Gatherings",
+    "item_category": "Costumes and Dress-up"
+  },
+  {
+    "query": "something like park cleanup day",
+    "item_text": "Black Diamond trekking poles",
+    "score": 0.0,
+    "query_category": "Volunteer and Service",
+    "item_category": "Outdoor and Camping Gear"
+  },
+  {
+    "query": "looking for disney movie collection",
+    "item_text": "Rug Doctor carpet cleaner",
+    "score": 0.0,
+    "query_category": "Movies and Music",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "freezer-friendly casserole",
+    "item_text": "Garden zucchini surplus",
+    "score": 0.0,
+    "query_category": "Prepared Meals and Dishes",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "electronics and technology near me",
+    "item_text": "Girl Scout troop meeting",
+    "score": 0.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Kids Programs"
+  },
+  {
+    "query": "something like cat scratching post",
+    "item_text": "Budgeting and finance class",
+    "score": 0.0,
+    "query_category": "Pet Supplies",
+    "item_category": "Life Skills and Practical"
+  },
+  {
+    "query": "anyone have electronics and technology",
+    "item_text": "Portable Bluetooth speaker",
+    "score": 1.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Electronics and Technology"
+  },
+  {
+    "query": "I need interest groups",
+    "item_text": "Turkey roasting pan",
+    "score": 0.0,
+    "query_category": "Interest Groups",
+    "item_category": "Kitchen Appliances and Cookware"
+  },
+  {
+    "query": "need goods",
+    "item_text": "Baked Goods and Homemade Items",
+    "score": 1.0,
+    "query_category": "Baked Goods and Homemade Items",
+    "item_category": "Baked Goods and Homemade Items"
+  },
+  {
+    "query": "looking for hospital gown for birth",
+    "item_text": "Sunday service social",
+    "score": 0.0,
+    "query_category": "Maternity and Nursing",
+    "item_category": "Religious and Spiritual Gatherings"
+  },
+  {
+    "query": "need sat prep books",
+    "item_text": "Hardcover edition of Dune by Frank Herbert",
+    "score": 1.0,
+    "query_category": "Books",
+    "item_category": "Books"
+  },
+  {
+    "query": "need markets",
+    "item_text": "Peloton bike",
+    "score": 0.0,
+    "query_category": "Markets and Fairs",
+    "item_category": "Sports and Recreation Equipment"
+  },
+  {
+    "query": "outdoor and camping gear",
+    "item_text": "Bread baking workshop",
+    "score": 0.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "looking for dad's group meetup",
+    "item_text": "Morning walking group",
+    "score": 0.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "gaming console",
+    "item_text": "Electronics and Technology",
+    "score": 1.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Electronics and Technology"
+  },
+  {
+    "query": "canned goods",
+    "item_text": "Pasta and rice",
+    "score": 1.0,
+    "query_category": "Pantry Items and Staples",
+    "item_category": "Pantry Items and Staples"
+  },
+  {
+    "query": "need kids ski jacket",
+    "item_text": "Children's rain boots",
+    "score": 1.0,
+    "query_category": "Kids Clothing",
+    "item_category": "Kids Clothing"
+  },
+  {
+    "query": "something like fresh herbs bundle",
+    "item_text": "Fresh eggs from chickens",
+    "score": 1.0,
+    "query_category": "Fresh Produce and Garden Surplus",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "who has family activities",
+    "item_text": "Hazardous Tales by Nathan Hale kids graphic novel",
+    "score": 0.0,
+    "query_category": "Family Activities",
+    "item_category": "Books"
+  },
+  {
+    "query": "outdoor",
+    "item_text": "Quincea\u00f1era dress",
+    "score": 0.0,
+    "query_category": "Outdoor and Camping Gear",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "looking for string lights for backyard",
+    "item_text": "Maternity jeans",
+    "score": 0.0,
+    "query_category": "Party and Event Supplies",
+    "item_category": "Maternity and Nursing"
+  },
+  {
+    "query": "kala ukulele",
+    "item_text": "Indian cooking class",
+    "score": 0.0,
+    "query_category": "Musical Instruments",
+    "item_category": "Cooking and Food Classes"
+  },
+  {
+    "query": "want to find electronics and technology",
+    "item_text": "Dance recital costume",
+    "score": 0.0,
+    "query_category": "Electronics and Technology",
+    "item_category": "Sports and Activity Clothing"
+  },
+  {
+    "query": "games and puzzles to borrow",
+    "item_text": "Settlers of Catan",
+    "score": 1.0,
+    "query_category": "Games and Puzzles",
+    "item_category": "Games and Puzzles"
+  },
+  {
+    "query": "something like math tutoring",
+    "item_text": "Artisan market",
+    "score": 0.0,
+    "query_category": "Language and Academic",
+    "item_category": "Markets and Fairs"
+  },
+  {
+    "query": "halloween inflatables",
+    "item_text": "Outdoor nativity set",
+    "score": 1.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Holiday and Seasonal Items"
+  },
+  {
+    "query": "foods",
+    "item_text": "Thule bike rack",
+    "score": 0.0,
+    "query_category": "Specialty and Cultural Foods",
+    "item_category": "Outdoor and Camping Gear"
+  },
+  {
+    "query": "need morning walking group",
+    "item_text": "New mom support circle",
+    "score": 0.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Support Groups"
+  },
+  {
+    "query": "exercise group",
+    "item_text": "Morning walking group",
+    "score": 1.0,
+    "query_category": "Fitness and Wellness Classes",
+    "item_category": "Fitness and Wellness Classes"
+  },
+  {
+    "query": "kids movies",
+    "item_text": "Men's dress shoes",
+    "score": 0.0,
+    "query_category": "Movies and Music",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "looking for kids art workshop",
+    "item_text": "Packing blankets",
+    "score": 0.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Home Improvement and Moving"
+  },
+  {
+    "query": "I need arts and crafts classes",
+    "item_text": "Watercolor painting class",
+    "score": 1.0,
+    "query_category": "Arts and Crafts Classes",
+    "item_category": "Arts and Crafts Classes"
+  },
+  {
+    "query": "social",
+    "item_text": "Homemade chili",
+    "score": 0.0,
+    "query_category": "Social Gatherings",
+    "item_category": "Prepared Meals and Dishes"
+  },
+  {
+    "query": "need kids",
+    "item_text": "Fresh eggs from chickens",
+    "score": 0.0,
+    "query_category": "Baby and Kids Gear",
+    "item_category": "Fresh Produce and Garden Surplus"
+  },
+  {
+    "query": "formal and special occasion available",
+    "item_text": "Evening gown",
+    "score": 1.0,
+    "query_category": "Formal and Special Occasion",
+    "item_category": "Formal and Special Occasion"
+  },
+  {
+    "query": "I need interest groups",
+    "item_text": "Harry Potter series",
+    "score": 0.0,
+    "query_category": "Interest Groups",
+    "item_category": "Books"
+  },
+  {
+    "query": "best performances and shows",
+    "item_text": "Raised toilet seat",
+    "score": 0.0,
+    "query_category": "Performances and Shows",
+    "item_category": "Medical and Mobility Equipment"
+  },
+  {
+    "query": "need artificial christmas tree",
+    "item_text": "Baby Bjorn bouncer",
+    "score": 0.0,
+    "query_category": "Holiday and Seasonal Items",
+    "item_category": "Baby and Kids Gear"
+  }
+]

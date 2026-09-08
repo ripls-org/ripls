@@ -1,0 +1,154 @@
+// RPC service for the viewer-facing user profile surface.
+//
+// GetUserProfileForViewer returns the target user's identity, the
+// communities the viewer and target share, a count of the target's
+// communities the viewer cannot see, and the target's aggregate
+// activity numbers (hero + ticker) plus a short list of viewer-
+// actionable postcards.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/item.proto";
+import "ripls/api/profile_presence.proto";
+import "ripls/api/workshop_service.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request for the viewer-facing profile of another user.
+message GetUserProfileForViewerRequest {
+  // Identifier of the user whose profile is being viewed. The caller
+  // (authenticated user) is the viewer; the relationship is implicit.
+  // The server rejects calls where the viewer equals the target.
+  string target_user_id = 1;
+}
+
+// One community the viewer and the target user both belong to.
+// Communities the target belongs to but the viewer does not are
+// summarized as a single count on the response — never named or
+// identified individually.
+message SharedCommunityRef {
+  // Stable identifier of the community.
+  string id = 1;
+
+  // Display name of the community, denormalized so the client can
+  // render the inline link without an extra lookup.
+  string name = 2;
+
+  // Primary avatar media ID for the community, if any. Empty when the
+  // community has no avatar set.
+  optional string media_id = 3;
+}
+
+// Response carrying the target user's profile rendered through the
+// viewer's lens.
+message GetUserProfileForViewerResponse {
+  // Identifier of the target user (echoes the request).
+  string target_user_id = 1;
+
+  // Display name of the target user.
+  string target_name = 2;
+
+  // Bio / short description of the target user. Absent for users
+  // who have not set a bio.
+  optional string target_description = 3;
+
+  // Primary profile image media id for the target user. Absent for
+  // users who have not set a profile image.
+  optional string target_media_id = 4;
+
+  // Communities the viewer and target both belong to. Order is the
+  // server's canonical ordering (most-recently-joined first); the
+  // client may render in this order without re-sorting. Empty when
+  // there is no overlap.
+  repeated SharedCommunityRef shared_communities = 5;
+
+  // Count of communities the target belongs to but the viewer does
+  // not. Surfaced as the "+N other communities" tail in the
+  // identity-block subtitle. Never accompanied by identifying
+  // information about those communities.
+  int32 other_community_count = 6;
+
+  // Hero + ticker + postcard payload for the profile body. Hero and
+  // ticker numbers reflect the target user's aggregate activity
+  // across all of their communities, not just the shared subset.
+  // Postcards reference entities the viewer is authorized to act
+  // on (i.e., entities inside shared communities).
+  BriefPayload payload = 7;
+
+  // The target user's currently-available offerings inside shared
+  // communities: gear that is available to borrow, upcoming
+  // experiences, and giveaways. Ordered by recency. Empty when no
+  // overlap exists, or when the target has nothing available.
+  // Surfaced as the horizontal "Available now" rail on the profile.
+  repeated Item available_now_items = 8;
+
+  // Short capability tags the target is known for in shared
+  // communities (e.g. "Power tools lender", "Cooking host"). Empty
+  // when no qualifying activity exists. Surfaced as the chip row
+  // beneath the identity block on the profile.
+  repeated string known_for = 9;
+
+  // Always absent. These carried one-sentence LLM-written captions for
+  // the three impact rows; no client ever rendered them, and #2936
+  // removed the generation behind them. The profile shows the cited
+  // tier ladder (impact_row_narrative_tiers.dart) instead.
+  //
+  // TODO(#2936): #2938 deletes these three fields and reserves 10-12
+  // once the release carrying #2936 has soaked. Kept for now because
+  // API fields need one shipped release before removal — see
+  // docs/proto_conventions.md.
+  optional string time_narrative = 10 [deprecated = true];
+  optional string money_narrative = 11 [deprecated = true];
+  optional string co2_narrative = 12 [deprecated = true];
+}
+
+// Request for the presence read that selects the profile sheet's
+// content for a target user.
+message GetProfilePresenceForViewerRequest {
+  // Identifier of the user whose profile sheet is being assembled.
+  // The caller (authenticated user) is the viewer; the relationship
+  // is implicit.
+  string target_user_id = 1;
+}
+
+// Response carrying the server-selected sheet state for the viewer ↔
+// target relationship. Scoped to the communities the pair shares —
+// entities outside shared communities never appear.
+message GetProfilePresenceForViewerResponse {
+  // Which sheet state was selected. Fallback chain: active ask →
+  // next shared event → quiet, with cold start replacing next-event
+  // for brand-new connections.
+  ProfileSheetKind sheet_kind = 1;
+
+  // The target's open ask promoted into the sheet. Present iff
+  // [sheet_kind] is ACTIVE_ASK.
+  optional ProfileAskCard active_ask = 2;
+
+  // The next upcoming event the viewer and target are both in.
+  // Present iff [sheet_kind] is NEXT_EVENT or COLD_START.
+  optional ProfileEventCard next_event = 3;
+
+  // True on cold start: the client hides history-derived sections
+  // (metric strip, open list) because there is no shared history to
+  // summarize yet.
+  bool suppress_history = 4;
+}
+
+// Service for the viewer-facing user profile surface.
+service ProfileService {
+  // Get the target user's profile in the viewer's context. Returns
+  // identity, the shared-community list, a non-shared count, and the
+  // hero / ticker / postcards payload. Rejects calls where the
+  // viewer equals the target — own-profile rendering belongs to the
+  // portfolio surface.
+  rpc GetUserProfileForViewer(GetUserProfileForViewerRequest) returns (GetUserProfileForViewerResponse);
+
+  // Get the server-selected pinned-sheet state for the target user's
+  // profile: the target's most pressing open ask in a shared
+  // community, else the next event the viewer and target are both
+  // in, else quiet — with cold-start gating for brand-new
+  // connections. Self-view returns quiet.
+  rpc GetProfilePresenceForViewer(GetProfilePresenceForViewerRequest) returns (GetProfilePresenceForViewerResponse);
+}

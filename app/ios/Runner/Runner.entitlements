@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>aps-environment</key>
+	<string>production</string>
+	<!-- A deployment's own apex domain; a fork changes it to its own (#2953).
+	     Not parameterized and not a leak: iOS fetches
+	     https://<host>/.well-known/apple-app-site-association and matches this
+	     app's Team ID + bundle id, so a host you do not control never
+	     associates. Keep in step with the Android intent-filter. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:ripls.app</string>
+	</array>
+</dict>
+</plist>

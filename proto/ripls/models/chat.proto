@@ -1,0 +1,242 @@
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+import "ripls/models/common.proto";
+import "ripls/models/conversation_topic.proto";
+
+// A chat conversation among users about a specific topic.
+message ChatConversation {
+    // Unique identifier for the conversation.
+    string id = 1;
+
+    // The community this conversation belongs to.
+    string community_id = 2;
+
+    // The topic of this conversation.
+    ConversationTopic topic = 11;
+
+    // The participants in this conversation.
+    repeated string participant_ids = 5;
+
+    // When the conversation was created (Unix timestamp in seconds).
+    int64 created_at_unix_sec = 6;
+
+    // When the last message was sent (Unix timestamp in seconds).
+    int64 last_message_at_unix_sec = 7;
+
+    // Soft deletion metadata.
+    optional DeletedMetadata deleted = 10;
+
+    // Old inline topic oneof fields — replaced by ConversationTopic message.
+    reserved 3, 4, 8, 9;
+    reserved "transfer_id", "request_id", "experience_id", "gear_id";
+}
+
+// Action that triggered a system message.
+// Aligned with TransferState, RequestState, and ExperienceState transitions.
+enum ChatSystemAction {
+    CHAT_SYSTEM_ACTION_UNSPECIFIED = 0;
+
+    // Transfer actions
+    CHAT_SYSTEM_ACTION_JOINED = 1;      // User expressed interest (joined conversation)
+    CHAT_SYSTEM_ACTION_LEFT = 2;        // User withdrew interest
+    CHAT_SYSTEM_ACTION_APPROVED = 3;    // Owner selected recipient
+    CHAT_SYSTEM_ACTION_DENIED = 4;      // Owner denied a specific user
+    CHAT_SYSTEM_ACTION_CANCELLED = 5;   // Transfer/request/experience cancelled
+    CHAT_SYSTEM_ACTION_STARTED = 6;     // Loan started (handed over) or experience in process
+    CHAT_SYSTEM_ACTION_COMPLETED = 7;   // Transfer/experience completed (returned/given away/finished)
+
+    // Request actions
+    CHAT_SYSTEM_ACTION_OFFERED = 8;     // User offered to help
+    CHAT_SYSTEM_ACTION_FULFILLED = 9;   // Request fulfilled
+
+    // Experience actions
+    CHAT_SYSTEM_ACTION_RSVP_YES = 10;   // User RSVPed Yes to experience
+    CHAT_SYSTEM_ACTION_RSVP_MAYBE = 11; // User RSVPed Maybe to experience
+    CHAT_SYSTEM_ACTION_RSVP_NO = 12;    // User RSVPed No to experience (left conversation)
+
+    // Mention actions
+    CHAT_SYSTEM_ACTION_ADDED_VIA_MENTION = 13; // User was added to conversation via @-mention
+
+    // Experience planning actions
+    CHAT_SYSTEM_ACTION_TIME_PROPOSED = 14;  // User proposed a new time for an experience
+    CHAT_SYSTEM_ACTION_DETAIL_CHANGED = 15; // Organizer updated experience time or location
+
+    // Request creation
+    CHAT_SYSTEM_ACTION_REQUEST_CREATED = 16; // Request was submitted (anchors request info card)
+
+    // Time poll cancellation
+    CHAT_SYSTEM_ACTION_TIME_POLL_CANCELLED = 17; // Organizer cancelled the time poll
+
+    // Giveaway sharing
+    CHAT_SYSTEM_ACTION_GIVEAWAY_SHARED = 18; // Gear was shared for giveaway (anchors gear info card)
+
+    // Experience creation
+    CHAT_SYSTEM_ACTION_EXPERIENCE_CREATED = 19; // Experience was shared with community (anchors experience info pill)
+
+    // Loan sharing
+    CHAT_SYSTEM_ACTION_LOAN_SHARED = 20; // Gear was shared for loan (anchors gear info card)
+
+    // Experience collaborative list actions (kept for legacy; new code uses PLANNING_ variants)
+    CHAT_SYSTEM_ACTION_EXPERIENCE_NEED_ADDED = 22;          // Participant added a need to an experience
+    CHAT_SYSTEM_ACTION_EXPERIENCE_CONTRIBUTION_ADDED = 23;  // Participant added a free-form contribution
+    CHAT_SYSTEM_ACTION_EXPERIENCE_NEED_CLAIMED = 24;        // Participant claimed a need slot
+    CHAT_SYSTEM_ACTION_EXPERIENCE_CONTRIBUTION_REMOVED = 25; // Participant removed their contribution
+    CHAT_SYSTEM_ACTION_EXPERIENCE_NEED_REMOVED = 26;        // Proposer removed their need
+
+    // Planning actions (shared across experience and request scopes)
+    CHAT_SYSTEM_ACTION_PLANNING_NEED_ADDED = 27;         // Participant added a need
+    CHAT_SYSTEM_ACTION_PLANNING_NEED_REMOVED = 28;       // Proposer removed their need
+    CHAT_SYSTEM_ACTION_PLANNING_NEED_CLAIMED = 29;       // Participant claimed a need slot
+    CHAT_SYSTEM_ACTION_PLANNING_CONTRIBUTION_ADDED = 30; // Participant added a free-form contribution
+    CHAT_SYSTEM_ACTION_PLANNING_CONTRIBUTION_REMOVED = 31; // Contributor removed their contribution
+    CHAT_SYSTEM_ACTION_PLANNING_NEED_UPDATED = 35;       // Proposer edited a need's name, note, or slot count
+
+    // Undo retraction. Emitted inline to replace a soft-deleted system
+    // message when the original action is reversed via an Undo* RPC.
+    // The retracted action is carried on SystemChatMessage.undone_action
+    // so the client can render "Alex undid 'marked returned'".
+    CHAT_SYSTEM_ACTION_UNDONE = 32;
+
+    // Location poll lifecycle.
+    CHAT_SYSTEM_ACTION_LOCATION_PROPOSED = 33;       // Participant proposed a new candidate location (first option opens the poll)
+    CHAT_SYSTEM_ACTION_LOCATION_POLL_CANCELLED = 34; // Organizer cancelled the location poll
+}
+
+// A user-authored message in a conversation.
+message UserChatMessage {
+    // The user who sent this message.
+    string sender_id = 1;
+
+    // The text content of the message.
+    string text = 2;
+
+    // Media attached to the message.
+    repeated string media_ids = 3;
+
+    // ID of the need whose note/description this message carries.
+    optional string need_id = 4;
+
+    // ID of the contribution whose description this message carries.
+    optional string contribution_id = 5;
+
+    // Display name of the referenced need (denormalized so the chip renders without a separate lookup).
+    optional string need_name = 6;
+
+    // Display title of the referenced contribution (denormalized so the chip renders without a separate lookup).
+    optional string contribution_title = 7;
+
+    // When the message text was last edited. Absent if the message has never
+    // been edited.
+    optional int64 edited_at_unix_sec = 8;
+
+    // When set, this message is a reply that quotes an earlier message in the
+    // same conversation. Absent for non-reply messages.
+    optional ReplyContext reply_to = 9;
+}
+
+// ReplyContext denormalizes the message being quoted by a reply so the client
+// can render the quoted block without a separate fetch. The snippet is copied
+// at send time and is intentionally not kept in sync if the quoted message is
+// later edited or deleted.
+message ReplyContext {
+    // ID of the message being replied to.
+    string reply_to_message_id = 1;
+
+    // User who authored the quoted message.
+    string quoted_sender_id = 2;
+
+    // Text snippet of the quoted message (may be truncated).
+    string quoted_text = 3;
+
+    // A representative media attachment from the quoted message, when it had no
+    // text. Absent otherwise.
+    optional string quoted_media_id = 4;
+}
+
+// A system-generated message describing an action.
+message SystemChatMessage {
+    // The user who triggered this action. Some actions may not have an actor.
+    optional string actor_id = 1;
+
+    // The action that occurred (determines the message text).
+    ChatSystemAction action = 2;
+
+    // Human-readable description of the action (e.g., "Alex joined the conversation").
+    string description = 3;
+
+    // Narrows coalescing to a specific sub-entity (e.g., experience need ID).
+    // When set, two system messages only coalesce if they share the same key.
+    // Used by Phase 3 experience need/contribution actions from #1186.
+    optional string coalesce_key = 4;
+
+    // When action == CHAT_SYSTEM_ACTION_UNDONE, identifies the retracted
+    // action so the client can render a legible retraction ("Alex undid
+    // 'marked returned'"). Absent for non-undo system messages.
+    optional ChatSystemAction undone_action = 5;
+
+    // For time-poll system messages, identifies the specific poll that opened
+    // this message. Allows the client to render each poll's chat message
+    // independently so a second poll does not overwrite the first poll's comment.
+    // Absent for non-poll system messages and for messages created before this
+    // field was introduced.
+    optional string poll_id = 6;
+
+    // Structured-template payload. When set, the client resolves the
+    // displayed text from its catalog using template_key + template_params;
+    // description above stays populated as a transition fallback for old
+    // clients and historical rows. Empty template_key means "no
+    // structured payload — render description verbatim" (covers pre-
+    // migration rows).
+    //
+    // TODO(#2159): cleanup tracker removes the legacy description field
+    // once historical rows have aged out.
+    optional string template_key = 7;
+    map<string, string> template_params = 8;
+}
+
+// An emoji reaction on a chat message.
+message MessageReaction {
+    // The user who reacted.
+    string user_id = 1;
+
+    // The emoji character (e.g., "👍", "❤️").
+    string emoji = 2;
+
+    // When the reaction was added (Unix timestamp in seconds).
+    int64 created_at_unix_sec = 3;
+}
+
+// A chat message in a conversation.
+message ChatMessage {
+    // Unique identifier for the message.
+    string id = 1;
+
+    // The conversation this message belongs to.
+    string conversation_id = 2;
+
+    // When the message was sent (Unix timestamp in seconds).
+    int64 sent_at_unix_sec = 3;
+
+    // Per-user read status.
+    map<string, bool> participant_id_to_is_read = 4;
+
+    // Emoji reactions on this message.
+    repeated MessageReaction reactions = 5;
+
+    // The message content (exactly one must be set).
+    oneof message {
+        UserChatMessage user_message = 10;
+        SystemChatMessage system_message = 11;
+    }
+
+    // Soft-delete metadata. Server list/get endpoints filter deleted
+    // messages out of all responses. Used today by undo retraction
+    // (the original system message is soft-deleted and replaced with
+    // a new CHAT_SYSTEM_ACTION_UNDONE message). A future manual
+    // "delete my message" UI will reuse the same field.
+    optional DeletedMetadata deleted = 12;
+}

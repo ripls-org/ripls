@@ -1,0 +1,64 @@
+// Storage model for "known for" chip suppressions. One row per
+// (scope, category) tuple records that a member of the scope has
+// asked the system to stop surfacing that capability tag.
+//
+// The chip-derivation and chip-detail paths both consult this table
+// before emitting a chip; matching rows are dropped from the chip
+// list and surface the "this skill has been removed" empty state on
+// the detail screen.
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// SuppressionScope discriminates whether a suppression row applies
+// to a per-user "known for" chip or a per-community one.
+enum SuppressionScope {
+  SUPPRESSION_SCOPE_UNSPECIFIED = 0;
+  // The suppression hides a category from a single user's profile.
+  SUPPRESSION_SCOPE_USER = 1;
+  // The suppression hides a category from a community's
+  // (or "Everything" aggregate's) workshop chip list.
+  SUPPRESSION_SCOPE_COMMUNITY = 2;
+}
+
+// SuppressedKnownFor records a "this capability tag should not
+// surface for this scope" decision. Hide and permanently-delete
+// both write rows here; the difference is the permanent flag.
+message SuppressedKnownFor {
+  // Unique row id.
+  string id = 1;
+
+  // Scope discriminator — which of [scope_id]'s columns this row
+  // applies against.
+  SuppressionScope scope_kind = 2;
+
+  // Target id (user id for SCOPE_USER, community id for
+  // SCOPE_COMMUNITY).
+  string scope_id = 3;
+
+  // Normalized category key (lower-cased, whitespace-collapsed). The
+  // chip derivation and the detail RPC normalize their candidate
+  // categories the same way before comparing.
+  string category_key = 4;
+
+  // Display string of the category at suppression time. Lets the
+  // server log a meaningful audit trail and lets a future "manage
+  // hidden skills" surface name the row to the user.
+  string category_display = 5;
+
+  // True when the suppression is meant to be irreversible. Hide
+  // writes false; permanently-delete writes true. The chip and
+  // detail derivation treat both the same way (no surfacing); the
+  // distinction governs whether a future Unhide UI is allowed to
+  // delete the row.
+  bool permanent = 6;
+
+  // User id who created the suppression.
+  string suppressed_by_user_id = 7;
+
+  // Unix timestamp (seconds) when the suppression was created.
+  int64 suppressed_at_unix_sec = 8;
+}

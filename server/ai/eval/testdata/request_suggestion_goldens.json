@@ -1,0 +1,57 @@
+{
+  "description": "Seed-needs extraction goldens (#2731). Each case gives a help request's own title + description; the model must recover the claimable things the text plainly names as seed_needs, one per named thing, without inventing extras. Precision guards over-extraction (a wrongly-added need makes the request read as more demanding than it is); recall guards dropped items. Run: go test -tags=benchmark ./server/ai/eval -run TestRequestSuggestionsPrompt -provider gemini -gemini-project <proj>.",
+  "version": 1,
+  "defaults": {
+    "min_precision": 0.8,
+    "min_recall": 0.8
+  },
+  "cases": [
+    {
+      "id": "single-lawn-mower",
+      "tags": ["single"],
+      "title": "Lawn mower for the weekend",
+      "description": "Ours died mid-mow and the grass is getting away from us. Hoping to borrow one Saturday.",
+      "expected": {
+        "seed_needs": ["lawn mower"],
+        "expect_count": 1
+      }
+    },
+    {
+      "id": "classroom-supply-list",
+      "tags": ["multi"],
+      "title": "Back-to-school supplies for Room 7",
+      "description": "The new year starts in two weeks and the classroom is bare. We need picture books, a whiteboard, storage bins, art supplies, and construction paper — new or gently used, anything helps.",
+      "expected": {
+        "seed_needs": ["picture books", "whiteboard", "storage bins", "art supplies", "construction paper"]
+      }
+    },
+    {
+      "id": "camping-trip-list",
+      "tags": ["multi"],
+      "title": "Gear for a group camping trip",
+      "description": "Taking the kids car-camping this weekend and we're short on gear. We still need a tent, a camp stove, sleeping bags, a cooler, and a lantern.",
+      "expected": {
+        "seed_needs": ["tent", "camp stove", "sleeping bags", "cooler", "lantern"]
+      }
+    },
+    {
+      "id": "moving-day-two-items",
+      "tags": ["multi"],
+      "title": "Moving day this Saturday",
+      "description": "Getting the couch and dresser across town. I need to borrow a pickup truck and some moving blankets.",
+      "expected": {
+        "seed_needs": ["pickup truck", "moving blankets"]
+      }
+    },
+    {
+      "id": "vague-no-items",
+      "tags": ["empty"],
+      "title": "Rough patch for our family",
+      "description": "We're going through a hard stretch and could really use some community support right now. Anything at all helps — thank you all.",
+      "expected": {
+        "seed_needs": [],
+        "expect_count": 0
+      }
+    }
+  ]
+}

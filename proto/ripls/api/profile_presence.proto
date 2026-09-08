@@ -1,0 +1,118 @@
+// Shared types for the profile presence reads — the server-selected
+// content of the profile's pinned sheet ("the sheet holds the ask",
+// issue #2568). The sheet follows a fallback chain: an open ask wins,
+// else the next shared event, else the quiet state; a brand-new
+// connection gets the gated cold-start treatment.
+//
+// Selection is server business logic (mirroring the needs detector) so
+// the rule cannot drift between platforms. These types live in their
+// own file so the person and community presence RPCs embed the same
+// shapes without cyclic imports.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// ProfileSheetKind names which sheet state the server selected for
+// this viewer. Exactly one card field on the enclosing response is
+// populated for the ask/event kinds; quiet carries no card.
+enum ProfileSheetKind {
+  PROFILE_SHEET_KIND_UNSPECIFIED = 0;
+  // An open ask holds the sheet; [active_ask] is populated.
+  PROFILE_SHEET_KIND_ACTIVE_ASK = 1;
+  // No ask — the next shared upcoming event holds the sheet;
+  // [next_event] is populated.
+  PROFILE_SHEET_KIND_NEXT_EVENT = 2;
+  // Nothing open between the viewer and the target; no card fields.
+  PROFILE_SHEET_KIND_QUIET = 3;
+  // Brand-new connection: no shared history and exactly one shared
+  // upcoming event. [next_event] is populated and the client hides
+  // history-derived sections (metrics, open list).
+  PROFILE_SHEET_KIND_COLD_START = 4;
+}
+
+// One face in a social-pull stack ("Alfred +2 in"). Only people the
+// viewer is authorized to see (co-members of the shared scope) are
+// ever named.
+message ProfilePresenceFace {
+  // Identifier of the user, so the face can route to their profile.
+  string user_id = 1;
+
+  // Display name of the user, denormalized so the client can render
+  // the stack without an extra lookup.
+  string display_name = 2;
+
+  // Primary avatar media id. Absent when the user has no avatar.
+  optional string media_id = 3;
+}
+
+// The open ask promoted into the sheet.
+message ProfileAskCard {
+  // Identifier of the underlying help request.
+  string request_id = 1;
+
+  // Display title of the ask (e.g. "Belay partner").
+  string title = 2;
+
+  // Deadline the ask needs an answer by. Absent for asks without a
+  // deadline; the client renders deadline copy only when present.
+  optional int64 needed_by_unix_sec = 3;
+
+  // The shared community the ask lives in — the scope the viewer is
+  // authorized to act in, used for routing.
+  string community_id = 4;
+
+  // Count of active (non-withdrawn) offers on the ask. Drives the
+  // count-only social-pull copy ("2 in so far").
+  int32 committed_count = 5;
+
+  // Up to a few of the people already in, for the named social-pull
+  // stack. Never includes the viewer. May be shorter than
+  // [committed_count]; the difference is the "+N" overflow.
+  repeated ProfilePresenceFace faces = 6;
+
+  // True when the viewer already has an active (non-withdrawn) offer
+  // on this ask — the client renders the committed/undo treatment
+  // instead of the commit CTA.
+  bool viewer_committed = 7;
+}
+
+// An ask that qualified for the sheet but lost the priority contest.
+// Named in the sheet's peek row ("2 more queued: crash pad · …") while
+// staying claimable in the open list.
+message ProfileQueuedAsk {
+  // Identifier of the underlying help request.
+  string request_id = 1;
+
+  // Display title of the ask.
+  string title = 2;
+
+  // Deadline, when the ask has one.
+  optional int64 needed_by_unix_sec = 3;
+}
+
+// The shared upcoming event promoted into the sheet.
+message ProfileEventCard {
+  // Identifier of the underlying experience entity.
+  string experience_id = 1;
+
+  // Display title of the event.
+  string title = 2;
+
+  // Event start time.
+  int64 start_unix_sec = 3;
+
+  // The shared community the event is scheduled in.
+  string community_id = 4;
+
+  // Count of yes-RSVPs on the event. Drives the social-pull copy
+  // together with [faces] ("Alfred +2 in").
+  int32 going_count = 5;
+
+  // Up to a few of the people going, for the named social-pull stack.
+  // May be shorter than [going_count]; the difference is the "+N"
+  // overflow.
+  repeated ProfilePresenceFace faces = 6;
+}

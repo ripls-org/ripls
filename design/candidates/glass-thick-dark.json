@@ -1,0 +1,15 @@
+{
+  "id": "thick-dark",
+  "axis": "glass",
+  "label": "Thick dark material (Apple-style)",
+  "description": "Modelled on Apple's thick/chrome materials: the sheet tints DARK rather than light, so it has no white floor. Worst-case composite over a bright photo is grey 89 (white text 6.9:1), and over dark media it reaches grey 9 — a far wider range than the light material's 33-94, which reads as more glass and less flat panel. Included so the sheet shows tint polarity as a visible option rather than an assertion: the arithmetic says scrim strength dominates, and this is the candidate that tests whether polarity buys anything on top.",
+  "glass": {
+    "scrim": { "$value": "#80000000" },
+    "scrim-heavy": { "$value": "#D9000000" },
+    "scrim-tint": { "$value": "#59000000" },
+    "surface": { "$value": "#4D000000" },
+    "border": { "$value": "#40FFFFFF" },
+    "divider": { "$value": "#33FFFFFF" },
+    "fill-subtle": { "$value": "#26FFFFFF" }
+  }
+}

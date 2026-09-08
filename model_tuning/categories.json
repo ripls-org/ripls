@@ -1,0 +1,917 @@
+{
+  "gear_and_household": {
+    "Outdoor and Camping Gear": {
+      "queries": [
+        "camping gear",
+        "outdoor stove",
+        "mountain bike",
+        "hiking equipment",
+        "backpacking supplies",
+        "fishing gear",
+        "kayak or canoe",
+        "ski equipment",
+        "snowboard gear"
+      ],
+      "examples": [
+        "REI half dome tent",
+        "Coleman camping stove",
+        "Osprey 65L backpack",
+        "Thule bike rack",
+        "Yakima kayak carrier",
+        "Patagonia down sleeping bag",
+        "Black Diamond trekking poles",
+        "Kelty camp chair"
+      ]
+    },
+    "Tools and Workshop Equipment": {
+      "queries": [
+        "drill",
+        "table saw",
+        "power screwdriver",
+        "woodworking",
+        "home repair tools",
+        "garage tools",
+        "construction equipment",
+        "hand tools",
+        "power tools for project"
+      ],
+      "examples": [
+        "DeWalt cordless power drill",
+        "Makita circular saw",
+        "Milwaukee impact driver",
+        "Craftsman socket set",
+        "Ryobi orbital sander",
+        "Bosch jigsaw",
+        "Shop-Vac wet/dry vacuum",
+        "Werner extension ladder"
+      ]
+    },
+    "Kitchen Appliances and Cookware": {
+      "queries": [
+        "stand mixer",
+        "instant pot",
+        "kitchen gadget",
+        "baking supplies",
+        "cookware for party",
+        "food processor",
+        "large pot for canning",
+        "waffle maker",
+        "ice cream maker"
+      ],
+      "examples": [
+        "KitchenAid stand mixer",
+        "Instant Pot pressure cooker",
+        "Vitamix blender",
+        "Cuisinart food processor",
+        "Lodge cast iron dutch oven",
+        "Turkey roasting pan",
+        "Chafing dishes for buffet",
+        "Cotton candy machine",
+        "Snow cone maker"
+      ]
+    },
+    "Baby and Kids Gear": {
+      "queries": [
+        "baby stroller",
+        "car seat for infant",
+        "high chair",
+        "baby carrier",
+        "crib or bassinet",
+        "kids bike",
+        "baby swing",
+        "pack and play",
+        "toddler toys",
+        "baby bathtub"
+      ],
+      "examples": [
+        "BOB jogging stroller",
+        "Graco 4Ever car seat",
+        "IKEA Antilop high chair",
+        "Ergobaby carrier",
+        "Fisher-Price swing",
+        "Radio Flyer tricycle",
+        "Little Tikes slide",
+        "Strider balance bike",
+        "Baby Bjorn bouncer"
+      ]
+    },
+    "Sports and Recreation Equipment": {
+      "queries": [
+        "basketball hoop",
+        "tennis racket",
+        "golf clubs",
+        "soccer goal",
+        "baseball equipment",
+        "volleyball net",
+        "exercise equipment",
+        "yoga mat",
+        "weights for home gym",
+        "skateboard"
+      ],
+      "examples": [
+        "Lifetime portable basketball hoop",
+        "Wilson tennis racket",
+        "Callaway golf club set",
+        "Franklin soccer goal",
+        "Louisville Slugger bat",
+        "Bowflex dumbbells",
+        "Peloton bike",
+        "NordicTrack treadmill",
+        "TRX suspension trainer",
+        "Concept2 rowing machine"
+      ]
+    },
+    "Party and Event Supplies": {
+      "queries": [
+        "tables and chairs for party",
+        "canopy tent",
+        "bounce house",
+        "party decorations",
+        "serving platters",
+        "punch bowl",
+        "projector for movie night",
+        "speakers for event",
+        "karaoke machine"
+      ],
+      "examples": [
+        "6-foot folding tables",
+        "White folding chairs",
+        "10x10 pop-up canopy",
+        "Inflatable bounce house",
+        "String lights for backyard",
+        "Beverage dispenser",
+        "Portable PA system",
+        "Outdoor movie screen",
+        "Cornhole boards"
+      ]
+    },
+    "Garden and Yard Equipment": {
+      "queries": [
+        "lawn mower",
+        "leaf blower",
+        "garden tools",
+        "wheelbarrow",
+        "pressure washer",
+        "chainsaw",
+        "hedge trimmer",
+        "rototiller",
+        "weed whacker"
+      ],
+      "examples": [
+        "Honda lawn mower",
+        "Stihl chainsaw",
+        "Fiskars garden tools",
+        "Gorilla cart wheelbarrow",
+        "Sun Joe pressure washer",
+        "Black+Decker hedge trimmer",
+        "Troy-Bilt rototiller",
+        "Ego leaf blower",
+        "Mantis tiller cultivator"
+      ]
+    },
+    "Home Improvement and Moving": {
+      "queries": [
+        "moving boxes",
+        "furniture dolly",
+        "appliance dolly",
+        "paint sprayer",
+        "tile cutter",
+        "carpet cleaner",
+        "steam cleaner",
+        "scaffolding",
+        "moving truck supplies"
+      ],
+      "examples": [
+        "Hand truck dolly",
+        "Furniture moving straps",
+        "Wagner paint sprayer",
+        "Rug Doctor carpet cleaner",
+        "Bissell steam mop",
+        "Werner scaffolding",
+        "Floor jack",
+        "Packing blankets",
+        "Moving box kit"
+      ]
+    },
+    "Electronics and Technology": {
+      "queries": [
+        "projector",
+        "camera for event",
+        "drone",
+        "gaming console",
+        "laptop for travel",
+        "tablet for kids",
+        "portable hotspot",
+        "VR headset"
+      ],
+      "examples": [
+        "Epson home projector",
+        "Canon DSLR camera",
+        "DJI Mini drone",
+        "Nintendo Switch",
+        "PlayStation 5",
+        "GoPro action camera",
+        "Ring doorbell",
+        "Portable Bluetooth speaker"
+      ]
+    },
+    "Musical Instruments": {
+      "queries": [
+        "guitar to learn on",
+        "keyboard for beginner",
+        "drum set",
+        "violin for child",
+        "ukulele",
+        "trumpet",
+        "flute"
+      ],
+      "examples": [
+        "Yamaha acoustic guitar",
+        "Casio keyboard",
+        "Pearl drum kit",
+        "Fender electric guitar",
+        "Student violin",
+        "Kala ukulele",
+        "Roland electronic drums"
+      ]
+    },
+    "Pet Supplies": {
+      "queries": [
+        "dog crate",
+        "pet carrier",
+        "fish tank",
+        "dog fence",
+        "cat tree",
+        "pet stroller"
+      ],
+      "examples": [
+        "Large wire dog crate",
+        "Sherpa pet carrier",
+        "55-gallon aquarium",
+        "Invisible fence system",
+        "Cat scratching post",
+        "PetSafe pet door"
+      ]
+    },
+    "Holiday and Seasonal Items": {
+      "queries": [
+        "Christmas decorations",
+        "Halloween costumes",
+        "Easter supplies",
+        "holiday lights",
+        "thanksgiving serving dishes",
+        "4th of july decorations",
+        "inflatable decorations"
+      ],
+      "examples": [
+        "Artificial Christmas tree",
+        "Halloween inflatables",
+        "String light collection",
+        "Outdoor nativity set",
+        "Turkey fryer",
+        "Patio heater",
+        "Portable fire pit"
+      ]
+    },
+    "Medical and Mobility Equipment": {
+      "queries": [
+        "wheelchair",
+        "crutches",
+        "knee scooter",
+        "hospital bed",
+        "shower chair",
+        "walker",
+        "medical equipment"
+      ],
+      "examples": [
+        "Folding wheelchair",
+        "Knee scooter",
+        "Walking boot",
+        "Shower bench",
+        "Raised toilet seat",
+        "Bed rail",
+        "CPAP machine"
+      ]
+    },
+    "Furniture and Large Items": {
+      "queries": [
+        "extra bed for guests",
+        "folding table",
+        "desk for working",
+        "bookshelf",
+        "storage shelves",
+        "air mattress"
+      ],
+      "examples": [
+        "Queen air mattress",
+        "Folding guest bed",
+        "Card table set",
+        "Plastic storage bins",
+        "Metal shelving unit",
+        "Futon"
+      ]
+    }
+  },
+  "books_and_media": {
+    "Books": {
+      "queries": [
+        "kids books",
+        "fiction",
+        "reference books",
+        "textbooks",
+        "cookbooks",
+        "parenting books",
+        "children's picture books",
+        "young adult novels",
+        "book club selection"
+      ],
+      "examples": [
+        "Hardcover edition of Dune by Frank Herbert",
+        "Hazardous Tales by Nathan Hale kids graphic novel",
+        "What to Expect When You're Expecting",
+        "Joy of Cooking cookbook",
+        "Harry Potter series",
+        "Goodnight Moon board book",
+        "Dog Man graphic novels",
+        "SAT prep books"
+      ]
+    },
+    "Games and Puzzles": {
+      "queries": [
+        "board games",
+        "jigsaw puzzle",
+        "card games",
+        "video games",
+        "family games",
+        "strategy games"
+      ],
+      "examples": [
+        "Settlers of Catan",
+        "1000-piece puzzle",
+        "Ticket to Ride",
+        "Uno card game",
+        "Monopoly",
+        "Nintendo Switch games",
+        "Dungeons and Dragons set"
+      ]
+    },
+    "Movies and Music": {
+      "queries": [
+        "DVD collection",
+        "kids movies",
+        "vinyl records",
+        "audiobooks"
+      ],
+      "examples": [
+        "Disney movie collection",
+        "Marvel movie set",
+        "Classic rock vinyl collection",
+        "Children's audiobooks"
+      ]
+    }
+  },
+  "food": {
+    "Fresh Produce and Garden Surplus": {
+      "queries": [
+        "fresh vegetables",
+        "garden tomatoes",
+        "extra produce from garden",
+        "fresh fruit",
+        "herbs from garden",
+        "homegrown vegetables"
+      ],
+      "examples": [
+        "Fresh oranges",
+        "Garden zucchini surplus",
+        "Homegrown tomatoes",
+        "Fresh herbs bundle",
+        "Backyard lemons",
+        "Extra squash from garden",
+        "Fresh eggs from chickens"
+      ]
+    },
+    "Baked Goods and Homemade Items": {
+      "queries": [
+        "homemade bread",
+        "fresh baked cookies",
+        "homemade treats",
+        "baked goods",
+        "fresh pastries"
+      ],
+      "examples": [
+        "Baked bread loaf",
+        "Homemade cookies",
+        "Fresh cinnamon rolls",
+        "Banana bread",
+        "Homemade pie",
+        "Sourdough starter"
+      ]
+    },
+    "Prepared Meals and Dishes": {
+      "queries": [
+        "home cooked meal",
+        "casserole to share",
+        "meal for new parents",
+        "soup for sick friend",
+        "freezer meals"
+      ],
+      "examples": [
+        "Lasagna for family",
+        "Chicken soup",
+        "Meal train contribution",
+        "Freezer-friendly casserole",
+        "Enchiladas",
+        "Homemade chili"
+      ]
+    },
+    "Pantry Items and Staples": {
+      "queries": [
+        "extra pantry items",
+        "canned goods",
+        "dry goods",
+        "non-perishables",
+        "food bank items"
+      ],
+      "examples": [
+        "Canned vegetables",
+        "Pasta and rice",
+        "Cereal boxes",
+        "Peanut butter",
+        "Cooking oil",
+        "Flour and sugar"
+      ]
+    },
+    "Frozen Foods": {
+      "queries": [
+        "frozen meals",
+        "ice cream",
+        "frozen pizza",
+        "freezer items"
+      ],
+      "examples": [
+        "Frozen pizza",
+        "Ice cream",
+        "Frozen vegetables",
+        "Popsicles",
+        "Frozen fruit"
+      ]
+    },
+    "Specialty and Cultural Foods": {
+      "queries": [
+        "ethnic foods",
+        "specialty ingredients",
+        "international cuisine",
+        "cultural dishes"
+      ],
+      "examples": [
+        "Tamales for holidays",
+        "Diwali sweets",
+        "Lunar New Year dumplings",
+        "Passover matzo",
+        "Homemade kimchi"
+      ]
+    }
+  },
+  "clothing": {
+    "Kids Clothing": {
+      "queries": [
+        "kids clothes",
+        "baby clothes",
+        "children's shoes",
+        "school uniforms",
+        "kids winter coat",
+        "toddler clothes"
+      ],
+      "examples": [
+        "Kids ski jacket",
+        "Baby onesies bundle",
+        "Children's rain boots",
+        "School uniform polo shirts",
+        "Kids snow pants",
+        "Toddler shoes"
+      ]
+    },
+    "Adult Clothing": {
+      "queries": [
+        "warm clothes",
+        "work clothes",
+        "professional attire",
+        "casual clothes",
+        "plus size clothing"
+      ],
+      "examples": [
+        "Women's holiday sweater",
+        "Men's work pants",
+        "Business casual blazer",
+        "Nursing scrubs",
+        "Maternity clothes",
+        "Interview suit"
+      ]
+    },
+    "Seasonal and Weather Gear": {
+      "queries": [
+        "winter coat",
+        "rain jacket",
+        "snow boots",
+        "summer clothes",
+        "swimsuit"
+      ],
+      "examples": [
+        "North Face winter jacket",
+        "Hunter rain boots",
+        "Fleece pullover",
+        "Sun hat",
+        "Snow gloves"
+      ]
+    },
+    "Sports and Activity Clothing": {
+      "queries": [
+        "workout clothes",
+        "hiking boots",
+        "ski clothes",
+        "dance costume",
+        "sports uniform"
+      ],
+      "examples": [
+        "Running shoes",
+        "Yoga pants",
+        "Ski jacket and pants",
+        "Soccer cleats",
+        "Dance recital costume",
+        "Cycling jersey"
+      ]
+    },
+    "Formal and Special Occasion": {
+      "queries": [
+        "formal dress",
+        "wedding attire",
+        "prom dress",
+        "suit for event",
+        "graduation gown"
+      ],
+      "examples": [
+        "Evening gown",
+        "Men's dress shoes",
+        "Bridesmaid dress",
+        "Tuxedo rental",
+        "Quinceañera dress"
+      ]
+    },
+    "Costumes and Dress-up": {
+      "queries": [
+        "Halloween costume",
+        "dress up clothes",
+        "princess costume",
+        "superhero costume",
+        "theme party outfit"
+      ],
+      "examples": [
+        "Kids Halloween costumes",
+        "Disney princess dress",
+        "Superhero cape",
+        "80s theme outfit",
+        "Career dress-up set"
+      ]
+    },
+    "Maternity and Nursing": {
+      "queries": [
+        "maternity clothes",
+        "nursing bras",
+        "pregnancy wear",
+        "postpartum clothes"
+      ],
+      "examples": [
+        "Maternity jeans",
+        "Nursing tops",
+        "Belly band",
+        "Hospital gown for birth"
+      ]
+    }
+  },
+  "experiences_community_gatherings": {
+    "Neighborhood Events": {
+      "queries": [
+        "get togethers",
+        "something to do this weekend",
+        "neighborhood party",
+        "block party",
+        "community BBQ",
+        "potluck dinner"
+      ],
+      "examples": [
+        "Kid's Story time at library",
+        "Community dance performance",
+        "Neighborhood block party",
+        "Summer potluck in the park",
+        "Community garage sale",
+        "Holiday light walk"
+      ]
+    },
+    "Cultural and Holiday Events": {
+      "queries": [
+        "cultural celebration",
+        "holiday event",
+        "festival",
+        "parade",
+        "seasonal celebration"
+      ],
+      "examples": [
+        "Diwali celebration",
+        "Lunar New Year party",
+        "Juneteenth celebration",
+        "Fourth of July picnic",
+        "Dia de los Muertos gathering",
+        "Easter egg hunt",
+        "Hanukkah candle lighting"
+      ]
+    },
+    "Religious and Spiritual Gatherings": {
+      "queries": [
+        "church event",
+        "spiritual gathering",
+        "interfaith event",
+        "meditation group",
+        "prayer group"
+      ],
+      "examples": [
+        "Sunday service social",
+        "Interfaith dialogue dinner",
+        "Community meditation",
+        "Youth group meeting",
+        "Bible study group"
+      ]
+    },
+    "Performances and Shows": {
+      "queries": [
+        "concert",
+        "theater performance",
+        "music show",
+        "dance recital",
+        "talent show"
+      ],
+      "examples": [
+        "Community choir concert",
+        "School play performance",
+        "Local band show",
+        "Dance studio recital",
+        "Open mic night",
+        "Poetry reading"
+      ]
+    },
+    "Markets and Fairs": {
+      "queries": [
+        "farmers market",
+        "craft fair",
+        "flea market",
+        "community market",
+        "bazaar"
+      ],
+      "examples": [
+        "Saturday farmers market",
+        "Holiday craft fair",
+        "Community flea market",
+        "Artisan market",
+        "School fundraiser fair"
+      ]
+    }
+  },
+  "experiences_classes": {
+    "Fitness and Wellness Classes": {
+      "queries": [
+        "learn yoga",
+        "fitness class",
+        "exercise group",
+        "wellness workshop",
+        "meditation class"
+      ],
+      "examples": [
+        "Yoga in the park",
+        "Zumba class at community center",
+        "Morning walking group",
+        "Tai chi for beginners",
+        "Chair yoga for seniors"
+      ]
+    },
+    "Arts and Crafts Classes": {
+      "queries": [
+        "art class",
+        "craft workshop",
+        "painting class",
+        "knitting circle",
+        "pottery class",
+        "sewing lessons"
+      ],
+      "examples": [
+        "Watercolor painting class",
+        "Knitting and crochet circle",
+        "Kids art workshop",
+        "Pottery wheel basics",
+        "Jewelry making class",
+        "Quilting bee"
+      ]
+    },
+    "Music and Dance Lessons": {
+      "queries": [
+        "learn to play guitar",
+        "dance lessons",
+        "music lessons",
+        "singing class",
+        "instrument lessons"
+      ],
+      "examples": [
+        "Free guitar lessons",
+        "Salsa dance class",
+        "Piano lessons for kids",
+        "Drum circle",
+        "Choir practice",
+        "Line dancing lessons"
+      ]
+    },
+    "Cooking and Food Classes": {
+      "queries": [
+        "cooking class",
+        "baking workshop",
+        "learn to cook",
+        "food preparation class"
+      ],
+      "examples": [
+        "Bread baking workshop",
+        "Indian cooking class",
+        "Kids cooking camp",
+        "Canning and preserving class",
+        "BBQ and smoking workshop"
+      ]
+    },
+    "Language and Academic": {
+      "queries": [
+        "adult education",
+        "language class",
+        "tutoring",
+        "homework help",
+        "ESL class"
+      ],
+      "examples": [
+        "Spanish conversation group",
+        "English as second language class",
+        "Math tutoring",
+        "SAT prep study group",
+        "Book discussion group",
+        "Writing workshop"
+      ]
+    },
+    "Life Skills and Practical": {
+      "queries": [
+        "learn home repair",
+        "financial literacy",
+        "parenting class",
+        "first aid training",
+        "tech help for seniors"
+      ],
+      "examples": [
+        "Basic home repair workshop",
+        "Budgeting and finance class",
+        "New parent support group",
+        "CPR certification class",
+        "Smartphone basics for seniors",
+        "Car maintenance workshop"
+      ]
+    },
+    "Kids Programs": {
+      "queries": [
+        "kids activities",
+        "children's classes",
+        "after school program",
+        "summer camp",
+        "youth group"
+      ],
+      "examples": [
+        "Swimming clinic",
+        "Soccer camp",
+        "Science club for kids",
+        "Girl Scout troop meeting",
+        "Cub Scout den meeting",
+        "STEM workshop for kids"
+      ]
+    }
+  },
+  "experiences_outings": {
+    "Outdoor Adventures": {
+      "queries": [
+        "hiking",
+        "nature walk",
+        "outdoor activity",
+        "camping trip",
+        "biking group"
+      ],
+      "examples": [
+        "Meetup at Stacy Park",
+        "Climbing at Barton Creek",
+        "Group bike ride to Manor",
+        "Morning bird watching walk",
+        "Trail running group",
+        "Kayaking on the lake"
+      ]
+    },
+    "Sports and Recreation": {
+      "queries": [
+        "pickup basketball",
+        "tennis match",
+        "golf outing",
+        "soccer game",
+        "running club"
+      ],
+      "examples": [
+        "Sunday pickup basketball",
+        "Tennis doubles mixer",
+        "Disc golf outing",
+        "Adult soccer league game",
+        "5K training group",
+        "Pickleball at the park"
+      ]
+    },
+    "Family Activities": {
+      "queries": [
+        "playdates",
+        "family outing",
+        "kids activities",
+        "family fun",
+        "things to do with kids"
+      ],
+      "examples": [
+        "Playground playdate",
+        "Family movie in the park",
+        "Zoo trip with families",
+        "Splash pad meetup",
+        "Library story time",
+        "Kids museum visit"
+      ]
+    },
+    "Social Gatherings": {
+      "queries": [
+        "happy hour",
+        "dinner party",
+        "game night",
+        "coffee meetup",
+        "book club"
+      ],
+      "examples": [
+        "Neighborhood happy hour",
+        "Potluck dinner party",
+        "Board game night",
+        "Mom's coffee morning",
+        "Dad's group meetup",
+        "Wine and paint night"
+      ]
+    },
+    "Interest Groups": {
+      "queries": [
+        "hobby group",
+        "club meeting",
+        "special interest",
+        "enthusiast group"
+      ],
+      "examples": [
+        "Photography walk",
+        "Gardening club meeting",
+        "Vintage car enthusiasts",
+        "Model train group",
+        "Bird watching society",
+        "Amateur radio club"
+      ]
+    },
+    "Volunteer and Service": {
+      "queries": [
+        "volunteer opportunity",
+        "community service",
+        "help needed",
+        "giving back",
+        "charity event"
+      ],
+      "examples": [
+        "Park cleanup day",
+        "Food bank volunteering",
+        "Habitat for Humanity build",
+        "School beautification day",
+        "Meal delivery for seniors",
+        "Animal shelter volunteering"
+      ]
+    },
+    "Support Groups": {
+      "queries": [
+        "support group",
+        "peer support",
+        "caregiving support",
+        "grief support",
+        "new parent group"
+      ],
+      "examples": [
+        "New mom support circle",
+        "Caregiver support group",
+        "Grief and loss group",
+        "Addiction recovery meeting",
+        "Cancer survivor support",
+        "Single parent meetup"
+      ]
+    }
+  }
+}

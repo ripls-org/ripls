@@ -1,0 +1,47 @@
+// User types for API responses.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// User represents a user in API responses, containing display information.
+// Use this type when returning user information for display purposes.
+message User {
+  // The unique identifier of the user.
+  string id = 1;
+
+  // The display name of the user.
+  string name = 2;
+
+  // Primary profile image media ID.
+  // Server ensures this is always synced with media_ids[0].
+  // For backward compatibility - new code should use media_ids.
+  string media_id = 3;
+
+  // User bio/description.
+  optional string description = 4;
+
+  // Media IDs for all user profile images.
+  // First element (index 0) is the primary profile image, synced with media_id.
+  // Empty array means no profile images (show placeholder).
+  repeated string media_ids = 5;
+
+  // User's preferred timezone for displaying all events.
+  // IANA timezone string (e.g., "America/New_York").
+  // Falls back to device timezone if not set.
+  optional string preferred_timezone = 6;
+
+  // User's preferred language for server-rendered content (push
+  // notifications, emails). BCP-47 tag (e.g. "en", "es"). When
+  // empty, the server resolves the locale from each request's
+  // Accept-Language header.
+  optional string preferred_language = 8;
+
+  // True when the referenced user is no longer available
+  // (e.g. account deletion). Clients should render a localized
+  // placeholder rather than the name/media_id fields, which may be
+  // empty for these users.
+  bool former_member = 7;
+}

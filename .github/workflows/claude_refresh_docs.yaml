@@ -1,0 +1,293 @@
+name: Claude Refresh Docs
+
+# The doc-freshness ratchet (#2420 Phase 4), nightly edition. Once a night
+# (~2am US Central) it diffs main against the last point the docs were
+# verified at, finds the durable docs whose governed code (their
+# `context: globs`) changed in the day's merges, runs the ripls-doc-freshness
+# skill in apply mode on just those docs, and opens a single docs-only PR
+# with the fixes. A follow-up step then approves that PR and turns on native
+# auto-merge, so it lands without a human review or merge click.
+#
+# History: this originally fired per-PR (opened + every synchronize push),
+# which ran the agent up to ~26x/day — the main driver of the June 2026 API
+# bill (see PR #2626) — and re-verified the same docs repeatedly as a PR
+# evolved. One nightly pass over the day's merged diff does the same job at
+# a fixed daily cost, and verifies what actually landed rather than every
+# intermediate push.
+#
+# Base anchoring: the lightweight tag `doc-freshness-verified` marks the main
+# SHA the docs were last verified against. Every successful run advances it —
+# a clean "nothing drifted" night still advances the high-water mark. A
+# failed night leaves the tag put, so the next night's diff covers the gap;
+# there is no fixed 24h window to fall out of. The first run ever (tag
+# missing) falls back to a 26-hour lookback.
+#
+# Loop safety is structural in this edition: the run reads main and writes to
+# its own claude/doc-freshness-* branch, and a schedule can't re-trigger
+# itself. (The old per-PR edition needed a commit-message marker guard to
+# avoid re-triggering on its own pushes; that guard is gone with the
+# pull_request trigger.) Auto-merging the refreshed PR pushes to main, but this
+# workflow has no `push` trigger, so that merge cannot loop back either.
+#
+# Security: the agent's --allowedTools is a docs-only surface (no arbitrary
+# Bash, no go/flutter; the commit is `git add docs/` only), so even though the
+# PR auto-merges the blast radius is confined to files under docs/. See
+# docs/context_map.md -> Prose freshness.
+
+on:
+  schedule:
+    # 08:00 UTC = 2am America/Chicago in winter (CST), 3am in summer (CDT).
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+    inputs:
+      base:
+        description: >-
+          Diff base override (any git ref). Default: the
+          doc-freshness-verified tag, falling back to a 26h lookback.
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  # One nightly run at a time; a manual dispatch queues behind (never
+  # cancels) an in-flight run so the tag advance stays serialized.
+  group: claude-refresh-docs-nightly
+  cancel-in-progress: false
+
+jobs:
+  # Nightly cron with no human in the loop, so in a repo without
+  # CLAUDE_WORKFLOW_PAT it is a failing run every single night. See the same
+  # gate in claude_resolve_conflict; OSS-7 (#2959) reshapes both properly.
+  credentials:
+    name: Detect Claude workflow credentials
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - id: check
+        env:
+          PAT: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+        run: |
+          set -euo pipefail
+          if [ -n "$PAT" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Doc refresh disabled::CLAUDE_WORKFLOW_PAT is unset in this repository."
+          fi
+
+  refresh:
+    needs: [credentials]
+    if: needs.credentials.outputs.available == 'true'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Setup git identity
+        run: |
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
+
+      - name: Install npm dependencies
+        # Needed for scripts/doc_freshness.js + npm run lint:context-map (js-yaml).
+        run: npm install
+
+      - name: Compute diff window and affected docs
+        id: window
+        env:
+          BASE_OVERRIDE: ${{ github.event.inputs.base }}
+        run: |
+          set -euo pipefail
+          HEAD_SHA=$(git rev-parse HEAD)
+          git fetch --no-tags origin '+refs/tags/doc-freshness-verified:refs/tags/doc-freshness-verified' || true
+          if [ -n "${BASE_OVERRIDE}" ]; then
+            BASE_SHA=$(git rev-parse "${BASE_OVERRIDE}^{commit}")
+          elif git rev-parse -q --verify 'refs/tags/doc-freshness-verified^{commit}' >/dev/null; then
+            BASE_SHA=$(git rev-parse 'refs/tags/doc-freshness-verified^{commit}')
+          else
+            BASE_SHA=$(git rev-list -1 --before="26 hours ago" HEAD)
+          fi
+          node scripts/doc_freshness.js affected --base "$BASE_SHA" \
+            > /tmp/affected.txt || true
+          COUNT=$(grep -c . /tmp/affected.txt || true)
+          git log --oneline --first-parent "${BASE_SHA}..${HEAD_SHA}" > /tmp/window_commits.txt || true
+          git diff --stat "$BASE_SHA" "$HEAD_SHA" > /tmp/window_stat.txt || true
+          {
+            echo "count=${COUNT}"
+            echo "base_sha=${BASE_SHA}"
+            echo "head_sha=${HEAD_SHA}"
+            echo "branch=claude/doc-freshness-$(date -u +%Y%m%d)"
+          } >> "$GITHUB_OUTPUT"
+          echo "Window: ${BASE_SHA}..${HEAD_SHA} ($(grep -c . /tmp/window_commits.txt || true) commits)"
+          echo "Affected docs (${COUNT}):"
+          cat /tmp/affected.txt || true
+
+      - name: Run ripls-doc-freshness (apply mode)
+        id: claude
+        if: steps.window.outputs.count != '0'
+        uses: anthropics/claude-code-action@v1
+        env:
+          # Deliberately no ANTHROPIC_API_KEY: Claude Code prefers it over
+          # claude_code_oauth_token, silently billing runs per-token instead
+          # of to the subscription. AI integration tests skip without it.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          VERTEX_AI_PROJECT: ${{ vars.GCP_PROJECT_DEV }}
+          CI: "true"
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the nightly documentation-freshness ratchet for
+            ${{ github.repository }}. Commits merged to main since the last
+            verified point changed code that the durable docs listed in
+            /tmp/affected.txt govern (their `context: globs` matched changed
+            files). Your job: make sure each of those docs still tells the
+            truth about the code, fix only genuine drift, and open ONE
+            docs-only PR with the fixes.
+
+            Diff window:     ${{ steps.window.outputs.base_sha }}..${{ steps.window.outputs.head_sha }}
+                             (main, already checked out at the window head)
+            Affected docs:   /tmp/affected.txt (one path per line)
+            Merged commits:  /tmp/window_commits.txt
+            Diff stat:       /tmp/window_stat.txt
+            Inspect changes: git diff ${{ steps.window.outputs.base_sha }} ${{ steps.window.outputs.head_sha }} -- <paths>
+
+            ## Process
+
+            1. Read `.claude/skills/ripls-doc-freshness/SKILL.md` IN FULL — its
+               verification rubric and "Do NOT flag" precision rules govern your
+               work. Skim /tmp/window_commits.txt and /tmp/window_stat.txt to
+               see what the day's merges actually changed.
+            2. For EACH doc in /tmp/affected.txt, run the per-doc workflow from
+               the SKILL: `node scripts/doc_freshness.js governs <doc>`, read
+               the doc and the governed code (focus on what the window's diff
+               changed), and verify the prose still matches — structure, API
+               surface, data model, control flow, named symbols, referenced
+               paths, strategy.
+               Note: dependency-bump merges (Renovate) often match broad config
+               globs (versions.env, package.json) without putting any prose at
+               risk — confirm those docs fresh quickly and move on.
+            3. Apply MINIMAL, surgical edits ONLY for genuine drift the
+               window's changes introduced or exposed. Do NOT rewrite healthy
+               prose, do NOT flag forward-looking design drafts or intentional
+               abstraction, do NOT invent drift. A night where every doc is
+               already accurate is a normal, expected outcome.
+            4. Stamp ONLY the docs you actually EDITED:
+               `node scripts/doc_freshness.js stamp <doc> --commit "$(git rev-parse --short HEAD)"`.
+               Do NOT stamp docs you confirmed already-fresh — stamp-only
+               changes are noise.
+            5. If you changed any `context:` block, run
+               `npm run generate:context-map` so docs/llms.txt stays current.
+            6. **If (and only if) you made real prose edits**, open the PR:
+
+                   git checkout -B ${{ steps.window.outputs.branch }}
+                   git add docs/
+                   git commit -m "Refresh docs for merged changes (ripls-doc-freshness)"
+                   git push -f origin ${{ steps.window.outputs.branch }}
+                   gh pr create --base main --head ${{ steps.window.outputs.branch }} --title "docs: nightly freshness refresh" --body "<summary>"
+
+               The PR body must list, per doc: what drifted and the fix, and
+               name the verified window
+               `${{ steps.window.outputs.base_sha }}..${{ steps.window.outputs.head_sha }}`.
+               If `gh pr create` reports a PR already exists for the branch
+               (manual re-run on the same day), the force-push already updated
+               it — post the new summary as a comment on that PR instead.
+               Do NOT approve or merge the PR yourself — a later workflow step
+               approves it (as github-actions[bot]) and enables auto-merge.
+
+               **If every affected doc is already accurate, make NO commit, NO
+               stamp, NO branch, and NO PR — just exit. A clean no-op is the
+               correct, expected outcome.**
+
+            ## Hard rules
+            - Edit ONLY files under `docs/`. Never edit code, never run tests,
+              never approve or merge the PR (a later workflow step handles
+              auto-merge).
+            - Stay scoped to drift the window's changes caused — no unrelated
+              doc rewrites, no stamp-only churn.
+            - No "Co-Authored-By" / "Generated with Claude" branding in
+              commits.
+          claude_args: >-
+            --max-turns 100
+            --verbose
+            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash(git:*),Bash(gh:*),Bash(node scripts/doc_freshness.js:*),Bash(npm run lint:context-map),Bash(npm run generate:context-map),Bash(cat:*),Bash(ls:*),Bash(grep:*),Bash(find:*),Bash(head:*),Bash(wc:*),Bash(date:*)"
+
+      - name: Approve and enable auto-merge on the docs PR
+        # The refresh PR is authored by the Claude GitHub App (app/claude), so
+        # the "main requires review" ruleset needs an approving review it can't
+        # give itself, and native auto-merge does NOT honor the ruleset's bypass
+        # actors (see renovate_auto_approve.yaml -> approve). This step supplies
+        # that review as github-actions[bot] (a distinct identity, satisfying
+        # required_approving_review_count:1) and turns on native auto-merge, so
+        # the docs-only PR lands on its own once the required checks report — no
+        # human approval or merge click. Safety comes from the agent's docs-only
+        # commit surface (`git add docs/`), not from human review.
+        #
+        # On a clean-diff night the agent opens no PR and the branch lookup
+        # below no-ops. Runs only when the diff had affected docs AND every prior
+        # step succeeded, so a failed agent run never auto-approves a partial PR.
+        if: ${{ success() && steps.window.outputs.count != '0' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BRANCH: ${{ steps.window.outputs.branch }}
+        run: |
+          set -euo pipefail
+          PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$PR" ]; then
+            echo "No open PR on $BRANCH (docs were already fresh); nothing to merge."
+            exit 0
+          fi
+          # Approve as github-actions[bot] — distinct from the app/claude author,
+          # so it counts toward the required 1 review. Best-effort: a manual
+          # re-run may already carry an approval.
+          gh pr review "$PR" --approve \
+            || echo "::notice::Could not add approval to PR #$PR (may already be approved); continuing."
+          # Merge commit only (squash is disabled on this repo). --auto waits for
+          # the required status checks: docs-only PRs skip the heavy jobs, and a
+          # skipped required check counts as satisfied, so it merges with no human.
+          gh pr merge "$PR" --auto --merge \
+            || echo "::notice::Auto-merge not enabled on PR #$PR (may already be enabled); will retry next run."
+
+      - name: Advance doc-freshness-verified tag
+        # Reached only when everything above succeeded (including the case
+        # where the Claude step was skipped because nothing was affected).
+        # A failed night leaves the tag put so the next run covers the gap.
+        run: |
+          set -euo pipefail
+          git tag -f doc-freshness-verified "${{ steps.window.outputs.head_sha }}"
+          git push -f origin refs/tags/doc-freshness-verified
+
+      - name: Stage execution log for artifact
+        if: always()
+        run: |
+          DEBUG_DIR="${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}"
+          rm -rf "$DEBUG_DIR"
+          mkdir -p "$DEBUG_DIR"
+          if [ -f "${{ runner.temp }}/claude-execution-output.json" ]; then
+            cp "${{ runner.temp }}/claude-execution-output.json" "$DEBUG_DIR/"
+          fi
+          cp /tmp/affected.txt /tmp/window_commits.txt /tmp/window_stat.txt "$DEBUG_DIR/" 2>/dev/null || true
+          ls -la "$DEBUG_DIR/" || true
+
+      - name: Upload Claude execution log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: claude-refresh-docs-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}/
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,61 @@
+# Local development PostgreSQL database with pgvector extension.
+# This is NOT used for production deployment (which uses Cloud SQL).
+#
+# Usage:
+#   npm run db:start      - Start PostgreSQL
+#   npm run db:stop       - Stop PostgreSQL (preserves data)
+#   npm run db:reset      - Reset database AND wipe ./media_storage (destroys data)
+#   npm run db:psql       - Connect via psql CLI
+#   npm run metabase      - Start Metabase (http://localhost:3000)
+#   npm run metabase:stop - Stop Metabase
+#   npm run metabase:init - Create read-only DB user for Metabase
+
+# Pin the Compose project name so every git worktree manages the SAME
+# container and data volume. Without this, Compose derives the project name
+# from the checkout directory (ripls, ripls3, ...), and each worktree tries to
+# create its own container under the globally-unique name "ripls-postgres-local"
+# — which collides with the one another worktree already owns.
+name: ripls
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ripls-postgres-local
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ripls
+      POSTGRES_PASSWORD: ripls_dev
+      POSTGRES_DB: ripls
+    volumes:
+      - ripls_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ripls"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: ripls-metabase-local
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: h2
+      MB_JETTY_PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - metabase
+    volumes:
+      - ripls_metabase_data:/metabase-data
+
+volumes:
+  ripls_postgres_data:
+    # Named volume for PostgreSQL data persistence.
+    # Docker stores this in its internal data directory.
+    # Use 'docker volume rm ripls_postgres_data' to delete.
+  ripls_metabase_data:
+    # Named volume for Metabase internal data (H2 database).
+    # Use 'docker volume rm ripls_metabase_data' to delete.

@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "2HL54765FF.org.ripls.app",
+        "paths": ["/go/*", "/invite", "/invite/*", "/reset-password", "/reset-password/*"]
+      }
+    ]
+  }
+}

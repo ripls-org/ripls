@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// Tracks which feed items a user has viewed.
+message FeedItemView {
+  // A unique identifier for this view record.
+  string id = 1;
+
+  // The user who viewed the item.
+  string user_id = 2;
+
+  // The community context.
+  string community_id = 3;
+
+  // Feed item identifier (could be event_id, notification cluster, etc.).
+  string feed_item_id = 4;
+
+  // Type of feed item.
+  string item_type = 5;
+
+  // Number of times viewed.
+  int32 view_count = 6;
+
+  // First viewed timestamp (Unix timestamp in seconds).
+  int64 first_viewed_at_unix_sec = 7;
+
+  // Last viewed timestamp (Unix timestamp in seconds).
+  int64 last_viewed_at_unix_sec = 8;
+
+  // When the user last saw this item (Unix timestamp in seconds).
+  // Updated each time the user views the item via MarkFeedItemsViewed.
+  int64 last_seen_at_unix_sec = 9;
+
+  // Number of views since the last activity on this item.
+  // Incremented on view when last_seen_at >= last_activity_at; reset to 0 when
+  // new activity occurs (last_activity_at > last_seen_at).
+  int32 views_since_last_activity = 10;
+}

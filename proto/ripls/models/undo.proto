@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/gear.proto";
+import "ripls/models/transfer.proto";
+import "ripls/models/request.proto";
+import "ripls/models/experience.proto";
+import "ripls/models/impact_estimate.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// UndoData records the minimal prior-state snapshot needed to reverse
+// a state-changing action within the generalized-undo feature. Attached
+// to CommunityEvent for server-authoritative undoable events. See
+// docs/ai/undo_plan.md §4.1.
+//
+// The variant chosen on a given CommunityEvent depends on the event
+// type being reversed; events whose reversal requires no cascade data
+// (e.g., TRANSFER_RECIPIENT_SELECTED, REQUEST_OFFER_SELECTED) do not
+// populate UndoData at all.
+message UndoData {
+  oneof variant {
+    LoanStartUndo loan_start = 1;
+    LoanCompletionUndo loan_completion = 2;
+    GiveawayCascadeUndo giveaway_cascade = 3;
+    TransferCancelUndo transfer_cancel = 4;
+    RequestFulfillmentUndo request_fulfillment = 5;
+    RequestCancelUndo request_cancel = 6;
+    ExperienceCompletionUndo experience_completion = 7;
+  }
+}
+
+// LoanStartUndo is attached when a loan transitions
+// INTEREST_EXPRESSED / RECIPIENT_SELECTED → ACTIVE. Undo reverts the
+// gear to its prior state and clears the pickup timestamp that start
+// recorded.
+message LoanStartUndo {
+  GearState prior_gear_state = 1;
+  optional int64 prior_actual_pickup_unix_sec = 2;
+}
+
+// LoanCompletionUndo is attached when a loan transitions
+// ACTIVE → COMPLETED. Undo restores the gear to UNAVAILABLE, clears
+// the return timestamp, and restores the ImpactEstimate that
+// completion may have overwritten.
+message LoanCompletionUndo {
+  GearState prior_gear_state = 1;
+  optional int64 prior_actual_return_unix_sec = 2;
+  optional ImpactEstimate prior_impact_estimate = 3;
+}
+
+// GiveawayCascadeUndo is attached when a giveaway transitions
+// RECIPIENT_SELECTED → COMPLETED. Completion cascades: the gear is
+// marked GIVEN_AWAY, every other pending transfer for the gear is
+// auto-cancelled, and every CommunityGear row for the gear is
+// archived. Undo replays each of those inverses; the snapshot below
+// records enough state to do so.
+message GiveawayCascadeUndo {
+  GearState prior_gear_state = 1;
+
+  // Transfers auto-cancelled by the completion cascade, with the state
+  // they held immediately before the cascade. Undo revives each to its
+  // prior_state. Empty if no siblings existed.
+  repeated CancelledSiblingTransfer cancelled_siblings = 2;
+
+  // CommunityGear row ids that completion archived. Undo sets
+  // archived = false on each. Empty if the giveaway was scoped to a
+  // single community.
+  repeated string archived_community_gear_ids = 3;
+
+  optional ImpactEstimate prior_impact_estimate = 4;
+
+  // CancelledSiblingTransfer captures a single sibling transfer's
+  // pre-cascade state so undo can revive it.
+  message CancelledSiblingTransfer {
+    string transfer_id = 1;
+    TransferState prior_state = 2;
+  }
+}
+
+// TransferCancelUndo is attached when a transfer transitions
+// (any state) → CANCELLED. Undo returns the transfer to prior_state,
+// and if cancellation happened from ACTIVE (loan in progress) also
+// restores the gear to prior_gear_state since cancel marks it
+// AVAILABLE.
+message TransferCancelUndo {
+  TransferState prior_state = 1;
+  optional GearState prior_gear_state = 2;
+}
+
+// RequestFulfillmentUndo is attached when a request transitions
+// to FULFILLED. Undo reverts the state and restores the prior
+// ImpactEstimate.
+message RequestFulfillmentUndo {
+  RequestState prior_state = 1;
+  optional ImpactEstimate prior_impact_estimate = 2;
+
+  // Set when the fulfillment was driven by a gear-backed offer's handoff
+  // (#2702): the origin-linked transfer whose ACTIVE/COMPLETED transition
+  // auto-fulfilled the request. Undoing such a fulfillment also cancels this
+  // transfer (while it is still cancellable).
+  optional string fulfilled_by_transfer_id = 3;
+}
+
+// RequestCancelUndo is attached when a request transitions to
+// CANCELLED. Undo returns the request to prior_state.
+message RequestCancelUndo {
+  RequestState prior_state = 1;
+}
+
+// ExperienceCompletionUndo is attached when an experience
+// transitions to COMPLETED. Undo reverts the state, restores the
+// attendee count captured at completion time, and clears the
+// completion-time ImpactEstimate.
+message ExperienceCompletionUndo {
+  ExperienceState prior_state = 1;
+  int32 prior_attendee_count = 2;
+  optional ImpactEstimate prior_impact_estimate = 3;
+}

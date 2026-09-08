@@ -1,0 +1,20 @@
+// Shared social context types used across multiple RPC services.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+import "ripls/api/impact_estimate.proto";
+
+// SocialContext carries owner-overridable social attribute tiers used to
+// compute the Quality Time estimate for a transaction. When present in a
+// save request, these values override LLM-inferred or config defaults.
+message SocialContext {
+  SocialTieStrength tie_strength = 1;
+  SocialReciprocity reciprocity = 2;
+  SocialNovelty novelty = 3;
+  SocialVulnerabilityLevel vulnerability = 4;
+  SocialModality modality = 5;
+}

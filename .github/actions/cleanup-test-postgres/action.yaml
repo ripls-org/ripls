@@ -1,0 +1,17 @@
+name: "Clean up test postgres container"
+description: >-
+  Force-removes this job's pg testcontainer and its anonymous volume. The `-v`
+  flag is essential: the pgvector image declares
+  VOLUME /var/lib/postgresql/data, so each container has an anonymous volume
+  that would otherwise leak on every CI run. Container name must stay in sync
+  with testContainerName() in server/storage/testing.go. Replaces the
+  in-process orphan sweep and ryuk, both of which are disabled in CI (see
+  PR #1243).
+runs:
+  using: "composite"
+  steps:
+    - name: Remove postgres testcontainer
+      shell: bash
+      run: |
+        name="ripls-test-postgres-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-1}-${GITHUB_JOB:-job}"
+        docker rm -fv "$name" 2>/dev/null || true

@@ -1,0 +1,11 @@
+# ref.listen-in-build allowlist.
+#
+# Each entry is a file path (relative to repo root) that contains a
+# legacy ref.listen() call inside Widget build(). The allowlist can
+# SHRINK but never GROW on main — CI enforces this ratchet.
+#
+# Fix: move ref.listen() to ref.listenManual() registered in initState.
+#
+# Regenerate from current state with:
+#   node scripts/check_ref_listen_in_build.js --update-baseline
+

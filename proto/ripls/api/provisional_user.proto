@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// API representation of a provisional user (lightweight placeholder for a
+// not-yet-registered participant). Clients must never
+// reference the storage-layer ripls.models.ProvisionalUser directly. The
+// contact handle (phone/email), if any, is intentionally not exposed here.
+message ProvisionalUser {
+  // Unique identifier.
+  string id = 1;
+
+  // Display name.
+  string name = 2;
+
+  // True if this provisional account has been claimed by a real registered user.
+  bool is_claimed = 3;
+}

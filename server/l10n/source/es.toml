@@ -1,0 +1,875 @@
+# Spanish server l10n source catalog.
+#
+# Mirrors every key from en.toml. The Phase 6 parity script fails CI
+# if any key in en.toml is missing here.
+
+# --- Eventos de transferencia ---
+
+[notif.community_event.transfer_interest_expressed.title]
+other = "Interés en {{.GearName}}"
+
+[notif.community_event.transfer_interest_withdrawn.title]
+other = "Interés retirado"
+
+[notif.community_event.transfer_recipient_selected.title]
+other = "Solicitud aprobada"
+
+[notif.community_event.transfer_active_loan.title]
+other = "Préstamo iniciado"
+
+[notif.community_event.transfer_active_giveaway.title]
+other = "Regalo completado"
+
+[notif.community_event.transfer_cancelled_loan.title]
+other = "Préstamo cancelado"
+
+[notif.community_event.transfer_cancelled_giveaway.title]
+other = "Regalo cancelado"
+
+[notif.community_event.transfer_cancelled_covered.title]
+other = "Oferta cerrada"
+
+[notif.community_event.transfer_pickup_proposed.title]
+other = "Recogida propuesta"
+
+# --- Eventos de solicitud ---
+
+[notif.community_event.request_offer_made.title]
+other = "Ayuda ofrecida"
+
+[notif.community_event.request_offer_selected.title]
+other = "Oferta seleccionada"
+
+[notif.community_event.request_offer_withdrawn.title]
+other = "Oferta retirada"
+
+[notif.community_event.request_fulfilled.title]
+other = "Solicitud cumplida"
+
+[notif.community_event.request_cancelled.title]
+other = "Solicitud cancelada"
+
+[notif.community_event.request_created.title]
+other = "Nueva solicitud"
+
+# --- Eventos de objetos ---
+
+[notif.community_event.gear_shared_giveaway.title]
+other = "Nuevo regalo"
+
+[notif.community_event.gear_shared_loan.title]
+other = "Nuevo objeto para pedir prestado"
+
+# --- Eventos de actividad ---
+
+[notif.community_event.experience_rsvp_yes.title]
+other = "Nueva confirmación"
+
+[notif.community_event.experience_rsvp_maybe.title]
+other = "Nueva confirmación"
+
+[notif.community_event.experience_created.title]
+other = "Nuevo evento"
+
+[notif.community_event.experience_completed.title]
+other = "Evento completado"
+
+# --- Eventos de planificación ---
+
+[notif.community_event.planning_need_added.title]
+other = "Nueva necesidad"
+
+[notif.community_event.planning_need_claimed.title]
+other = "Necesidad reclamada"
+
+[notif.community_event.planning_contribution_added.title]
+other = "Nueva contribución"
+
+# --- Eventos de comunidad ---
+
+[notif.community_event.invitation_link_used.title]
+other = "Nuevo miembro"
+
+[notif.community_event.community_deleted.title]
+other = "Comunidad eliminada"
+
+[notif.community_event.community_deleted_fallback.title]
+other = "Comunidad eliminada"
+
+[notif.community_event.community_restored.title]
+other = "Comunidad restaurada"
+
+[notif.community_event.ownership_transferred.title]
+other = "Ahora eres propietario"
+
+# --- Predeterminado ---
+
+[notif.community_event.default.title]
+other = "Nueva actividad"
+
+# --- Notificaciones de chat ---
+
+[notif.chat.sender_fallback]
+other = "Alguien"
+
+[notif.chat.mentioned_you]
+other = "{{.SenderName}} te mencionó"
+
+# --- Asuntos de correo ---
+
+[email.password_reset.subject]
+other = "Restablece tu contraseña de Ripls"
+
+[email.email_code.subject]
+other = "Tu código de acceso de Ripls"
+
+[email.waitlist_welcome.subject]
+other = "Te damos la bienvenida a la comunidad de Ripls"
+
+# Correo de invitación fuera de la app, enviado a alguien invitado a un elemento
+# (evento, etc.) por un anfitrión que ingresó su correo. {{.HostName}} es el
+# nombre del anfitrión.
+[email.invite.subject]
+other = "{{.HostName}} te invitó en Ripls"
+
+[email.invite.body]
+other = "{{.HostName}} quiere compartir algo contigo en Ripls. Toca abajo para verlo y unirte, sin necesidad de la app."
+
+# --- Resumen del correo fuera de la app (el análogo por correo de la página de
+# destino SSR). Se renderiza en el idioma del destinatario en buildEmailExtras. ---
+
+[email.summary.eyebrow.event]
+other = "Evento"
+
+[email.summary.eyebrow.giveaway]
+other = "Para regalar"
+
+[email.summary.eyebrow.loan]
+other = "Disponible para préstamo"
+
+[email.summary.eyebrow.request]
+other = "Solicitud"
+
+[email.summary.hosted_by]
+other = "Organizado por {{.Name}}"
+
+[email.summary.shared_by]
+other = "Compartido por {{.Name}}"
+
+[email.summary.requested_by]
+other = "Solicitado por {{.Name}}"
+
+[email.summary.going]
+other = "{{.Count}} asistentes"
+
+# --- Cadenas comunes (multi-superficie) ---
+
+# Etiqueta pública para una comunidad sin nombre (ad-hoc) en las páginas SSR.
+[common.adhoc_community_name]
+other = "un grupo de Ripls"
+
+# Nombre genérico para una persona desconocida o sin nombre en una página SSR
+# pública y previa al inicio de sesión (p. ej. un propietario o solicitante
+# cuyo nombre no se pudo resolver).
+[common.someone]
+other = "Alguien"
+
+# --- Páginas SSR de destino web (#2090) ---
+#
+# Las páginas de destino /go/{code} (invite.html, event.html, gear.html,
+# request.html) son una superficie renderizada por el servidor: el servicio
+# web Go es el emisor final, así que su copia vive aquí y se renderiza en el
+# idioma Accept-Language del visitante. Las claves son web.<página>.<rol>;
+# las cadenas compartidas usan web.common.* / web.error.*.
+
+# Copia de error visible en la superficie de error compartida de invite.html
+# cuando un enlace no se puede resolver a un destino activo. Son los mensajes
+# genéricos y seguros que llegan al cliente; los errores de almacenamiento
+# nunca lo hacen.
+[web.error.no_code]
+other = "No se proporcionó ningún código de invitación."
+
+[web.error.generic]
+other = "Algo salió mal. Inténtalo de nuevo."
+
+[web.error.link_invalid]
+other = "Este enlace de invitación no es válido."
+
+[web.error.link_revoked]
+other = "Este enlace de invitación fue revocado."
+
+[web.error.event_unavailable]
+other = "Este evento ya no está disponible."
+
+[web.error.item_unavailable]
+other = "Este artículo ya no está disponible."
+
+[web.error.request_unavailable]
+other = "Esta solicitud ya no está disponible."
+
+# Etiqueta de lugar de reserva en la píldora de detalles del evento cuando el
+# evento no tiene una ubicación que se pueda resolver.
+[web.event.location_tbd]
+other = "Ubicación por confirmar"
+
+# --- Copia de la página de artículo (préstamo / regalo). Separada por tipo
+# para que el orden de palabras y el verbo cambien correctamente. {{.Owner}}
+# es el nombre del propietario; {{.Item}} es el nombre del artículo. ---
+
+[web.gear.headline.giveaway]
+other = "{{.Owner}} regala {{.Item}}"
+[web.gear.headline.loan]
+other = "{{.Owner}} presta {{.Item}}"
+
+# Etiqueta sobre el nombre del artículo en el encabezado.
+[web.gear.kicker.giveaway]
+other = "Gratis"
+[web.gear.kicker.loan]
+other = "Pedir prestado"
+
+# owner_line lleva el nombre en línea (descripción OG/meta); role es solo la
+# frase verbal, junto a un nombre resaltado por separado en el cuerpo.
+[web.gear.owner_line.giveaway]
+other = "{{.Owner}} regala esto"
+[web.gear.owner_line.loan]
+other = "{{.Owner}} presta esto"
+[web.gear.role.giveaway]
+other = "regala esto"
+[web.gear.role.loan]
+other = "presta esto"
+
+# Etiqueta del botón principal + su etiqueta accesible (aria-label).
+[web.gear.cta_label.giveaway]
+other = "Lo quiero"
+[web.gear.cta_label.loan]
+other = "Pedir prestado"
+[web.gear.cta_aria.giveaway]
+other = "Dile a {{.Owner}} que quieres {{.Item}}"
+[web.gear.cta_aria.loan]
+other = "Pídele a {{.Owner}} que te preste {{.Item}}"
+
+# --- Copia de la página de solicitud. {{.Requester}} es el nombre de quien
+# solicita; {{.Item}} es el título de la solicitud. ---
+
+[web.request.kicker_wanted]
+other = "Se busca"
+[web.request.headline]
+other = "{{.Requester}} busca {{.Item}}"
+[web.request.requester_line]
+other = "{{.Requester}} busca esto"
+[web.request.role]
+other = "busca esto"
+[web.request.cta_label]
+other = "Ofrecer ayuda"
+[web.request.cta_aria]
+other = "Ofrecer ayuda a {{.Requester}}"
+
+# Línea compacta de resumen de necesidades, p. ej. "5 artículos · 1 pendiente".
+# Las formas plurales seleccionan según el número de artículos y de pendientes;
+# {{.Items}} es el conteo de artículos ya renderizado para la cola.
+[web.request.needs.items]
+one = "{{.Count}} artículo"
+other = "{{.Count}} artículos"
+[web.request.needs.all_covered]
+other = "{{.Items}} · todo cubierto"
+[web.request.needs.open]
+one = "{{.Items}} · {{.Count}} pendiente"
+other = "{{.Items}} · {{.Count}} pendientes"
+
+# --- Página de invitación a comunidad (community.html): un enlace simple para
+# "unirse a este grupo", la cuarta página de aterrizaje phone-first junto a
+# evento/artículo/petición (#2875). {{.Inviter}} es el nombre de pila de quien
+# invita; {{.Community}} es el nombre visible de la comunidad (la etiqueta
+# genérica "un grupo de Ripls" cuando no tiene nombre). La página no expone
+# ningún nombre de miembro, solo un conteo.
+
+[web.community.kicker]
+other = "Invitación"
+
+# headline lleva ambos nombres en línea (el <h1> es el nombre de la comunidad,
+# así que esta es la línea OG/título); inviter_line es la descripción OG/meta;
+# role es la frase verbal que acompaña al nombre resaltado de quien invita.
+[web.community.headline]
+other = "{{.Inviter}} te invitó a unirte a {{.Community}}"
+[web.community.headline_unnamed]
+other = "{{.Inviter}} te invitó a un grupo de Ripls"
+[web.community.inviter_line]
+other = "{{.Inviter}} te invitó"
+[web.community.role]
+other = "te invitó"
+
+[web.community.cta_label]
+other = "Unirme al grupo"
+[web.community.cta_aria]
+other = "Unirme a {{.Community}} en Ripls"
+
+# Conteo de miembros bajo el encabezado. Sin nombres: una página pública y
+# previa a la autenticación nunca revela quién está en un grupo, solo cuántos.
+[web.community.members]
+one = "{{.Count}} miembro"
+other = "{{.Count}} miembros"
+
+# Descripción para la vista previa del enlace. La segunda frase es lo que hace
+# legible la tarjeta para alguien que nunca ha oído hablar de Ripls.
+[web.community.og_desc]
+other = "{{.InviterLine}}. Comparte y toma prestado con gente cercana."
+
+# --- Variante para miembros, seleccionada por la pista de destino
+# `?to=discuss` (#2876). Se llega desde una notificación de "saluda", cuyos
+# destinatarios ya son miembros por construcción, así que se elimina el marco de
+# invitación: sin "te invitó", y con un CTA que abre la conversación que la
+# notificación prometió. ---
+[web.community.kicker_discussion]
+other = "Conversación"
+[web.community.cta_label_discussion]
+other = "Abrir la conversación"
+[web.community.cta_aria_discussion]
+other = "Abrir la conversación en {{.Community}}"
+[web.community.og_desc_discussion]
+other = "Saluda y mira qué está pasando."
+
+# --- Sufijo de la línea de asistentes del evento, tras los nombres resaltados
+# (p. ej. "<nombres> y 3 más van"). attendees_going selecciona según el número
+# de nombres mostrados para que el verbo concuerde; attendees_overflow según
+# el número de asistentes adicionales. Los valores llevan su espacio inicial. ---
+[web.event.attendees_going]
+one = " va"
+other = " van"
+[web.event.attendees_overflow]
+one = " y {{.Count}} más van"
+other = " y {{.Count}} más van"
+
+# --- Etiquetas de fecha/hora del evento. time.Format de Go no depende del
+# idioma, así que los nombres de día/mes vienen del catálogo y las cadenas
+# *_format los ensamblan por idioma (en español "{Weekday}, {Day} de {Month}"). ---
+[web.when.soon]
+other = "Pronto"
+[web.when.date_tbd]
+other = "Fecha por confirmar"
+[web.when.short_format]
+other = "{{.WeekdayAbbr}}, {{.Day}} {{.MonthAbbr}}"
+[web.when.summary_format]
+other = "{{.Weekday}}, {{.Day}} de {{.Month}}"
+# Marcadores de reloj de 12 horas.
+[web.when.am]
+other = "a. m."
+[web.when.pm]
+other = "p. m."
+
+[web.when.weekday.sunday]
+other = "domingo"
+[web.when.weekday.monday]
+other = "lunes"
+[web.when.weekday.tuesday]
+other = "martes"
+[web.when.weekday.wednesday]
+other = "miércoles"
+[web.when.weekday.thursday]
+other = "jueves"
+[web.when.weekday.friday]
+other = "viernes"
+[web.when.weekday.saturday]
+other = "sábado"
+
+[web.when.weekday_abbr.sunday]
+other = "dom"
+[web.when.weekday_abbr.monday]
+other = "lun"
+[web.when.weekday_abbr.tuesday]
+other = "mar"
+[web.when.weekday_abbr.wednesday]
+other = "mié"
+[web.when.weekday_abbr.thursday]
+other = "jue"
+[web.when.weekday_abbr.friday]
+other = "vie"
+[web.when.weekday_abbr.saturday]
+other = "sáb"
+
+[web.when.month.january]
+other = "enero"
+[web.when.month.february]
+other = "febrero"
+[web.when.month.march]
+other = "marzo"
+[web.when.month.april]
+other = "abril"
+[web.when.month.may]
+other = "mayo"
+[web.when.month.june]
+other = "junio"
+[web.when.month.july]
+other = "julio"
+[web.when.month.august]
+other = "agosto"
+[web.when.month.september]
+other = "septiembre"
+[web.when.month.october]
+other = "octubre"
+[web.when.month.november]
+other = "noviembre"
+[web.when.month.december]
+other = "diciembre"
+
+[web.when.month_abbr.january]
+other = "ene"
+[web.when.month_abbr.february]
+other = "feb"
+[web.when.month_abbr.march]
+other = "mar"
+[web.when.month_abbr.april]
+other = "abr"
+[web.when.month_abbr.may]
+other = "may"
+[web.when.month_abbr.june]
+other = "jun"
+[web.when.month_abbr.july]
+other = "jul"
+[web.when.month_abbr.august]
+other = "ago"
+[web.when.month_abbr.september]
+other = "sep"
+[web.when.month_abbr.october]
+other = "oct"
+[web.when.month_abbr.november]
+other = "nov"
+[web.when.month_abbr.december]
+other = "dic"
+
+# --- Cromo compartido: el aviso de abrir en la app y el banner de aforo
+# completo, reutilizados en las páginas de evento/artículo/solicitud.
+# body_rsvp y body_respond solo difieren en el verbo. ---
+[web.common.open_in_app]
+other = "Abrir en la app de Ripls"
+[web.common.on_ripls_title]
+other = "{{.Title}} en Ripls"
+[web.capacity.title]
+other = "Esta comunidad está llena"
+[web.capacity.body_rsvp]
+other = "No puedes confirmar asistencia porque la comunidad anfitriona está llena ({{.Num}} de {{.Max}} miembros)."
+[web.capacity.body_respond]
+other = "No puedes responder porque la comunidad anfitriona está llena ({{.Num}} de {{.Max}} miembros)."
+[web.capacity.body_join]
+other = "No puedes unirte porque esta comunidad está llena ({{.Num}} de {{.Max}} miembros)."
+[web.capacity.ask_inviter]
+other = "Pídele opciones a quien te invitó."
+
+# --- Etiquetas estáticas y copia OG/título de la página de evento. og_title
+# tiene una variante con comunidad para que la cláusula "en {Community}" se
+# omita en una comunidad sin nombre. ---
+[web.event.og_title]
+other = "Únete a {{.Host}} para {{.Event}}"
+[web.event.og_title_in_community]
+other = "Únete a {{.Host}} para {{.Event}} en {{.Community}}"
+[web.event.meta_aria]
+other = "Detalles del evento"
+[web.event.is_hosting]
+other = "es anfitrión"
+[web.event.rsvp_aria]
+other = "Confirmar asistencia"
+[web.event.cta_in]
+other = "Voy"
+[web.event.cta_in_aria]
+other = "Confirmar asistencia a este evento"
+[web.event.cta_maybe]
+other = "Quizás"
+[web.event.cta_maybe_aria]
+other = "Quizás asista a este evento"
+[web.event.cta_out]
+other = "No voy"
+[web.event.cta_out_aria]
+other = "Rechazar este evento"
+[web.event.decline_thanks]
+other = "Gracias, le avisaremos al anfitrión."
+[web.event.decline_failed]
+other = "No se pudo contactar al servidor. Es posible que tu respuesta no se haya registrado."
+
+# --- Descripción OG de la página de artículo. La variante con comunidad añade
+# la cláusula "en {Community}"; ambas cierran con punto. ---
+[web.gear.og_desc]
+other = "{{.OwnerLine}}."
+[web.gear.og_desc_in_community]
+other = "{{.OwnerLine}} en {{.Community}}."
+
+# --- Descripción OG de la página de solicitud (añade "¿Puedes ayudar?"). ---
+[web.request.og_desc]
+other = "{{.RequesterLine}}. ¿Puedes ayudar?"
+[web.request.og_desc_in_community]
+other = "{{.RequesterLine}} en {{.Community}}. ¿Puedes ayudar?"
+
+# --- Superficie de error compartida de los enlaces (invite.html). Desde #2875
+# cada enlace válido renderiza su propia página (community.html / event.html /
+# gear.html / request.html), así que estas claves son solo la tarjeta de "este
+# enlace no funcionó" y sus vías de recuperación (instalar la app, código
+# manual). No se interpola ningún dato de la invitación: un código que no se
+# puede resolver no tiene comunidad ni anfitrión que nombrar. ---
+[web.invite.title_invalid]
+other = "Invitación de Ripls"
+[web.invite.og_title_invalid]
+other = "Únete a Ripls"
+[web.invite.og_desc_invalid]
+other = "Comparte y toma prestado con tu comunidad en Ripls."
+[web.invite.logo_alt]
+other = "Logotipo de Ripls"
+[web.invite.invalid_heading]
+other = "Invitación no válida"
+[web.invite.error_help]
+other = "Pídele a quien compartió este enlace que te envíe uno nuevo desde la app de Ripls. Los enlaces de invitación pueden caducar o ser revocados por quien los creó."
+[web.invite.store_testflight_label]
+other = "Únete a la beta en"
+[web.invite.store_play_label]
+other = "Disponible en"
+[web.invite.reopen]
+other = "¿Ya la instalaste? Toca aquí para abrir en Ripls"
+[web.invite.code_label]
+other = "Tu código de invitación"
+[web.invite.code_hint]
+other = "También puedes ingresar este código manualmente en la app"
+[web.invite.privacy_policy]
+other = "Política de privacidad"
+
+# --- Copia para SMS (mensajes de texto) ---
+#
+# Los mensajes de texto los renderiza el servidor (límite de renderizado en
+# docs/server/l10n.md). {{.Message}} es el contenido de la notificación ya
+# localizado; {{.Url}} es el enlace /go/{code}. Las palabras clave STOP/HELP
+# son comandos de SMS fijos que reconocen los operadores y se mantienen
+# literales aunque el texto esté traducido.
+#
+# Las respuestas automáticas a STOP/HELP/START entrantes NO están aquí: las
+# envía la gestión de cancelaciones del Messaging Service de Twilio (configurada
+# en la consola de Twilio); nuestro webhook solo persiste y no responde.
+
+# Cuerpo de un mensaje de texto saliente: contenido, enlace y el pie de
+# cancelación obligatorio.
+[sms.notification.body]
+other = "{{.Message}}{{if .Url}} {{.Url}}{{end}}"
+
+# --- Copy de notificaciones fuera de la app (NOTIF-1) ----------------------
+
+[sms.brand_prefix]
+other = "Ripls:"
+
+[sms.optout]
+other = "Responde STOP para cancelar, HELP para ayuda."
+
+# Mensaje único de confirmación de suscripción ("bienvenida"), enviado al
+# suscribirse por primera vez. Es autónomo: incluye su propio aviso STOP/HELP,
+# de frecuencia y de tarifas (el despachador no le agrega sms.optout).
+[sms.welcome.body]
+other = "¡Bienvenido a Ripls! Apoyémonos mutuamente. Recibirás invitaciones a eventos y novedades de la comunidad. Pueden aplicarse tarifas de mensajes y datos. La frecuencia de mensajes varía. Responde HELP para ayuda, STOP para cancelar.{{if .AppURL}}\n\nConéctate en {{.AppURL}}{{end}}"
+
+[notif.offapp.invitation.message]
+other = "{{.ActorName}} te invitó a {{.ExperienceName}}"
+[notif.offapp.invitation.cta]
+other = "Confirma en"
+
+[notif.offapp.experience_created.message]
+other = "{{.ActorName}} creó {{.ExperienceName}}"
+[notif.offapp.experience_created.cta]
+other = "Confirma en"
+
+[notif.offapp.experience_rsvp_yes.message]
+other = "{{.ActorName}} asistirá a {{.ExperienceName}}"
+[notif.offapp.experience_rsvp_yes.cta]
+other = "Gestiona las confirmaciones en"
+
+[notif.offapp.experience_rsvp_maybe.message]
+other = "{{.ActorName}} quizás asista a {{.ExperienceName}}"
+[notif.offapp.experience_rsvp_maybe.cta]
+other = "Gestiona las confirmaciones en"
+
+[notif.offapp.experience_cancelled.message]
+other = "Se canceló {{.ExperienceName}}"
+[notif.offapp.experience_cancelled.cta]
+other = "Ver en"
+
+[notif.offapp.request_created.message]
+other = "{{.ActorName}} hizo una nueva solicitud: {{.RequestTitle}}"
+[notif.offapp.request_created.cta]
+other = "Ofrece ayuda en"
+
+[notif.offapp.request_offer_made.message]
+other = "{{.ActorName}} se ofreció a ayudar con {{.RequestTitle}}"
+[notif.offapp.request_offer_made.cta]
+other = "Ve la oferta en"
+
+[notif.offapp.gear_shared_giveaway.message]
+other = "{{.ActorName}} está regalando {{.GearName}}"
+[notif.offapp.gear_shared_giveaway.cta]
+other = "Reclámalo en"
+
+[notif.offapp.gear_shared_loan.message]
+other = "{{.ActorName}} está prestando {{.GearName}}"
+[notif.offapp.gear_shared_loan.cta]
+other = "Pídelo prestado en"
+
+[notif.offapp.transfer_interest_expressed.message]
+other = "{{.ActorName}} quiere pedir prestado tu {{.GearName}}"
+[notif.offapp.transfer_interest_expressed.cta]
+other = "Responde en"
+
+[notif.offapp.invitation_link_used.message]
+other = "{{.ActorFirstName}} se unió a {{.CommunityName}}"
+[notif.offapp.invitation_link_used.cta]
+other = "Saluda en"
+
+[notif.offapp.experience_rsvp_no.message]
+other = "{{.ActorName}} no podrá ir a {{.ExperienceName}}"
+[notif.offapp.experience_rsvp_no.cta]
+other = "Gestiona las confirmaciones en"
+
+[notif.offapp.experience_started.message]
+other = "{{.ExperienceName}} está comenzando ahora"
+[notif.offapp.experience_started.cta]
+other = "Ver en"
+
+[notif.offapp.transfer_pickup_proposed.message]
+other = "{{.ActorName}} propuso una hora para recoger {{.GearName}}"
+[notif.offapp.transfer_pickup_proposed.cta]
+other = "Confirma en"
+
+[notif.offapp.planning_need_added.message]
+other = "{{.ActorName}} necesita {{.PlanningItemName}} para {{.ExperienceName}}"
+[notif.offapp.planning_need_added.cta]
+other = "Colabora en"
+
+[notif.offapp.planning_need_claimed.message]
+other = "{{.ActorName}} se ofreció a llevar {{.PlanningItemName}} a {{.ExperienceName}}"
+[notif.offapp.planning_need_claimed.cta]
+other = "Ver en"
+
+[notif.offapp.planning_contribution_added.message]
+other = "{{.ActorName}} se ofreció a llevar {{.PlanningItemName}} a {{.ExperienceName}}"
+[notif.offapp.planning_contribution_added.cta]
+other = "Ver en"
+
+[notif.offapp.transfer_recipient_selected.message]
+other = "{{.ActorName}} te eligió para recibir {{.GearName}}"
+[notif.offapp.transfer_recipient_selected.cta]
+other = "Coordina la entrega en"
+
+[notif.offapp.transfer_interest_withdrawn.message]
+other = "{{.ActorName}} ya no quiere pedir prestado tu {{.GearName}}"
+[notif.offapp.transfer_interest_withdrawn.cta]
+other = "Ver en"
+
+[notif.offapp.request_cancelled.message]
+other = "{{.ActorName}} canceló su solicitud: {{.RequestTitle}}"
+[notif.offapp.request_cancelled.cta]
+other = "Ver en"
+
+[notif.offapp.request_offer_withdrawn.message]
+other = "{{.ActorName}} retiró su oferta en {{.RequestTitle}}"
+[notif.offapp.request_offer_withdrawn.cta]
+other = "Ver en"
+
+[notif.offapp.experience_completed.message]
+other = "{{.ExperienceName}} ya terminó"
+[notif.offapp.experience_completed.cta]
+other = "Ver en"
+
+[notif.offapp.community_deleted.message]
+other = "{{.ActorFirstName}} eliminó {{.CommunityName}} — tienes 30 días para restaurarla"
+[notif.offapp.community_deleted.cta]
+other = "Restáurala en"
+
+[notif.offapp.community_restored.message]
+other = "{{.ActorFirstName}} restauró {{.CommunityName}} y es el nuevo propietario"
+[notif.offapp.community_restored.cta]
+other = "Ver en"
+
+[notif.offapp.ownership_transferred.message]
+other = "{{.ActorFirstName}} te transfirió la propiedad de {{.CommunityName}}"
+[notif.offapp.ownership_transferred.cta]
+other = "Ver en"
+
+[notif.offapp.experience_updated_time.message]
+other = "{{.ExperienceName}} tiene nueva hora"
+[notif.offapp.experience_updated_time.cta]
+other = "Ve los detalles en"
+
+[notif.offapp.experience_updated_location.message]
+other = "{{.ExperienceName}} tiene nuevo lugar"
+[notif.offapp.experience_updated_location.cta]
+other = "Ve los detalles en"
+
+[notif.offapp.experience_updated_both.message]
+other = "{{.ExperienceName}} tiene nueva hora y lugar"
+[notif.offapp.experience_updated_both.cta]
+other = "Ve los detalles en"
+
+[notif.offapp.experience_updated_other.message]
+other = "{{.ExperienceName}} se actualizó"
+[notif.offapp.experience_updated_other.cta]
+other = "Ve los detalles en"
+
+# --- Notificaciones generadas por el sistema (recordatorios, avisos) ---
+
+[notif.community_event.experience_reminder_day_before.title]
+other = "Evento mañana"
+[notif.offapp.experience_reminder_day_before.message]
+other = "{{.ExperienceName}} es mañana"
+[notif.offapp.experience_reminder_day_before.cta]
+other = "Ve los detalles en"
+
+[notif.community_event.experience_reminder_two_hour.title]
+other = "El evento empieza pronto"
+[notif.offapp.experience_reminder_two_hour.message]
+other = "{{.ExperienceName}} empieza en 2 horas"
+[notif.offapp.experience_reminder_two_hour.cta]
+other = "Ve los detalles en"
+
+[notif.community_event.experience_reminder_starting.title]
+other = "El evento empieza ahora"
+[notif.offapp.experience_reminder_starting.message]
+other = "{{.ExperienceName}} está empezando"
+[notif.offapp.experience_reminder_starting.cta]
+other = "Ve los detalles en"
+
+[notif.community_event.experience_reminder.title]
+other = "Próximo evento"
+[notif.offapp.experience_reminder.message]
+other = "{{.ExperienceName}} se acerca"
+[notif.offapp.experience_reminder.cta]
+other = "Ve los detalles en"
+
+[notif.community_event.experience_close_prompt.title]
+other = "Cierra tu evento"
+[notif.offapp.experience_close_prompt.message]
+other = "Marca {{.ExperienceName}} como completado cuando termines"
+[notif.offapp.experience_close_prompt.cta]
+other = "Ciérralo en"
+
+[notif.community_event.loan_return_reminder_upcoming.title]
+other = "Devolución mañana"
+[notif.offapp.loan_return_reminder_upcoming.message]
+other = "Devuelve {{.GearName}} a {{.ActorName}} mañana"
+[notif.offapp.loan_return_reminder_upcoming.cta]
+other = "Ve el préstamo en"
+
+[notif.community_event.loan_return_reminder_due.title]
+other = "Devolución hoy"
+[notif.offapp.loan_return_reminder_due.message]
+other = "{{.GearName}} se debe devolver hoy"
+[notif.offapp.loan_return_reminder_due.cta]
+other = "Ve el préstamo en"
+
+[notif.community_event.loan_return_reminder_overdue.title]
+other = "Atrasado"
+[notif.offapp.loan_return_reminder_overdue.message]
+other = "{{.GearName}} está atrasado — devuélvelo a {{.ActorName}}"
+[notif.offapp.loan_return_reminder_overdue.cta]
+other = "Ve el préstamo en"
+
+[notif.community_event.loan_return_reminder.title]
+other = "Recordatorio de préstamo"
+[notif.offapp.loan_return_reminder.message]
+other = "{{.GearName}} se debe devolver a {{.ActorName}}"
+[notif.offapp.loan_return_reminder.cta]
+other = "Ve el préstamo en"
+
+[notif.community_event.request_followup_prompt.title]
+other = "¿Todavía lo necesitas?"
+[notif.offapp.request_followup_prompt.message]
+other = "Pediste {{.RequestTitle}} — ¿tu comunidad respondió?"
+[notif.offapp.request_followup_prompt.cta]
+other = "Ciérrala en"
+
+[notif.community_event.experience_needs_nudge.title]
+other = "¿Quién lleva qué?"
+[notif.offapp.experience_needs_nudge.message]
+other = "{{.ExperienceName}} todavía necesita algunas cosas"
+[notif.offapp.experience_needs_nudge.cta]
+other = "Reclama una en"
+
+[notif.community_event.request_needs_nudge.title]
+other = "¿Puedes ayudar?"
+[notif.offapp.request_needs_nudge.message]
+other = "{{.RequestTitle}} todavía necesita una mano"
+[notif.offapp.request_needs_nudge.cta]
+other = "Reclama algo en"
+
+[notif.community_event.experience_time_nudge.title]
+other = "¿Cuándo nos vemos?"
+[notif.offapp.experience_time_nudge.message]
+other = "Elige una hora que te sirva para {{.ExperienceName}}"
+[notif.offapp.experience_time_nudge.cta]
+other = "Vota en"
+
+[notif.community_event.experience_location_nudge.title]
+other = "¿Dónde nos vemos?"
+[notif.offapp.experience_location_nudge.message]
+other = "Elige un lugar para {{.ExperienceName}}"
+[notif.offapp.experience_location_nudge.cta]
+other = "Vota en"
+
+[notif.offapp.default.message]
+other = "{{.ActorName}} publicó una novedad en {{.CommunityName}}"
+[notif.offapp.default_actor.message]
+other = "{{.ActorName}} publicó una novedad"
+[notif.offapp.default_community.message]
+other = "Hay una novedad en {{.CommunityName}}"
+[notif.offapp.default_bare.message]
+other = "Tienes una novedad en Ripls"
+[notif.offapp.default.cta]
+other = "Ver en"
+
+[notif.standin.actor]
+other = "Alguien"
+[notif.standin.experience]
+other = "un evento"
+[notif.standin.gear]
+other = "un artículo"
+[notif.standin.request]
+other = "una solicitud"
+[notif.standin.community]
+other = "tu comunidad"
+[notif.standin.planning_item]
+other = "algo"
+
+# --- Merged copy: kinds whose sentence previously existed only as a push body ---
+[notif.offapp.transfer_active_loan.message]
+other = "Tu préstamo de {{.GearName}} ya está activo"
+[notif.offapp.transfer_active_loan.cta]
+other = "Ve el préstamo en"
+[notif.offapp.transfer_active_giveaway.message]
+other = "{{.GearName}} va camino a su nuevo dueño"
+[notif.offapp.transfer_active_giveaway.cta]
+other = "Ver en"
+[notif.offapp.transfer_cancelled_loan.message]
+other = "{{.ActorName}} canceló el préstamo de {{.GearName}}"
+[notif.offapp.transfer_cancelled_loan.cta]
+other = "Ver en"
+[notif.offapp.transfer_cancelled_giveaway.message]
+other = "{{.ActorName}} canceló el regalo de {{.GearName}}"
+[notif.offapp.transfer_cancelled_giveaway.cta]
+other = "Ver en"
+[notif.offapp.transfer_cancelled_covered.message]
+other = "La petición de {{.ActorFirstName}} ya no necesita {{.GearName}} — gracias por ofrecer"
+[notif.offapp.transfer_cancelled_covered.cta]
+other = "Ver en"
+[notif.offapp.request_offer_selected.message]
+other = "{{.ActorName}} eligió tu oferta para {{.RequestTitle}}"
+[notif.offapp.request_offer_selected.cta]
+other = "Ver en"
+[notif.offapp.request_fulfilled.message]
+other = "{{.RequestTitle}} se marcó como cumplida"
+[notif.offapp.request_fulfilled.cta]
+other = "Ver en"
+[notif.community_event.experience_started.title]
+other = "El evento empieza ahora"
+[notif.community_event.experience_cancelled.title]
+other = "Evento cancelado"
+[notif.community_event.experience_updated_time.title]
+other = "Evento actualizado"
+[notif.community_event.experience_updated_location.title]
+other = "Evento actualizado"
+[notif.community_event.experience_updated_both.title]
+other = "Evento actualizado"
+[notif.community_event.experience_updated_other.title]
+other = "Evento actualizado"
+[notif.offapp.community_deleted_fallback.message]
+other = "Una comunidad de la que eras miembro fue eliminada — tienes 30 días para restaurarla"
+[notif.offapp.community_deleted_fallback.cta]
+other = "Restáurala en"

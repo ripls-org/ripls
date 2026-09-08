@@ -1,0 +1,19 @@
+{{.Title}}
+{{if .Summary}}{{with .Summary.Name}}
+{{.}}{{end}}{{with .Summary.OwnerLine}}
+{{.}}{{end}}{{with .Summary.Date}}
+{{.}}{{end}}{{with .Summary.Going}}
+{{.}}{{end}}{{with .Summary.Description}}
+
+{{.}}{{end}}
+{{else}}
+{{.Body}}
+{{end}}{{if .ActionURL}}
+{{if .CTALabel}}{{.CTALabel}}{{else}}Abrir Ripls{{end}}: {{.ActionURL}}
+{{end}}
+--
+{{if .ColdInvite}}Recibes esto porque un usuario de Ripls te invitó a unirte.{{else}}Recibes esto por correo porque no tienes la app de Ripls activa ni un teléfono.{{end}}
+{{if or .PlayStoreURL .AppStoreURL}}Descarga la app{{if .PlayStoreURL}} en Google Play ({{.PlayStoreURL}}){{end}}{{if and .PlayStoreURL .AppStoreURL}} o{{end}}{{if .AppStoreURL}} la App Store ({{.AppStoreURL}}){{end}}.
+{{end}}
+{{if .UnsubscribeURL}}Cancela la suscripción a estas notificaciones por correo: {{.UnsubscribeURL}}
+{{end}}{{if .PostalAddress}}{{.PostalAddress}}{{end}}

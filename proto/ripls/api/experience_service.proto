@@ -1,0 +1,1100 @@
+// RPC service for managing experiences (community events and activities).
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+import "ripls/api/experience.proto";
+import "ripls/api/location.proto";
+import "ripls/api/impact_estimate.proto";
+import "ripls/api/time.proto";
+import "ripls/api/value.proto";
+import "ripls/api/common.proto";
+import "ripls/api/social.proto";
+import "ripls/api/gen_stream.proto";
+import "ripls/api/portfolio.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// AI-generated metadata for an experience.
+message ExperienceMetadata {
+  // Estimated commercial value of participating in this experience.
+  ValueEstimate value_estimate = 1;
+
+  // AI-detected category (e.g., "Fitness", "Cooking", "Art & Craft").
+  string category = 2;
+}
+
+// RSVPIntention represents a user's intention before the experience.
+enum RSVPIntention {
+  RSVP_INTENTION_UNSPECIFIED = 0;
+  RSVP_INTENTION_YES = 1; // Planning to attend
+  RSVP_INTENTION_MAYBE = 2; // Interested/tentative
+  RSVP_INTENTION_NO = 3; // Not attending
+}
+
+// AttendedStatus represents actual attendance after the experience.
+enum AttendedStatus {
+  ATTENDED_STATUS_UNSPECIFIED = 0;
+  ATTENDED_STATUS_UNKNOWN = 1; // Not yet recorded
+  ATTENDED_STATUS_YES = 2; // Attended
+  ATTENDED_STATUS_NO = 3; // Did not attend
+}
+
+// RSVP represents a user's response to an experience.
+message RSVP {
+  User user = 1;
+  RSVPIntention intention = 2; // User's stated intention
+  AttendedStatus attended = 3; // Actual attendance (recorded after event)
+  int64 rsvped_at_unix_sec = 4; // When they RSVPed
+  int64 last_updated_unix_sec = 5; // When they last changed their RSVP
+}
+
+// Request to generate experience details using AI (similar to GenGearFromMedia).
+// This is typically used during creation flow before SaveExperience.
+message GenExperienceRequest {
+  // The prompt used to generate the experience.
+  oneof prompt {
+    string text = 1; // Natural language description of the experience
+    string media_id = 2; // Photo/flyer media ID for AI extraction
+    string website_url = 3; // Event webpage URL for AI extraction
+  }
+
+  // Context fields (optional, used with any prompt type)
+  string location_id = 4; // User's primary location for context
+  double latitude_deg = 5; // GPS latitude for geocoding proximity
+  double longitude_deg = 6; // GPS longitude for geocoding proximity
+  int64 current_time_unix_sec = 7; // Current time in Unix seconds since epoch (for relative date parsing)
+  string timezone = 8; // User's IANA timezone (e.g., "America/Denver"). When empty, server defaults to UTC.
+}
+
+// Response containing AI-generated experience details.
+// The client typically displays these in a preview modal for user review/editing.
+message GenExperienceResponse {
+  string name = 1; // AI-generated experience name
+  string description = 2; // AI-generated experience description
+  repeated string media_ids = 3; // Media IDs (echoed from request or generated)
+  string location_id = 4; // Suggested location ID (from context or GPS)
+  ExperienceTime suggested_time = 5; // AI-suggested time (may be TBD if not extractable)
+  repeated string tags = 6; // AI-generated tags for categorization (future use)
+  TimeConfidence time_confidence = 7; // How confident the AI was about the time extraction
+  int64 extracted_time_unix_sec = 8; // Extracted date/time in Unix seconds since epoch (0 if not extracted)
+  string location_query = 10; // AI-extracted location string (empty if not mentioned)
+  GeocodedLocation geocoded_location = 11; // Geocoded result from location_query (nil if geocoding failed)
+  string source_url = 12; // Source URL (echoed from website_url input for storage)
+
+  // AI-generated metadata (value estimate, embodied carbon, category).
+  ExperienceMetadata metadata = 13;
+
+  // Names extracted from the prompt (e.g., "hike with Mike and Bhavna" → ["Mike", "Bhavna"]).
+  // Clients use these to suggest community members to tag as participants.
+  repeated string mentioned_names = 14;
+}
+
+// Request to save (insert or update) an experience (similar to SaveGearRequest).
+// If id is omitted, a new experience is created.
+// If id is provided, the existing experience is updated.
+message SaveExperienceRequest {
+  optional string id = 1; // Omit for new experience
+  string name = 2;
+  string description = 3;
+  optional string source_url = 4;
+  repeated string media_ids = 5;
+  string location_id = 6;
+  optional ExperienceTime time = 7; // Optional: defaults to TBD if omitted
+  int32 max_participants = 8;
+
+  // AI-generated metadata from Gen response (value estimate, embodied carbon, category).
+  ExperienceMetadata metadata = 9;
+
+  // Owner-overridable social context used to compute Quality Time attributes.
+  // When set, these values override LLM-inferred and config defaults.
+  optional SocialContext social_context = 10;
+}
+
+message SaveExperienceResponse {
+  Experience experience = 1; // The created or updated experience
+
+  // The event's per-item community (#2492), provisioned host-only the moment the
+  // event is first created and the event shared into it. The client opens the
+  // share/invite sheet against this community. Set on insert; empty on update.
+  optional string item_community_id = 2;
+}
+
+message RSVPToExperienceRequest {
+  string experience_id = 1;
+  string community_id = 2; // Community where user is RSVPing (required for multi-community experiences)
+  RSVPIntention intention = 3; // User's intention (YES, MAYBE, NO)
+}
+
+message RSVPToExperienceResponse {
+  Experience experience = 1; // The updated experience after RSVP
+}
+
+// SetExperienceMemberRSVPRequest — the host sets an invitee's RSVP on their
+// behalf from the Who's In roster. Owner-only.
+message SetExperienceMemberRSVPRequest {
+  string experience_id = 1;
+  string member_user_id = 2; // The invitee whose RSVP the host is setting.
+  RSVPIntention intention = 3; // YES, MAYBE, or NO.
+}
+
+message SetExperienceMemberRSVPResponse {}
+
+// RemoveExperienceMemberRequest — the host uninvites a directly-invited
+// individual: removes them from the event's ad-hoc community and clears their
+// RSVP. Owner-only.
+message RemoveExperienceMemberRequest {
+  string experience_id = 1;
+  string member_user_id = 2; // The invitee to remove.
+}
+
+message RemoveExperienceMemberResponse {}
+
+message AttendanceRecord {
+  string user_id = 1;
+  AttendedStatus attended = 2; // ATTENDED_STATUS_YES/NO/UNKNOWN
+  // Provisional user ID for recording attendance of non-registered participants.
+  // Exactly one of user_id and provisional_user_id should be set.
+  optional string provisional_user_id = 3;
+}
+
+message RecordAttendanceRequest {
+  string experience_id = 1;
+  string community_id = 2;
+  repeated AttendanceRecord attendance = 3; // List of user_id + attended status
+}
+
+message RecordAttendanceResponse {}
+
+message MarkExperienceInProcessRequest {
+  string experience_id = 1;
+}
+
+message MarkExperienceInProcessResponse {
+  Experience experience = 1; // The updated experience
+}
+
+message CompleteExperienceRequest {
+  string experience_id = 1;
+  // Optional summary of how the experience went (owner-written, AI-generated).
+  // If provided, it will be stored and posted to the conversation.
+  optional string summary = 2;
+  // Confirmed attendees from the completion modal (registered users only;
+  // provisional attendees contribute to group size via
+  // confirmed_attendee_count instead). When provided, the completion impact
+  // uses the same group-size derivation as PreviewExperienceImpact so the
+  // committed numbers match the previewed ones.
+  repeated string confirmed_attendee_ids = 6;
+  // Total confirmed attendee count including provisional users. When > 0,
+  // this overrides len(confirmed_attendee_ids) for group-size computation.
+  int32 confirmed_attendee_count = 7;
+  // User-supplied quality time attribute overrides from the completion modal.
+  // When present, these replace the LLM-drafted values for the named attributes.
+  // Composite values (quality_time_minutes) are always server-computed from these inputs.
+  optional QualityTimeAttributes quality_time_overrides = 3;
+  // User-supplied money savings input overrides from the completion modal.
+  optional MoneySavings money_savings_overrides = 4;
+  // User-supplied emissions input overrides from the completion modal.
+  optional PreventedEmissions emissions_overrides = 5;
+}
+
+message CompleteExperienceResponse {
+  Experience experience = 1; // The updated experience
+  // Impact estimate for this transaction.
+  ImpactEstimate impact = 2;
+
+  // Identifier to pass to UndoCompleteExperience to reverse this call.
+  string community_event_id = 3;
+}
+
+// Request to undo a prior CompleteExperience call.
+message UndoCompleteExperienceRequest {
+  // The CommunityEvent id returned by CompleteExperience. Required.
+  string community_event_id = 1;
+}
+
+// Response to UndoCompleteExperience. Empty on success. Failures are
+// returned as typed Connect error details (UndoErrorDetail).
+message UndoCompleteExperienceResponse {}
+
+message CancelExperienceRequest {
+  string experience_id = 1;
+}
+
+message CancelExperienceResponse {
+  Experience experience = 1; // The updated experience
+}
+
+message GetExperienceRequest {
+  string id = 1;
+  // Optional: Community context for getting community-specific conversation_id.
+  // If not provided, returns the first community's conversation_id.
+  string community_id = 2;
+}
+
+message GetExperienceResponse {
+  Experience experience = 1; // The experience details
+  repeated RSVP rsvps = 2; // RSVPs for this experience (API-level aggregation)
+
+  // AI-generated metadata (value estimate, embodied carbon, category).
+  ExperienceMetadata metadata = 3;
+
+  // Communities this experience is shared with that the caller is an active
+  // member of. Used for the community-switcher dropdown and the access ring.
+  // Owners always receive the full list. Non-owner callers receive only the
+  // communities they belong to; use total_shared_community_count to learn
+  // the item's full reach without leaking names or avatars of communities
+  // the caller is not in.
+  repeated SharedCommunity shared_communities = 4;
+
+  // Total number of distinct users across all communities this experience is
+  // shared with. Accounts for users who belong to more than one of those
+  // communities. Covers the full sharing scope regardless of which
+  // communities appear in shared_communities.
+  int32 total_distinct_member_count = 5;
+
+  // Total number of communities this experience is shared with, regardless of
+  // whether the caller is a member of each community. Use this alongside
+  // shared_communities (the caller-scoped subset) to compute how many
+  // additional communities exist beyond those visible to the caller.
+  int32 total_shared_community_count = 6;
+
+  // People who can see this experience but have not responded yet (no RSVP),
+  // excluding the host — the "still no reply" list. Scoped to communities the
+  // caller belongs to, so it never reveals members of communities the caller
+  // is not in. Capped; the full audience size is total_distinct_member_count.
+  repeated User invited_no_reply = 7;
+
+  // Weather for the event's day at its location, when the event has a scheduled
+  // time and coordinates. Best-effort; unset when unavailable. See
+  // docs/weather.md.
+  optional DayForecast forecast = 8;
+
+  // Per shared community (caller-visible only — keyed by the same community_ids
+  // as shared_communities), the number of that community's members who have NOT
+  // responded (no RSVP), excluding the host. The pitching-in roster renders each
+  // community with this "N haven't responded" count and lists the responders
+  // individually instead of exploding every member (#2492).
+  map<string, int32> community_no_reply_counts = 9;
+
+  // Directly-invited individuals who haven't responded yet: members of the
+  // event's own ad-hoc origin community (the people the host invited one by
+  // one), excluding the host and anyone who already RSVP'd. The Who's In roster
+  // renders these as individuals in an "Invited" group — unlike named
+  // communities, which stay collapsed to a no-reply count. Capped. (#2492)
+  repeated User invited_individuals = 10;
+}
+
+// GetExperienceDayWeather fetches the hour-by-hour forecast at the experience's
+// location for a single local day — the "When" screen's weather strip, shown for
+// the event day and for any other day the viewer taps to explore.
+message GetExperienceDayWeatherRequest {
+  // The experience whose location anchors the forecast.
+  string experience_id = 1;
+  // Local midnight (Unix seconds) of the day to forecast, as the client derived
+  // it from the calendar. The hours returned cover that local day.
+  int64 date_unix_sec = 2;
+}
+
+// GetExperienceCalendarWeather fetches the daily forecast across the "When"
+// calendar window — all at the experience's own location, so the month grid
+// paints weather for where the event is (not the viewer's home).
+message GetExperienceCalendarWeatherRequest {
+  // The experience whose location anchors the forecast.
+  string experience_id = 1;
+}
+
+message GetExperienceCalendarWeatherResponse {
+  // One entry per local day in the calendar window (today forward, extended to
+  // cover the event), earliest first. Empty when the event has no coordinates
+  // or weather is unavailable.
+  repeated DayForecast days = 1;
+}
+
+message GetExperienceDayWeatherResponse {
+  // One entry per real-forecast hour of the requested day, earliest first.
+  // Empty when the day is beyond the ~16-day hourly horizon, the event has no
+  // coordinates, or weather is unavailable.
+  repeated HourForecast hours = 1;
+
+  // The day's coarse daily forecast — the fallback the client shows when there
+  // are no hourly entries (e.g. a day beyond the hourly horizon). Unlike hourly,
+  // the daily path fills beyond the horizon from climate normals (is_typical),
+  // so this is usually present whenever the day is today-or-future. Unset when
+  // the event has no coordinates or the day is in the past.
+  optional DayForecast day_forecast = 2;
+}
+
+message ListExperiencesRequest {
+  string community_id = 1; // Filter by community
+  ExperienceState state = 2; // Optional state filter
+}
+
+message ListExperiencesResponse {
+  repeated Experience experiences = 1;
+}
+
+message ListMyExperiencesRequest {}
+
+message ListMyExperiencesResponse {
+  repeated Experience experiences = 1;
+}
+
+message DeleteExperienceRequest {
+  string experience_id = 1;
+}
+
+message DeleteExperienceResponse {}
+
+// Request to generate an AI completion summary for an experience.
+// The AI analyzes the experience details and conversation to create a summary.
+message GenerateCompletionSummaryRequest {
+  string experience_id = 1; // Experience to generate summary for
+  string community_id = 2; // Community context for conversation lookup
+}
+
+// Response containing the generated completion summary.
+message GenerateCompletionSummaryResponse {
+  string summary = 1; // AI-generated summary of how the experience went
+}
+
+// Request to get people associated with an experience.
+message GetExperiencePeopleRequest {
+    // The unique identifier of the experience.
+    string experience_id = 1;
+
+    // Optional: Community context for filtering community-specific attendees.
+    // If not provided, returns people across all communities.
+    string community_id = 2;
+}
+
+// Response containing people associated with an experience.
+message GetExperiencePeopleResponse {
+    // The host of the experience.
+    User host = 1;
+
+    // Users who have RSVP'd for upcoming sessions.
+    repeated User upcoming_rsvps = 2;
+
+    // Users who attended past sessions.
+    repeated User past_attendees = 3;
+
+    // Total count of unique people associated with this experience.
+    int32 total_count = 4;
+}
+
+// Request to get statistics for an experience.
+message GetExperienceStatsRequest {
+    // The unique identifier of the experience.
+    string experience_id = 1;
+
+    // Optional: Community context for community-specific stats.
+    // If not provided, returns aggregate stats across all communities.
+    string community_id = 2;
+}
+
+// Response containing statistics for an experience.
+message GetExperienceStatsResponse {
+    // Number of sessions held.
+    int32 sessions_held = 1;
+
+    // Total number of attendees across all sessions.
+    int32 total_attendees = 2;
+
+    // Total value created (experience value × total attendees) in USD.
+    float value_created_usd = 3;
+
+    // Number of upcoming RSVPs.
+    int32 upcoming_rsvps = 4;
+
+    // Aggregate impact estimate (cost, carbon, time).
+    ImpactEstimate impact = 5;
+
+    // Potential impact estimate for the first session (when sessions_held == 0).
+    // Shows what one session would create. Only populated when no transactions exist yet.
+    ImpactEstimate potential_impact = 6;
+}
+
+// Request to convert informal time description to structured ExperienceTime.
+// Used by the calendar-chips time picker modal for real-time parsing.
+message ConvertInformalTimeRequest {
+  string informal_description = 1; // Natural language time (e.g., "tomorrow afternoon", "next Friday")
+  int64 current_time_unix_sec = 2; // Current time for relative date parsing
+  string timezone = 3; // User's timezone (IANA format, e.g., "America/Los_Angeles")
+}
+
+// Response containing parsed ExperienceTime.
+message ConvertInformalTimeResponse {
+  ExperienceTime time = 1; // Parsed time with specific/range/TBD
+  TimeConfidence confidence = 2; // LLM's confidence in the extraction
+  string error_message = 3; // Error message if parsing failed (empty if successful)
+}
+
+// Request to propose a new time slot for an experience.
+message ProposeTimeRequest {
+  string experience_id = 1;
+  ExperienceTime time = 2;
+}
+
+// Response containing the created time proposal.
+message ProposeTimeResponse {
+  TimeProposal proposal = 1;
+}
+
+// Request to vote on a time proposal.
+message VoteOnTimeRequest {
+  string proposal_id = 1;
+  TimeVoteStatus status = 2;
+}
+
+// Response for vote on time (empty, vote is recorded).
+message VoteOnTimeResponse {}
+
+// Request to confirm a time proposal as the final time.
+message ConfirmTimeRequest {
+  string experience_id = 1;
+  string proposal_id = 2; // Which proposal to confirm
+}
+
+// Response for confirm time (empty, time is confirmed).
+message ConfirmTimeResponse {}
+
+// Request to unlock a previously confirmed time.
+message UnlockTimeRequest {
+  string experience_id = 1;
+}
+
+// Response for unlock time (empty, time is unlocked).
+message UnlockTimeResponse {}
+
+// Request to cancel a time poll (owner only).
+// Deletes all proposals and clears time_poll_active on the experience.
+message CancelTimePollRequest {
+  string experience_id = 1;
+}
+
+// Response for cancel time poll (empty, poll is cancelled).
+message CancelTimePollResponse {}
+
+// Request to propose a new location for an experience.
+message ProposeLocationRequest {
+  string experience_id = 1;
+  ProposedLocation location = 2;
+}
+
+// Response containing the created location proposal.
+message ProposeLocationResponse {
+  LocationProposal proposal = 1;
+}
+
+// Request to vote on a location proposal.
+message VoteOnLocationRequest {
+  string proposal_id = 1;
+  LocationVoteStatus status = 2;
+}
+
+// Response for vote on location (empty, vote is recorded).
+message VoteOnLocationResponse {}
+
+// Request to confirm a location proposal as the final location.
+message ConfirmLocationRequest {
+  string experience_id = 1;
+  string proposal_id = 2;
+}
+
+// Response for confirm location. Carries the resolved location_id so
+// clients can patch their local state without refetching the experience —
+// important when the winning proposal carried an inline geocoded location
+// that the server only materialized into a stored Location during confirm.
+message ConfirmLocationResponse {
+  string location_id = 1;
+}
+
+// Request to unlock a previously confirmed location.
+message UnlockLocationRequest {
+  string experience_id = 1;
+}
+
+// Response for unlock location (empty, location is unlocked).
+message UnlockLocationResponse {}
+
+// Request to cancel a location poll (owner only).
+// Clears location_poll_active on the experience while preserving proposals
+// and votes so the read-only results view stays usable.
+message CancelLocationPollRequest {
+  string experience_id = 1;
+}
+
+// Response for cancel location poll (empty, poll is cancelled).
+message CancelLocationPollResponse {}
+
+// Request to delete a proposal from a location poll. Owner can delete any
+// proposal; participants can delete only their own. Votes associated with
+// the proposal are deleted alongside it.
+message DeleteLocationProposalRequest {
+  string experience_id = 1;
+  string proposal_id = 2;
+}
+
+// Response for delete location proposal (empty, proposal is removed).
+message DeleteLocationProposalResponse {}
+
+// Request to set the reply-by deadline for the active location poll.
+// Informational only — server does not auto-close the poll. Owner only.
+// deadline_unix_sec is 0 to clear an existing deadline.
+message SetLocationPollDeadlineRequest {
+  string experience_id = 1;
+  int64 deadline_unix_sec = 2;
+}
+
+// Response for set location-poll deadline (empty, deadline is recorded).
+message SetLocationPollDeadlineResponse {}
+
+// Request to freeze the list of proposals on the active location poll.
+// When locked=true, ProposeLocation returns FailedPrecondition for the poll;
+// when locked=false the list is reopened to new proposals. Owner only.
+message LockLocationProposalsRequest {
+  string experience_id = 1;
+  bool locked = 2;
+}
+
+// Response for lock location proposals (empty, lock state is recorded).
+message LockLocationProposalsResponse {}
+
+// Request to nudge participants who have not voted on the active location
+// poll. Owner only. Sends a push notification to each Yes/Maybe RSVP who
+// has not cast a vote on any proposal in the current poll.
+message NudgeLocationPollVotersRequest {
+  string experience_id = 1;
+}
+
+// Response carrying the number of participants the nudge was dispatched to.
+message NudgeLocationPollVotersResponse {
+  int32 nudged_count = 1;
+}
+
+// Request to delete a proposal from a time poll. Owner can delete any
+// proposal; participants can delete only their own. Votes associated with
+// the proposal are deleted alongside it.
+message DeleteTimeProposalRequest {
+  string experience_id = 1;
+  string proposal_id = 2;
+}
+
+// Response for delete time proposal (empty, proposal is removed).
+message DeleteTimeProposalResponse {}
+
+// Request to set the reply-by deadline for the active time poll.
+// Informational only — server does not auto-close the poll. Owner only.
+// deadline_unix_sec is 0 to clear an existing deadline.
+message SetTimePollDeadlineRequest {
+  string experience_id = 1;
+  int64 deadline_unix_sec = 2;
+}
+
+// Response for set time-poll deadline (empty, deadline is recorded).
+message SetTimePollDeadlineResponse {}
+
+// Request to freeze the list of proposals on the active time poll.
+// When locked=true, ProposeTime returns FailedPrecondition for the poll;
+// when locked=false the list is reopened to new proposals. Owner only.
+message LockTimeProposalsRequest {
+  string experience_id = 1;
+  bool locked = 2;
+}
+
+// Response for lock time proposals (empty, lock state is recorded).
+message LockTimeProposalsResponse {}
+
+// Request to nudge participants who have not voted on the active time poll.
+// Owner only. Sends a push notification to each Yes/Maybe RSVP who has not
+// cast a vote on any proposal in the current poll.
+message NudgeTimePollVotersRequest {
+  string experience_id = 1;
+}
+
+// Response carrying the number of participants the nudge was dispatched to.
+message NudgeTimePollVotersResponse {
+  int32 nudged_count = 1;
+}
+
+// Request to extract location candidates from a free-form text message.
+// Used by the propose modal's bulk-paste shortcut. Server runs the message
+// through the AI provider to pull candidate names, then geocodes each one.
+message ExtractLocationCandidatesRequest {
+  // Free-form message such as
+  //   "maybe Avery, Chautauqua, or that taco place near Pearl?"
+  string text = 1;
+
+  // Optional GPS bias for the geocoder. When set, geocoder ranks nearby
+  // results higher (otherwise it ranks globally).
+  optional double latitude_deg = 2;
+  optional double longitude_deg = 3;
+}
+
+// Response containing geocoded candidates extracted from the prompt. May
+// be empty when the AI provider finds no usable place names or every
+// candidate fails to geocode.
+message ExtractLocationCandidatesResponse {
+  repeated GeocodedLocation candidates = 1;
+}
+
+// Request to extract multiple time candidates from a free-form text
+// message. Used by the time-poll propose modal's bulk-paste shortcut.
+// Server splits the message on conjunctions and runs each segment
+// through the AI provider's informal-time parser.
+message ExtractTimeCandidatesRequest {
+  // Free-form message such as
+  //   "tonight, tomorrow night, or Monday afternoon"
+  string text = 1;
+
+  // Current time for relative date parsing (e.g. "tomorrow"). When 0 or
+  // unset the server uses its own clock.
+  int64 current_time_unix_sec = 2;
+
+  // User's IANA timezone (e.g. "America/Los_Angeles"). When empty the
+  // server defaults to UTC.
+  string timezone = 3;
+}
+
+// Response containing parsed candidates extracted from the prompt. May
+// be empty when no segment parsed into a usable specific or range
+// time. Each candidate carries its own confidence so the client can
+// surface ambiguity to the user.
+message ExtractTimeCandidatesResponse {
+  repeated ExperienceTime candidates = 1;
+}
+
+// Request to preview impact for an experience before completing it.
+// Computes a real QT estimate using the actual confirmed attendee set without
+// persisting anything. Used by the completion modal for live preview as
+// attendees are toggled.
+message PreviewExperienceImpactRequest {
+  string experience_id = 1;
+  // IDs of confirmed attendees (registered users only; provisional users contribute
+  // to group size via confirmed_attendee_count instead).
+  repeated string confirmed_attendee_ids = 2;
+  // Total confirmed attendee count including provisional users. When > 0, this
+  // overrides len(confirmed_attendee_ids) for group-size computation.
+  int32 confirmed_attendee_count = 3;
+}
+
+// Response containing a real-formula impact estimate for the completion modal.
+message PreviewExperienceImpactResponse {
+  ImpactEstimate impact = 1;
+}
+
+// Request to list all needs and contributions for an experience.
+message ListExperienceNeedsAndContributionsRequest {
+  string experience_id = 1;
+}
+
+// Response containing all needs and contributions for an experience.
+message ListExperienceNeedsAndContributionsResponse {
+  repeated ExperienceNeedResponse needs = 1;
+  repeated ExperienceContributionResponse contributions = 2;
+  // LLM-generated suggestion chip labels for the Plan tab empty state.
+  // Populated from Experience.suggestions; generated on-demand if missing.
+  repeated string suggestions = 3;
+  // Short human-readable category label generated alongside suggestions.
+  optional string category_hint = 4;
+}
+
+// Request to add a need to an experience (any participant).
+message AddExperienceNeedRequest {
+  string experience_id = 1;
+  string name = 2;
+  optional string note = 3;
+  int32 slots = 4; // 1–20; defaults to 1 if omitted.
+}
+
+// Response containing the created need.
+message AddExperienceNeedResponse {
+  ExperienceNeedResponse need = 1;
+}
+
+// Request to remove a need from an experience (proposer only).
+message RemoveExperienceNeedRequest {
+  string need_id = 1;
+  string experience_id = 2;
+}
+
+// Response for remove experience need (empty; action confirmed).
+message RemoveExperienceNeedResponse {}
+
+// Request to update an existing need in place (proposer only). Any field
+// set on the request replaces the current value on the need; fields left
+// unset are preserved. Reducing slots below the current claim count
+// fails with FailedPrecondition — callers must release claims first.
+message UpdateExperienceNeedRequest {
+  string need_id = 1;
+  string experience_id = 2;
+  optional string name = 3;
+  optional string note = 4;
+  optional int32 slots = 5;
+}
+
+// Response containing the updated need.
+message UpdateExperienceNeedResponse {
+  ExperienceNeedResponse need = 1;
+}
+
+// Request to nudge participants who have not claimed any need slot yet.
+// Owner only. Sends a push notification to each Yes/Maybe RSVP who has
+// not created any contribution on the experience.
+message NudgeUncoveredNeedClaimersRequest {
+  string experience_id = 1;
+}
+
+// Response carrying the number of participants the nudge was dispatched to.
+message NudgeUncoveredNeedClaimersResponse {
+  int32 nudged_count = 1;
+}
+
+// Request to claim a slot on a need, creating a contribution (any participant).
+message ClaimExperienceNeedRequest {
+  string need_id = 1;
+  string experience_id = 2;
+  optional string note = 3; // Optional note describing the specific thing they'll bring.
+  // Optional Gear item the contributor is linking to this claim.
+  optional string gear_id = 4;
+}
+
+// Response containing the contribution created by the claim.
+message ClaimExperienceNeedResponse {
+  ExperienceContributionResponse contribution = 1;
+}
+
+// Request to unclaim a previously claimed need slot (contributor only).
+// The associated contribution is removed and the slot is returned.
+message UnclaimExperienceNeedRequest {
+  string contribution_id = 1;
+  string experience_id = 2;
+}
+
+// Response for unclaim (empty; action confirmed).
+message UnclaimExperienceNeedResponse {}
+
+// Request to add a free-form contribution to an experience (any participant).
+message AddExperienceContributionRequest {
+  string experience_id = 1;
+  string title = 2;
+  optional string description = 3;
+  // Optional Gear item the contributor is linking to this contribution.
+  optional string gear_id = 4;
+}
+
+// Response containing the created contribution.
+message AddExperienceContributionResponse {
+  ExperienceContributionResponse contribution = 1;
+}
+
+// Request to edit an existing contribution (contributor only).
+message EditExperienceContributionRequest {
+  string contribution_id = 1;
+  string experience_id = 2;
+  string title = 3;
+  optional string description = 4;
+  // Replacement gear link. Unset clears the existing link.
+  optional string gear_id = 5;
+}
+
+// Response containing the updated contribution.
+message EditExperienceContributionResponse {
+  ExperienceContributionResponse contribution = 1;
+}
+
+// Request to remove a contribution (contributor only).
+message RemoveExperienceContributionRequest {
+  string contribution_id = 1;
+  string experience_id = 2;
+}
+
+// Response for remove contribution (empty; action confirmed).
+message RemoveExperienceContributionResponse {}
+
+// A single need item in a batch add request.
+message BatchNeedItem {
+  string name = 1;
+  optional string note = 2;
+  int32 slots = 3; // 1–20; defaults to 1 if omitted.
+}
+
+// Request to add multiple needs to an experience in one call (any participant).
+message BatchAddExperienceNeedsRequest {
+  string experience_id = 1;
+  repeated BatchNeedItem items = 2;
+}
+
+// Response containing all created needs.
+message BatchAddExperienceNeedsResponse {
+  repeated ExperienceNeedResponse needs = 1;
+}
+
+// A single contribution item in a batch add request.
+message BatchContributionItem {
+  string title = 1;
+  optional string description = 2;
+}
+
+// Request to add multiple free-form contributions to an experience in one call (any participant).
+message BatchAddExperienceContributionsRequest {
+  string experience_id = 1;
+  repeated BatchContributionItem items = 2;
+}
+
+// Response containing all created contributions.
+message BatchAddExperienceContributionsResponse {
+  repeated ExperienceContributionResponse contributions = 1;
+}
+
+// Request to generate experience content with an incremental event stream.
+// Takes the same inputs as GenExperienceRequest.
+message StreamGenExperienceRequest {
+  oneof prompt {
+    string text = 1;
+    string media_id = 2;
+    string website_url = 3;
+  }
+  string location_id = 4;
+  double latitude_deg = 5;
+  double longitude_deg = 6;
+  int64 current_time_unix_sec = 7;
+  string timezone = 8;
+}
+
+// Parsed time extraction emitted mid-stream once date / time / confidence
+// are all available.
+message ExperienceTimeExtraction {
+  // Parsed time. TBD when the AI's confidence is unknown or no date was
+  // extracted.
+  ExperienceTime suggested_time = 1;
+  // Confidence the AI assigned to the time extraction.
+  TimeConfidence confidence = 2;
+  // Parsed time as Unix seconds, or 0 when no time was extracted.
+  int64 extracted_time_unix_sec = 3;
+}
+
+// One event in a StreamGenExperience stream. The stream is terminated by
+// exactly one of `final` or `error`; non-terminal events (`title`,
+// `description`, `geocoded`, `media_ready`, `time`) may arrive in any
+// order and any subset before the terminal event. No ordering between
+// non-terminal events is guaranteed or implied — clients must not depend
+// on one event arriving before another.
+//
+// Variants are listed below in semantic order (identity → location →
+// media → time → terminal); field numbers reflect introduction order and
+// must not be reused.
+message StreamGenExperienceResponse {
+  oneof event {
+    // Title for the experience.
+    string title = 1;
+    // Description for the experience.
+    string description = 6;
+    // Geocoded location for the experience. Absent when no geocodable
+    // location was identified for this experience.
+    GeocodedLocation geocoded = 2;
+    // Media selected for the preview.
+    MediaReady media_ready = 3;
+    // Parsed time / date / confidence for the experience.
+    ExperienceTimeExtraction time = 7;
+    // Terminal: full GenExperienceResponse in the same shape as the unary
+    // RPC. Contains all fields whether or not they were surfaced as
+    // incremental events above; the client reconciles against this.
+    GenExperienceResponse final = 4;
+    // Terminal alternative: sent when a complete response cannot be
+    // produced.
+    GenStreamError error = 5;
+  }
+}
+
+// RPC service for managing experiences.
+service ExperienceService {
+  // Generate experience details using AI (typically before SaveExperience).
+  rpc GenExperience(GenExperienceRequest) returns (GenExperienceResponse);
+
+  // Streaming variant of GenExperience. Same inputs, same final shape; emits
+  // title / geocoded / media_ready events as each resolves, then a terminal
+  // `final` (full response) or `error`.
+  rpc StreamGenExperience(StreamGenExperienceRequest) returns (stream StreamGenExperienceResponse);
+
+  // Save (insert or update) an experience.
+  rpc SaveExperience(SaveExperienceRequest) returns (SaveExperienceResponse);
+
+  // RSVP to an experience (create or update intention).
+  rpc RSVPToExperience(RSVPToExperienceRequest) returns (RSVPToExperienceResponse);
+
+  // Host sets an invitee's RSVP on their behalf, and uninvites an invitee, from
+  // the Who's In roster (#2492). Both owner-only.
+  rpc SetExperienceMemberRSVP(SetExperienceMemberRSVPRequest) returns (SetExperienceMemberRSVPResponse);
+  rpc RemoveExperienceMember(RemoveExperienceMemberRequest) returns (RemoveExperienceMemberResponse);
+
+  // Record attendance after the experience (owner only).
+  rpc RecordAttendance(RecordAttendanceRequest) returns (RecordAttendanceResponse);
+
+  // Mark experience as in process (owner only).
+  rpc MarkExperienceInProcess(MarkExperienceInProcessRequest) returns (MarkExperienceInProcessResponse);
+
+  // Mark experience as completed (owner only).
+  rpc CompleteExperience(CompleteExperienceRequest) returns (CompleteExperienceResponse);
+
+  // Undo a previous CompleteExperience call, returning the experience
+  // to the state it was in beforehand. Fails with FailedPrecondition +
+  // UndoErrorDetail when the action cannot be undone.
+  rpc UndoCompleteExperience(UndoCompleteExperienceRequest) returns (UndoCompleteExperienceResponse);
+
+  // Cancel experience (owner only).
+  rpc CancelExperience(CancelExperienceRequest) returns (CancelExperienceResponse);
+
+  // Get an experience by ID.
+  rpc GetExperience(GetExperienceRequest) returns (GetExperienceResponse);
+
+  // Hour-by-hour forecast at the experience's location for one local day — the
+  // "When" screen weather strip (event day or an explored day).
+  rpc GetExperienceDayWeather(GetExperienceDayWeatherRequest) returns (GetExperienceDayWeatherResponse);
+
+  // Daily forecast across the "When" calendar window at the experience's
+  // location, so the month grid paints weather for the event's place.
+  rpc GetExperienceCalendarWeather(GetExperienceCalendarWeatherRequest) returns (GetExperienceCalendarWeatherResponse);
+
+  // List experiences (with optional filters).
+  rpc ListExperiences(ListExperiencesRequest) returns (ListExperiencesResponse);
+
+  // List the authenticated user's created experiences.
+  rpc ListMyExperiences(ListMyExperiencesRequest) returns (ListMyExperiencesResponse);
+
+  // Delete an experience (owner only).
+  rpc DeleteExperience(DeleteExperienceRequest) returns (DeleteExperienceResponse);
+
+  // Convert informal time description to structured ExperienceTime using LLM.
+  rpc ConvertInformalTime(ConvertInformalTimeRequest) returns (ConvertInformalTimeResponse);
+
+  // Generate an AI completion summary for an experience (owner only).
+  rpc GenerateCompletionSummary(GenerateCompletionSummaryRequest) returns (GenerateCompletionSummaryResponse);
+
+  // Get people associated with an experience (host, RSVPs, attendees).
+  rpc GetExperiencePeople(GetExperiencePeopleRequest) returns (GetExperiencePeopleResponse);
+
+  // Get statistics for an experience (sessions, attendees, value created, upcoming RSVPs).
+  rpc GetExperienceStats(GetExperienceStatsRequest) returns (GetExperienceStatsResponse);
+
+  // Propose a new time slot for an experience.
+  rpc ProposeTime(ProposeTimeRequest) returns (ProposeTimeResponse);
+
+  // Vote on a time proposal (yes/no).
+  rpc VoteOnTime(VoteOnTimeRequest) returns (VoteOnTimeResponse);
+
+  // Confirm a time proposal as the final time (organizer only).
+  rpc ConfirmTime(ConfirmTimeRequest) returns (ConfirmTimeResponse);
+
+  // Unlock a previously confirmed time (organizer only).
+  rpc UnlockTime(UnlockTimeRequest) returns (UnlockTimeResponse);
+
+  // Cancel a time poll, deleting all proposals (organizer only).
+  rpc CancelTimePoll(CancelTimePollRequest) returns (CancelTimePollResponse);
+
+  // Delete a single proposal from a time poll. Owner can delete any
+  // proposal; participants can delete only their own. Associated votes are
+  // removed alongside.
+  rpc DeleteTimeProposal(DeleteTimeProposalRequest) returns (DeleteTimeProposalResponse);
+
+  // Set the reply-by deadline shown to voters on the active time poll
+  // (organizer only). Informational; does not auto-close the poll.
+  rpc SetTimePollDeadline(SetTimePollDeadlineRequest) returns (SetTimePollDeadlineResponse);
+
+  // Lock or unlock the proposal list on the active time poll (organizer
+  // only). When locked, ProposeTime returns FailedPrecondition.
+  rpc LockTimeProposals(LockTimeProposalsRequest) returns (LockTimeProposalsResponse);
+
+  // Send a reminder push to participants who have not yet voted on the
+  // active time poll (organizer only).
+  rpc NudgeTimePollVoters(NudgeTimePollVotersRequest) returns (NudgeTimePollVotersResponse);
+
+  // Propose a new candidate location for an experience.
+  rpc ProposeLocation(ProposeLocationRequest) returns (ProposeLocationResponse);
+
+  // Vote on a location proposal.
+  rpc VoteOnLocation(VoteOnLocationRequest) returns (VoteOnLocationResponse);
+
+  // Confirm a location proposal as the final location (organizer only).
+  rpc ConfirmLocation(ConfirmLocationRequest) returns (ConfirmLocationResponse);
+
+  // Unlock a previously confirmed location (organizer only).
+  rpc UnlockLocation(UnlockLocationRequest) returns (UnlockLocationResponse);
+
+  // Cancel a location poll, preserving proposals and votes (organizer only).
+  rpc CancelLocationPoll(CancelLocationPollRequest) returns (CancelLocationPollResponse);
+
+  // Delete a single proposal from a location poll. Owner can delete any
+  // proposal; participants can delete only their own. Associated votes are
+  // removed alongside.
+  rpc DeleteLocationProposal(DeleteLocationProposalRequest) returns (DeleteLocationProposalResponse);
+
+  // Set the reply-by deadline shown to voters on the active location poll
+  // (organizer only). Informational; does not auto-close the poll.
+  rpc SetLocationPollDeadline(SetLocationPollDeadlineRequest) returns (SetLocationPollDeadlineResponse);
+
+  // Lock or unlock the proposal list on the active location poll (organizer
+  // only). When locked, ProposeLocation returns FailedPrecondition.
+  rpc LockLocationProposals(LockLocationProposalsRequest) returns (LockLocationProposalsResponse);
+
+  // Send a reminder push to participants who have not yet voted on the
+  // active location poll (organizer only).
+  rpc NudgeLocationPollVoters(NudgeLocationPollVotersRequest) returns (NudgeLocationPollVotersResponse);
+
+  // Extract candidate locations from a free-form prompt and geocode each
+  // one. Used by the propose modal's bulk-paste shortcut. Any participant
+  // can call this; the candidates are not persisted.
+  rpc ExtractLocationCandidates(ExtractLocationCandidatesRequest) returns (ExtractLocationCandidatesResponse);
+
+  // Extract candidate times from a free-form prompt. Mirrors
+  // ExtractLocationCandidates: server splits the message on conjunctions
+  // and runs each segment through the AI provider's informal-time
+  // parser. Any participant can call this; the candidates are not
+  // persisted.
+  rpc ExtractTimeCandidates(ExtractTimeCandidatesRequest) returns (ExtractTimeCandidatesResponse);
+
+  // Preview the impact estimate for an experience before completing it.
+  // Computes a real QT estimate using the actual confirmed attendee set without
+  // persisting. Used by the completion modal for live preview.
+  rpc PreviewExperienceImpact(PreviewExperienceImpactRequest) returns (PreviewExperienceImpactResponse);
+
+  // List all needs and contributions for an experience (any participant).
+  rpc ListExperienceNeedsAndContributions(ListExperienceNeedsAndContributionsRequest) returns (ListExperienceNeedsAndContributionsResponse);
+
+  // Add a need to an experience (any participant).
+  rpc AddExperienceNeed(AddExperienceNeedRequest) returns (AddExperienceNeedResponse);
+
+  // Remove a need from an experience (proposer only).
+  rpc RemoveExperienceNeed(RemoveExperienceNeedRequest) returns (RemoveExperienceNeedResponse);
+
+  // Update an existing need in place (proposer only).
+  rpc UpdateExperienceNeed(UpdateExperienceNeedRequest) returns (UpdateExperienceNeedResponse);
+
+  // Send a reminder push to participants who have not yet claimed any
+  // need slot on the experience (organizer only).
+  rpc NudgeUncoveredNeedClaimers(NudgeUncoveredNeedClaimersRequest) returns (NudgeUncoveredNeedClaimersResponse);
+
+  // Claim a need slot, creating a contribution (any participant).
+  rpc ClaimExperienceNeed(ClaimExperienceNeedRequest) returns (ClaimExperienceNeedResponse);
+
+  // Unclaim a previously claimed need slot (contributor only).
+  rpc UnclaimExperienceNeed(UnclaimExperienceNeedRequest) returns (UnclaimExperienceNeedResponse);
+
+  // Add a free-form contribution to an experience (any participant).
+  rpc AddExperienceContribution(AddExperienceContributionRequest) returns (AddExperienceContributionResponse);
+
+  // Edit an existing contribution (contributor only).
+  rpc EditExperienceContribution(EditExperienceContributionRequest) returns (EditExperienceContributionResponse);
+
+  // Remove a contribution (contributor only).
+  rpc RemoveExperienceContribution(RemoveExperienceContributionRequest) returns (RemoveExperienceContributionResponse);
+
+  // Add multiple needs to an experience in one call (any participant).
+  rpc BatchAddExperienceNeeds(BatchAddExperienceNeedsRequest) returns (BatchAddExperienceNeedsResponse);
+
+  // Add multiple free-form contributions to an experience in one call (any participant).
+  rpc BatchAddExperienceContributions(BatchAddExperienceContributionsRequest) returns (BatchAddExperienceContributionsResponse);
+}

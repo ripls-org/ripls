@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ripls Web — not built yet</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 540px;
+           margin: 80px auto; padding: 0 24px; color: #2c2417;
+           line-height: 1.6; }
+    h1 { font-size: 24px; margin-bottom: 16px; }
+    code { background: #f5f0e8; padding: 2px 6px; border-radius: 4px;
+           font-family: ui-monospace, SFMono-Regular, monospace; }
+  </style>
+</head>
+<body>
+  <h1>Ripls Web is not built yet</h1>
+  <p>This server has the <code>/app/*</code> route registered but no
+  Flutter Web bundle has been built and copied into the embed directory
+  yet. Run:</p>
+  <p><code>npm run build:web</code></p>
+  <p>from the project root to build the Flutter Web bundle and populate
+  <code>server/services/web/app_assets/</code>. The next server build
+  will then serve the real app at this URL.</p>
+</body>
+</html>

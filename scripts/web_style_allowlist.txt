@@ -1,0 +1,14 @@
+# scripts/web_style_allowlist.txt — ratchet for check_web_colors.js.
+# Format: <rule_name> <relative_path>. One file/rule pair per line.
+# May shrink but never grow on main. PRs adding entries must remove
+# an equal-or-greater number of entries elsewhere. See #2441 for context.
+no_raw_web_color website/content/account-deletion.html
+no_raw_web_color website/content/beta-1-month.html
+no_raw_web_color website/content/builders/index.html
+no_raw_web_color website/content/css/marketing.css
+no_raw_web_color website/content/css/privacy-policy.css
+no_raw_web_color website/content/css/tokens.css
+no_raw_web_color website/content/green/index.html
+no_raw_web_color website/content/homescreen/index.html
+no_raw_web_color website/content/marketing.html
+no_raw_web_color website/content/social/index.html

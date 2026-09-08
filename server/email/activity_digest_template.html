@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  {{template "head" .}}
+  <body
+    class="r-page r-h"
+    style="
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.5;
+      color: {{.Colors.TextPrimary}};
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      background: {{.Colors.Surface}};
+    "
+  >
+    <div class="r-card" style="background: {{.Colors.Background}}; border-radius: 8px; padding: 28px; box-shadow: 0 1px 3px rgba(25,28,25,0.06);">
+
+      <h2 class="r-link" style="color: {{.Colors.Primary}}; margin: 0 0 4px 0; font-size: 22px;">{{.Title}}</h2>
+      <p class="r-f" style="color: {{.Colors.TextFaint}}; font-size: 13px; margin: 0 0 24px 0;">
+        Covering {{.WindowLabel}} ({{.TimezoneName}})
+      </p>
+
+      <!-- Engagement -->
+      <h3 class="r-t r-bd" style="color: {{.Colors.TextSecondary}}; margin: 0 0 8px 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid {{.Colors.Border}}; padding-bottom: 6px;">
+        Engagement
+      </h3>
+
+      {{if .HasNewUsers}}
+      <p style="margin: 10px 0 6px 0;">
+        <strong>New users {{.PeriodWord}} ({{len .NewUsers}}{{if .NewUsersDelta}}, {{.NewUsersDelta}}{{end}}):</strong> {{.NewUserBreakdownLine}}.
+      </p>
+      <ul class="r-t" style="margin: 4px 0 14px 0; padding-left: 22px; color: {{.Colors.TextSecondary}};">
+        {{range .NewUsers}}
+        <li>{{.Name}} &lt;{{.Email}}&gt; via {{.AuthMethodLabel}}{{if .PrimaryCommunityName}} (primary: {{.PrimaryCommunityName}}){{end}}</li>
+        {{end}}
+      </ul>
+      {{else}}
+      <p class="r-f" style="margin: 10px 0; color: {{.Colors.TextFaint}};">No new users {{.PeriodWord}}.</p>
+      {{end}}
+
+      {{if .ActiveUsersKnown}}
+      <p style="margin: 8px 0;">
+        <strong>{{.ActiveUserCount}}</strong>{{if .ActiveUsersDelta}} ({{.ActiveUsersDelta}}){{end}} active user{{if ne .ActiveUserCount 1}}s{{end}} {{.PeriodWord}} (any authenticated activity); <strong>{{.ActiveContributorCount}}</strong>{{if .ContributorsDelta}} ({{.ContributorsDelta}}){{end}} contributed an action or chat message.
+      </p>
+      {{else}}
+      <p style="margin: 8px 0;">
+        <strong>{{.ActiveContributorCount}}</strong>{{if .ContributorsDelta}} ({{.ContributorsDelta}}){{end}} active contributor{{if ne .ActiveContributorCount 1}}s{{end}} {{.PeriodWord}} (action or chat). <span class="r-f" style="color: {{.Colors.TextFaint}};">App-active tracking does not cover this window yet.</span>
+      </p>
+      {{end}}
+
+      {{if gt .InteractiveSignInCount 0}}
+      <p style="margin: 8px 0;">
+        <strong>{{.InteractiveSignInCount}}</strong> returning user{{if ne .InteractiveSignInCount 1}}s{{end}} signed in interactively {{.PeriodWord}}.
+      </p>
+      {{else}}
+      <p class="r-f" style="margin: 8px 0; color: {{.Colors.TextFaint}};">No returning interactive sign-ins {{.PeriodWord}}.</p>
+      {{end}}
+
+      {{if .HasDailyActives}}
+      <p style="margin: 10px 0 4px 0;"><strong>Actives by day:</strong></p>
+      <table style="border-collapse: collapse; margin: 4px 0 14px 0;">
+        <tbody>
+          {{range .DayActiveRows}}
+          <tr>
+            <td class="r-t" style="padding: 2px 16px 2px 0; color: {{$.Colors.TextSecondary}}; font-size: 13px;">{{.Label}}</td>
+            <td style="padding: 2px 0; font-size: 13px; font-variant-numeric: tabular-nums;">{{.ActiveLabel}} active / {{.Contributors}} contributing</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      {{end}}
+
+      {{if .HasWaitlistSignups}}
+      <p style="margin: 10px 0 4px 0;"><strong>Waitlist signups ({{len .WaitlistSignups}}):</strong></p>
+      <ul class="r-t" style="margin: 4px 0 14px 0; padding-left: 22px; color: {{.Colors.TextSecondary}};">
+        {{range .WaitlistSignups}}
+        <li>{{.Email}}{{if .Name}} ({{.Name}}){{end}}{{if .IntendedUse}} — wants to: {{.IntendedUse}}{{end}}</li>
+        {{end}}
+      </ul>
+      {{end}}
+
+      {{if gt .PasswordResetCount 0}}
+      <p style="margin: 8px 0;">
+        <strong>{{.PasswordResetCount}}</strong> password reset request{{if ne .PasswordResetCount 1}}s{{end}}.
+      </p>
+      {{end}}
+
+      <!-- Activity -->
+      <h3 class="r-t r-bd" style="color: {{.Colors.TextSecondary}}; margin: 28px 0 8px 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid {{.Colors.Border}}; padding-bottom: 6px;">
+        Activity
+      </h3>
+
+      {{if not .HasActivity}}
+      <p class="r-f" style="margin: 10px 0; color: {{.Colors.TextFaint}};">No tracked activity in the window.</p>
+      {{else}}
+      <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+        <tbody>
+          {{range .ActivityRows}}
+          <tr class="r-bd" style="border-bottom: 1px solid {{$.Colors.Border}};">
+            <td class="r-num" style="padding: 8px 8px 8px 0; vertical-align: top; width: 56px; text-align: right; font-weight: 600; color: {{$.Colors.Primary}}; font-variant-numeric: tabular-nums;">{{.Count}}</td>
+            <td style="padding: 8px 0; vertical-align: top; font-weight: 500;">{{.Label}}{{if .Delta}} <span class="r-f" style="color: {{$.Colors.TextFaint}}; font-weight: 400; font-size: 12px;">({{.Delta}})</span>{{end}}</td>
+            <td class="r-t" style="padding: 8px 0 8px 12px; vertical-align: top; color: {{$.Colors.TextSecondary}}; font-size: 13px;">{{.Detail}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      {{end}}
+
+      <!-- Chat -->
+      <h3 class="r-t r-bd" style="color: {{.Colors.TextSecondary}}; margin: 28px 0 8px 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid {{.Colors.Border}}; padding-bottom: 6px;">
+        Chat
+      </h3>
+
+      {{if not .HasChatActivity}}
+      <p class="r-f" style="margin: 10px 0; color: {{.Colors.TextFaint}};">No chat messages in the window.</p>
+      {{else}}
+      <p style="margin: 10px 0;"><strong>Total user messages:</strong> {{.ChatTotal}}</p>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+        <tbody>
+          {{range .ChatRows}}
+          <tr class="r-bd" style="border-bottom: 1px solid {{$.Colors.Border}};">
+            <td class="r-num-alt" style="padding: 6px 8px 6px 0; vertical-align: top; width: 56px; text-align: right; font-weight: 600; color: {{$.Colors.Info}}; font-variant-numeric: tabular-nums;">{{.Count}}</td>
+            <td style="padding: 6px 0; vertical-align: top;">{{.Label}}</td>
+            <td class="r-t" style="padding: 6px 0 6px 12px; vertical-align: top; color: {{$.Colors.TextSecondary}}; font-size: 13px;">{{.Ratio}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      {{end}}
+
+      <!-- Top communities -->
+      {{if .HasCommunities}}
+      <h3 class="r-t r-bd" style="color: {{.Colors.TextSecondary}}; margin: 28px 0 8px 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid {{.Colors.Border}}; padding-bottom: 6px;">
+        Top communities
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+        <tbody>
+          {{range .CommunityRows}}
+          <tr class="r-bd" style="border-bottom: 1px solid {{$.Colors.Border}};">
+            <td style="padding: 6px 0; vertical-align: top; font-weight: 500;">{{.Title}}</td>
+            <td class="r-t" style="padding: 6px 0 6px 12px; vertical-align: top; text-align: right; color: {{$.Colors.TextSecondary}}; font-size: 13px; font-variant-numeric: tabular-nums;">
+              {{.Detail}}
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      {{if .NamedRollupLine}}
+      <p class="r-f" style="margin: 8px 0 0 0; color: {{.Colors.TextFaint}}; font-size: 12px;">{{.NamedRollupLine}}</p>
+      {{end}}
+      {{if .AdHocRollupLine}}
+      <p class="r-f" style="margin: 4px 0 0 0; color: {{.Colors.TextFaint}}; font-size: 12px;">{{.AdHocRollupLine}}</p>
+      {{end}}
+      {{end}}
+
+      <!-- Totals -->
+      <h3 class="r-t r-bd" style="color: {{.Colors.TextSecondary}}; margin: 28px 0 8px 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid {{.Colors.Border}}; padding-bottom: 6px;">
+        Totals
+      </h3>
+      <p style="margin: 6px 0;">Member actions: <strong>{{.TotalMemberActionCount}}</strong>{{if .TotalActionsDelta}} <span class="r-f" style="color: {{.Colors.TextFaint}}; font-size: 12px;">({{.TotalActionsDelta}})</span>{{end}}</p>
+      <p style="margin: 6px 0;">User chat messages: <strong>{{.TotalUserMessageCount}}</strong>{{if .TotalMessagesDelta}} <span class="r-f" style="color: {{.Colors.TextFaint}}; font-size: 12px;">({{.TotalMessagesDelta}})</span>{{end}}</p>
+      {{if .ExcludedFooterLine}}
+      <p class="r-f" style="margin: 6px 0; color: {{.Colors.TextFaint}}; font-size: 12px;">({{.ExcludedFooterLine}})</p>
+      {{end}}
+      {{if .PriorWindowLabel}}
+      <p class="r-f" style="margin: 6px 0; color: {{.Colors.TextFaint}}; font-size: 12px;">Deltas compare to {{.PriorWindowLabel}}.</p>
+      {{end}}
+
+      <p class="r-f r-bd" style="font-size: 11px; color: {{.Colors.TextFaint}}; margin-top: 28px; padding-top: 12px; border-top: 1px solid {{.Colors.Border}};">
+        Generated {{.GeneratedAtLabel}} ({{.TimezoneName}}).
+      </p>
+    </div>
+  </body>
+</html>

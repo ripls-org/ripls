@@ -1,0 +1,51 @@
+// Storage models for time-related types.
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// SpecificTime represents a precise datetime.
+message SpecificTime {
+  int64 unix_timestamp_sec = 1;
+  string timezone = 2;
+  int32 duration_minutes = 3;  // Optional duration in minutes (0 = not specified)
+  bool is_all_day = 4;  // True if this is an all-day event (no specific time, date only)
+}
+
+// TimeRange represents a flexible time window.
+message TimeRange {
+  string description = 1;
+  int64 start_unix_sec = 2;
+  int64 end_unix_sec = 3;
+  string timezone = 6;  // IANA timezone (e.g., "America/Denver"). Empty when unknown.
+  int32 duration_minutes = 4;   // Optional duration in minutes (0 = not specified, calculated from start/end if both present)
+  bool is_all_day = 5;  // True if this is an all-day event range (no specific times, dates only)
+}
+
+// TimeTBD represents time to be determined.
+message TimeTBD {
+  // Empty message - presence indicates TBD state
+}
+
+// TimeVoteStatus represents a user's vote on a time proposal.
+enum TimeVoteStatus {
+  TIME_VOTE_STATUS_UNSPECIFIED = 0;
+  TIME_VOTE_STATUS_YES = 1;
+  TIME_VOTE_STATUS_NO = 2;
+  TIME_VOTE_STATUS_NONE_WORK = 3;
+
+  // The voter is flexible: any proposed time works. Counts toward every
+  // proposal in the poll rather than a single one.
+  TIME_VOTE_STATUS_FLEXIBLE = 4;
+}
+
+// TimeVote represents a user's vote on a time proposal.
+message TimeVote {
+  string id = 1;
+  string proposal_id = 2;
+  string user_id = 3;
+  TimeVoteStatus status = 4;  // YES, NO
+  int64 voted_at_unix_sec = 5;
+}

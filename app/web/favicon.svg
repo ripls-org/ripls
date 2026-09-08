@@ -1,0 +1,28 @@
+<svg viewBox="0 0 197.4 213.6" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .circle-stroke {
+      fill: none;
+      stroke: #3b5998;
+      stroke-width: 12;
+    }
+    @media (prefers-color-scheme: dark) {
+      .circle-stroke {
+        stroke: #87CEEB;
+      }
+    }
+  </style>
+  <g transform="translate(98.952497,106.84531)">
+    <circle cx="0" cy="-60" r="40" class="circle-stroke"/>
+    <circle cx="0" cy="-60" r="20" class="circle-stroke"/>
+    <circle cx="51.959999" cy="-30" r="40" class="circle-stroke"/>
+    <circle cx="51.959999" cy="-30" r="20" class="circle-stroke"/>
+    <circle cx="51.959999" cy="30" r="40" class="circle-stroke"/>
+    <circle cx="51.959999" cy="30" r="20" class="circle-stroke"/>
+    <circle cx="0" cy="60" r="40" class="circle-stroke"/>
+    <circle cx="0" cy="60" r="20" class="circle-stroke"/>
+    <circle cx="-51.959999" cy="30" r="40" class="circle-stroke"/>
+    <circle cx="-51.959999" cy="30" r="20" class="circle-stroke"/>
+    <circle cx="-51.959999" cy="-30" r="40" class="circle-stroke"/>
+    <circle cx="-51.959999" cy="-30" r="20" class="circle-stroke"/>
+  </g>
+</svg>

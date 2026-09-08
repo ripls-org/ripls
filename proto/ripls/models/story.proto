@@ -1,0 +1,82 @@
+// A story that appears in the community feed to celebrate accomplishments.
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+import "ripls/models/common.proto";
+
+// Storage representation of a story.
+message Story {
+  // A unique identifier for the story.
+  string id = 1;
+
+  // The community this story belongs to.
+  string community_id = 2;
+
+  // Type of story (stored as string to avoid api package dependency).
+  string story_type = 3;
+
+  // LLM-generated or template-based title (short, engaging).
+  string title = 4;
+
+  // LLM-generated or template-based description/body (2-4 sentences).
+  string description = 5;
+
+  // Media IDs for story visuals (from participants or stock).
+  repeated string media_ids = 6;
+
+  // User IDs of participants featured in this story (no owner).
+  repeated string participant_ids = 7;
+
+  // Optional: related entity IDs for navigation and deduplication.
+  string gear_id = 10;
+  string loan_id = 11;
+  string experience_id = 12;
+  string request_id = 13;
+
+  // When this story was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 14;
+
+  // Soft deletion metadata.
+  optional DeletedMetadata deleted = 15;
+
+  // Impact metrics for this transaction (if applicable).
+  // Cost saved through sharing in US dollars.
+  float cost_saved_usd = 16;
+
+  // Time saved by not shopping/researching alternatives, in minutes.
+  float time_saved_minutes = 17;
+
+  // CO2 emissions avoided by reusing/sharing vs manufacturing new items, in grams.
+  float co2_saved_grams = 18;
+
+  // For stories tied to a server-authoritative undoable action
+  // (loan/giveaway completion, request fulfillment, experience
+  // completion), the CommunityEvent that recorded the originating
+  // action. Enables the story-screen Undo link to be wired via direct
+  // read (no table join at fetch time). Absent for stories not tied
+  // to a reversible action (e.g., welcome-new-member stories).
+  optional string community_event_id = 19;
+
+  // Pre-formatted editorial kicker rendered above the title on the
+  // story screen (e.g. "TUE · APR 28 · CLEAR CREEK, CO"). Server
+  // formats this once at story-creation time using the source
+  // experience's start time and location.
+  optional string kicker = 20;
+
+  // Structured-template payload. When set, the client resolves the
+  // displayed title and description from its catalog using
+  // template_key + template_params; the title/description fields
+  // above stay populated as a transition fallback for old clients
+  // and historical rows. Empty template_key means "no structured
+  // payload — render title/description verbatim" (covers AI-generated
+  // story prose and pre-migration rows).
+  //
+  // TODO(#2159): cleanup tracker removes the legacy title/description
+  // fields once historical rows have aged out.
+  optional string template_key = 21;
+  map<string, string> template_params = 22;
+}

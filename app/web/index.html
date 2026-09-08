@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Plan, share and connect.">
+
+  <!-- Open Graph / Twitter Card metadata.
+       Drives link previews in Signal, Slack, iMessage, etc. for any
+       apex-domain URL not already served by a dedicated SSR shell
+       (event_page.go, invite.go). Relative og:image is resolved
+       against the requested host, so the same tags work for the
+       production apex domain and its dev sibling alike. -->
+  <meta property="og:title" content="Ripls">
+  <meta property="og:description" content="Plan, share and connect.">
+  <meta property="og:image" content="/og-preview.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Ripls">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ripls">
+  <meta name="twitter:description" content="Plan, share and connect.">
+  <meta name="twitter:image" content="/og-preview.png">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Ripls">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon. Adaptive SVG (single file, light + dark via embedded
+       @media (prefers-color-scheme: dark)) is the primary; PNG is a
+       fallback for the few browsers that don't yet render SVG
+       favicons. SVG source is shared with the marketing site
+       (website/content/assets/icon.svg) so the brand surfaces stay
+       in sync. -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Ripls</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Bootstrap page background (#2724). Before the Flutter engine's
+       first frame the browser paints this page's own background; the
+       default white reads as a full-screen flash mid-journey in dark
+       mode. Match the app's splash surface so boot -> splash is one
+       continuous treatment. Values mirror the Dart theme tokens:
+       light = DesignTokens.lightBackground (#FFFFFF, splash surface),
+       dark  = DesignTokens.darkSurface (#1F2421, the dark splash
+       Scaffold background via AppColors.darkCardBackground). -->
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #FFFFFF;
+    }
+    @media (prefers-color-scheme: dark) {
+      html, body {
+        background-color: #1F2421;
+      }
+    }
+  </style>
+
+  <!-- Google Maps JavaScript API (#2188). Loaded by google_maps_flutter_web
+       before the first GoogleMap widget mounts. The $GOOGLE_MAPS_API_KEY$
+       sentinel is substituted at build time by the package.json
+       build:web:* scripts; if the substitution didn't run, the line is
+       harmless (window.google.maps is undefined, GoogleMap fails
+       gracefully, the rest of the app keeps working). -->
+  <script async
+          src="https://maps.googleapis.com/maps/api/js?key=$GOOGLE_MAPS_API_KEY$&loading=async"></script>
+</head>
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

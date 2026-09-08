@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// DeletedMetadata records when and by whom an item was soft-deleted.
+// Present only on deleted items; absent means the item is active.
+message DeletedMetadata {
+  // User ID of the actor who deleted this item.
+  string deleted_by_user_id = 1;
+
+  // Unix timestamp (seconds) when the item was deleted.
+  int64 deleted_at_unix_sec = 2;
+}
+
+// ProvenanceSource indicates the broad category of how a value was produced.
+enum ProvenanceSource {
+  PROVENANCE_SOURCE_UNSPECIFIED = 0;
+
+  // User manually entered or corrected this value.
+  PROVENANCE_SOURCE_USER = 1;
+
+  // LLM inferred this value. The name field specifies the mode
+  // (e.g., "genai_from_text", "genai_from_image", "genai_from_web").
+  PROVENANCE_SOURCE_LLM = 2;
+
+  // Computed by a deterministic formula (e.g., weight * emission factor).
+  // The name field identifies the formula (e.g., "weight_material_carbon").
+  PROVENANCE_SOURCE_FORMULA = 3;
+
+  // Derived from a configuration default value.
+  PROVENANCE_SOURCE_CONFIG_DEFAULT = 4;
+}
+
+// Provenance records how, when, and by what version a value was produced.
+// Used on metadata fields (gear brand, material_category, etc.) and impact
+// estimate dimensions (money saved, emissions prevented, time saved).
+message Provenance {
+  // How this value was produced.
+  ProvenanceSource source = 1;
+
+  // Name of the specific source or formula (e.g., "genai_from_text",
+  // "genai_from_web", "weight_material_carbon", "prevented_purchase").
+  // Identifies what produced the value independently of the version.
+  // Used together with version to decide whether to refresh: only
+  // re-estimate when name matches and a newer version is available.
+  string name = 2;
+
+  // Monotonically increasing version number for this named source.
+  // Higher values indicate newer algorithms or prompts. Enables simple
+  // refresh logic: refresh when stored version < current version for
+  // the same name. Zero means unversioned.
+  int32 version = 3;
+
+  // Confidence (0.0-1.0), typically self-assessed by an LLM.
+  // Used to derive uncertainty (stddev) via the configured 
+  // confidence-to-stddev breakpoints.
+  optional float confidence = 4;
+
+  // Human-readable explanation of how the value was determined.
+  //
+  // Written by the estimator from the formula and inputs it actually used.
+  // LLM value estimates no longer contribute one (#2936).
+  optional string reasoning = 5;
+
+  // References used to produce this value (URLs, database names, study citations).
+  repeated string sources = 6;
+}
+
+// Estimate represents an uncertain numerical value with mean and standard
+// deviation. Enables rigorous aggregation: totals sum means, uncertainties
+// add in quadrature.
+message Estimate {
+  // Best point estimate (mean).
+  float mean = 1;
+
+  // Standard deviation expressing uncertainty, in the same units as mean.
+  // Lower values = higher certainty. Zero = exact known value.
+  float stddev = 2;
+}
+
+// MaterialCategory is a lookup key into the material emission factors table.
+enum MaterialCategory {
+  MATERIAL_CATEGORY_UNSPECIFIED = 0;
+  MATERIAL_CATEGORY_SOLID_METAL = 1;
+  MATERIAL_CATEGORY_SOLID_PLASTIC = 2;
+  MATERIAL_CATEGORY_MIXED_PLASTIC_METAL = 3;
+  MATERIAL_CATEGORY_MIXED_WOOD_METAL = 4;
+  MATERIAL_CATEGORY_MIXED_WOOD_PLASTIC = 5;
+  MATERIAL_CATEGORY_WOOD = 6;
+  MATERIAL_CATEGORY_ALUMINUM = 7;
+  MATERIAL_CATEGORY_FABRIC = 8;
+  MATERIAL_CATEGORY_CORDLESS_POWER_TOOL = 9;
+  MATERIAL_CATEGORY_CORDED_POWER_TOOL = 10;
+  MATERIAL_CATEGORY_PETROL_TOOL = 11;
+  MATERIAL_CATEGORY_ELECTRONICS_SMALL = 12;
+}
+
+// CarbonEstimate is a shared type for carbon estimates used both on gear
+// (embodied carbon) and within PreventedEmissions (avoided/reduced carbon).
+message CarbonEstimate {
+  // Carbon in grams CO2e (mean + uncertainty).
+  Estimate co2e_grams = 1;
+
+  // How this carbon estimate was produced.
+  Provenance provenance = 3;
+
+  // Field 2 was EstimationMethod method (enum) before provenance migration.
+  reserved 2;
+}
+
+// TrackedString pairs a string value with its provenance.
+message TrackedString {
+  string value = 1;
+  Provenance provenance = 2;
+}
+
+// TrackedMaterialCategory pairs a MaterialCategory value with its provenance.
+message TrackedMaterialCategory {
+  MaterialCategory value = 1;
+  Provenance provenance = 2;
+}
+
+// TrackedEstimate pairs an Estimate with its provenance.
+// Used where an Estimate needs provenance tracking (e.g., gear weight_grams).
+message TrackedEstimate {
+  Estimate value = 1;
+  Provenance provenance = 2;
+}
+
+// Invitee identifies one person a host invited to an item at creation time.
+// Storage mirror of the API Invitee (api and models never import each other,
+// so the shared invite shape is defined in both). Exactly one identity variant
+// is set: an existing app user, or an off-app contact (phone or email) that
+// becomes a provisional member. Persisted as part of the host's invite-consent
+// audit record.
+message Invitee {
+  // Exactly one identity is set per invitee.
+  oneof identity {
+    // Existing app user, added to the item's ad-hoc community directly.
+    string member_user_id = 1;
+
+    // Off-app contact: E.164 phone number. PII: never log unmasked.
+    string phone_number = 2;
+
+    // Off-app contact: email address. PII: never log unmasked.
+    string email = 3;
+  }
+
+  // Display name captured for an off-app invitee, used as the provisional
+  // member's name. Empty for a member_user_id invitee.
+  optional string display_name = 4;
+}
+
+// HostInviteConsent is the stored attestation that a host knew the people they
+// invited by text and that the recipients were okay receiving a single invite.
+// Storage mirror of the API HostInviteConsent. Retained as a compliance
+// artifact.
+message HostInviteConsent {
+  // The host affirmed they know the people they invited.
+  bool attested = 1;
+
+  // Client-reported attestation time (Unix seconds).
+  optional int64 attested_at_unix_sec = 2;
+}

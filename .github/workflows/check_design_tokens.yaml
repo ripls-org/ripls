@@ -1,0 +1,48 @@
+name: Check Design Tokens
+
+# Enforces that the generated design-token outputs (Dart constants, web CSS,
+# guidelines HTML) are regenerated from design/tokens.json and that every
+# declared contrast pair passes WCAG thresholds
+# (scripts/gen_design_tokens.js --check). Runs on every PR to main (no path
+# filter) so drift introduced anywhere — a hand-edited generated file, or
+# tokens.json changed without regenerating — is caught. Intended to be a
+# REQUIRED status check. See design/README.md and issue #2441.
+#
+# The generator is dependency-free (plain Node, like check_versions.js), so no
+# npm install is needed.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-design-tokens:
+    name: Check Design Tokens
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Check generated outputs current and contrast pairs pass
+        run: npm run lint:design-tokens
+
+      - name: Check web content for raw colors and off-token fonts
+        run: npm run lint:web:colors
+
+      - name: Run generator and web-lint unit tests
+        run: node --test scripts/gen_design_tokens.test.js scripts/check_web_colors.test.js

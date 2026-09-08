@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  {{template "head" .}}
+  <body
+    class="r-page"
+    style="
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: {{.Colors.TextSecondary}};
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background: {{.Colors.Surface}};
+    "
+  >
+    <!-- Colors are the official light-theme design tokens (app_theme.dart /
+         website/content/css/tokens.css, #2441), inlined because email clients
+         can't use CSS custom properties. -->
+    <div
+      class="r-card"
+      style="
+        background-color: {{.Colors.Background}};
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        box-shadow: 0 12px 40px rgba(25, 28, 25, 0.1);
+      "
+    >
+      <!-- Brand bar -->
+      <div style="text-align: center">{{template "logo_brandbar" .}}</div>
+
+      {{if .HeroImageURL}}
+      <!-- Hero image (cid:-embedded for sent mail, http URL for previews) -->
+      <div style="margin: 16px 0 0">
+        <img
+          src="{{.HeroImageURL}}"
+          alt=""
+          style="display: block; width: 100%; max-height: 240px; object-fit: cover"
+        />
+      </div>
+      {{end}}
+
+      <!-- Content -->
+      <div style="padding: 32px 40px 8px">
+        {{if .Summary}}
+        {{if .Summary.Eyebrow}}
+        <p
+          class="r-link"
+          style="
+            margin: 0 0 6px;
+            color: {{.Colors.Primary}};
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+          "
+        >
+          {{.Summary.Eyebrow}}
+        </p>
+        {{end}}
+        <h1 class="r-h" style="color: {{.Colors.TextPrimary}}; margin: 0; font-size: 24px; font-weight: 700">
+          {{if .Summary.Name}}{{.Summary.Name}}{{else}}{{.Title}}{{end}}
+        </h1>
+        {{if .Title}}
+        <p class="r-t" style="font-size: 15px; margin: 8px 0 0; color: {{.Colors.TextSecondary}}">{{.Title}}</p>
+        {{end}}
+        {{if or .Summary.OwnerLine .Summary.Date .Summary.Going}}
+        <p class="r-f" style="font-size: 13px; margin: 12px 0 0; color: {{.Colors.TextFaint}}">
+          {{with .Summary.OwnerLine}}{{.}}{{end}}{{with .Summary.Date}}{{if $.Summary.OwnerLine}} &middot; {{end}}{{.}}{{end}}{{with .Summary.Going}}{{if or $.Summary.OwnerLine $.Summary.Date}} &middot; {{end}}{{.}}{{end}}
+        </p>
+        {{end}}
+        {{if .Summary.Description}}
+        <p class="r-t" style="font-size: 15px; margin: 16px 0 0; color: {{.Colors.TextSecondary}}">{{.Summary.Description}}</p>
+        {{end}}
+        {{else}}
+        <h1 class="r-h" style="color: {{.Colors.TextPrimary}}; margin: 0; font-size: 24px; font-weight: 700">
+          {{.Title}}
+        </h1>
+        {{if .Body}}
+        <p class="r-t" style="font-size: 16px; margin: 16px 0 0; color: {{.Colors.TextSecondary}}">{{.Body}}</p>
+        {{end}}
+        {{end}}
+
+        {{if .ActionURL}}
+        <!-- CTA Button -->
+        <div style="margin: 28px 0 16px">
+          <a
+            href="{{.ActionURL}}"
+            class="r-btn"
+            style="
+              display: inline-block;
+              background: linear-gradient(135deg, {{.Colors.Primary}} 0%, {{.Colors.PrimaryHover}} 100%);
+              color: {{.Colors.OnPrimary}};
+              text-decoration: none;
+              padding: 16px 32px;
+              border-radius: 12px;
+              font-weight: 600;
+              font-size: 16px;
+              box-shadow: 0 8px 18px rgba(62, 90, 71, 0.28);
+            "
+          >
+            {{if .CTALabel}}{{.CTALabel}}{{else}}Open Ripls{{end}}
+          </a>
+        </div>
+        {{end}}
+      </div>
+    </div>
+
+    <!-- Footer (CAN-SPAM: physical address + unsubscribe) -->
+    <div class="r-f" style="font-size: 12px; color: {{.Colors.TextFaint}}; text-align: center; padding: 20px">
+      <p style="margin: 5px 0">
+        {{if .ColdInvite}}You're receiving this because a Ripls user invited you to join.{{else}}You're receiving by email because you have no active Ripls app or phone number.{{end}}
+      </p>
+      {{if or .PlayStoreURL .AppStoreURL}}
+      <p style="margin: 5px 0">
+        Get the app on
+        {{if .PlayStoreURL}}<a href="{{.PlayStoreURL}}" class="r-link" style="color: {{.Colors.Primary}}">Google Play</a>{{end}}{{if and .PlayStoreURL .AppStoreURL}}
+        or the{{end}}
+        {{if .AppStoreURL}}<a href="{{.AppStoreURL}}" class="r-link" style="color: {{.Colors.Primary}}">App Store</a>{{end}}.
+      </p>
+      {{end}}
+      {{if .UnsubscribeURL}}
+      <p style="margin: 5px 0">
+        <a href="{{.UnsubscribeURL}}" class="r-link" style="color: {{.Colors.Primary}}">Unsubscribe</a>
+        from these email notifications.
+      </p>
+      {{end}}
+      {{if .PostalAddress}}
+      <!-- CAN-SPAM physical postal address, set from config (SetPostalAddress). -->
+      <p style="margin: 5px 0">{{.PostalAddress}}</p>
+      {{end}}
+    </div>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "org.ripls.app",
+      "sha256_cert_fingerprints": [
+        "4D:61:29:45:12:79:52:75:E2:66:FF:E6:E9:A8:E9:EB:6E:F5:96:C6:5D:6B:DE:1E:06:DD:DC:32:D5:45:EA:3F"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "org.ripls.app.dev",
+      "sha256_cert_fingerprints": [
+        "76:94:30:E6:17:D0:0C:2D:53:99:AB:F5:1D:CA:E4:1D:25:96:C0:C7:EF:E3:58:96:C4:4D:6B:38:4D:DE:29:D9"
+      ]
+    }
+  }
+]

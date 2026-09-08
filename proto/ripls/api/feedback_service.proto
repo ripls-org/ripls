@@ -1,0 +1,89 @@
+// RPC service for submitting user feedback as GitHub issues.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Type of user feedback
+enum FeedbackType {
+  FEEDBACK_TYPE_UNSPECIFIED = 0;
+  FEEDBACK_TYPE_BUG_REPORT = 1;
+  FEEDBACK_TYPE_FEATURE_REQUEST = 2;
+}
+
+// Screenshot attachment for feedback
+message FeedbackScreenshot {
+  // Image bytes
+  bytes data = 1;
+
+  // Original filename (e.g., "screenshot_1.png")
+  string filename = 2;
+
+  // MIME content type (e.g., "image/png", "image/jpeg")
+  string content_type = 3;
+}
+
+// Device context information auto-collected from the client
+message DeviceContext {
+  // App version (e.g., "1.2.3")
+  string app_version = 1;
+
+  // Platform (e.g., "iOS", "Android", "web")
+  string platform = 2;
+
+  // OS version (e.g., "iOS 17.2", "Android 14")
+  string os_version = 3;
+
+  // Device model (e.g., "iPhone 14 Pro", "Pixel 8")
+  string device_model = 4;
+
+  // App build number
+  string build_number = 5;
+
+  // Environment (LOCAL, DEV, PROD)
+  string environment = 6;
+}
+
+// Request to submit user feedback (bug report or feature request)
+message SubmitFeedbackRequest {
+  // Type of feedback
+  FeedbackType type = 1;
+
+  // Title/summary of the feedback (required, 1-100 chars)
+  string title = 2;
+
+  // Detailed description (required, 10-5000 chars)
+  string description = 3;
+
+  // Optional: Steps to reproduce (for bug reports)
+  string steps_to_reproduce = 4;
+
+  // Optional: User's email for follow-up
+  string contact_email = 5;
+
+  // Auto-collected context (populated by client)
+  DeviceContext device_context = 6;
+
+  // Optional: Screenshots to attach (max 3)
+  repeated FeedbackScreenshot screenshots = 7;
+}
+
+// Response after submitting feedback
+message SubmitFeedbackResponse {
+  // GitHub issue URL
+  string issue_url = 1;
+
+  // GitHub issue number
+  int32 issue_number = 2;
+
+  // Success message
+  string message = 3;
+}
+
+// FeedbackService handles user feedback submission
+service FeedbackService {
+  // SubmitFeedback submits user feedback as a GitHub issue
+  rpc SubmitFeedback(SubmitFeedbackRequest) returns (SubmitFeedbackResponse);
+}

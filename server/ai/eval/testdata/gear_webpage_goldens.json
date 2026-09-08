@@ -1,0 +1,183 @@
+{
+  "description": "Golden eval cases for GenerateGearFromWebpage. Each case supplies pre-fetched page title / description / body text (what the live web fetcher would have produced) and asserts what the AI recovers. Opt-in per field: fields omitted from 'expected' are not checked. Tolerances on numeric fields are wide because brand/spec pages express weight and price in varied formats that the model has to unify.",
+  "version": 2,
+  "defaults": {
+    "region": "Boulder, CO",
+    "value_estimate_tolerance_pct": 50.0,
+    "weight_tolerance_pct": 40.0
+  },
+  "cases": [
+    {
+      "id": "dewalt_drill",
+      "tags": ["product_page", "power_tool"],
+      "page_title": "DEWALT 20V MAX Cordless Drill/Driver Kit (DCD771C2)",
+      "page_description": "The DEWALT DCD771C2 20V MAX Cordless Drill/Driver Kit features a compact, lightweight design for working in tight spaces.",
+      "page_body": "DEWALT 20V MAX Cordless Drill/Driver Kit (DCD771C2)\n\nPrice: $99.00\n\nKey Features:\n- High performance motor delivers 300 unit watts out (UWO) of power\n- 2-speed transmission (0-450/0-1,500 RPM)\n- Compact, lightweight design fits into tight areas\n- 1/2-inch single sleeve ratcheting chuck for tight bit gripping\n- Ergonomic handle delivers comfort and control\n- Includes two 20V MAX compact lithium ion batteries\n\nSpecifications:\n- Weight: 3.6 lbs\n- Chuck Size: 1/2 inch\n- Battery: 20V MAX Lithium Ion\n- RPM: 0-450/0-1,500\n\nWhat's in the Box:\n- DCD771 Drill/Driver\n- (2) 20V MAX Lithium Ion Batteries\n- Charger\n- Kit Bag",
+      "region": "Denver, CO",
+      "expected": {
+        "title_contains": ["dewalt", "drill", "cordless"],
+        "brand_contains": ["dewalt"],
+        "material_category_any_of": ["cordless_power_tool"],
+        "weight_grams_approx": 1633,
+        "value_estimate_usd": 99,
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "rei_tent",
+      "tags": ["product_page", "camping"],
+      "page_title": "REI Co-op Half Dome SL 2+ Tent",
+      "page_description": "The REI Co-op Half Dome SL 2+ tent is a freestanding 3-season tent with ample room for 2 people and their gear.",
+      "page_body": "REI Co-op Half Dome SL 2+ Tent\n\nPrice: $329.00\nMember Price: $263.20\n\nThe Half Dome SL 2+ is our best-selling backpacking tent, now lighter than ever. With a spacious interior and two vestibules, it offers plenty of room for two hikers and their gear.\n\nSpecifications:\n- Trail weight: 4 lbs. 1 oz.\n- Packaged weight: 4 lbs. 9 oz.\n- Floor area: 33.75 sq. ft.\n- Number of doors: 2\n- Number of vestibules: 2\n- Peak height: 40 in.\n- Packed size: 6 x 21 in.\n- Seasons: 3-season\n\nMaterials:\n- Canopy: 20D ripstop nylon\n- Floor: 30D ripstop nylon with 1,200mm polyurethane coating\n- Fly: 20D ripstop nylon with 1,500mm polyurethane coating\n- Poles: DAC Featherlite NFL aluminum\n\nRatings: 4.5 out of 5 stars (1,247 reviews)",
+      "region": "Boulder, CO",
+      "expected": {
+        "title_contains": ["half dome", "tent", "rei"],
+        "brand_contains": ["rei"],
+        "material_category_any_of": ["fabric"],
+        "weight_grams_approx": 2070,
+        "value_estimate_usd": 329,
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "blog_chainsaw",
+      "tags": ["review_article", "power_tool"],
+      "page_title": "Best Electric Chainsaws for Homeowners 2026 - Outdoor Gear Lab",
+      "page_description": "We tested 12 electric chainsaws head-to-head to find the best options for homeowners.",
+      "page_body": "Best Electric Chainsaws for Homeowners 2026\n\nOur Top Pick: Greenworks 40V 16-Inch Cordless Chainsaw\n\nAfter testing 12 electric chainsaws over 3 months, the Greenworks 40V stands out as the best option for most homeowners. It delivers enough power for medium-duty cutting tasks while being significantly quieter and easier to maintain than gas models.\n\nPros:\n- Strong cutting performance for its class\n- Tool-free chain tensioning\n- Low kickback bar\n- Excellent battery life (up to 150 cuts per charge)\n\nCons:\n- Not suitable for large hardwood trees\n- Battery and charger sold separately\n\nPrice: $179 (tool only), $249 (with battery and charger)\nWeight: 10.36 lbs (with battery)\nBar Length: 16 inches\nChain Speed: 2,460 FPM",
+      "region": "",
+      "expected": {
+        "title_contains": ["chainsaw", "greenworks"],
+        "brand_contains": ["greenworks"],
+        "material_category_any_of": ["cordless_power_tool"],
+        "weight_grams_approx": 4700,
+        "value_estimate_usd": 249,
+        "has_description": true,
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "sale_price_vs_msrp",
+      "tags": ["product_page", "sale-price"],
+      "page_title": "CremaPro Barista 15-Bar Espresso Machine",
+      "page_description": "Semi-automatic espresso machine with steam wand and 15-bar pump.",
+      "page_body": "CremaPro Barista 15-Bar Espresso Machine\n\nSale: $479.99\nWas: $599.95 (MSRP)\nYou save: $119.96 (20%)\n\nLimited-time offer ends Sunday.\n\nFeatures:\n- 15-bar Italian pump\n- 360-degree swivel steam wand for microfoam\n- 54mm portafilter with single and double baskets\n- 2L removable water tank\n- Stainless steel body\n\nSpecifications:\n- Weight: 15.4 lbs\n- Dimensions: 12.5 x 13.1 x 15.9 in\n- Power: 1550W\n\nRating: 4.4 out of 5 (862 reviews)",
+      "expected": {
+        "title_contains": ["espresso"],
+        "brand_contains": ["cremapro"],
+        "material_category_any_of": ["solid_metal", "mixed_plastic_metal", "electronics_small"],
+        "weight_grams_approx": 6985,
+        "value_estimate_usd": 600,
+        "value_estimate_tolerance_pct": 15,
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "weight_in_kg",
+      "tags": ["product_page", "unit-conversion"],
+      "page_title": "IronCore Adjustable Dumbbell Set 2-18 kg",
+      "page_description": "Space-saving adjustable dumbbell replaces nine pairs of fixed weights.",
+      "page_body": "IronCore Adjustable Dumbbell Set\n\nPrice: $229.00 per dumbbell\n\nDial-adjust from 2 kg to 18 kg in 2 kg increments. Replaces nine pairs of dumbbells in one compact cradle.\n\nSpecifications:\n- Weight range: 2-18 kg (4.4-39.7 lbs)\n- Total unit weight: 18 kg\n- Cradle footprint: 42 x 22 cm\n- Handle: knurled chrome-plated steel\n- Plates: cast iron with nylon shell",
+      "expected": {
+        "title_contains": ["dumbbell"],
+        "brand_contains": ["ironcore"],
+        "material_category_any_of": ["solid_metal", "mixed_plastic_metal"],
+        "weight_grams_approx": 18000,
+        "weight_tolerance_pct": 30,
+        "value_estimate_usd": 229,
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "marketplace_used_bike",
+      "tags": ["marketplace", "used"],
+      "page_title": "Specialized Rockhopper 29 (2019) - excellent condition - $450",
+      "page_description": "Well-maintained hardtail mountain bike, size large.",
+      "page_body": "Specialized Rockhopper 29 (2019) - $450 OBO\n\nSize Large (fits 5'10\" - 6'2\")\n\nSelling my Rockhopper - garage kept, tuned up last fall at the local shop. New brake pads and chain about 300 miles ago. Normal trail wear on the frame, no dents or cracks.\n\n- 29-inch wheels, tubeless-ready rims\n- SR Suntour XCM fork, 100mm\n- Shimano Altus 2x9 drivetrain\n- Hydraulic disc brakes\n\nCash or app payment. Pickup near the north side rec fields. No trades please.",
+      "expected": {
+        "title_contains": ["rockhopper", "bike", "mountain"],
+        "brand_contains": ["specialized"],
+        "category_contains_any_of": ["Bicycle", "Cycling", "Bike", "Sport"],
+        "value_estimate_usd": 450,
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "bundle_brewing_kit",
+      "tags": ["product_page", "bundle"],
+      "page_title": "Complete Home Brewing Starter Kit - 1 Gallon",
+      "page_description": "Everything you need to brew your first batch of beer at home.",
+      "page_body": "Complete Home Brewing Starter Kit\n\nPrice: $189.00\n\nEverything for your first three batches:\n- 1-gallon glass fermentation jug with airlock\n- Auto-siphon and tubing\n- 12 flip-top glass bottles\n- Floating thermometer and hydrometer\n- No-rinse sanitizer (3 packets)\n- American Pale Ale ingredient kit (grain, hops, yeast)\n- Illustrated instruction book\n\nShipping weight: 14 lbs\n\nGreat gift for the curious homebrewer.",
+      "expected": {
+        "title_contains": ["brew"],
+        "category_contains_any_of": ["Brewing", "Kitchen", "Hobb", "Craft", "Homebrew"],
+        "value_estimate_usd": 189,
+        "has_description": true,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "fabric_sleeping_bag",
+      "tags": ["product_page", "fabric"],
+      "page_title": "Kelty Cosmic 20 Down Sleeping Bag",
+      "page_description": "Three-season down sleeping bag rated to 20 degrees.",
+      "page_body": "Kelty Cosmic 20 Down Sleeping Bag\n\nPrice: $169.95\n\nThe Cosmic 20 packs 550-fill DriDown into a durable 20D nylon shell for three-season backpacking warmth.\n\nSpecifications:\n- Temperature rating: 20 F / -7 C\n- Fill: 550-fill hydrophobic down\n- Weight: 2 lbs 6 oz\n- Packed size: 8 x 13 in\n- Shell: 20D nylon taffeta\n- Zipper: 58-inch anti-snag\n\nRating: 4.6 out of 5 (2,104 reviews)",
+      "expected": {
+        "title_contains": ["sleeping bag", "cosmic"],
+        "brand_contains": ["kelty"],
+        "material_category_any_of": ["fabric"],
+        "weight_grams_approx": 1080,
+        "value_estimate_usd": 170,
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "petrol_pressure_washer",
+      "tags": ["product_page", "petrol"],
+      "page_title": "Simpson MegaShot 3200 PSI Gas Pressure Washer",
+      "page_description": "Gas-powered pressure washer with Honda GC190 engine.",
+      "page_body": "Simpson MegaShot 3200 PSI Gas Pressure Washer\n\nPrice: $399.00\n\nPowered by a reliable Honda GC190 engine, the MegaShot delivers 3200 PSI at 2.5 GPM - enough for driveways, siding, decks, and fences.\n\nSpecifications:\n- Pressure: 3200 PSI\n- Flow: 2.5 GPM\n- Engine: Honda GC190 (gas)\n- Pump: OEM axial cam\n- Hose: 25 ft MorFlex\n- Nozzles: 0, 15, 25, 40 degree + soap\n- Weight: 55 lbs\n\nNote: engine oil included but shipped unfilled.",
+      "expected": {
+        "title_contains": ["pressure washer", "megashot"],
+        "brand_contains": ["simpson"],
+        "material_category_any_of": ["petrol_tool"],
+        "weight_grams_approx": 24950,
+        "value_estimate_usd": 399,
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "price_range_from",
+      "tags": ["product_page", "price-range"],
+      "page_title": "DriftRider Inflatable Paddleboard Packages",
+      "page_description": "Complete inflatable SUP packages with pump, paddle, and bag.",
+      "page_body": "DriftRider Inflatable Paddleboard Packages\n\nPackages from $349\n\nEvery package includes the board, a three-piece adjustable paddle, dual-action hand pump, coiled leash, removable fin, and a wheeled carry backpack.\n\nModels:\n- Cruiser 10'6\" (all-around) - $349\n- Explorer 11'6\" (touring) - $449\n- Yoga 10'8\" (wide deck) - $429\n\nSpecifications (Cruiser):\n- Board weight: 19 lbs\n- Capacity: 275 lbs\n- Material: military-grade drop-stitch PVC",
+      "expected": {
+        "title_contains": ["paddleboard", "paddle board", "sup"],
+        "brand_contains": ["driftrider"],
+        "material_category_any_of": ["fabric", "solid_plastic", "mixed_plastic_metal"],
+        "value_estimate_usd": 349,
+        "value_estimate_tolerance_pct": 40,
+        "has_description": true,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "non_product_page",
+      "tags": ["non-product", "article"],
+      "page_title": "Spring Trail Maintenance Updates - City Parks Department",
+      "page_description": "Seasonal closures and volunteer day schedule for city trails.",
+      "page_body": "Spring Trail Maintenance Updates\n\nThe Parks Department will begin seasonal trail maintenance the week of March 9. Expect temporary closures on the following segments:\n\n- Creekside Loop (mile 2-3): bridge deck replacement\n- Ridgeline Connector: drainage repair after spring runoff\n- Dog park perimeter path: resurfacing\n\nUpdated closure maps are posted at trailheads and online. Volunteer trail days resume in April - sign-ups open soon.\n\nQuestions: trails@example.com",
+      "expected": {
+        "max_confidence": 0.6
+      }
+    }
+  ]
+}

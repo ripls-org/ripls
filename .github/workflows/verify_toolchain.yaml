@@ -1,0 +1,162 @@
+name: Verify Toolchain Setup
+
+# Proves that .github/actions/setup-toolchain actually installs what it claims,
+# on a runner that has none of it.
+#
+# The four test workflows that use the action all run on the self-hosted fleet,
+# whose baked image already carries every toolchain — so they exercise the
+# action's *skip* path and nothing else. The install path is the half that
+# matters for the open-source repo (#2953, OSS-7 #2959), and it is the half
+# that would otherwise be untested until someone forked the project and
+# discovered it did not work.
+#
+# `ubuntu-latest` is hardcoded rather than resolved from vars.CI_RUNNER_LINUX.
+# That is the entire point: this job must land on a runner with nothing
+# preinstalled, even when run from a repo that has its own fleet.
+#
+# Triggered on PRs that touch the action or this file, so the cost is a couple
+# of minutes on the rare PR that can actually break it.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/actions/setup-toolchain/**"
+      - ".github/workflows/verify_toolchain.yaml"
+      - "versions.env"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hosted:
+    name: Toolchain installs on a hosted runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-toolchain
+        with:
+          go: "true"
+          node: "true"
+          flutter: "true"
+          java: "true"
+          protoc-plugins: "true"
+          go-lint: "true"
+          onnxruntime: "true"
+
+      - name: Every requested tool is present and matches versions.env
+        run: |
+          set -euo pipefail
+          set -a
+          . versions.env
+          set +a
+
+          fail=0
+          check() {
+            local label="$1" want="$2" got="$3"
+            if [ -z "$got" ]; then
+              echo "::error::$label: not on PATH after setup"
+              fail=1
+            elif [ "$got" != "$want" ]; then
+              echo "::error::$label: want $want, got $got"
+              fail=1
+            else
+              echo "  $label $got"
+            fi
+          }
+
+          # `go version` prints "go version go1.26.6 linux/amd64".
+          check Go "$GO_VERSION" "$(go version 2>/dev/null | awk '{print $3}' | sed 's/^go//')"
+
+          # Only the major is pinned, so compare only the major.
+          check Node "$NODE_MAJOR" "$(node --version 2>/dev/null | sed 's/^v//' | cut -d. -f1)"
+
+          # `flutter --version` line 1: "Flutter 3.47.1 • channel stable • ...".
+          check Flutter "$FLUTTER_VERSION" \
+            "$(flutter --version 2>/dev/null | head -1 | awk '{print $2}')"
+
+          # `java -version` goes to stderr: 'openjdk version "25.0.1" ...'.
+          check JDK "$JAVA_VERSION" \
+            "$(java -version 2>&1 | head -1 | sed -E 's/.*version "([0-9]+).*/\1/')"
+
+          # The protoc generators are pinned from go.mod rather than
+          # versions.env, so presence is the assertion. Report the resolved
+          # path — it says whether they came from the baked image or from the
+          # action's `go install`.
+          for plugin in protoc-gen-go protoc-gen-connect-go; do
+            if command -v "$plugin" >/dev/null 2>&1; then
+              echo "  $plugin $(command -v "$plugin")"
+            else
+              echo "::error::$plugin: not on PATH after setup"
+              fail=1
+            fi
+          done
+
+          # golangci-lint v1 prints "has version v1.64.8", v2 prints "has
+          # version 2.13.2" — the `v` moved between majors, so accept both. A
+          # hosted runner has neither preinstalled, so reaching this line at all
+          # proves the install path ran.
+          check golangci-lint "$GOLANGCI_LINT_VERSION" \
+            "$(golangci-lint --version 2>/dev/null | sed -nE 's/.*has version v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' | head -1)"
+
+          # `gofumpt --version` prints e.g. `v0.11.0 (go1.25.1)`.
+          check gofumpt "$GOFUMPT_VERSION" \
+            "$(gofumpt --version 2>/dev/null | head -1 | sed -E 's/^v//' | awk '{print $1}')"
+
+          # A shared library has no --version, but the install carries the
+          # version in the filename and symlinks the bare name to it, so
+          # resolving the link IS the version check. Both are asserted: the
+          # bare name is what server/ai/embedding searches for, the versioned
+          # target is what the Go binding's ORT_API_VERSION is matched against.
+          if [ -L /usr/lib/libonnxruntime.so ]; then
+            check "ONNX Runtime" "libonnxruntime.so.$ONNXRUNTIME_VERSION" \
+              "$(basename "$(readlink -f /usr/lib/libonnxruntime.so)")"
+          else
+            echo "::error::ONNX Runtime: /usr/lib/libonnxruntime.so missing after setup"
+            fail=1
+          fi
+
+          exit "$fail"
+
+      # The end-to-end assertion. On PATH is necessary but not sufficient —
+      # this is the exact command that failed in the public repo's first CI
+      # run ("plugin protoc-gen-go: executable file not found in $PATH"), so
+      # run it rather than infer it. buf itself resolves from node_modules/.bin.
+      - name: Generating Go protos actually works
+        run: |
+          set -euo pipefail
+          npm install --silent --no-audit --no-fund
+          npm run generate:proto:go
+          test -d server/gen/ripls/api
+
+      # The other command that only fails away from the fleet: `npm run lint:go`
+      # died on `gofumpt: not found` / `golangci-lint: not found`, exit 127, two
+      # steps after the protoc plugins were fixed. The version checks above
+      # prove the binaries landed; this proves they work — including that the
+      # v2 config #3008 migrated to is readable by the v2 binary the action
+      # installs, which nothing on the fleet can demonstrate because the image
+      # bakes its own. Needs the generated code above, so it runs here rather
+      # than beside the version checks.
+      - name: Linting Go actually works
+        run: npm run lint:go
+
+      # Everything is installed now, so this must install nothing. That is the
+      # branch the self-hosted fleet takes on every run — and the one that
+      # would quietly start reinstalling, costing minutes on every job, if the
+      # probe regressed. Its log lines say which branch it took.
+      - name: Setup toolchain again — every tool should report "present"
+        uses: ./.github/actions/setup-toolchain
+        with:
+          go: "true"
+          node: "true"
+          flutter: "true"
+          java: "true"
+          protoc-plugins: "true"
+          go-lint: "true"
+          onnxruntime: "true"

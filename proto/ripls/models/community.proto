@@ -1,0 +1,603 @@
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/common.proto";
+import "ripls/models/transfer.proto";
+import "ripls/models/undo.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// A group of users that share things.
+message Community {
+  // A unique identifier for the community.
+  string id = 1;
+
+  // Community name.
+  string name = 2;
+
+  // Community description.
+  string description = 3;
+
+  // Immutable historical creator. Never updated. Use owner_user_id for
+  // current ownership; owner can change via ownership transfer while
+  // creator_id remains the original creator forever.
+  string creator_id = 4;
+
+  // Current owner of the community. Equal to creator_id at creation;
+  // changes via ownership transfer (owner-leave with handoff, or
+  // restore from soft-delete by an eligible member).
+  string owner_user_id = 11;
+
+  // Images associated with the community.
+  repeated string media_ids = 5;
+
+  // When the community was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 6;
+
+  // When the community was last updated (Unix timestamp in seconds).
+  int64 updated_at_unix_sec = 7;
+
+  // If set, this community was created by a simulation run with this ID.
+  // Used by CleanupSimulation to remove simulation data without affecting real communities.
+  optional string simulation_id = 8;
+
+  // Provenance back-reference for an ad-hoc community: the single item
+  // whose audience this community was spun up to be (#2492). The variant
+  // identifies the item kind; the value is that item's id. Unset for
+  // communities created directly via the "Create community" flow.
+  //
+  // Name-presence — not this field — is the ad-hoc-vs-real signal: a
+  // community with no `name` is ad-hoc; naming it promotes it to a real
+  // persistent community. `origin_item` is retained across that promotion
+  // as historical provenance ("this standing group began as an event").
+  oneof origin_item {
+    string origin_experience_id = 12;
+    string origin_gear_id = 13;
+    string origin_request_id = 14;
+    string origin_transfer_id = 15;
+  }
+
+  // Dedup key for ad-hoc communities (#2492): a canonical hash of the
+  // creation-time audience — the host plus every invitee, identified by
+  // real-user id or normalized contact handle (phone/email). Two items a
+  // host creates for the same set of people resolve to the SAME ad-hoc
+  // community instead of spawning duplicates; the `origin_item` stays the
+  // first item. Empty for named communities (never deduped) and for an
+  // audience-less (host-only) ad-hoc community. Server-only; not on the API.
+  string member_signature = 16;
+
+  // Feed freshness: number of views after which a seen item expires.
+  // Default 0 means use the server default (2 views).
+  int32 feed_expiry_views = 9;
+
+  // Feed freshness: hours after which a seen item expires.
+  // Default 0 means use the server default (24 hours).
+  int32 feed_expiry_hours = 10;
+
+  // Soft deletion metadata.
+  optional DeletedMetadata deleted = 20;
+
+  // Snapshot of the eligible-restorer set, captured when the community
+  // was soft-deleted. Members in this set may restore the community
+  // within the 30-day window. Server-only; not exposed on the API.
+  optional CommunityDeletedSnapshot deleted_snapshot = 21;
+
+  // Unix timestamp (seconds) when the day-before-purge reminder push
+  // was dispatched to snapshot members. 0/unset means the reminder
+  // has not yet fired for the current delete cycle. Set by the daily
+  // CommunityPurgeReminderJob and cleared on restore so a
+  // delete→restore→delete cycle gets a fresh reminder window.
+  // Server-only; not exposed on the API.
+  optional int64 purge_reminder_sent_at_unix_sec = 22;
+}
+
+// CommunityDeletedSnapshot captures who was a member at delete time,
+// so eligibility to restore is a static lookup independent of any
+// later membership changes. Server-only; not exposed on the API.
+message CommunityDeletedSnapshot {
+  // CommunityUser.user_id values that were active members at the
+  // moment the parent community was soft-deleted. This is the
+  // eligible-restorer set.
+  repeated string member_user_ids = 1;
+}
+
+// A user's membership in a community.
+message CommunityUser {
+  // A unique identifier for this membership.
+  string id = 1;
+
+  // The community the member is a user of.
+  string community_id = 2;
+
+  // The user in the community.
+  string user_id = 3;
+
+  // The user who invited user_id into the community.
+  string inviter_id = 4;
+
+  // When the membership was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 5;
+
+  // Soft deletion metadata. Set when the user leaves the community,
+  // so the row sticks around for the 30-day rejoin window. Cleared
+  // (or replaced with a fresh row) on rejoin. Server-only; not
+  // exposed on the API.
+  optional DeletedMetadata deleted = 6;
+}
+
+// Availability options for gear within a community.
+enum Availability {
+  AVAILABILITY_UNSPECIFIED = 0;
+  AVAILABILITY_FOR_LOAN = 1; // Available for borrowing
+  AVAILABILITY_FOR_GIVEAWAY = 2; // Available to give away
+}
+
+// Gear available within a community.
+message CommunityGear {
+  // A unique identifier for this gear/community relationship.
+  string id = 1;
+
+  // The community the gear is shared with.
+  string community_id = 2;
+
+  // The gear shared with the community.
+  string gear_id = 3;
+
+  // When the gear was shared with the community (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 4;
+
+  // Whether this gear is available for loan or giveaway in this community.
+  Availability availability = 5;
+
+  // Marks completed giveaway. When true, conversation becomes read-only for non-participants.
+  bool archived = 7;
+
+  // Soft deletion metadata. Set when the parent gear is deleted so this
+  // join row stops surfacing in queries that don't opt into deleted rows.
+  // `archived` means "lifecycle completed successfully" — deletion is a
+  // distinct state.
+  optional DeletedMetadata deleted = 8;
+
+  reserved 6;
+  reserved "conversation_id";
+}
+
+// Request shared within a community.
+message CommunityRequest {
+  // A unique identifier for this request/community relationship.
+  string id = 1;
+
+  // The request shared with the community.
+  string request_id = 2;
+
+  // The community the request is shared with.
+  string community_id = 3;
+
+  // When the request was shared with the community (Unix timestamp in seconds).
+  int64 shared_at_unix_sec = 5;
+
+  // Marks fulfilled/cancelled requests. When true, request is hidden from community feed.
+  bool archived = 6;
+
+  // Soft deletion metadata. Set when the parent request is deleted so this
+  // join row stops surfacing in queries that don't opt into deleted rows.
+  // `archived` means "lifecycle completed successfully" — deletion is a
+  // distinct state.
+  optional DeletedMetadata deleted = 7;
+
+  reserved 4;
+  reserved "conversation_id";
+}
+
+// Experience shared within a community.
+// Similar to CommunityGear pattern - each community gets its own conversation for community-specific coordination.
+message CommunityExperience {
+  // A unique identifier for this experience/community relationship.
+  string id = 1;
+
+  // The community the experience is shared with.
+  string community_id = 2;
+
+  // The experience shared with the community.
+  string experience_id = 3;
+
+  // When the experience was shared with the community (Unix timestamp in seconds).
+  int64 shared_at_unix_sec = 4;
+
+  // Governs feed visibility only. Set to true when the parent experience
+  // reaches a terminal state (completed or cancelled) to hide it from the
+  // community timeline. Does not revoke sharing — the presence of this row
+  // is the authoritative "shared" signal. User-initiated unsharing physically
+  // deletes the row instead of archiving it.
+  bool archived = 6;
+
+  // Soft deletion metadata. Set when the parent experience is deleted so this
+  // join row stops surfacing in queries that don't opt into deleted rows.
+  // `archived` means "lifecycle completed successfully" — deletion is a
+  // distinct state.
+  optional DeletedMetadata deleted = 7;
+
+  reserved 5;
+  reserved "conversation_id";
+}
+
+// A shareable invitation link for new users to join a community.
+// One link per inviter+community combination, reusable until revoked.
+message CommunityInvitationLink {
+  // A unique identifier for this invitation link.
+  string id = 1;
+
+  // The community this link invites users to.
+  string community_id = 2;
+
+  // The user who created this invitation link.
+  string inviter_id = 3;
+
+  // Short alphanumeric code for validating invitations (e.g., "Xk9mN2pQ").
+  string short_code = 4;
+
+  // Whether the invitation link has been manually revoked.
+  bool is_revoked = 5;
+
+  // When the invitation link was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 6;
+
+  // If set, this invite link is tied to a specific provisional user account.
+  // When the invitee registers using this link, the provisional account is
+  // merged into their new real account.
+  optional string provisional_user_id = 7;
+
+  // Soft deletion metadata. Set when the parent community is soft-deleted
+  // so the link stops working; cleared on community restore. `is_revoked`
+  // is the user-facing kill switch and is independent — a link revoked by
+  // its inviter stays revoked across community delete/restore cycles.
+  // Server-only; not exposed on the API.
+  optional DeletedMetadata deleted = 8;
+}
+
+// Types of events that can occur within a community.
+enum CommunityEventType {
+  COMMUNITY_EVENT_TYPE_UNSPECIFIED = 0;
+  COMMUNITY_EVENT_TYPE_INVITATION_LINK_USED = 1;
+  COMMUNITY_EVENT_TYPE_GEAR_SHARED = 2;
+  COMMUNITY_EVENT_TYPE_GEAR_UNSHARED = 3;
+  COMMUNITY_EVENT_TYPE_MEMBER_LEFT = 4;
+  reserved 5;
+  COMMUNITY_EVENT_TYPE_TRANSFER_INTEREST_EXPRESSED = 6;
+  COMMUNITY_EVENT_TYPE_TRANSFER_RECIPIENT_SELECTED = 7;
+  COMMUNITY_EVENT_TYPE_TRANSFER_ACTIVE = 8;
+  COMMUNITY_EVENT_TYPE_TRANSFER_COMPLETED = 9;
+  COMMUNITY_EVENT_TYPE_REQUEST_CREATED = 10;
+
+  COMMUNITY_EVENT_TYPE_REQUEST_OFFER_MADE = 11;
+  COMMUNITY_EVENT_TYPE_REQUEST_OFFER_SELECTED = 12;
+  COMMUNITY_EVENT_TYPE_REQUEST_FULFILLED = 13;
+  COMMUNITY_EVENT_TYPE_REQUEST_CANCELLED = 14;
+  COMMUNITY_EVENT_TYPE_COMMUNITY_CREATED = 15;
+  COMMUNITY_EVENT_TYPE_TRANSFER_INTEREST_WITHDRAWN = 16;
+  COMMUNITY_EVENT_TYPE_REQUEST_OFFER_WITHDRAWN = 17;
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_CREATED = 18;
+  COMMUNITY_EVENT_TYPE_TRANSFER_CANCELLED = 19;
+
+  // Experience RSVP events
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_RSVP_YES = 20;
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_RSVP_MAYBE = 21;
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_RSVP_NO = 22;
+
+  // Host-driven roster change with no per-party meaning of its own: a host
+  // reset a member to "invited", removed a member, or the change needs to
+  // reach viewers in a sibling community the experience also lives in. It
+  // exists purely to stream a "refresh the roster" signal — it is NOT in the
+  // notification allow-list (ShouldNotify), so it never fires a push (#2492).
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_ROSTER_CHANGED = 47;
+
+  // Transfer pickup coordination
+  COMMUNITY_EVENT_TYPE_TRANSFER_PICKUP_PROPOSED = 23;
+
+  // Planning collaborative-list events (add/remove/claim needs and
+  // contributions). Scoped to an experience or a request via the topic
+  // oneof. Emitted for activity-feed hygiene; classified as client-only
+  // undoable because the UI exposes a direct inverse. Naming aligns
+  // with the ChatSystemAction.CHAT_SYSTEM_ACTION_PLANNING_* family.
+  COMMUNITY_EVENT_TYPE_PLANNING_NEED_ADDED = 24;
+  COMMUNITY_EVENT_TYPE_PLANNING_NEED_REMOVED = 25;
+  COMMUNITY_EVENT_TYPE_PLANNING_NEED_CLAIMED = 26;
+  COMMUNITY_EVENT_TYPE_PLANNING_CONTRIBUTION_ADDED = 27;
+  COMMUNITY_EVENT_TYPE_PLANNING_CONTRIBUTION_REMOVED = 28;
+
+  // Experience completion. Required by the generalized-undo feature
+  // (see docs/ai/undo_plan.md) and was missing before.
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_COMPLETED = 29;
+
+  // Retraction events emitted when an Undo* RPC reverses a prior
+  // action. Same topic and (where applicable) transfer_type as the
+  // original event; actor is the undoer. ReversalData is not set on
+  // retraction events.
+  COMMUNITY_EVENT_TYPE_TRANSFER_RECIPIENT_SELECTED_UNDONE = 30;
+  COMMUNITY_EVENT_TYPE_TRANSFER_ACTIVE_UNDONE = 31;
+  COMMUNITY_EVENT_TYPE_TRANSFER_COMPLETED_UNDONE = 32;
+  COMMUNITY_EVENT_TYPE_TRANSFER_CANCELLED_UNDONE = 33;
+  COMMUNITY_EVENT_TYPE_REQUEST_OFFER_SELECTED_UNDONE = 34;
+  COMMUNITY_EVENT_TYPE_REQUEST_FULFILLED_UNDONE = 35;
+  COMMUNITY_EVENT_TYPE_REQUEST_CANCELLED_UNDONE = 36;
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_COMPLETED_UNDONE = 37;
+
+  // Lifecycle transitions on an Experience that ping Yes/Maybe RSVPs
+  // (gated by notify_experience_rsvps). STARTED fires when the owner marks
+  // the experience in-process; CANCELLED fires when the owner cancels it.
+  // UPDATED fires when the owner changes the time or location via
+  // SaveExperience; time_changed and location_changed on the event record
+  // which fields were affected.
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_STARTED = 38;
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_CANCELLED = 39;
+  COMMUNITY_EVENT_TYPE_EXPERIENCE_UPDATED = 44;
+
+  // Community soft-delete lifecycle. Actor on COMMUNITY_DELETED is the
+  // member who triggered the delete (owner, or sole-member-leave).
+  // Actor on COMMUNITY_RESTORED is the eligible member who restored
+  // the community and becomes its new owner.
+  COMMUNITY_EVENT_TYPE_COMMUNITY_DELETED = 40;
+  COMMUNITY_EVENT_TYPE_COMMUNITY_RESTORED = 41;
+
+  // Ownership transferred from one member to another. Actor is the
+  // previous owner; object_user_id is the new owner.
+  COMMUNITY_EVENT_TYPE_OWNERSHIP_TRANSFERRED = 42;
+
+  // A previously-departed member rejoined within the 30-day rejoin
+  // window without needing a fresh invite. Actor is the rejoiner.
+  COMMUNITY_EVENT_TYPE_MEMBER_REJOINED_WITHIN_WINDOW = 43;
+
+  // The proposer of a planning need edited its name, note, or slot
+  // count in place (rather than removing + re-adding). Scoped to an
+  // experience or a request via the topic oneof.
+  COMMUNITY_EVENT_TYPE_PLANNING_NEED_UPDATED = 45;
+
+  // An ad-hoc (nameless) community was promoted to a real persistent one
+  // by gaining a name (#2492). Actor is the member who named it. Emitted
+  // by UpdateCommunity on the first unnamed→named transition.
+  COMMUNITY_EVENT_TYPE_COMMUNITY_NAMED = 46;
+}
+
+// An event that occurred within a community.
+message CommunityEvent {
+  // A unique identifier for this event.
+  string id = 1;
+
+  // The community this event belongs to.
+  string community_id = 2;
+
+  // The type of event that occurred.
+  CommunityEventType event_type = 3;
+
+  // The user who triggered this event.
+  string actor_id = 4;
+
+  // Optional: A user who was the object of this event (e.g., invitee).
+  string object_user_id = 5;
+
+  // Optional: Gear involved in this event.
+  string gear_id = 6;
+
+  // The topic of this event.
+  oneof topic {
+    // Invitation short code used (for INVITATION_LINK_USED events).
+    string invitation_short_code = 7;
+
+    // Transfer involved in this event.
+    string transfer_id = 8;
+
+    // Request involved in this event.
+    string request_id = 11;
+
+    // Experience involved in this event.
+    string experience_id = 12;
+  }
+
+  // When this event occurred (Unix timestamp in seconds).
+  int64 occurred_at_unix_sec = 9;
+
+  // Optional: Type of transfer for transfer-related events (loan, giveaway, etc).
+  TransferType transfer_type = 10;
+
+  // Undo metadata, attached for server-authoritative undoable events
+  // whose reversal requires a prior-state snapshot.
+  optional UndoData undo_data = 13;
+
+  // Reference to the SystemChatMessage this action emitted (if any),
+  // so Undo* RPCs can soft-delete it via direct read rather than a
+  // time-range search.
+  optional string system_chat_message_id = 14;
+
+  // Whether the experience time changed in this update (only set on
+  // EXPERIENCE_UPDATED events).
+  optional bool time_changed = 15;
+
+  // Whether the experience location changed in this update (only set on
+  // EXPERIENCE_UPDATED events).
+  optional bool location_changed = 16;
+
+  // Name of the planning need or contribution involved (set on PLANNING_* events)
+  // so notification copy can say what was needed or brought.
+  string planning_item_name = 17;
+}
+
+// Categories of notifications a member can toggle on or off for a single
+// community. Each value corresponds to one switch in the per-community
+// "Manage Notifications" UI; the server filters before dispatching push.
+enum NotificationCategory {
+  NOTIFICATION_CATEGORY_UNSPECIFIED = 0;
+
+  // New requests posted to the community.
+  NOTIFICATION_CATEGORY_NEW_REQUESTS = 1;
+
+  // New experiences posted to the community.
+  NOTIFICATION_CATEGORY_NEW_EXPERIENCES = 2;
+
+  // Gear newly shared into the community.
+  NOTIFICATION_CATEGORY_GEAR_SHARED = 3;
+
+  // Experience marked completed (broadcast to all members).
+  NOTIFICATION_CATEGORY_EXPERIENCE_COMPLETED = 4;
+
+  // Lifecycle of any transfer the user is a party to (interest, recipient
+  // selection, active, cancelled, pickup).
+  NOTIFICATION_CATEGORY_TRANSFER_UPDATES = 5;
+
+  // Lifecycle of any request the user is a party to (offers made,
+  // selected, withdrawn; fulfilled; cancelled).
+  NOTIFICATION_CATEGORY_REQUEST_UPDATES = 6;
+
+  // RSVPs to experiences the user hosts plus lifecycle pings (started,
+  // cancelled) for experiences the user said yes/maybe to.
+  NOTIFICATION_CATEGORY_EXPERIENCE_RSVPS = 7;
+
+  // Planning activity (need added/claimed, contribution added) on
+  // experiences the user said yes/maybe to.
+  NOTIFICATION_CATEGORY_PLANNING_UPDATES = 8;
+
+  // Chat messages in any conversation scoped to this community.
+  NOTIFICATION_CATEGORY_CHATS = 9;
+
+  // A new member joined the community.
+  NOTIFICATION_CATEGORY_NEW_MEMBERS = 10;
+
+  // Scheduled reminders ahead of Experiences the user has RSVPed to
+  // (24h before, 2h before, starting). See #625.
+  NOTIFICATION_CATEGORY_EVENT_REMINDERS = 11;
+}
+
+// Per-(user, community) push-notification preferences. One row per
+// member per community. Absence of a row means "all categories on";
+// absence of an individual `optional bool` field means the same. The
+// resolved view used by the server filter treats unset as `true`.
+message CommunityNotificationPreferences {
+  // Unique identifier for this preferences row.
+  string id = 1;
+
+  // The community these preferences apply to.
+  string community_id = 2;
+
+  // The user these preferences belong to.
+  string user_id = 3;
+
+  // Notify on new requests posted to the community. Unset = on.
+  optional bool notify_new_requests = 4;
+
+  // Notify on new experiences posted to the community. Unset = on.
+  optional bool notify_new_experiences = 5;
+
+  // Notify when gear is shared into the community. Unset = on.
+  optional bool notify_gear_shared = 6;
+
+  // Notify when an experience is marked completed. Unset = on.
+  optional bool notify_experience_completed = 7;
+
+  // Notify on transfer-lifecycle events for transfers the user is a
+  // party to. Unset = on.
+  optional bool notify_transfer_updates = 8;
+
+  // Notify on request-lifecycle events for requests the user is a
+  // party to. Unset = on.
+  optional bool notify_request_updates = 9;
+
+  // Notify on RSVPs to experiences the user hosts and on lifecycle
+  // updates for experiences the user RSVP'd yes/maybe to. Unset = on.
+  optional bool notify_experience_rsvps = 10;
+
+  // Notify on planning activity for experiences the user RSVP'd
+  // yes/maybe to. Unset = on.
+  optional bool notify_planning_updates = 11;
+
+  // Notify on chat messages in conversations scoped to this community.
+  // Unset = on.
+  optional bool notify_chats = 12;
+
+  // Notify when a new member joins the community. Unset = on.
+  optional bool notify_new_members = 15;
+
+  // Notify the user with scheduled reminders ahead of Experiences
+  // they have RSVPed yes/maybe to (24h before, 2h before, starting).
+  // Unset = on.
+  optional bool notify_event_reminders = 17;
+
+  // Prompt the requester to mark still-open requests fulfilled or
+  // cancelled, every 3 days from creation. Unset = on.
+  optional bool notify_request_followup_prompts = 18;
+
+  // When the row was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 13;
+
+  // When the row was last updated (Unix timestamp in seconds).
+  int64 updated_at_unix_sec = 14;
+
+  // Soft deletion metadata. Set when the parent community is
+  // soft-deleted; cleared on community restore. Server-only; not
+  // exposed on the API.
+  optional DeletedMetadata deleted = 16;
+}
+
+// Association between a community and a geographic region.
+// Communities can have multiple region associations (city, state, country).
+message CommunityRegion {
+  // Unique identifier for this association.
+  string id = 1;
+
+  // The community this region association belongs to.
+  string community_id = 2;
+
+  // Reference to the normalized region (see models.Region).
+  string region_id = 3;
+
+  // Percentage of community members whose primary residence is in this region (0.0 - 1.0).
+  // Used for determining primary region and filtering thresholds.
+  // For manually overridden regions, this may be 1.0 (100%) even with few members.
+  double member_percentage = 4;
+
+  // True if this region was manually set by creator/admin, false if auto-computed from member locations.
+  // Manual overrides take precedence over auto-computation.
+  bool is_override = 5;
+
+  // When this association was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 6;
+
+  // When this association was last updated (Unix timestamp in seconds).
+  int64 updated_at_unix_sec = 7;
+}
+
+// Forensic audit record written by the daily purge job (#1620)
+// immediately before hard-deleting a soft-deleted community and
+// its cascade. Survives the hard delete so an operator can
+// reconstruct what was removed if needed. Audit rows are
+// retained indefinitely; volume is small (one row per purged
+// community).
+message CommunityPurgeAudit {
+  // The community that was purged. This is the primary key.
+  // After the purge runs, this ID no longer references a row in
+  // the community table.
+  string community_id = 1;
+
+  // The community's name at purge time, for human-readable
+  // forensic queries.
+  string name = 2;
+
+  // The community's description at purge time.
+  string description = 3;
+
+  // When the community was originally soft-deleted (Unix
+  // timestamp in seconds). Copied from
+  // Community.deleted.deleted_at_unix_sec.
+  int64 deleted_at_unix_sec = 4;
+
+  // When the purge job hard-deleted the community (Unix
+  // timestamp in seconds).
+  int64 purged_at_unix_sec = 5;
+
+  // Snapshot of users who had restore rights at delete time.
+  // Copied from Community.deleted_snapshot.member_user_ids.
+  repeated string snapshot_member_user_ids = 6;
+
+  // Per-table row counts removed by the cascade, keyed by
+  // table name (e.g. "community_user" -> 12).
+  map<string, int64> per_table_row_counts = 7;
+}

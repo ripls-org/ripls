@@ -1,0 +1,466 @@
+name: Claude Implement Plan
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Plan PR number to implement
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+  id-token: write
+
+# Serialize per PR so racing `@claude implement` mentions don't spawn parallel
+# implementation runs against the same branch.
+concurrency:
+  group: claude-implement-plan-pr-${{ github.event.inputs.pr_number || github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    # Trigger paths:
+    #   - workflow_dispatch (manual)
+    #   - issue_comment on a PR containing `@claude implement`
+    #   - pull_request_review submitted with `@claude implement` in the body
+    # TRUSTED ACTORS ONLY — see the note in claude_plan_issue.yaml. Comments
+    # and reviews come from anyone who can see the repo; on a public repo this
+    # check is the whole boundary between that and a job holding
+    # CLAUDE_WORKFLOW_PAT. workflow_dispatch already requires write access.
+    if: |
+      github.actor != 'claude[bot]' && (
+        github.event_name == 'workflow_dispatch' ||
+        (
+          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association || github.event.review.author_association) &&
+          (
+            (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '@claude implement')) ||
+            (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude implement'))
+          )
+        )
+      )
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    outputs:
+      should_run: ${{ steps.guard.outputs.should_run }}
+      pr_number: ${{ steps.guard.outputs.pr_number }}
+      head_ref: ${{ steps.guard.outputs.head_ref }}
+      head_sha: ${{ steps.guard.outputs.head_sha }}
+      issue_number: ${{ steps.guard.outputs.issue_number }}
+      plan_path: ${{ steps.guard.outputs.plan_path }}
+    steps:
+      - id: guard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Required: this job runs on a hosted runner without a checkout, so
+          # gh has no git remote to infer the repo from. Without GH_REPO,
+          # `gh pr view`/`gh pr comment` fail with "fatal: not a git repository".
+          GH_REPO: ${{ github.repository }}
+          INPUT_PR: ${{ github.event.inputs.pr_number }}
+          ISSUE_PR_NUM: ${{ github.event.issue.number }}
+          REVIEW_PR_NUM: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          PR_NUMBER="${INPUT_PR:-${ISSUE_PR_NUM:-${REVIEW_PR_NUM:-}}}"
+          if [ -z "$PR_NUMBER" ]; then
+            echo "::notice::Could not resolve PR number from event; skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          gh pr view "$PR_NUMBER" \
+            --json number,headRefName,headRefOid,baseRefName,state,isDraft,body \
+            > /tmp/pr.json
+          STATE=$(jq -r '.state' /tmp/pr.json)
+          if [ "$STATE" != "OPEN" ]; then
+            echo "::notice::PR #$PR_NUMBER is $STATE; skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          HEAD_REF=$(jq -r '.headRefName' /tmp/pr.json)
+          HEAD_SHA=$(jq -r '.headRefOid' /tmp/pr.json)
+          BODY=$(jq -r '.body // ""' /tmp/pr.json)
+
+          # Extract plan markers. Both must be present for this to be a plan PR.
+          ISSUE_NUMBER=$(printf '%s' "$BODY" | sed -n 's/.*<!-- claude-plan-pr: *\([0-9][0-9]*\) *-->.*/\1/p' | head -1)
+          PLAN_PATH=$(printf '%s' "$BODY" | sed -n 's|.*<!-- claude-plan-path: *\([^ ]*\) *-->.*|\1|p' | head -1)
+          if [ -z "$ISSUE_NUMBER" ] || [ -z "$PLAN_PATH" ]; then
+            echo "::notice::PR #$PR_NUMBER body missing claude-plan-pr / claude-plan-path markers; not a plan PR. Skipping."
+            # Politely tell the human (workflow_dispatch only — comment-trigger
+            # users will see the workflow as no-op in checks).
+            if [ "${INPUT_PR:-}" = "$PR_NUMBER" ]; then
+              gh pr comment "$PR_NUMBER" --body "This PR doesn't carry the plan markers, so the implement workflow can't run against it. Use \`@claude\` (without \`implement\`) to address PR feedback instead."
+            fi
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          case "$HEAD_REF" in
+            claude/*) ;;
+            *)
+              echo "::notice::PR #$PR_NUMBER head $HEAD_REF is not claude/*; skipping."
+              echo "should_run=false" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+          esac
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "head_ref=$HEAD_REF" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "plan_path=$PLAN_PATH" >> "$GITHUB_OUTPUT"
+
+  implement:
+    needs: discover
+    if: needs.discover.outputs.should_run == 'true'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 90
+    env:
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+      PR_NUMBER: ${{ needs.discover.outputs.pr_number }}
+      HEAD_REF: ${{ needs.discover.outputs.head_ref }}
+      HEAD_SHA: ${{ needs.discover.outputs.head_sha }}
+      ISSUE_NUMBER: ${{ needs.discover.outputs.issue_number }}
+      PLAN_PATH: ${{ needs.discover.outputs.plan_path }}
+
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.HEAD_SHA }}
+          fetch-depth: 0
+          lfs: true
+          token: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Ensure Git LFS files are pulled
+        run: |
+          git lfs install --local
+          git lfs pull
+
+      - name: Setup git identity
+        run: |
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
+
+      - name: Move to PR branch
+        run: git checkout -B "$HEAD_REF"
+
+      - name: Verify plan file exists
+        run: |
+          set -euo pipefail
+          if [ ! -f "$PLAN_PATH" ]; then
+            echo "::error::Plan file $PLAN_PATH not found on branch $HEAD_REF."
+            exit 1
+          fi
+          echo "Plan file: $PLAN_PATH"
+          wc -l "$PLAN_PATH"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      - name: Install Flutter dependencies
+        run: cd app && flutter pub get
+
+      - name: Generate Dart freezed/mockito code
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Fetch issue details for context
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue view "$ISSUE_NUMBER" \
+            --json number,title,body,comments,labels,state,url \
+            > /tmp/issue.json || echo '{}' > /tmp/issue.json
+
+      - name: Capture pre-run state
+        id: pre
+        run: echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Transition stage labels (plan-pr -> implementing)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Idempotent: ensure labels exist (first plan run usually creates
+          # them, but the implement workflow may run on a PR opened before
+          # those labels existed).
+          gh label create claude-plan-pr \
+            --color '0E8A16' \
+            --description 'Draft plan PR awaiting review/refinement' 2>/dev/null || true
+          gh label create claude-implementing \
+            --color 'FBCA04' \
+            --description 'Sonnet is currently implementing the plan' 2>/dev/null || true
+          gh label create claude-implemented \
+            --color '5319E7' \
+            --description 'Plan implemented; ready for code review' 2>/dev/null || true
+          # Drop plan-pr (so refine can't fire mid-implement) and add
+          # implementing. Final transition (success vs blocked) happens in
+          # the post-Claude reconcile step.
+          gh pr edit "$PR_NUMBER" \
+            --remove-label claude-plan-pr \
+            --add-label claude-implementing 2>/dev/null || true
+
+      - name: Run Claude Code (Sonnet) to execute the plan
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        env:
+          # Deliberately no ANTHROPIC_API_KEY: Claude Code prefers it over
+          # claude_code_oauth_token, silently billing runs per-token instead
+          # of to the subscription. AI integration tests skip without it.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          VERTEX_AI_PROJECT: ${{ vars.GCP_PROJECT_DEV }}
+          CI: "true"
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are implementing the plan that an Opus agent wrote (and a
+            human may have edited) for issue
+            #${{ env.ISSUE_NUMBER }} in ${{ github.repository }}.
+
+            Plan PR:    #${{ env.PR_NUMBER }}
+            Plan file:  ${{ env.PLAN_PATH }} (read this from the working tree
+                        — the human may have edited it after the Opus run)
+            Issue:      #${{ env.ISSUE_NUMBER }} (context only;
+                        /tmp/issue.json has the title/body/comments)
+            Branch:     ${{ env.HEAD_REF }} (already checked out)
+
+            ## Mission
+
+            Implement the plan as written, push commits to
+            ${{ env.HEAD_REF }}, mark the PR ready for review, and comment.
+            The run is **only complete** when one of:
+
+              (a) you pushed at least one new code commit on
+                  ${{ env.HEAD_REF }}, ran `gh pr ready ${{ env.PR_NUMBER }}`,
+                  and posted `gh pr comment ${{ env.PR_NUMBER }}` summarizing
+                  what was implemented and which tests passed, or
+              (b) you posted `gh pr comment ${{ env.PR_NUMBER }}` explaining
+                  why you can't safely implement the plan and what a human
+                  should do.
+
+            Don't stop after analysis. Don't write a wrap-up message — push
+            commits or comment.
+
+            ## Process
+
+            Use TodoWrite to track these steps.
+
+            1. Read ${{ env.PLAN_PATH }} carefully. Treat the **Recommendation**
+               and **Implementation Plan** sections as authoritative — if they
+               conflict with the issue body, the original options the plan
+               considered, or earlier comments, the **plan as it currently
+               stands wins**. The human may have edited it after Opus wrote
+               it. Implement what the file says, not what you'd have written
+               from scratch.
+            2. Read /tmp/issue.json for context only (acceptance criteria,
+               original report).
+            3. Implement the plan. Stay disciplined: if the plan says edit
+               files A and B, do A and B, not C. Follow CLAUDE.md (proto
+               rules, structured logging, fail-fast errors, SQL efficiency,
+               Flutter structure, etc.).
+            4. Add or update tests that exercise the change.
+            5. Run the relevant test suites and iterate until green:
+                 - Proto changes: `npm run generate:proto` first
+                 - Go changes: `npm run build` and `go test -tags=integration -timeout 20m ./...`
+                 - Flutter changes: `cd app && flutter test --reporter github`
+               If tests still fail after several honest attempts, skip to
+               step 8.
+            6. Commit and push. The plan file commit is already on the
+               branch — your commits go on top:
+
+                   git add -A
+                   git commit -m "<descriptive message; no Claude branding>"
+                   # add additional commits if the change is large enough to
+                   # warrant logical separation
+                   git push origin ${{ env.HEAD_REF }}
+
+            7. **Convert the PR from a plan PR to a normal code PR.** This
+               PR's title and description still reflect the planning stage;
+               you need to rewrite both so reviewers see what was actually
+               implemented, not what was proposed. Then mark it ready for
+               review and transition labels.
+
+               **Title.** Drop the `[plan]` prefix. The current title is
+               `[plan] Fix #${{ env.ISSUE_NUMBER }}: <summary>`; the new
+               title is `Fix #${{ env.ISSUE_NUMBER }}: <summary>`. Refine
+               the summary phrase if implementation revealed a more
+               accurate framing (e.g. discovered the fix needed a slightly
+               different scope than the plan anticipated).
+
+               **Body.** Replace the plan summary with an implementation
+               summary, keeping the two HTML-comment markers at the top so
+               this PR is still recognizable as a former plan PR:
+
+                   <!-- claude-plan-pr: ${{ env.ISSUE_NUMBER }} -->
+                   <!-- claude-plan-path: ${{ env.PLAN_PATH }} -->
+
+                   ## What this PR does
+                   <2-4 sentences describing the implementation in plain
+                   terms — what behavior changed, what was added, what was
+                   removed. Frame it for a code reviewer who hasn't seen the
+                   plan.>
+
+                   ## Changes
+                   <bullet list of changes by area, e.g.
+                   - `server/services/foo`: added X, refactored Y
+                   - `app/lib/presentation/foo_screen.dart`: wired Z>
+
+                   ## Tests
+                   <which suites you ran and the outcomes; mention any new
+                   tests you added>
+
+                   Plan: `${{ env.PLAN_PATH }}` (kept on this branch for
+                   reference).
+
+                   Fixes #${{ env.ISSUE_NUMBER }}.
+
+               Now ship it:
+
+                   gh pr ready ${{ env.PR_NUMBER }}
+                   gh pr edit ${{ env.PR_NUMBER }} \
+                     --title "Fix #${{ env.ISSUE_NUMBER }}: <summary>" \
+                     --body "<implementation summary body above, with markers>" \
+                     --remove-label claude-implementing \
+                     --add-label claude-implemented
+                   gh pr comment ${{ env.PR_NUMBER }} --body "Implementation pushed (per ${{ env.PLAN_PATH }}). Tests: <which suites + outcomes>. PR description rewritten as a code PR; ready for review."
+
+               Then exit. Do not merge the PR.
+
+            8. **Blocked exit (only if step 5 told you to skip here, or if the
+               plan is internally inconsistent / impossible to execute as
+               written).** Restore `claude-plan-pr` so refine can pick up the
+               iteration again, drop `claude-implementing`, and leave the PR
+               as a draft:
+
+                   gh pr edit ${{ env.PR_NUMBER }} \
+                     --remove-label claude-implementing \
+                     --add-label claude-plan-pr
+                   gh pr comment ${{ env.PR_NUMBER }} --body "<what blocked me, what I tried, what a human should do — be concrete about which step of the plan I couldn't carry out and why>"
+
+            ## Hard rules
+
+            - The plan file is the contract. Don't deviate. If the plan is
+              wrong, post a blocked comment instead of silently doing
+              something different.
+            - Don't modify the plan file unless the plan itself instructs you
+              to (e.g., "tick off completed items"). Do not rewrite the
+              recommendation.
+            - On the success path you MUST rewrite the PR title and body
+              per step 7. Keep both HTML-comment markers
+              (`claude-plan-pr`, `claude-plan-path`) verbatim at the top of
+              the new body — never strip them.
+            - On the blocked path do not touch the PR title or body. Leave
+              them as the plan-stage versions so refine can pick the
+              iteration back up cleanly.
+            - No "Co-Authored-By" / "Generated with Claude" branding in commit
+              messages.
+            - Do not merge the PR.
+            - Don't stop with a summary message before doing step 7 or 8.
+          claude_args: >-
+            --model claude-sonnet-4-6
+            --max-turns 400
+            --verbose
+            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash(git:*),Bash(gh:*),Bash(go:*),Bash(flutter:*),Bash(npm:*),Bash(npx:*),Bash(cd app*),Bash(jq:*),Bash(golangci-lint:*),Bash(gofumpt:*),Bash(cat:*),Bash(ls:*)"
+
+      - name: Reconcile stage labels
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRE_SHA: ${{ steps.pre.outputs.head_sha }}
+        run: |
+          # Recover from cases where Sonnet crashed before doing the label
+          # swap itself. Safe to run unconditionally — gh pr edit is a no-op
+          # when the labels are already in the requested state.
+          set +e
+          PR_JSON=$(gh pr view "$PR_NUMBER" --json isDraft,labels,assignees)
+          IS_DRAFT=$(echo "$PR_JSON" | jq -r '.isDraft')
+          REMOTE_SHA=$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')
+          BRANCH_ADVANCED=false
+          if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" != "$PRE_SHA" ]; then
+            BRANCH_ADVANCED=true
+          fi
+          # Heuristic: branch advanced AND PR is no longer a draft → Sonnet
+          # finished successfully. Otherwise treat as blocked / aborted and
+          # restore the plan-pr label so refine can pick it back up.
+          if [ "$BRANCH_ADVANCED" = "true" ] && [ "$IS_DRAFT" = "false" ]; then
+            gh pr edit "$PR_NUMBER" \
+              --remove-label claude-implementing \
+              --remove-label claude-plan-pr \
+              --add-label claude-implemented 2>/dev/null
+            # Request a first-pass review from the original requester (set as
+            # assignee at plan time). They can reassign to a second reviewer
+            # after their pass.
+            ASSIGNEE=$(echo "$PR_JSON" | jq -r '.assignees[0].login // empty')
+            if [ -n "$ASSIGNEE" ]; then
+              gh pr edit "$PR_NUMBER" --add-reviewer "$ASSIGNEE" 2>/dev/null || true
+            fi
+          else
+            gh pr edit "$PR_NUMBER" \
+              --remove-label claude-implementing \
+              --add-label claude-plan-pr 2>/dev/null
+          fi
+
+      - name: Stage execution log for artifact
+        if: always()
+        run: |
+          DEBUG_DIR="${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}"
+          rm -rf "$DEBUG_DIR"
+          mkdir -p "$DEBUG_DIR"
+          if [ -f "${{ runner.temp }}/claude-execution-output.json" ]; then
+            cp "${{ runner.temp }}/claude-execution-output.json" "$DEBUG_DIR/"
+          fi
+          if [ -f "${{ runner.temp }}/claude-prompts/claude-prompt.txt" ]; then
+            cp "${{ runner.temp }}/claude-prompts/claude-prompt.txt" "$DEBUG_DIR/"
+          fi
+          cp /tmp/issue.json "$DEBUG_DIR/" 2>/dev/null || true
+          ls -la "$DEBUG_DIR/" || true
+
+      - name: Upload Claude execution log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: claude-implement-log-pr${{ env.PR_NUMBER }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Clean up test postgres container
+        if: always()
+        uses: ./.github/actions/cleanup-test-postgres
+
+      - name: Assert Claude produced a deliverable
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRE_SHA: ${{ steps.pre.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          REMOTE_SHA=$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')
+          if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" != "$PRE_SHA" ]; then
+            echo "PR branch advanced from ${PRE_SHA} to ${REMOTE_SHA}; deliverable (a) satisfied."
+            exit 0
+          fi
+          THIRTY_MIN_AGO=$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+            || date -u -v-30M +%Y-%m-%dT%H:%M:%SZ)
+          RECENT_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
+            --jq "[.comments[] | select(.createdAt > \"$THIRTY_MIN_AGO\")] | length")
+          if [ "$RECENT_COMMENT" -gt 0 ]; then
+            echo "Recent comment posted on PR #$PR_NUMBER; deliverable (b) satisfied."
+            exit 0
+          fi
+          echo "::error::Claude finished without deliverable on PR #$PR_NUMBER. See claude-implement-log artifact."
+          exit 1

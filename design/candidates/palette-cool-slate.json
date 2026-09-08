@@ -1,0 +1,18 @@
+{
+  "id": "cool-slate",
+  "axis": "palette",
+  "label": "Cool slate",
+  "description": "A different hue family for the brand, holding luminance roughly where Ink & Sage sits. If glass legibility barely moves between this and Ink & Sage, hue is not the variable that matters — which is what the contrast arithmetic predicts.",
+  "color": {
+    "light": {
+      "primary": { "$value": "#2F4A56" },
+      "primary-hover": { "$value": "#243A44" },
+      "on-primary": { "$value": "#F1F6F8" }
+    },
+    "dark": {
+      "primary": { "$value": "#A8C2CC" },
+      "primary-hover": { "$value": "#BCD2DA" },
+      "on-primary": { "$value": "#14222A" }
+    }
+  }
+}

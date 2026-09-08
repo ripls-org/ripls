@@ -1,0 +1,47 @@
+name: Check Versions
+
+# Enforces that the toolchain versions consumed across the repo stay in sync
+# with the single source of truth, versions.env (scripts/check_versions.js).
+# Runs on every PR to main (no path filter) so drift introduced anywhere is
+# caught, and is intended to be a REQUIRED status check — which also makes it a
+# valid gate for Renovate auto-merge (see renovate.json / #2287).
+#
+# check_versions.js itself depends only on Node built-ins (fs/path) and runs with
+# no `npm install`. The script unit tests, however, can pull devDeps (e.g.
+# doc_freshness.test.js → js-yaml), so `npm install` runs before them.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-versions:
+    name: Check Versions
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Check toolchain versions against versions.env
+        run: node scripts/check_versions.js
+
+      - name: Install npm dependencies (script tests may need devDeps)
+        run: npm install
+
+      - name: Run script unit tests
+        run: npm run test:scripts

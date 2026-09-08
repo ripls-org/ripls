@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// LocalizedErrorDetail is attached as a Connect error detail when an
+// RPC fails with a user-visible message that the client should
+// render in the recipient's locale. The client maps `code` to an
+// ARB key, then performs ICU substitution using `params`.
+//
+// Without this detail attached, a Connect error's public message
+// reaches the client as a literal string (whatever language the
+// server emitted it in). With this detail, the client renders the
+// error in the user's locale without any server-side translation.
+//
+// The server side helper is connecterr.UserVisible; the client
+// side reader lives in RpcErrorHandler.classify (see
+// app/lib/core/errors/README.md).
+message LocalizedErrorDetail {
+  // Stable, machine-readable identifier for the error condition.
+  // Snake-case, scoped by surface where useful, e.g.
+  // "experience_owner_required" or "internal_error_generic".
+  // Codes are an append-only contract: never repurpose or rename;
+  // add a new code instead. The client maps each code to an ARB
+  // key (typically rpcError<UpperCamelCase(code)>).
+  string code = 1;
+
+  // ICU placeholders for substitution into the ARB-resolved
+  // string. Keys are placeholder names ("ownerName"), values are
+  // already-localized substitutions (gear titles, user names —
+  // strings that round-trip in whatever language the author typed
+  // them in, never server-translated). Empty when the message has
+  // no placeholders.
+  map<string, string> params = 2;
+}

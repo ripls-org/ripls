@@ -1,0 +1,495 @@
+// RPC service for managing locations and geocoding.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/location.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request to geocode an address to coordinates (forward geocoding).
+message GeocodeAddressRequest {
+    // CLDR region code (e.g., "US", "GB", "JP").
+    string region_code = 1;
+
+    // Postal code (e.g., "94043", "SW1A 1AA").
+    string postal_code = 2;
+
+    // City or locality name (e.g., "Mountain View", "London").
+    string locality = 3;
+
+    // Street address lines (e.g., ["1600 Amphitheatre Parkway", "Building 41"]).
+    repeated string address_lines = 4;
+}
+
+// Response containing geocoded coordinates.
+message GeocodeAddressResponse {
+    // Latitude in degrees, range [-90, 90].
+    double latitude_deg = 1;
+
+    // Longitude in degrees, range [-180, 180].
+    double longitude_deg = 2;
+}
+
+// Request to reverse geocode coordinates to an address.
+message ReverseGeocodeRequest {
+    // Latitude in degrees, range [-90, 90].
+    double latitude_deg = 1;
+
+    // Longitude in degrees, range [-180, 180].
+    double longitude_deg = 2;
+}
+
+// Response containing the reverse geocoded address.
+message ReverseGeocodeResponse {
+    // CLDR region code (e.g., "US", "GB", "JP").
+    string region_code = 1;
+
+    // Postal code (e.g., "94043", "SW1A 1AA").
+    string postal_code = 2;
+
+    // City or locality name (e.g., "Mountain View", "London").
+    string locality = 3;
+
+    // Street address lines (e.g., ["1600 Amphitheatre Parkway"]).
+    repeated string address_lines = 4;
+}
+
+// Request to suggest a location for gear based on media EXIF data.
+message SuggestGearLocationRequest {
+    // The gear ID to suggest location for.
+    string gear_id = 1;
+}
+
+// Response containing suggested location based on media EXIF.
+message SuggestGearLocationResponse {
+    // Whether a location suggestion was found.
+    bool found = 1;
+
+    // Latitude in degrees (only if found=true).
+    double latitude_deg = 2;
+
+    // Longitude in degrees (only if found=true).
+    double longitude_deg = 3;
+
+    // CLDR region code (only if found=true).
+    string region_code = 4;
+
+    // Postal code (only if found=true).
+    string postal_code = 5;
+
+    // City or locality name (only if found=true).
+    string locality = 6;
+
+    // Street address lines (only if found=true).
+    repeated string address_lines = 7;
+}
+
+// Request to save a location.
+message SaveLocationRequest {
+    // Latitude in degrees, range [-90, 90].
+    double latitude_deg = 1;
+
+    // Longitude in degrees, range [-180, 180].
+    double longitude_deg = 2;
+
+    // CLDR region code (e.g., "US", "GB", "JP").
+    string region_code = 3;
+
+    // Postal code (e.g., "94043", "SW1A 1AA").
+    string postal_code = 4;
+
+    // City or locality name (e.g., "Mountain View", "London").
+    string locality = 5;
+
+    // Street address lines (e.g., ["1600 Amphitheatre Parkway", "Building 41"]).
+    repeated string address_lines = 6;
+
+    // Human-readable name of the location (e.g., "Empower Field at Mile High").
+    // Optional - may be empty for addresses without a specific place name.
+    string name = 7;
+
+    // Neighborhood name (e.g., "Capitol Hill", "SoHo").
+    // Optional - extracted from Mapbox context.
+    string neighborhood = 8;
+
+    // County or equivalent administrative division (e.g., "Boulder County").
+    // Optional - extracted from Mapbox context.
+    string county = 9;
+
+    // State/province/administrative area (e.g., "Colorado", "California").
+    // Optional - extracted from Mapbox context.
+    string administrative_area = 10;
+
+    // Provider-specific opaque identifier for this place (used for
+    // deduplication). Paired with external_place_provider: locations with
+    // the same (external_place_id, external_place_provider) are considered
+    // the same real-world place.
+    // Optional - if not provided, falls back to coordinate proximity matching.
+    string external_place_id = 11;
+
+    // The provider that issued external_place_id (e.g., "mapbox", "google").
+    // Empty means no external identifier is available.
+    string external_place_provider = 12;
+}
+
+// Response after saving a location.
+message SaveLocationResponse {
+    // The unique identifier assigned to the location.
+    string id = 1;
+}
+
+// Request to get a location by ID.
+message GetLocationRequest {
+    // The unique identifier of the location to retrieve.
+    string id = 1;
+}
+
+// Response containing location details.
+message GetLocationResponse {
+    // The unique identifier of the location.
+    string id = 1;
+
+    // Latitude in degrees, range [-90, 90].
+    double latitude_deg = 2;
+
+    // Longitude in degrees, range [-180, 180].
+    double longitude_deg = 3;
+
+    // CLDR region code (e.g., "US", "GB", "JP").
+    string region_code = 4;
+
+    // Postal code (e.g., "94043", "SW1A 1AA").
+    string postal_code = 5;
+
+    // City or locality name (e.g., "Mountain View", "London").
+    string locality = 6;
+
+    // Street address lines (e.g., ["1600 Amphitheatre Parkway", "Building 41"]).
+    repeated string address_lines = 7;
+
+    // Human-readable name of the location (e.g., "Empower Field at Mile High").
+    // Optional - may be empty for addresses without a specific place name.
+    string name = 8;
+
+    // Neighborhood name (e.g., "Capitol Hill", "SoHo").
+    // Optional - may be empty if not available.
+    string neighborhood = 9;
+
+    // County or equivalent administrative division (e.g., "Boulder County").
+    // Optional - may be empty if not available.
+    string county = 10;
+
+    // State/province/administrative area (e.g., "Colorado", "California").
+    // Optional - may be empty if not available.
+    string administrative_area = 11;
+
+    // Provider-specific opaque identifier for this place (used for
+    // deduplication). Mirrors the SaveLocationRequest field so clients can
+    // echo the ID back on subsequent saves.
+    // Optional - may be empty if no external identifier was captured.
+    string external_place_id = 12;
+
+    // The provider that issued external_place_id (e.g., "mapbox", "google").
+    // Optional - empty when no external identifier is available.
+    string external_place_provider = 13;
+}
+
+// Request to delete a location by ID.
+message DeleteLocationRequest {
+    // The unique identifier of the location to delete.
+    string id = 1;
+}
+
+// Response after deleting a location.
+message DeleteLocationResponse {}
+
+// Request to find nearby users within a radius.
+message GetNearbyUsersRequest {
+    // Latitude of query point in degrees, range [-90, 90].
+    double latitude_deg = 1;
+
+    // Longitude of query point in degrees, range [-180, 180].
+    double longitude_deg = 2;
+
+    // Search radius in meters. Must be > 0 and ≤ 50,000.
+    double radius_meters = 3;
+
+    // The community to scope results to. Required. The caller must be an
+    // active member of this community, and only fellow members are returned.
+    string community_id = 4;
+}
+
+// Information about a nearby user.
+message NearbyUser {
+    // The user ID.
+    string user_id = 1;
+
+    // Distance from query point in meters.
+    double distance_meters = 2;
+
+    // Approximate latitude of the user's location in degrees, rounded to
+    // ~110 m precision. Do not use this value for exact positioning.
+    double latitude_deg = 3;
+
+    // Approximate longitude of the user's location in degrees, rounded to
+    // ~110 m precision. Do not use this value for exact positioning.
+    double longitude_deg = 4;
+}
+
+// Response containing nearby users.
+message GetNearbyUsersResponse {
+    // List of nearby users sorted by distance.
+    repeated NearbyUser users = 1;
+}
+
+// Request to find nearby gear within a radius.
+message GetNearbyGearRequest {
+    // Latitude of query point in degrees, range [-90, 90].
+    double latitude_deg = 1;
+
+    // Longitude of query point in degrees, range [-180, 180].
+    double longitude_deg = 2;
+
+    // Search radius in meters. Must be > 0 and ≤ 50,000.
+    double radius_meters = 3;
+
+    // The community to scope results to. Required. The caller must be an
+    // active member of this community, and only gear owned by fellow members
+    // is returned.
+    string community_id = 4;
+}
+
+// Information about nearby gear.
+message NearbyGear {
+    // The gear ID.
+    string gear_id = 1;
+
+    // Distance from query point in meters.
+    double distance_meters = 2;
+
+    // Approximate latitude of the gear's location in degrees, rounded to
+    // ~110 m precision. Do not use this value for exact positioning.
+    double latitude_deg = 3;
+
+    // Approximate longitude of the gear's location in degrees, rounded to
+    // ~110 m precision. Do not use this value for exact positioning.
+    double longitude_deg = 4;
+}
+
+// Response containing nearby gear.
+message GetNearbyGearResponse {
+    // List of nearby gear sorted by distance.
+    repeated NearbyGear gear = 1;
+}
+
+// Request to search for regions by name (typeahead search).
+message SearchRegionsRequest {
+    // Search query to filter regions by name (case-insensitive substring match).
+    // If empty, returns all available regions.
+    string query = 1;
+
+    // Optional: Filter by region type (e.g., "city", "state").
+    string region_type = 2;
+}
+
+// Response with list of matching regions.
+message SearchRegionsResponse {
+    // The list of regions matching the search query.
+    repeated RegionItem regions = 1;
+}
+
+// A single region item with hierarchy information.
+message RegionItem {
+    // Region ID (references models.Region).
+    string region_id = 1;
+
+    // Display name with parent context (e.g., "Boulder, CO", "Colorado, United States").
+    string display_name = 2;
+
+    // Region type (e.g., "city", "county", "state", "country").
+    string region_type = 3;
+
+    // Number of communities in this region.
+    int32 community_count = 4;
+
+    // Optional: Parent region details for hierarchy display.
+    repeated RegionParent parents = 5;
+}
+
+// Parent region in the hierarchy.
+message RegionParent {
+    // Parent region ID.
+    string region_id = 1;
+
+    // Parent region name.
+    string region_name = 2;
+
+    // Parent region type.
+    string region_type = 3;
+}
+
+// Request to get a region by ID.
+message GetRegionRequest {
+    // The unique identifier of the region to retrieve.
+    string region_id = 1;
+}
+
+// Response containing region details.
+message GetRegionResponse {
+    // The region details.
+    RegionItem region = 1;
+}
+
+// Request to create a region from address details (for manual community region override).
+message CreateRegionFromAddressRequest {
+    // Latitude in degrees, range [-90, 90].
+    double latitude_deg = 1;
+
+    // Longitude in degrees, range [-180, 180].
+    double longitude_deg = 2;
+
+    // CLDR region code (e.g., "US", "GB", "JP").
+    string region_code = 3;
+
+    // Postal code (e.g., "94043", "SW1A 1AA").
+    string postal_code = 4;
+
+    // City or locality name (e.g., "Boulder").
+    string locality = 5;
+
+    // Neighborhood name (e.g., "Capitol Hill", "SoHo").
+    // Optional - may be empty.
+    string neighborhood = 6;
+
+    // County or equivalent administrative division (e.g., "Boulder County").
+    // Optional - may be empty.
+    string county = 7;
+
+    // State/province/administrative area (e.g., "Colorado", "California").
+    // Optional - may be empty.
+    string administrative_area = 8;
+
+    // Preferred region type (client's best guess based on Mapbox feature type).
+    // One of: "neighborhood", "city", "county", "state"
+    string preferred_region_type = 9;
+}
+
+// Response after creating a region from address.
+message CreateRegionFromAddressResponse {
+    // The created or found region ID.
+    string region_id = 1;
+
+    // The actual region type that was used (may differ from preferred).
+    string region_type = 2;
+
+    // The region name.
+    string region_name = 3;
+}
+
+// Request to get user's locations sorted by recency.
+message GetUserLocationsRequest {
+    // Optional: limit results (default: 50).
+    int32 limit = 1;
+}
+
+// Response containing user's locations with details.
+message GetUserLocationsResponse {
+    // List of locations with usage history, sorted by last_used_at (most recent first).
+    repeated UserLocationWithDetails locations = 1;
+}
+
+// Enriched response combining UserLocation with full Location details.
+message UserLocationWithDetails {
+    // Location ID.
+    string location_id = 1;
+
+    // When this location was last used (for sorting).
+    int64 last_used_at_unix_sec = 2;
+
+    // Full location details.
+    Location location = 3;
+}
+
+// Request to add/update a user-location association.
+message AddUserLocationRequest {
+    // The location ID to associate with the authenticated user.
+    string location_id = 1;
+}
+
+// Response after adding a user-location association.
+message AddUserLocationResponse {}
+
+// Request to remove a user-location association.
+message RemoveUserLocationRequest {
+    // The location ID to remove from authenticated user's list.
+    string location_id = 1;
+}
+
+// Response after removing a user-location association.
+message RemoveUserLocationResponse {}
+
+// Request to update the last_used_at timestamp for a location.
+message UpdateLocationLastUsedRequest {
+    // The location ID to update for the authenticated user.
+    string location_id = 1;
+}
+
+// Response after updating location last used timestamp.
+message UpdateLocationLastUsedResponse {}
+
+// RPC service for managing locations and geocoding.
+service LocationService {
+    // Geocode an address to coordinates (forward geocoding).
+    rpc GeocodeAddress(GeocodeAddressRequest) returns (GeocodeAddressResponse);
+
+    // Reverse geocode coordinates to an address.
+    rpc ReverseGeocode(ReverseGeocodeRequest) returns (ReverseGeocodeResponse);
+
+    // Suggest a location for gear based on media EXIF data.
+    //
+    // Deprecated: never wired into any client. Location is set explicitly via
+    // the LocationPicker plus permissioned device GPS, so the EXIF auto-suggest
+    // was removed server-side (#2209). The server returns Unimplemented; the
+    // request/response messages are retained for wire compatibility.
+    rpc SuggestGearLocation(SuggestGearLocationRequest) returns (SuggestGearLocationResponse) {
+        option deprecated = true;
+    }
+
+    // Save a new or updated location.
+    rpc SaveLocation(SaveLocationRequest) returns (SaveLocationResponse);
+
+    // Get a location by ID.
+    rpc GetLocation(GetLocationRequest) returns (GetLocationResponse);
+
+    // Delete a location by ID.
+    rpc DeleteLocation(DeleteLocationRequest) returns (DeleteLocationResponse);
+
+    // Get nearby users within a radius.
+    rpc GetNearbyUsers(GetNearbyUsersRequest) returns (GetNearbyUsersResponse);
+
+    // Get nearby gear within a radius.
+    rpc GetNearbyGear(GetNearbyGearRequest) returns (GetNearbyGearResponse);
+
+    // Search for regions by name (typeahead search).
+    rpc SearchRegions(SearchRegionsRequest) returns (SearchRegionsResponse);
+
+    // Get a region by ID.
+    rpc GetRegion(GetRegionRequest) returns (GetRegionResponse);
+
+    // Create a region from address details (for manual community region override).
+    rpc CreateRegionFromAddress(CreateRegionFromAddressRequest) returns (CreateRegionFromAddressResponse);
+
+    // Get user's locations sorted by last_used_at (most recent first).
+    rpc GetUserLocations(GetUserLocationsRequest) returns (GetUserLocationsResponse);
+
+    // Add or update a user-location association (updates last_used_at).
+    rpc AddUserLocation(AddUserLocationRequest) returns (AddUserLocationResponse);
+
+    // Remove a user-location association (soft delete).
+    rpc RemoveUserLocation(RemoveUserLocationRequest) returns (RemoveUserLocationResponse);
+
+    // Update the last_used_at timestamp for a location.
+    rpc UpdateLocationLastUsed(UpdateLocationLastUsedRequest) returns (UpdateLocationLastUsedResponse);
+}

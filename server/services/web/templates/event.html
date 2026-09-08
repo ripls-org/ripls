@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="{{.Lang}}" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Title}}</title>
+
+  <!-- Open Graph metadata for link previews -->
+  <meta property="og:title" content="{{.Title}}">
+  <meta property="og:description" content="{{.WhenSummary}} · {{.PlaceName}}">
+  <meta property="og:image" content="{{.HeroImageURL}}">
+  <meta property="og:url" content="{{.BaseURL}}/go/{{.ShortCode}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{.Brand.Name}}">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{.Title}}">
+  <meta name="twitter:description" content="{{.WhenSummary}} · {{.PlaceName}}">
+  <meta name="twitter:image" content="{{.HeroImageURL}}">
+
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/event.css">
+</head>
+<body>
+  <header class="event-hero">
+    {{if .HeroImageURL}}<img src="{{.HeroImageURL}}" alt="">{{end}}
+    <div class="event-hero-inner">
+      <div class="event-kicker">{{if .CommunityIsNamed}}{{.CommunityName}} · {{end}}{{.DayLabel}}</div>
+      <h1>{{.EventName}}</h1>
+    </div>
+  </header>
+
+  <main class="event-main">
+    <a id="event-open-in-app"
+       class="event-open-in-app hidden"
+       href="#"
+       aria-label="{{.Str.OpenInApp}}"
+       data-short-code="{{.ShortCode}}"
+       data-experience-id="{{.ExperienceID}}"
+       data-android-package="{{.AndroidPackage}}"
+       data-app-host="{{.Brand.AppHost}}"
+       data-scheme="{{.Brand.DeepLinkScheme}}"
+       data-base-host="{{.BaseURL}}">{{.Str.OpenInApp}}</a>
+
+    <div class="event-meta-pill" aria-label="{{.Str.MetaAria}}">
+      <span class="event-meta-item">
+        <span class="event-meta-icon" aria-hidden="true">📅</span>{{.WhenShort}}
+      </span>
+      {{if .TimeFormatted}}
+      <span class="event-meta-sep" aria-hidden="true">·</span>
+      <span class="event-meta-item">
+        <span class="event-meta-icon" aria-hidden="true">🕐</span>{{.TimeFormatted}}
+      </span>
+      {{end}}
+      <span class="event-meta-sep" aria-hidden="true">·</span>
+      <span class="event-meta-item">
+        <span class="event-meta-icon" aria-hidden="true">📍</span>{{.PlaceName}}
+      </span>
+    </div>
+
+    <div class="event-host">
+      <div class="event-avatar">
+        {{if .HostAvatarURL -}}
+        <img src="{{.HostAvatarURL}}" alt="">
+        {{- else -}}
+        <span class="event-avatar-fallback" aria-hidden="true">{{.HostInitial}}</span>
+        {{- end}}
+      </div>
+      <div class="event-host-text">
+        <strong>{{.HostName}}</strong> <span class="role">{{.Str.IsHosting}}</span>
+      </div>
+    </div>
+
+    {{if .HasAttendees}}
+    <div class="event-attendees">
+      <div class="event-avatars" aria-hidden="true">
+        {{range .AttendeesShown}}
+        <div class="event-avatar">
+          {{if .AvatarURL -}}
+          <img src="{{.AvatarURL}}" alt="">
+          {{- else -}}
+          <span class="event-avatar-fallback">{{.Initial}}</span>
+          {{- end}}
+        </div>
+        {{end}}
+      </div>
+      <div class="event-attendees-text">
+        <strong>{{.AttendeesNamesInline}}</strong>{{.AttendeesSuffix}}
+      </div>
+    </div>
+    {{end}}
+  </main>
+
+  {{if .IsAtCapacity}}
+  <div class="event-cta-full" role="status" aria-live="polite">
+    <strong>{{.Str.Capacity.Title}}</strong>
+    {{.Str.Capacity.Body}}
+    {{.Str.Capacity.Ask}}
+  </div>
+  {{else}}
+  <nav class="event-cta-bar" id="event-cta-bar" aria-label="{{.Str.RSVPAria}}">
+    <div class="event-cta-bar-inner">
+      <button class="event-cta event-cta-subtle"
+              id="event-cta-out"
+              data-decline-url="/go/{{.ShortCode}}/decline"
+              aria-label="{{.Str.CTAOutAria}}">{{.Str.CTAOut}}</button>
+      <a class="event-cta event-cta-secondary"
+         href="/event/{{.ExperienceID}}?rsvp=maybe&amp;code={{.ShortCode}}&amp;n={{.EventName}}{{if .HasHeroImage}}&amp;img={{.HeroImageURL}}{{end}}"
+         aria-label="{{.Str.CTAMaybeAria}}">{{.Str.CTAMaybe}}</a>
+      <a class="event-cta event-cta-primary"
+         href="/event/{{.ExperienceID}}?rsvp=yes&amp;code={{.ShortCode}}&amp;n={{.EventName}}{{if .HasHeroImage}}&amp;img={{.HeroImageURL}}{{end}}"
+         aria-label="{{.Str.CTAInAria}}">{{.Str.CTAIn}}</a>
+    </div>
+  </nav>
+  <script>
+  // Open-in-app hint. Universal Links / App Links handle the dominant
+  // case (link tapped from outside the browser with the app installed
+  // — the OS opens the app and this SSR page is never rendered).
+  // What's left is the residual: in-app webviews (Slack, Twitter,
+  // Instagram), copy-paste, typed URLs. From inside a browser there
+  // is no reliable "is the app installed?" check, so we offer a
+  // visible button that lets the user decide.
+  //  - Android: an Intent URI bypasses the in-app webview by handing
+  //    the URL to Chrome's URI dispatcher; Android opens the app if
+  //    installed and falls back to the Play Store listing otherwise.
+  //  - iOS: a custom-scheme URL (the instance's own scheme, e.g.
+  //    `ripls://`) opens the app if installed (no-op silently if not).
+  //    The app's `invite` handler accepts an `experience_id` query param
+  //    and routes to the event detail through AcceptInvitation, which
+  //    post-issue-#2050-step-1 handles event-flavored short codes.
+  //  - Desktop / unknown UAs: the button stays hidden.
+  (function () {
+    var link = document.getElementById('event-open-in-app');
+    if (!link) return;
+    var ua = navigator.userAgent;
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
+    if (!isIOS && !isAndroid) return;
+    var code = link.dataset.shortCode;
+    var experienceId = link.dataset.experienceId;
+    if (!code || !experienceId) return;
+    var scheme = link.dataset.scheme || '';
+    var appHost = (link.dataset.appHost || '').split(':')[0];
+    if (isAndroid) {
+      var pkg = link.dataset.androidPackage;
+      var host = (link.dataset.baseHost || '').replace(/^https?:\/\//, '');
+      // No package configured: this deployment has no published Android
+      // build to hand off to, so leave the button hidden rather than
+      // building an intent that resolves to nothing.
+      if (!pkg) return;
+      var fallback = 'https://play.google.com/store/apps/details?id=' + encodeURIComponent(pkg);
+      // Android App Links auto-verify only for the app's own host (the
+      // autoVerify intent-filter in AndroidManifest). For any other host —
+      // local dev (10.0.2.2:8080, localhost) or a preview domain — the https
+      // App Link can't resolve to the app and would always hit the Play Store
+      // fallback, so route through the custom scheme instead (also registered
+      // in the manifest), matching the iOS path below.
+      if (appHost && host.split(':')[0] === appHost) {
+        link.href = 'intent://' + host + '/go/' + encodeURIComponent(code)
+          + '#Intent;scheme=https'
+          + ';package=' + pkg
+          + ';S.browser_fallback_url=' + encodeURIComponent(fallback)
+          + ';end';
+      } else {
+        if (!scheme) return;
+        link.href = 'intent://invite?token=' + encodeURIComponent(code)
+          + '&experience_id=' + encodeURIComponent(experienceId)
+          + '#Intent;scheme=' + scheme
+          + ';package=' + pkg
+          + ';S.browser_fallback_url=' + encodeURIComponent(fallback)
+          + ';end';
+      }
+    } else {
+      if (!scheme) return;
+      link.href = scheme + '://invite?token=' + encodeURIComponent(code)
+        + '&experience_id=' + encodeURIComponent(experienceId);
+    }
+    link.classList.remove('hidden');
+  })();
+  </script>
+
+  <script>
+  (function () {
+    var btn = document.getElementById('event-cta-out');
+    if (!btn) return;
+    btn.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      btn.disabled = true;
+      var url = btn.dataset.declineUrl;
+      var thanks = "{{.Str.DeclineThanks}}";
+      var failed = "{{.Str.DeclineFailed}}";
+      fetch(url, { method: 'POST', credentials: 'same-origin' })
+        .then(function (resp) { replaceBar(resp.ok ? thanks : failed); })
+        .catch(function () { replaceBar(failed); });
+    });
+    function replaceBar(message) {
+      var bar = document.getElementById('event-cta-bar');
+      if (!bar) return;
+      var live = document.createElement('div');
+      live.className = 'event-cta-full';
+      live.setAttribute('role', 'status');
+      live.setAttribute('aria-live', 'polite');
+      live.textContent = message;
+      bar.replaceWith(live);
+    }
+  })();
+  </script>
+  {{end}}
+</body>
+</html>

@@ -1,0 +1,353 @@
+name: Claude Fix CI Failure
+
+on:
+  workflow_run:
+    workflows:
+      - "Go Tests"
+      - "Flutter Tests"
+      - "Terraform Tests"
+      - "Test iOS Build"
+      - "Test Docker Build"
+      - "AI Provider Integration Tests"
+      - "Run End-to-End Tests on Dev"
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number with the failing checks
+        required: true
+        type: string
+      failed_run_id:
+        description: ID of the failed Actions run to investigate (optional)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  checks: read
+  id-token: write
+
+jobs:
+  discover:
+    # Only act on failed runs against claude/* PR branches. Manual dispatch is
+    # always allowed; the discover step still validates the PR is a claude/*
+    # branch before invoking Claude.
+    # SAME-REPO ONLY. A branch-name prefix is not an authorization check — a
+    # fork can name its branch `claude/anything`, and `workflow_run` handlers
+    # execute in the BASE repo with full secrets. Without the head_repository
+    # comparison below, a public repo would hand CLAUDE_WORKFLOW_PAT to a job
+    # acting on a stranger's failing build (#2953 / OSS-7 #2959).
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'failure' &&
+       startsWith(github.event.workflow_run.head_branch, 'claude/') &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    outputs:
+      should_run: ${{ steps.ctx.outputs.should_run }}
+      pr_number: ${{ steps.ctx.outputs.pr_number }}
+      head_ref: ${{ steps.ctx.outputs.head_ref }}
+      head_sha: ${{ steps.ctx.outputs.head_sha }}
+      failed_run_id: ${{ steps.ctx.outputs.failed_run_id }}
+      failed_workflow_name: ${{ steps.ctx.outputs.failed_workflow_name }}
+    steps:
+      - id: ctx
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Required: this job runs on a hosted runner without a checkout, so
+          # gh has no git remote to infer the repo from. Without GH_REPO,
+          # `gh pr list`/`gh pr view` fail with "fatal: not a git repository".
+          GH_REPO: ${{ github.repository }}
+          INPUT_PR: ${{ github.event.inputs.pr_number }}
+          INPUT_RUN: ${{ github.event.inputs.failed_run_id }}
+          WR_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          WR_RUN_ID: ${{ github.event.workflow_run.id }}
+          WR_NAME: ${{ github.event.workflow_run.name }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUT_PR:-}" ]; then
+            PR_NUMBER="$INPUT_PR"
+            FAILED_RUN_ID="${INPUT_RUN:-}"
+            FAILED_WORKFLOW_NAME="(manual dispatch)"
+          else
+            PR_NUMBER=$(gh pr list --state open --head "$WR_HEAD_BRANCH" \
+              --json number --jq '.[0].number // empty')
+            FAILED_RUN_ID="$WR_RUN_ID"
+            FAILED_WORKFLOW_NAME="$WR_NAME"
+          fi
+          if [ -z "$PR_NUMBER" ]; then
+            echo "::notice::No open PR for branch ${WR_HEAD_BRANCH:-?}; nothing to do."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          gh pr view "$PR_NUMBER" \
+            --json headRefName,headRefOid,state \
+            > /tmp/pr.json
+          STATE=$(jq -r '.state' /tmp/pr.json)
+          HEAD_REF=$(jq -r '.headRefName' /tmp/pr.json)
+          HEAD_SHA=$(jq -r '.headRefOid' /tmp/pr.json)
+          if [ "$STATE" != "OPEN" ]; then
+            echo "::notice::PR #$PR_NUMBER is $STATE; skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          case "$HEAD_REF" in
+            claude/*) ;;
+            *)
+              echo "::notice::PR #$PR_NUMBER head $HEAD_REF is not claude/*; skipping."
+              echo "should_run=false" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+          esac
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "head_ref=$HEAD_REF" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "failed_run_id=$FAILED_RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "failed_workflow_name=$FAILED_WORKFLOW_NAME" >> "$GITHUB_OUTPUT"
+
+  fix:
+    needs: discover
+    if: needs.discover.outputs.should_run == 'true'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    env:
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+      PR_NUMBER: ${{ needs.discover.outputs.pr_number }}
+      HEAD_REF: ${{ needs.discover.outputs.head_ref }}
+      HEAD_SHA: ${{ needs.discover.outputs.head_sha }}
+      FAILED_RUN_ID: ${{ needs.discover.outputs.failed_run_id }}
+      FAILED_WORKFLOW_NAME: ${{ needs.discover.outputs.failed_workflow_name }}
+
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.HEAD_SHA }}
+          fetch-depth: 0
+          lfs: true
+          token: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Ensure Git LFS files are pulled
+        run: |
+          git lfs install --local
+          git lfs pull
+
+      - name: Setup git identity
+        run: |
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
+
+      - name: Move to PR branch
+        run: git checkout -B "$HEAD_REF"
+
+      - name: Skip if branch advanced past the failed run
+        id: stale
+        run: |
+          set -euo pipefail
+          REMOTE_SHA=$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')
+          if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" != "$HEAD_SHA" ]; then
+            echo "::notice::Branch $HEAD_REF advanced from $HEAD_SHA to $REMOTE_SHA since the failed run; skipping."
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate to Google Cloud
+        if: steps.stale.outputs.stale != 'true'
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+
+      - name: Install npm dependencies
+        if: steps.stale.outputs.stale != 'true'
+        run: npm install
+
+      - name: Generate code from protos
+        if: steps.stale.outputs.stale != 'true'
+        run: npm run generate:proto
+
+      - name: Install Flutter dependencies
+        if: steps.stale.outputs.stale != 'true'
+        run: cd app && flutter pub get
+
+      - name: Generate Dart freezed/mockito code
+        if: steps.stale.outputs.stale != 'true'
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Capture failed run logs
+        if: steps.stale.outputs.stale != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/ci-failure
+          mkdir -p /tmp/ci-failure
+          if [ -n "${FAILED_RUN_ID:-}" ]; then
+            gh run view "$FAILED_RUN_ID" --log-failed > /tmp/ci-failure/failed.log 2>&1 || true
+            gh run view "$FAILED_RUN_ID" \
+              --json name,displayTitle,conclusion,headSha,jobs,url \
+              > /tmp/ci-failure/run.json || true
+          else
+            echo "(no failed_run_id supplied)" > /tmp/ci-failure/failed.log
+            echo "{}" > /tmp/ci-failure/run.json
+          fi
+          gh pr view "$PR_NUMBER" \
+            --json number,title,body,url,headRefName,baseRefName,comments,files,statusCheckRollup \
+            > /tmp/ci-failure/pr.json
+          gh pr diff "$PR_NUMBER" > /tmp/ci-failure/pr.diff || true
+
+      - name: Capture pre-run state
+        id: pre
+        if: steps.stale.outputs.stale != 'true'
+        run: echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code to fix CI failure
+        if: steps.stale.outputs.stale != 'true'
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        env:
+          # Deliberately no ANTHROPIC_API_KEY: Claude Code prefers it over
+          # claude_code_oauth_token, silently billing runs per-token instead
+          # of to the subscription. AI integration tests skip without it.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          VERTEX_AI_PROJECT: ${{ vars.GCP_PROJECT_DEV }}
+          CI: "true"
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            CI is red on PR #${{ env.PR_NUMBER }} in ${{ github.repository }}.
+            The failing workflow is "${{ env.FAILED_WORKFLOW_NAME }}"
+            (run id ${{ env.FAILED_RUN_ID }}).
+
+            PR JSON:        /tmp/ci-failure/pr.json (title, body, comments,
+                            files, statusCheckRollup)
+            PR diff:        /tmp/ci-failure/pr.diff
+            Failed logs:    /tmp/ci-failure/failed.log (`gh run view --log-failed`)
+            Failed run:     /tmp/ci-failure/run.json (job names + conclusions)
+            PR branch:      ${{ env.HEAD_REF }} (already checked out)
+
+            ## Mission
+
+            Read the failing logs, find the root cause, fix it, and push the fix
+            as one or more new commits to ${{ env.HEAD_REF }}. The run is **only
+            complete** when one of:
+
+              (a) you pushed at least one new commit on ${{ env.HEAD_REF }} that
+                  addresses the failure AND posted `gh pr comment ${{ env.PR_NUMBER }}`
+                  describing what you changed and which check it should make
+                  pass, or
+              (b) you posted `gh pr comment ${{ env.PR_NUMBER }}` explaining why
+                  you can't fix it (test reveals a real product bug, infra
+                  issue, ambiguous failure, etc.) and what a human should do.
+
+            Don't stop after analysis. Don't write a wrap-up message — push
+            commits or comment.
+
+            ## Process
+
+            Use TodoWrite to track these steps.
+
+            1. Read /tmp/ci-failure/failed.log and /tmp/ci-failure/run.json. Find
+               the actual failure message — skip past setup noise. If multiple
+               jobs failed, address each.
+            2. Read /tmp/ci-failure/pr.json and /tmp/ci-failure/pr.diff to
+               understand what this PR is doing. The fix must stay consistent
+               with the PR's intent — don't unwind the PR.
+            3. Read the relevant source files. Diagnose: is the failure caused
+               by the PR (most likely), by stale generated code, by a flake, or
+               by an infra issue?
+                 - Flake (timeout, transient network, container start): note it
+                   in the PR comment but still attempt a deflake if there's a
+                   plausible one (timeout bump, retry, ordering).
+                 - Infra issue (missing secret, runner offline): skip to step 7.
+                 - Otherwise: fix the underlying code or test.
+            4. Apply the fix. Stay narrow — no refactors, no "while I'm here"
+               cleanup. CLAUDE.md is authoritative for conventions.
+            5. Re-run the relevant tests locally to confirm green:
+                 - Proto changes: `npm run generate:proto` first
+                 - Go changes: `npm run build` and `go test -tags=integration -timeout 20m ./...`
+                 - Flutter changes: `cd app && flutter test --reporter github`
+               Iterate until green. If still red after several honest attempts,
+               skip to step 7.
+            6. Commit and push:
+
+                   git add -A
+                   git commit -m "<concise: what you fixed and why CI will pass>"
+                   git push origin ${{ env.HEAD_REF }}
+                   gh pr comment ${{ env.PR_NUMBER }} --body "Fixed CI failure in <SHA>: <one-line root cause + fix>. Re-running ${{ env.FAILED_WORKFLOW_NAME }}."
+
+               Then exit. Do not merge the PR.
+
+            7. **Blocked exit (only if step 3 or 5 told you to skip here).**
+
+                   gh pr comment ${{ env.PR_NUMBER }} --body "<what failed, what I tried, why I can't fix it, what a human should do>"
+
+            ## Hard rules
+
+            - Do not modify the PR title or body.
+            - Do not push commits unrelated to the CI failure.
+            - Do not merge the PR.
+            - No "Co-Authored-By" / "Generated with Claude" branding in commits.
+            - Do not stop with a summary message before doing step 6 or 7.
+          claude_args: >-
+            --max-turns 120
+            --verbose
+            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash(git:*),Bash(gh:*),Bash(go:*),Bash(flutter:*),Bash(npm:*),Bash(npx:*),Bash(cd app*),Bash(jq:*),Bash(golangci-lint:*),Bash(gofumpt:*),Bash(cat:*),Bash(ls:*)"
+
+      - name: Stage execution log for artifact
+        if: always()
+        run: |
+          DEBUG_DIR="${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}"
+          rm -rf "$DEBUG_DIR"
+          mkdir -p "$DEBUG_DIR"
+          if [ -f "${{ runner.temp }}/claude-execution-output.json" ]; then
+            cp "${{ runner.temp }}/claude-execution-output.json" "$DEBUG_DIR/"
+          fi
+          if [ -f "${{ runner.temp }}/claude-prompts/claude-prompt.txt" ]; then
+            cp "${{ runner.temp }}/claude-prompts/claude-prompt.txt" "$DEBUG_DIR/"
+          fi
+          cp -r /tmp/ci-failure "$DEBUG_DIR/" 2>/dev/null || true
+          ls -la "$DEBUG_DIR/" || true
+
+      - name: Upload Claude execution log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: claude-fix-ci-log-pr${{ env.PR_NUMBER }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Clean up test postgres container
+        if: always()
+        uses: ./.github/actions/cleanup-test-postgres
+
+      - name: Assert Claude produced a deliverable
+        if: success() && steps.stale.outputs.stale != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRE_SHA: ${{ steps.pre.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          REMOTE_SHA=$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')
+          if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" != "$PRE_SHA" ]; then
+            echo "PR branch advanced from ${PRE_SHA} to ${REMOTE_SHA}; deliverable (a) satisfied."
+            exit 0
+          fi
+          THIRTY_MIN_AGO=$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+            || date -u -v-30M +%Y-%m-%dT%H:%M:%SZ)
+          RECENT_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
+            --jq "[.comments[] | select(.createdAt > \"$THIRTY_MIN_AGO\")] | length")
+          if [ "$RECENT_COMMENT" -gt 0 ]; then
+            echo "Recent comment posted on PR #$PR_NUMBER; deliverable (b) satisfied."
+            exit 0
+          fi
+          echo "::error::Claude finished without deliverable on PR #$PR_NUMBER. See claude-fix-ci-log artifact."
+          exit 1

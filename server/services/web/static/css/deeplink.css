@@ -1,0 +1,263 @@
+/*
+ * deeplink.css — additional styles for the SSR community-invite
+ * landing (invite.html). Companion to shared.css.
+ *
+ * Tightened in #2049 Phase 1 to share the Ripls app's visual
+ * language with the event landing (event.css): sage primary CTAs,
+ * pill-shaped buttons, OS-aware theme via tokens.css, system
+ * sans-serif for in-card body text. The coral logo stays as the
+ * brand mark.
+ */
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Compact header for deeplink pages */
+body header {
+  padding: 15px 0;
+  gap: 6px;
+}
+
+body .logo-image {
+  width: 32px;
+  height: 32px;
+}
+
+body .logo-text {
+  font-size: 20px;
+}
+
+.deeplink-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.deeplink-card {
+  background: var(--color-card-background);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-5);
+  max-width: 600px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.deeplink-card h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 400;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-3);
+  line-height: 1.2;
+}
+
+.deeplink-card p {
+  font-size: var(--font-size-body-large);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-5);
+  line-height: 1.5;
+  font-family: var(--font-body);
+}
+
+.community-image {
+  width: 200px;
+  height: 200px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-md);
+}
+
+.deeplink-card .inviter-line {
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.deeplink-card .community-name {
+  font-size: clamp(1.625rem, 4vw, 2.125rem);
+  font-weight: 400;
+  font-family: var(--font-heading);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+  margin-bottom: var(--space-5);
+}
+
+.status {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-meta);
+  font-weight: 500;
+}
+
+.status.error {
+  background: var(--color-surface);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.btn {
+  display: inline-block;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  font-size: var(--font-size-body-large);
+  font-family: var(--font-body);
+}
+
+.btn-primary {
+  background: var(--color-cta-primary);
+  color: var(--color-on-primary);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text-primary);
+  border-color: var(--color-divider);
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface);
+}
+
+.store-links {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+a.store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-text-primary);
+  color: var(--color-background);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+a.store-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+.store-btn-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.store-btn-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.store-btn-label {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.store-btn-store {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.invite-code {
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-top: var(--space-2);
+  text-align: center;
+}
+
+.deeplink-card .invite-code-label {
+  margin: 0;
+}
+
+.deeplink-card .invite-code-value {
+  padding: var(--space-2) 0;
+  margin: 0;
+}
+
+.deeplink-card .invite-code-hint {
+  margin: 0;
+}
+
+.invite-code-label {
+  font-size: var(--font-size-micro);
+  color: var(--color-text-tertiary);
+  margin: 0 0 var(--space-1) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.invite-code-value {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--color-text-primary);
+  letter-spacing: 3px;
+  line-height: 1;
+  padding: var(--space-2) 0;
+  margin: 0;
+  user-select: all;
+}
+
+.invite-code-hint {
+  font-size: var(--font-size-micro);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .deeplink-card {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .btn {
+    font-size: var(--font-size-body);
+    padding: var(--space-3) var(--space-4);
+  }
+}

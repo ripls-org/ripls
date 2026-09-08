@@ -1,0 +1,302 @@
+// Configuration for the impact estimation system.
+// Parsed from a text-format proto file (config.textproto).
+
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/common.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// EstimatorConfig holds all impact estimation parameters.
+message EstimatorConfig {
+  // Semantic version for staleness detection.
+  // Increment when changing parameters that affect estimate values.
+  string version = 1;
+
+  // Global estimation parameters.
+  EstimatorGlobalConfig global = 2;
+
+  // Relative standard deviation by carbon estimation method.
+  repeated CarbonMethodStddev carbon_method_stddevs = 3;
+
+  // LLM confidence-to-stddev breakpoints for interpolation.
+  repeated LlmConfidenceBreakpoint llm_confidence_breakpoints = 4;
+
+  // Material-based emission factors.
+  repeated MaterialEmissionFactorEntry material_emission_factors = 5;
+
+  // Spend-based (EEIO) emission factors (kg CO2e per USD) keyed by category name.
+  map<string, float> spend_based_emission_factors = 6;
+
+  // Default time estimates.
+  EstimatorTimeDefaults time_defaults = 7;
+
+  // Equivalency display factors.
+  EstimatorEquivalencies equivalencies = 8;
+
+  // Field 9 was methodology_docs (MethodologyDocs) — removed, drill-down is now client-side.
+  reserved 9;
+
+  // Provenance versions keyed by name (e.g., "prevented_purchase" → 1).
+  // Bump a version when the corresponding algorithm or formula changes.
+  // Zero means unversioned. Used by ShouldRefresh to decide whether to
+  // re-estimate a field.
+  map<string, int32> provenance_versions = 10;
+
+  // Quality Time estimation parameters.
+  QualityTimeConfig quality_time = 11;
+}
+
+// EstimatorGlobalConfig holds global estimation parameters.
+message EstimatorGlobalConfig {
+  // Fraction of loans estimated to prevent a new purchase (0-1).
+  float loan_prevented_purchase_rate = 1;
+
+  // Fraction of giveaways estimated to prevent a new purchase (0-1).
+  float giveaway_prevented_purchase_rate = 4;
+
+  // Fraction of item's embodied carbon saved by repair vs. replacement (0-1).
+  float repair_carbon_fraction = 2;
+
+  // Default transportation CO2e per mile (kg).
+  float transportation_co2e_per_mile_kg = 3;
+
+  // Relative stddev for money savings estimates.
+  float money_saved_relative_stddev = 5;
+
+  // Waste carbon factor: kg CO2e per kg of item diverted from landfill.
+  // Source: Library of Things 2024 methodology (1.0 kg CO2e/kg).
+  float waste_co2e_per_kg = 6;
+
+  // Flat default carbon estimate (grams CO2e) for requests lacking detailed data.
+  // TODO: replace with LLM-assisted estimation per request type.
+  float request_default_carbon_grams = 7;
+
+  // Flat default carbon estimate (grams CO2e) for experiences.
+  // TODO: replace with LLM-assisted estimation.
+  float experience_default_carbon_grams = 8;
+}
+
+// CarbonMethodStddev maps a carbon estimation method version string to its
+// relative standard deviation (e.g., "weight_material_v1", "spend_based_v1").
+message CarbonMethodStddev {
+  string method = 1;
+
+  // Relative stddev as a fraction of mean (e.g., 0.40 means stddev = 40% of mean).
+  float relative_stddev = 2;
+}
+
+// LlmConfidenceBreakpoint maps a confidence value to a relative stddev.
+message LlmConfidenceBreakpoint {
+  // LLM self-assessed confidence (0.0-1.0).
+  float confidence = 1;
+
+  // Corresponding relative standard deviation.
+  float relative_stddev = 2;
+}
+
+// MaterialEmissionFactorEntry maps a material category to its emission factor.
+message MaterialEmissionFactorEntry {
+  MaterialCategory category = 1;
+
+  // kg CO2e emitted per kg of this material.
+  float kg_co2e_per_kg = 2;
+
+  // Composition assumption description.
+  string assumption = 3;
+}
+
+// EstimatorTimeDefaults holds default time estimates in minutes.
+message EstimatorTimeDefaults {
+  int32 gear_shopping_time_minutes = 1;
+  int32 request_labor_time_minutes = 2;
+  int32 experience_duration_minutes = 3;
+
+  // Relative stddev for config-default time estimates (population-level average).
+  float default_relative_stddev = 4;
+
+  // Relative stddev for AI-provided duration hints (item-specific context).
+  float hint_relative_stddev = 5;
+}
+
+// EstimatorEquivalencies holds factors for "equivalent to" displays.
+message EstimatorEquivalencies {
+  float miles_driven_per_kg_co2e = 1;
+  float smartphone_charges_per_kg_co2e = 2;
+  float tree_seedlings_10yr_per_tonne_co2e = 3;
+}
+
+// QualityTimeConfig holds all parameters for Quality Time estimation.
+message QualityTimeConfig {
+  // --- Duration defaults (minutes) ---
+
+  // Default face-to-face duration for gear loan handoffs.
+  int32 gear_handoff_duration_minutes = 1;
+
+  // Default face-to-face duration for giveaway handoffs.
+  int32 giveaway_handoff_duration_minutes = 2;
+
+  // Default duration for request fulfillment interactions.
+  int32 request_duration_minutes = 3;
+
+  // Default duration for experience/event interactions.
+  int32 experience_duration_minutes = 4;
+
+  // --- Modality weights (fraction of full in-person shared activity value) ---
+
+  // In-person shared activity (e.g., potluck, workshop, collaborative help).
+  float modality_in_person_shared = 5;
+
+  // In-person transactional (e.g., gear handoff, brief exchange).
+  float modality_in_person_transactional = 6;
+
+  // Video call.
+  float modality_video = 7;
+
+  // Phone or voice call.
+  float modality_phone = 8;
+
+  // Text or async messaging.
+  float modality_text = 9;
+
+  // --- Group size factors (per-person wellbeing multiplier) ---
+
+  // Dyadic: exactly 2 participants.
+  float group_size_dyadic = 10;
+
+  // Small group: 3–5 participants.
+  float group_size_small = 11;
+
+  // Medium group: 6–15 participants.
+  float group_size_medium = 12;
+
+  // Large group: 16+ participants.
+  float group_size_large = 13;
+
+  // --- Tie strength weights (based on prior interaction count) ---
+
+  // New contact: 0 prior interactions.
+  float tie_strength_new = 14;
+
+  // Acquaintance: 1–3 prior interactions.
+  float tie_strength_acquaintance = 15;
+
+  // Active tie: 4–10 prior interactions.
+  float tie_strength_active = 16;
+
+  // Close tie: 11+ prior interactions.
+  float tie_strength_close = 17;
+
+  // --- Reciprocity multipliers (based on transaction role) ---
+
+  // Giving role: lender, giver, helper.
+  float reciprocity_giving = 18;
+
+  // Receiving role: borrower, recipient.
+  float reciprocity_receiving = 19;
+
+  // Mutual role: shared experience, collaborative request.
+  float reciprocity_mutual = 20;
+
+  // --- Novelty multipliers (based on interaction history) ---
+
+  // Novel: first interaction of this type between these users.
+  float novelty_novel = 21;
+
+  // Infrequent: same type, but last occurrence >30 days ago.
+  float novelty_infrequent = 22;
+
+  // Routine: same type, last occurrence ≤30 days ago.
+  float novelty_routine = 23;
+
+  // --- Vulnerability defaults by transaction type ---
+  // TODO(phase-8): Replace with LLM classification from item/request description.
+
+  float vulnerability_gear_loan = 24;
+  float vulnerability_giveaway = 25;
+  float vulnerability_request = 26;
+  float vulnerability_experience = 27;
+
+  // --- Relative standard deviations for uncertainty propagation ---
+
+  // Duration: 40% for config defaults.
+  float duration_relative_stddev = 28;
+
+  // Modality: 15% misclassification rate.
+  float modality_relative_stddev = 29;
+
+  // Vulnerability: 30% for config defaults.
+  float vulnerability_relative_stddev = 30;
+
+  // Group size for experiences (RSVP vs. actual attendance variance).
+  float group_size_experience_relative_stddev = 31;
+
+  // Group size for other transaction types (dyadic is near-certain).
+  float group_size_other_relative_stddev = 32;
+
+  // Novelty: low, computed from deterministic platform data.
+  float novelty_relative_stddev = 33;
+
+  // Tie strength: low, computed from deterministic platform data.
+  float tie_strength_relative_stddev = 34;
+
+  // --- LLM-inferred relative standard deviations ---
+  // Lower than config defaults because item-specific context reduces uncertainty.
+
+  // Duration: 25% for LLM-inferred estimates (vs. 40% for config defaults).
+  float duration_llm_relative_stddev = 37;
+
+  // Vulnerability: 15% for LLM-inferred estimates (vs. 30% for config defaults).
+  float vulnerability_llm_relative_stddev = 38;
+
+  // --- Sufficiency threshold ---
+
+  // Weekly Quality Time target in minutes (~6 hours/week of in-person socializing).
+  int32 sufficiency_weekly_minutes = 35;
+
+  // Minimum community transactions before showing RM metrics.
+  int32 minimum_transactions = 36;
+
+  // --- Draft estimation parameters ---
+
+  // Fraction of experience contributions assumed to involve co-use (shared item use).
+  float experience_contribution_co_use_rate = 39;
+
+  // Fraction of request contributions assumed to involve co-use (shared item use).
+  float request_contribution_co_use_rate = 40;
+
+  // Default kilometers of travel avoided per person by attending an experience locally.
+  // Zero disables travel-avoided carbon calculation in drafts.
+  float experience_travel_avoided_default_km = 41;
+
+  // Maximum number of chat messages to include in the transcript sent to AI inference.
+  int32 experience_chat_transcript_max_messages = 42;
+
+  // Maximum token budget for the chat transcript sent to AI inference.
+  // Messages are trimmed oldest-first until the total fits within this budget.
+  int32 experience_chat_transcript_max_tokens = 43;
+
+  // Relative standard deviation applied to impact inputs overridden by the user.
+  // Reflects residual uncertainty even when a value is user-supplied.
+  float attribute_user_override_relative_stddev = 44;
+
+  // --- Phase 3: Estimation enrichment parameters ---
+
+  // Maximum multiplier applied to quality time when one contributor
+  // provided significantly more effort than others (effort asymmetry).
+  // A value of 1.0 disables asymmetry scaling. Suggested: 1.25.
+  float quality_time_max_effort_asymmetry_factor = 45;
+
+  // Multiplier applied to the tie-strength score when attendees come from
+  // more than one community (cross-community bridging bonus).
+  // A value of 1.0 disables the bonus. Suggested: 1.10.
+  float quality_time_cross_community_tie_strength_factor = 46;
+
+  // When multi-host distribution is detected (multiple attendees each
+  // contributed a hosting/venue/space contribution), this factor reduces
+  // the per-host vulnerability weight toward the group average.
+  // Range (0, 1]: 1.0 means no averaging, 0.5 means half-way to average.
+  float quality_time_multi_host_vulnerability_blend = 47;
+}

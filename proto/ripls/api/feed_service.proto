@@ -1,0 +1,616 @@
+// RPC service for personalized community feed.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+import "ripls/api/gear.proto";
+import "ripls/api/experience.proto";
+import "ripls/api/impact_estimate.proto";
+import "ripls/api/time.proto";
+import "ripls/api/undo.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Feed item types (what kind of content to display).
+enum FeedItemType {
+  FEED_ITEM_TYPE_UNSPECIFIED = 0;
+  FEED_ITEM_TYPE_UNREAD_NOTIFICATIONS = 1;
+  FEED_ITEM_TYPE_GEAR_SHARED = 2;
+  FEED_ITEM_TYPE_INVITER_CELEBRATION = 3;
+  FEED_ITEM_TYPE_FIRST_CONTRIBUTION = 4;
+  FEED_ITEM_TYPE_LOAN_MILESTONE = 5;
+  FEED_ITEM_TYPE_COMMUNITY_MILESTONE = 6;
+  FEED_ITEM_TYPE_REQUEST_CREATED = 7;
+  FEED_ITEM_TYPE_COMMUNITY_CREATED = 8;
+  FEED_ITEM_TYPE_EXPERIENCE_CREATED = 9;
+  FEED_ITEM_TYPE_STORY = 10;
+  FEED_ITEM_TYPE_NUDGE = 11;
+}
+
+// Story types (what kind of story to display).
+enum StoryType {
+  STORY_TYPE_UNSPECIFIED = 0;
+
+  // Accomplishment celebrations
+  STORY_TYPE_LOAN_COMPLETED = 1;
+  STORY_TYPE_GIVEAWAY_COMPLETED = 2;
+  STORY_TYPE_EXPERIENCE_CONCLUDED = 3;
+  STORY_TYPE_REQUEST_FULFILLED = 4;
+  STORY_TYPE_NEW_MEMBER_WELCOME = 5;
+  STORY_TYPE_EXPERIENCE_RSVP = 6;  // Clustered: "3 people are joining [experience]"
+}
+
+// Request to get personalized feed for a community.
+message GetFeedRequest {
+  // Pagination: number of items to return (default: 20, max: 50).
+  int32 page_size = 2;
+
+  // Pagination: cursor for next page (from previous response).
+  string page_token = 3;
+
+  // Always ignored. This asked the server to generate and prepend N fresh
+  // nudges so a developer could see nudge cards without scrolling past eight
+  // content items. Generic nudges are gone (#2936), so there is nothing to
+  // generate.
+  //
+  // TODO(#2936): #2938 deletes this field and reserves 4 once the release
+  // carrying #2936 has soaked — see docs/proto_conventions.md.
+  int32 debug_nudge_count = 4 [deprecated = true];
+
+  // Community IDs to get feed for. Returns the union of feed items across all
+  // specified communities, deduplicated by item ID. The user must be a member
+  // of every community listed. When non-empty, community_id is ignored.
+  repeated string community_ids = 5;
+
+  reserved 1;
+  reserved "community_id";
+}
+
+// Response containing personalized feed items.
+message GetFeedResponse {
+  // Ordered feed items (most recent first).
+  repeated FeedItem items = 1;
+
+  // Token for next page (empty if no more items).
+  string next_page_token = 2;
+}
+
+// A single item in the feed.
+message FeedItem {
+  // Unique identifier for this feed item.
+  string id = 1;
+
+  // Type of feed item.
+  FeedItemType item_type = 2;
+
+  // When this item was created/occurred (Unix timestamp in seconds).
+  int64 occurred_at_unix_sec = 4;
+
+  // When the most recent activity on this item occurred (Unix timestamp).
+  // Equals max(event.occurred_at, conversation.last_message_at). Used for
+  // ordering and freshness filtering.
+  int64 last_activity_at_unix_sec = 5;
+
+  // Whether this item has unseen activity since the user last viewed it.
+  // Computed server-side from: never seen, new events, new comments from
+  // others. The single authoritative signal for unread indicators on feed
+  // cards and the sidebar "New" badge.
+  bool is_unread = 9;
+
+  // When this item became unread (Unix timestamp in seconds). Set to
+  // last_activity_at when is_unread is true, 0 when read. Used for
+  // sorting: unread items are shown before read items, ordered by
+  // most recently became unread.
+  int64 unread_at_unix_sec = 21;
+
+  // Whether this item requires the viewer to take action (e.g., pending
+  // transfer interest on gear they own, or pending offers on their request).
+  // Action-required items are sorted to the top of the feed. This is a
+  // display hint only — is_unread is the primary signal.
+  bool is_action_required = 20;
+
+  // Type-specific payload.
+  oneof payload {
+    UnreadNotificationsPayload unread_notifications = 10;
+    GearSharedPayload gear_shared = 11;
+    InviterCelebrationPayload inviter_celebration = 12;
+    FirstContributionPayload first_contribution = 13;
+    LoanMilestonePayload loan_milestone = 14;
+    CommunityMilestonePayload community_milestone = 15;
+    RequestCreatedPayload request_created = 16;
+    CommunityCreatedPayload community_created = 17;
+    ExperienceCreatedPayload experience_created = 18;
+    StoryPayload story = 19;
+    NudgePayload nudge = 22;
+  }
+}
+
+// Clustered unread notifications.
+message UnreadNotificationsPayload {
+  // Total count of unread notifications.
+  int32 count = 1;
+
+  // Preview of most recent notifications (max 3).
+  repeated NotificationPreview previews = 2;
+}
+
+// Preview of a single notification.
+message NotificationPreview {
+  // Notification title.
+  string title = 1;
+
+  // Notification body.
+  string body = 2;
+
+  // When notification was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 3;
+}
+
+// Gear sharing event.
+message GearSharedPayload {
+  // ID of gear that was shared.
+  string gear_id = 1;
+
+  // Name of gear.
+  string gear_name = 2;
+
+  // User who shared the gear.
+  User actor = 3;
+
+  // Media IDs for gear images.
+  repeated string media_ids = 5;
+
+  // How the gear is shared (loan or giveaway).
+  Availability availability = 6;
+}
+
+// Celebration of user inviting others.
+message InviterCelebrationPayload {
+  // User who invited others.
+  User inviter = 1;
+
+  // Number of users who joined via their invites.
+  int32 invitee_count = 3;
+
+  // Users who joined (max 3 for display).
+  repeated User invitees = 4;
+
+  // Time range for these invitations (most recent join time, Unix timestamp).
+  int64 latest_join_time_unix_sec = 5;
+}
+
+// Celebration of user's first meaningful contribution.
+message FirstContributionPayload {
+  // User who made their first contribution.
+  User user = 1;
+
+  // Type of contribution.
+  string contribution_type = 3; // "shared_gear", "approved_loan", "started_conversation"
+
+  // Optional: specific item involved (gear_id, loan_id, etc.).
+  string related_item_id = 4;
+
+  // Optional: name of related item.
+  string related_item_name = 5;
+}
+
+// Loan milestone event.
+message LoanMilestonePayload {
+  // ID of the loan.
+  string loan_id = 1;
+
+  // Gear being loaned.
+  string gear_id = 2;
+
+  // Name of gear.
+  string gear_name = 3;
+
+  // Borrower.
+  User borrower = 4;
+
+  // Lender.
+  User lender = 6;
+
+  // Milestone type.
+  string milestone_type = 8; // "requested", "approved", "active", "completed"
+}
+
+// Community milestone.
+message CommunityMilestonePayload {
+  // Type of milestone.
+  string milestone_type = 1; // "10_members", "50_items", "100_loans"
+
+  // Current count.
+  int32 count = 2;
+
+  // Milestone message.
+  string message = 3;
+}
+
+// Request created event.
+message RequestCreatedPayload {
+  // ID of the request.
+  string request_id = 1;
+
+  // Title of the request.
+  string title = 2;
+
+  // Description of what is being requested.
+  string description = 3;
+
+  // Media IDs for the request images (may be empty, stock image, or user-provided).
+  repeated string media_ids = 4;
+
+  // Location ID where item is needed.
+  string location_id = 5;
+
+  // Location name (flattened from Address.Locality).
+  string location_name = 6;
+
+  // Number of users who have offered to fulfill this request.
+  int32 offer_count = 7;
+
+  // Whether the viewer has an active offer on this request. False when they
+  // never offered or withdrew the offer they made; absent when it could not
+  // be determined.
+  optional bool viewer_has_offered = 12;
+
+  // User who created the request.
+  User requester = 8;
+
+  // Whether the current viewer can edit this request (creator only).
+  bool can_edit = 11;
+}
+
+// Community creation event.
+message CommunityCreatedPayload {
+  // ID of community that was created.
+  string community_id = 1;
+
+  // Name of community.
+  string community_name = 2;
+
+  // Community description.
+  string community_description = 3;
+
+  // User who created the community.
+  User actor = 4;
+
+  // Media IDs for community images (may be from Unsplash).
+  repeated string media_ids = 6;
+
+  // Whether the current viewer can edit this community (creator only).
+  bool can_edit = 7;
+
+  reserved 8;
+}
+
+// A viewer's stated intention toward an event shown in the feed.
+//
+// Mirrors RSVPIntention, which cannot be referenced here: it is declared in
+// the experience service, and that file imports the portfolio types, which
+// import this one. Feed cards only ever render this value, so the duplication
+// costs nothing beyond the two names.
+enum FeedRSVPIntention {
+  FEED_RSVP_INTENTION_UNSPECIFIED = 0;
+  FEED_RSVP_INTENTION_YES = 1; // Planning to attend
+  FEED_RSVP_INTENTION_MAYBE = 2; // Interested/tentative
+  FEED_RSVP_INTENTION_NO = 3; // Not attending
+}
+
+// Experience creation event.
+message ExperienceCreatedPayload {
+  // ID of the experience.
+  string experience_id = 1;
+
+  // Title/name of the experience.
+  string name = 2;
+
+  // Description of the experience.
+  string description = 3;
+
+  // Media IDs for experience images (optional).
+  repeated string media_ids = 4;
+
+  // Location ID where experience will occur (optional).
+  string location_id = 5;
+
+  // Location name (flattened from Address.Locality).
+  string location_name = 6;
+
+  // Experience time information.
+  ExperienceTime time = 7;
+
+  // RSVP summary counts.
+  int32 yes_count = 8;
+  int32 maybe_count = 9;
+
+  // The viewer's own response to this event. Absent when they have not
+  // responded, or when their response could not be determined.
+  optional FeedRSVPIntention viewer_rsvp = 14;
+
+  // Max participants allowed (0 = unlimited).
+  int32 max_participants = 10;
+
+  // User who created the experience.
+  User creator = 11;
+
+  // Whether the current viewer can edit this experience (creator only).
+  bool can_edit = 12;
+
+  // Current state of the experience.
+  ExperienceState state = 13;
+}
+
+// Story feed item payload.
+message StoryPayload {
+  // Type of story.
+  StoryType story_type = 1;
+
+  // LLM-generated title (short, engaging).
+  string title = 2;
+
+  // LLM-generated description/body (2-4 sentences).
+  string description = 3;
+
+  // Media IDs for story visuals (from participants or stock).
+  repeated string media_ids = 4;
+
+  // Users featured in this story (no owner, these are participants).
+  repeated User participants = 5;
+
+  // Optional: related entity IDs for navigation.
+  string gear_id = 10;
+  string loan_id = 11;
+  string experience_id = 12;
+  string request_id = 13;
+
+  // Impact estimate for this transaction (if applicable).
+  ImpactEstimate impact = 14;
+
+  // Populated only when the requesting user can still reverse the
+  // action this story commemorates. Clients render an "Undo" link
+  // subordinate to the story content when this field is present.
+  UndoableAction undoable_action = 15;
+
+  // Optional voting prompt rendered inline at the bottom of the story.
+  // Present when the story commemorates an event with an open ESM prompt
+  // and the viewer can submit a response. Non-present when no prompt
+  // exists, the prompt has expired, or the viewer is not eligible to
+  // respond.
+  optional EmbeddedEsmPrompt embedded_esm_prompt = 16;
+
+  // Aggregated social-proof avatars for the option the viewer selected,
+  // if any. Empty before the viewer responds and when no other viewer
+  // selected the same option. Limited to a small N (server-bounded) plus
+  // a remainder count via embedded_esm_social_proof_remainder.
+  repeated User embedded_esm_social_proof_users = 17;
+
+  // Number of additional respondents beyond the avatars in
+  // embedded_esm_social_proof_users that selected the same option as the
+  // viewer. Zero when there is no overflow.
+  int32 embedded_esm_social_proof_remainder = 18;
+
+  // Pre-formatted editorial kicker line rendered above the title on the
+  // story screen (e.g. "TUE · APR 28 · CLEAR CREEK, CO"). Empty when
+  // the story has no recap context to anchor.
+  optional string kicker = 19;
+
+  // Structured-template payload. When set, the client resolves the
+  // displayed title and description from its catalog using template_key
+  // + template_params; the title/description fields above are
+  // populated as a transition fallback. Empty template_key means
+  // "render title/description verbatim" (AI-generated prose or
+  // pre-migration rows).
+  optional string template_key = 20;
+  map<string, string> template_params = 21;
+}
+
+// EmbeddedEsmPrompt is the inline voting payload rendered at the bottom
+// of a story. It carries everything the viewer needs to render the voting
+// or voted state without an extra fetch.
+message EmbeddedEsmPrompt {
+  // ID of the prompt, used to submit a response or change vote.
+  string prompt_id = 1;
+
+  // The single structured question shown above the response options.
+  string question = 2;
+
+  // Quick-tap response options. Order is preserved in the UI.
+  repeated EmbeddedEsmOption response_options = 3;
+
+  // Option key the viewer previously selected, when they have already
+  // responded. Empty when the viewer has not yet voted. Clients use this
+  // to render the voted state on first paint instead of the voting state.
+  optional string current_response_option_key = 4;
+
+  // When the prompt stops accepting responses (Unix timestamp in
+  // seconds). Clients can degrade the UI past this timestamp.
+  int64 closes_at_unix_sec = 5;
+}
+
+// EmbeddedEsmOption is a single tappable response option rendered in the
+// story's voting block.
+message EmbeddedEsmOption {
+  // Stable key submitted to the server when the viewer selects this
+  // option.
+  string key = 1;
+
+  // Pre-localized human-readable label rendered on the response button.
+  string label = 2;
+}
+
+// A single stat displayed on stat-style nudge variants.
+message NudgeStat {
+  // Human-readable numeric value (e.g., "21").
+  string value = 1;
+
+  // Label describing the stat (e.g., "days since last share").
+  string label = 2;
+}
+
+// Nudge card payload — system-generated inspiration interspersed in the feed.
+message NudgePayload {
+  // Stable identifier for this nudge (maps to StoredNudge.id).
+  string nudge_id = 12;
+
+  // Layout variant (1 = Magazine Spread, 2 = Photo Journal, 3 = Headline Card).
+  int32 nudge_variant = 1;
+
+  // Pre-localized headline (server-generated, renders directly — no l10n needed).
+  string headline = 2;
+
+  // Pre-localized description (server-generated, renders directly — no l10n needed).
+  string description = 3;
+
+  // Pre-localized primary CTA label.
+  string cta_label = 4;
+
+  // Client action identifier for primary CTA.
+  // Values: "plan_experience", "list_item", "ask_for_help", "check_listings".
+  string cta_action = 5;
+
+  // Media IDs for background imagery (always non-empty; nudges without
+  // images are excluded from the feed).
+  repeated string media_ids = 6;
+
+  // User IDs of community members featured in social nudge variants.
+  repeated string participant_ids = 7;
+
+  // Pre-localized secondary CTA label (optional).
+  optional string secondary_cta_label = 8;
+
+  // Client action identifier for secondary CTA (optional).
+  optional string secondary_cta_action = 9;
+
+  // Optional location context shown on the card.
+  optional string location_hint = 10;
+
+  // Stats shown on stat-style nudge variants.
+  repeated NudgeStat stats = 11;
+
+  // ID of the entity this nudge references (an experience, a gear, etc.).
+  // Workshop-surface nudges populate this so tapping the CTA can route
+  // into the underlying content. Empty for feed-surface nudges.
+  optional string context_id = 13;
+
+  // Pre-localized kicker label rendered above the headline on Hero card
+  // tiles ("On the way", "Worth doing again", "Things this circle has
+  // loved"). Empty for feed-surface nudges that don't render a kicker.
+  optional string kicker_label = 14;
+
+  // Pre-localized atmosphere line rendered between the headline and the
+  // lever on Hero card tiles (e.g., "Round 5 hosted by Mike · last
+  // Saturday at 9"). Names + date + role describing the prior instance.
+  // Empty for feed-surface nudges.
+  optional string atmosphere_line = 15;
+
+  // Optional supporting quote + attribution rendered beneath the
+  // narrative on Hero cards. Surfaces on the calendar-gap, seasonal,
+  // and idle-offer slot variants.
+  optional NudgeEvidence evidence = 16;
+
+  // ID of the community this nudge belongs to. Surfaced on the wire so
+  // the Workshop tile can render a circle chip when the active pill is
+  // "All". Empty when the nudge is not community-scoped.
+  optional string community_id = 17;
+}
+
+// Optional supporting quote + attribution beneath a Hero card narrative.
+message NudgeEvidence {
+  // The quote itself, pre-localized.
+  string quote = 1;
+
+  // Attribution string (e.g., "Putnam, Bowling Alone.").
+  string attribution = 2;
+}
+
+// Request to consume a nudge (user tapped a CTA).
+message ConsumeNudgeRequest {
+  // ID of the nudge being consumed.
+  string nudge_id = 1;
+
+  // Which action was taken (the cta_action value that was tapped).
+  string action = 2;
+}
+
+// Response after consuming a nudge.
+message ConsumeNudgeResponse {}
+
+// Request to mark feed items as viewed.
+message MarkFeedItemsViewedRequest {
+  // Community ID.
+  string community_id = 1;
+
+  // Feed item IDs to mark as viewed.
+  repeated string item_ids = 2;
+}
+
+// Response after marking items as viewed.
+message MarkFeedItemsViewedResponse {}
+
+// Request to list stories for a community.
+message ListStoriesRequest {
+  // Community ID to get stories for.
+  string community_id = 1;
+
+  // Maximum number of stories to return (default: 10, max: 50).
+  int32 limit = 2;
+}
+
+// Response containing community stories.
+message ListStoriesResponse {
+  // Ordered stories (most recent first).
+  repeated StoryPayload stories = 1;
+}
+
+// Request to list stories for a specific item (gear, request, or experience).
+message ListItemStoriesRequest {
+  // Item ID (gear_id, request_id, or experience_id).
+  string item_id = 1;
+
+  // Maximum number of stories to return (default: 10, max: 50).
+  int32 limit = 2;
+}
+
+// Response containing item stories.
+message ListItemStoriesResponse {
+  // Ordered stories (most recent first).
+  repeated StoryPayload stories = 1;
+}
+
+// Request to get feed freshness status for all of the user's communities.
+message GetFeedStatusRequest {}
+
+// Response containing whether each community has unseen feed items.
+message GetFeedStatusResponse {
+  // Maps community_id -> true when the community has items with activity newer
+  // than the user's last_seen_at timestamp.
+  map<string, bool> community_id_to_has_new = 1;
+}
+
+// Service for personalized community feed.
+service FeedService {
+  // Get personalized feed for a community.
+  rpc GetFeed(GetFeedRequest) returns (GetFeedResponse);
+
+  // Mark feed items as viewed (increments view count).
+  rpc MarkFeedItemsViewed(MarkFeedItemsViewedRequest) returns (MarkFeedItemsViewedResponse);
+
+  // List stories for a community (most recent first).
+  rpc ListStories(ListStoriesRequest) returns (ListStoriesResponse);
+
+  // List stories for a specific item (gear, request, or experience).
+  rpc ListItemStories(ListItemStoriesRequest) returns (ListItemStoriesResponse);
+
+  // Get lightweight feed freshness status for all of the user's communities.
+  // Returns whether each community has unseen feed items without generating
+  // full feed responses.
+  rpc GetFeedStatus(GetFeedStatusRequest) returns (GetFeedStatusResponse);
+
+  // ConsumeNudge marks a nudge as consumed when the user taps its CTA.
+  // Fire-and-forget: client navigates immediately; server updates async.
+  rpc ConsumeNudge(ConsumeNudgeRequest) returns (ConsumeNudgeResponse);
+}

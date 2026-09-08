@@ -1,0 +1,61 @@
+{
+  "source": {
+    "fabricated": true,
+    "consent": "Fully fabricated content (#2687) — see manifest.json."
+  },
+  "story": "Maya is leaving town for two weeks and empties her kitchen into her communities instead of the trash: three food items offered as giveaways, claimed by neighbors and friends before she goes.",
+  "locality": "Austin",
+  "offerer": {
+    "name": "Maya",
+    "avatarFile": "avatar-2.jpg"
+  },
+  "communities": [
+    { "name": "Alameda Neighbors", "members": ["Priya", "Marcus"] },
+    { "name": "Fourth Grade Moms", "members": ["Dana"] },
+    { "name": "Vegans of Travis Heights", "members": ["Jules"] }
+  ],
+  "cast": [
+    { "name": "Priya", "avatarFile": "avatar-9.jpg" },
+    { "name": "Dana", "avatarFile": "avatar-6.jpg" },
+    { "name": "Marcus", "avatarFile": "avatar-5.jpg" },
+    { "name": "Jules", "avatarFile": "avatar-3.jpg" }
+  ],
+  "items": [
+    {
+      "imageFile": "food-spaghetti.jpg",
+      "title": "Spaghetti (2 boxes)",
+      "description": "Two unopened boxes of dried spaghetti, straight from the pantry.",
+      "communities": ["Alameda Neighbors", "Fourth Grade Moms"],
+      "interested": ["Marcus", "Dana"],
+      "recipient": "Dana"
+    },
+    {
+      "imageFile": "food-bread.jpg",
+      "title": "Sourdough Loaf",
+      "description": "A whole crusty sourdough loaf, uncut and bakery-fresh.",
+      "communities": ["Alameda Neighbors", "Fourth Grade Moms"],
+      "interested": ["Priya"],
+      "recipient": "Priya"
+    },
+    {
+      "imageFile": "food-broccoli.jpg",
+      "title": "Fresh Broccoli",
+      "description": "Two crisp broccoli crowns, ready to steam or roast.",
+      "communities": ["Alameda Neighbors", "Vegans of Travis Heights"],
+      "interested": ["Jules"],
+      "recipient": "Jules"
+    }
+  ],
+  "spaghettiChat": [
+    { "sender": "Marcus", "text": "Ooh I could grab this — we're never not out of pasta." },
+    { "sender": "Dana", "text": "I literally have a pot of red sauce simmering right now and zero noodles 🍝" },
+    { "sender": "Maya", "text": "Dana that's destiny. It's yours — porch pickup any time after 4?" },
+    { "sender": "Dana", "text": "Perfect, I'll swing by at 5. Sauce thanks you!" }
+  ],
+  "breadChat": [
+    { "sender": "Priya", "text": "Soup night at ours tomorrow — this is perfect. I'll take it!" }
+  ],
+  "broccoliChat": [
+    { "sender": "Jules", "text": "Roasting these tonight 🥦 thank you Maya!" }
+  ]
+}

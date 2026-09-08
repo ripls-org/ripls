@@ -1,0 +1,78 @@
+// Shared error + media types used by the streaming Gen* RPCs.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/media_service.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Reason code for a terminal error event on a streaming Gen* RPC.
+enum GenStreamErrorCode {
+  GEN_STREAM_ERROR_CODE_UNSPECIFIED = 0;
+  GEN_STREAM_ERROR_CODE_AI_PROVIDER_FAILED = 1;
+  GEN_STREAM_ERROR_CODE_GEOCODING_FAILED = 2;
+  GEN_STREAM_ERROR_CODE_STOCK_MEDIA_FAILED = 3;
+  GEN_STREAM_ERROR_CODE_INVALID_ARGUMENT = 4;
+  GEN_STREAM_ERROR_CODE_INTERNAL = 5;
+}
+
+// Terminal error event for a streaming Gen* RPC. Sent in place of the
+// `final` event when a complete response cannot be produced.
+message GenStreamError {
+  GenStreamErrorCode code = 1;
+  string message = 2;
+}
+
+// One alternate media option a client can offer the user as a one-tap
+// replacement for the chosen image. Carries enough metadata for the
+// client to render a thumbnail and for the server to re-import the
+// chosen alternate with the correct attribution.
+message MediaCandidate {
+  // URL the server fetches when this candidate is imported. For image
+  // candidates this is also a reasonable thumbnail source. For video
+  // candidates this is the MP4; the client renders [thumbnail_url] as
+  // the in-modal thumbnail instead.
+  string url = 1;
+
+  // MIME content type of the [url] resource. Values starting with
+  // "image/" render the URL directly as the thumbnail; values starting
+  // with "video/" use [thumbnail_url] (when set) for the thumbnail and
+  // render a play overlay.
+  string content_type = 2;
+
+  // Advertised pixel dimensions when known. Clients may use these to
+  // pre-allocate aspect ratio and avoid layout shift; absent when the
+  // source did not declare dimensions.
+  optional int32 width_px = 3;
+  optional int32 height_px = 4;
+
+  // Stock image provider that produced this candidate, when
+  // applicable. Drives attribution at import time.
+  optional StockImageProvider provider = 5;
+
+  // Provider-specific photo or video id. Used by the server at import
+  // time to look up attribution metadata.
+  optional string provider_photo_id = 6;
+
+  // Separate URL the client should render as the in-modal thumbnail.
+  // Only meaningful for video candidates, where [url] points at the
+  // MP4 and this points at the poster image. Empty for image
+  // candidates — clients fall back to [url] in that case.
+  optional string thumbnail_url = 7;
+}
+
+// Emitted when the media for the preview is ready to display.
+message MediaReady {
+  // Media IDs the client resolves to display URLs through the media service,
+  // the same way it does for unary Gen* responses.
+  repeated string media_ids = 1;
+
+  // Alternate media options for the same preview slot. Clients may
+  // offer these as one-tap replacements for the chosen image. Order
+  // is the server's relevance ranking; the first entry is the
+  // strongest alternate. Empty when the source produced no
+  // alternates (e.g. user-uploaded image mode).
+  repeated MediaCandidate candidates = 2;
+}

@@ -1,0 +1,408 @@
+name: Claude Address PR Feedback
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to address feedback on
+        required: true
+        type: string
+      instruction:
+        description: What you want Claude to do
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: write
+  actions: read
+  id-token: write
+
+concurrency:
+  # Serialize per PR so a flurry of reviews / comments doesn't spawn parallel
+  # runs that race against the same branch.
+  group: claude-address-pr-feedback-${{ github.event.inputs.pr_number || github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  address:
+    # Trigger paths:
+    #   - workflow_dispatch (manual)
+    #   - issue_comment containing @claude on a PR (issue_comment fires for PR
+    #     comments too; the pull_request field on the issue distinguishes them)
+    #   - pull_request_review_comment (inline diff comment) containing @claude
+    #   - pull_request_review with @claude in the review body
+    #   - pull_request_review submitted (state: commented or changes_requested)
+    #     on a PR carrying the claude-implemented label — auto-address the
+    #     review without requiring an explicit @claude mention, since these
+    #     are PRs Claude opened and is responsible for. Approved/dismissed
+    #     reviews are skipped.
+    # Skip self-triggered events to avoid loops.
+    # Skip `@claude implement` — that phrase belongs to claude_implement_plan.
+    # Skip PRs in the plan stage (claude-plan-pr / claude-implementing labels)
+    # — those route to claude_refine_plan / claude_implement_plan instead.
+    # TRUSTED ACTORS ONLY — see the note in claude_plan_issue.yaml. This one
+    # matters most of the four: it acts on review feedback, so the text it is
+    # handed is attacker-controlled on a public repo even before the trigger is.
+    if: |
+      github.actor != 'claude[bot]' && (
+        github.event_name == 'workflow_dispatch' ||
+        (
+          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association || github.event.review.author_association) &&
+          (
+            (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude implement') && !contains(github.event.issue.labels.*.name, 'claude-plan-pr') && !contains(github.event.issue.labels.*.name, 'claude-implementing')) ||
+            (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude implement') && !contains(github.event.pull_request.labels.*.name, 'claude-plan-pr') && !contains(github.event.pull_request.labels.*.name, 'claude-implementing')) ||
+            (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && !contains(github.event.review.body, '@claude implement') && !contains(github.event.pull_request.labels.*.name, 'claude-plan-pr') && !contains(github.event.pull_request.labels.*.name, 'claude-implementing')) ||
+            (github.event_name == 'pull_request_review' && (github.event.review.state == 'commented' || github.event.review.state == 'changes_requested') && contains(github.event.pull_request.labels.*.name, 'claude-implemented') && !contains(github.event.pull_request.labels.*.name, 'claude-plan-pr') && !contains(github.event.pull_request.labels.*.name, 'claude-implementing') && !contains(github.event.review.body, '@claude implement'))
+          )
+        )
+      )
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    env:
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+      PR_NUMBER: >-
+        ${{ github.event.inputs.pr_number
+            || github.event.pull_request.number
+            || github.event.issue.number }}
+
+    steps:
+      - name: Resolve PR head ref
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh pr view "$PR_NUMBER" \
+            --json headRefName,headRefOid,baseRefName,isDraft,state \
+            > /tmp/pr.json
+          HEAD_REF=$(jq -r '.headRefName' /tmp/pr.json)
+          HEAD_SHA=$(jq -r '.headRefOid' /tmp/pr.json)
+          STATE=$(jq -r '.state' /tmp/pr.json)
+          if [ "$STATE" != "OPEN" ]; then
+            echo "::error::PR #${PR_NUMBER} is not OPEN (state=${STATE}); refusing to push."
+            exit 1
+          fi
+          echo "head_ref=${HEAD_REF}" >> "$GITHUB_OUTPUT"
+          echo "head_sha=${HEAD_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout PR head
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.pr.outputs.head_sha }}
+          fetch-depth: 0
+          lfs: true
+          token: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Ensure Git LFS files are pulled
+        run: |
+          git lfs install --local
+          git lfs pull
+
+      - name: Setup git identity
+        run: |
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
+
+      - name: Move to PR branch
+        env:
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+        run: |
+          # Checkout used the SHA, leaving us in detached HEAD. Reattach to
+          # the branch so subsequent commits and `git push` target it.
+          git checkout -B "$HEAD_REF"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      - name: Install Flutter dependencies
+        run: cd app && flutter pub get
+
+      - name: Generate Dart freezed/mockito code
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Capture pre-run state
+        id: pre
+        run: echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Stage feedback context
+        id: feedback
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          INSTRUCTION: ${{ github.event.inputs.instruction }}
+          ISSUE_COMMENT_BODY: ${{ github.event.comment.body }}
+          REVIEW_BODY: ${{ github.event.review.body }}
+          REVIEW_ID: ${{ github.event.review.id }}
+          REVIEW_STATE: ${{ github.event.review.state }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/feedback
+          mkdir -p /tmp/feedback
+          gh pr view "$PR_NUMBER" \
+            --json number,title,body,url,headRefName,baseRefName,comments,reviews,files,labels \
+            > /tmp/feedback/pr.json
+          gh pr diff "$PR_NUMBER" > /tmp/feedback/pr.diff || true
+
+          # Capture the specific feedback that triggered this run so the
+          # prompt can point Claude at it directly.
+          case "$EVENT_NAME" in
+            workflow_dispatch)
+              printf '%s\n' "$INSTRUCTION" > /tmp/feedback/trigger.txt
+              echo "trigger_kind=manual" >> "$GITHUB_OUTPUT"
+              ;;
+            issue_comment)
+              printf '%s\n' "$ISSUE_COMMENT_BODY" > /tmp/feedback/trigger.txt
+              echo "trigger_kind=top-level comment" >> "$GITHUB_OUTPUT"
+              ;;
+            pull_request_review_comment)
+              printf '%s\n' "$ISSUE_COMMENT_BODY" > /tmp/feedback/trigger.txt
+              echo "trigger_kind=inline review comment" >> "$GITHUB_OUTPUT"
+              ;;
+            pull_request_review)
+              # Pull every inline comment that was submitted as part of this
+              # specific review (a single review can carry the body plus N
+              # inline comments). Compose them into trigger.txt so Claude
+              # gets the whole review as one document.
+              gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/comments" \
+                > /tmp/feedback/review_comments.json 2>/dev/null \
+                || echo '[]' > /tmp/feedback/review_comments.json
+              {
+                echo "[Review state: $REVIEW_STATE]"
+                echo
+                if [ -n "$REVIEW_BODY" ]; then
+                  echo "[Review body]"
+                  printf '%s\n' "$REVIEW_BODY"
+                  echo
+                fi
+                if [ "$(jq 'length' /tmp/feedback/review_comments.json)" -gt 0 ]; then
+                  echo "[Inline comments]"
+                  jq -r '.[] | "── \(.path):\(.line // .original_line // "?") ──\n\(.body)\n"' \
+                    /tmp/feedback/review_comments.json
+                fi
+              } > /tmp/feedback/trigger.txt
+              # Decide whether this run is an explicit @claude mention or an
+              # auto-trigger on a claude-implemented PR. The prompt branches
+              # on this — auto-triggers must address every actionable item
+              # in the review, whereas mentions address only the trigger.
+              if printf '%s' "$REVIEW_BODY" | grep -qE '@claude([^[:alnum:]_]|$)'; then
+                echo "trigger_kind=submitted review (@claude mention)" >> "$GITHUB_OUTPUT"
+              else
+                echo "trigger_kind=submitted review (auto-address)" >> "$GITHUB_OUTPUT"
+              fi
+              ;;
+          esac
+
+      - name: Run Claude Code to address feedback
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        env:
+          # Deliberately no ANTHROPIC_API_KEY: Claude Code prefers it over
+          # claude_code_oauth_token, silently billing runs per-token instead
+          # of to the subscription. AI integration tests skip without it.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          VERTEX_AI_PROJECT: ${{ vars.GCP_PROJECT_DEV }}
+          CI: "true"
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are addressing reviewer feedback on PR #${{ env.PR_NUMBER }} in
+            ${{ github.repository }}.
+
+            PR JSON:        /tmp/feedback/pr.json (title, body, comments, reviews, files, labels)
+            Full diff:      /tmp/feedback/pr.diff
+            Trigger:        ${{ steps.feedback.outputs.trigger_kind }}
+            Trigger text:   /tmp/feedback/trigger.txt
+            Review JSON:    /tmp/feedback/review_comments.json (only present
+                            for `submitted review` triggers — every inline
+                            comment that was part of the review)
+            PR branch:      ${{ steps.pr.outputs.head_ref }} (already checked out)
+
+            ## Trigger semantics
+
+            What "Trigger" tells you about what to address:
+
+            - `manual`, `top-level comment`, `inline review comment`,
+              `submitted review (@claude mention)` → the reviewer is
+              pointing you at one specific request. Do that thing only.
+              The trigger text is the literal request.
+            - `submitted review (auto-address)` → this fired automatically
+              because a reviewer submitted a `commented` or
+              `changes_requested` review on a PR Claude implemented (label
+              `claude-implemented`). No explicit `@claude` mention. Address
+              **every actionable item** in the review — the body and each
+              inline comment. See the auto-address path in the process
+              below.
+
+            ## Mission
+
+            Apply the requested change(s) and push them as commits to the PR
+            branch. The run is **only complete** when one of:
+
+              (a) you have committed and pushed at least one new commit onto
+                  `${{ steps.pr.outputs.head_ref }}` and replied with
+                  `gh pr comment ${{ env.PR_NUMBER }} --body "..."`
+                  describing what was addressed, **or**
+              (b) you have replied with a comment explaining why you couldn't
+                  do what was asked.
+
+            Anything else is failure. Don't write a wrap-up message and stop —
+            actually push commits or post a reply.
+
+            ## Process
+
+            Use the TodoWrite tool to track these steps as you work.
+
+            1. Read /tmp/feedback/trigger.txt to see the request(s).
+            2. Read /tmp/feedback/pr.json (title, body, prior comments,
+               reviews, files changed) and /tmp/feedback/pr.diff to
+               understand what the PR already does. Keep changes consistent
+               with the existing approach.
+
+            ### Single-request path (mention or workflow_dispatch)
+
+            3. Read whatever source files are relevant to the request.
+            4. Make the change. Stay narrowly focused — no "while I'm here"
+               cleanup. CLAUDE.md is authoritative for conventions (proto
+               rules, structured logging, fail-fast errors, SQL efficiency,
+               Flutter structure).
+            5. Run the relevant tests and iterate until green:
+               - Proto changes: `npm run generate:proto` first
+               - Go changes: `npm run build` and `go test -tags=integration -timeout 20m ./...`
+               - Flutter changes: `cd app && flutter test --reporter github`
+               If tests still fail after a few honest attempts, skip to
+               the blocked exit.
+            6. Commit, push, and reply:
+
+                   git add -A
+                   git commit -m "<concise: what changed and why>"
+                   git push origin ${{ steps.pr.outputs.head_ref }}
+                   gh pr comment ${{ env.PR_NUMBER }} --body "Addressed in <SHA>: <one-line summary>. Tests: <which suites + outcomes>."
+
+               Then exit. Do not merge the PR.
+
+            ### Auto-address path (`submitted review (auto-address)`)
+
+            3a. Build a checklist from /tmp/feedback/trigger.txt: every
+                inline comment is a separate item; the review body may add
+                more. Decide which items are actionable code changes vs.
+                questions / acknowledgements / nits you'd resolve by replying.
+            4a. For each actionable item, make the smallest change that
+                addresses it. Use logical commits — group changes that
+                belong together, separate ones that don't. Keep each commit
+                consistent with CLAUDE.md.
+            5a. Run the relevant test suites once at the end (don't re-run
+                between every commit unless you're chasing a regression).
+                Same suites as step 5.
+            6a. Push and reply with a per-item summary:
+
+                   git push origin ${{ steps.pr.outputs.head_ref }}
+                   gh pr comment ${{ env.PR_NUMBER }} --body "Addressed the review:
+                   - [path:line] — <what I did> (in <SHA>)
+                   - [path:line] — <what I did> (in <SHA>)
+                   - [path:line] — <not changed: <reason>>
+                   Tests: <which suites + outcomes>."
+
+                Then exit. Do not merge the PR.
+
+            ### Blocked exit (either path)
+
+            7. If a request is unsafe, contradicts the design, or tests
+               can't be made green:
+
+                   gh pr comment ${{ env.PR_NUMBER }} --body "<what you tried, what's blocking, what a human should do>"
+
+               For the auto-address path, you can address some items and
+               leave others blocked — call out which is which in the same
+               comment.
+
+            ## Hard rules
+
+            - Do not modify the PR description or title.
+            - Do not push commits unrelated to the requested feedback.
+            - Do not merge the PR.
+            - Do not include "Co-Authored-By" / "Generated with Claude" branding.
+            - Do not end your turn with a summary message unless you've
+              already pushed and commented (single-request path step 6 /
+              auto-address path step 6a / blocked path step 7).
+          claude_args: >-
+            --max-turns 120
+            --verbose
+            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash(git:*),Bash(gh:*),Bash(go:*),Bash(flutter:*),Bash(npm:*),Bash(npx:*),Bash(cd app*),Bash(jq:*),Bash(golangci-lint:*),Bash(gofumpt:*),Bash(cat:*),Bash(ls:*)"
+
+      - name: Stage execution log for artifact
+        if: always()
+        run: |
+          DEBUG_DIR="${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}"
+          rm -rf "$DEBUG_DIR"
+          mkdir -p "$DEBUG_DIR"
+          if [ -f "${{ runner.temp }}/claude-execution-output.json" ]; then
+            cp "${{ runner.temp }}/claude-execution-output.json" "$DEBUG_DIR/"
+          fi
+          if [ -f "${{ runner.temp }}/claude-prompts/claude-prompt.txt" ]; then
+            cp "${{ runner.temp }}/claude-prompts/claude-prompt.txt" "$DEBUG_DIR/"
+          fi
+          cp /tmp/feedback/trigger.txt "$DEBUG_DIR/" 2>/dev/null || true
+          ls -la "$DEBUG_DIR/" || true
+
+      - name: Upload Claude execution log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: claude-pr-feedback-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Clean up test postgres container
+        if: always()
+        uses: ./.github/actions/cleanup-test-postgres
+
+      - name: Assert Claude produced a deliverable
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+          PRE_SHA: ${{ steps.pre.outputs.head_sha }}
+        run: |
+          # The run is only meaningful if Claude either (a) pushed at least one
+          # new commit to the PR branch, or (b) added a new comment on the PR.
+          # Anything else is a silent no-op.
+          set -euo pipefail
+
+          REMOTE_SHA=$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')
+          if [ -n "${REMOTE_SHA}" ] && [ "${REMOTE_SHA}" != "${PRE_SHA}" ]; then
+            echo "PR branch advanced from ${PRE_SHA} to ${REMOTE_SHA}; deliverable (a) satisfied."
+            exit 0
+          fi
+
+          THIRTY_MIN_AGO=$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+            || date -u -v-30M +%Y-%m-%dT%H:%M:%SZ)
+          RECENT_COMMENT=$(gh pr view "${PR_NUMBER}" --json comments \
+            --jq "[.comments[] | select(.createdAt > \"${THIRTY_MIN_AGO}\")] | length")
+          if [ "${RECENT_COMMENT}" -gt 0 ]; then
+            echo "Recent comment posted on PR #${PR_NUMBER}; deliverable (b) satisfied."
+            exit 0
+          fi
+
+          echo "::error::Claude finished without producing a deliverable: no new commit on ${HEAD_REF} and no recent comment on PR #${PR_NUMBER}. See the claude-pr-feedback-log artifact."
+          exit 1

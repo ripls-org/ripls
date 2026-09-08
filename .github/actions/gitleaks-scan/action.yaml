@@ -1,0 +1,74 @@
+name: "Gitleaks scan"
+description: >-
+  Scan git history for secrets using the gitleaks binary, reading
+  .gitleaks.toml and .gitleaksignore from the repo root.
+
+# WHY THE BINARY AND NOT gitleaks/gitleaks-action
+#
+# The action is licensed: its free tier covers one repository per organization,
+# and it refuses to run for any other with "[<org>] is an organization. License
+# key is required." That was survivable while this org had a single repo. It
+# stopped being survivable the moment the open-source repo existed — its very
+# first CI run failed on exactly that message, and the two repos cannot share
+# one GITLEAKS_LICENSE seat. The gitleaks CLI itself is MIT-licensed with no
+# such gate.
+#
+# Two things fall out for free. The scan no longer needs a secret at all, so it
+# works in a fork and in the public repo. And it no longer needs
+# `pull-requests: write` — gitleaks-action wanted that to post findings as PR
+# comments; the job log and a red check say the same thing without handing a
+# third-party action write access to every PR.
+#
+# Both callers (gitleaks-pr, gitleaks-push) live here so the pinned version and
+# the scan flags cannot drift apart between them. The old inline steps had
+# already drifted into two near-identical copies of the same comment.
+
+inputs:
+  version:
+    description: "gitleaks release to run, without the leading v"
+    required: false
+    default: "8.30.1"
+  log-opts:
+    description: >-
+      Arguments passed to `git log` to bound the scan, e.g. "A..B". Empty
+      scans the entire history.
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install gitleaks
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        case "$(uname -m)" in
+          x86_64)  arch=x64 ;;
+          aarch64) arch=arm64 ;;
+          *) echo "::error::unsupported architecture $(uname -m)"; exit 1 ;;
+        esac
+        url="https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_${arch}.tar.gz"
+        curl -fsSL --retry 3 "$url" | tar -xz -C /usr/local/bin gitleaks
+        gitleaks version
+
+    - name: Scan for secrets
+      shell: bash
+      env:
+        LOG_OPTS: ${{ inputs.log-opts }}
+      run: |
+        set -euo pipefail
+
+        # --redact is not optional here. A finding prints the matched secret by
+        # default, and these logs are public in the open-source repo — a scan
+        # that publishes the leak it just found would be worse than no scan.
+        args=(git --config .gitleaks.toml --redact --verbose --exit-code 1)
+        if [ -n "$LOG_OPTS" ]; then
+          args+=(--log-opts "$LOG_OPTS")
+          echo "scanning range: $LOG_OPTS"
+        else
+          echo "scanning full history"
+        fi
+
+        gitleaks "${args[@]}" .

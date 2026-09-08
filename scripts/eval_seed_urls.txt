@@ -1,0 +1,87 @@
+# URL list consumed by `server/cmd/eval-seed-from-urls`. Each non-blank,
+# non-comment line is either a bare URL or "<category-hint> <URL>". The
+# category-hint becomes the case's first tag; URLs without a hint produce
+# a case whose only tag is the vendor.
+#
+# Curate diverse brands across all 7 buckets so brand_contains assertions
+# are actually discriminative (the ABO dataset, our first attempt, was
+# 88% AmazonBasics — fatal). 30–50 URLs is a workable initial seed.
+#
+# Tip: pages with a "Specs" tab usually have rich Schema.org Product
+# JSON-LD. Pages with sparse meta tags need more operator editing.
+#
+# Buckets and starter examples (delete this header before running):
+#
+# power-tools  https://www.dewalt.com/...
+# power-tools  https://www.milwaukeetool.com/...
+# hand-tools   https://www.stanleytools.com/...
+# kitchen      https://www.kitchenaid.com/...
+# kitchen      https://www.vitamix.com/...
+# camping      https://www.rei.com/...
+# camping      https://www.coleman.com/...
+# sports       https://www.trekbikes.com/...
+# sports       https://atomic.com/...
+# lawn-garden  https://www.husqvarna.com/...
+# lawn-garden  https://www.ego-power.com/...
+# electronics  https://www.bose.com/...
+# electronics  https://www.sonos.com/...
+
+power-tools  https://www.dewalt.com/product/dcd800b/20v-max-xr-12-brushless-cordless-drilldriver-tool-only
+power-tools  https://www.milwaukeetool.com/products/details/m18-fuel-1-2-hammer-drill-driver-cordless-power-tool/2904-20
+power-tools  https://www.makitatools.com/products/details/XDT131
+power-tools  https://www.boschtools.com/us/en/products/gsr18v-975cn-06019G011F
+power-tools  https://www.ryobitools.com/products/33287227709
+power-tools  https://www.festoolusa.com/products/cordless-products/cordless-impact-driver/577613---tid-18-basic-us
+power-tools  https://www.skil.com/pwrcore-12-brushless-drill-driver-dl6290a-11/
+
+hand-tools  https://www.stanleytools.com/product/fmht38325s/stanley-fatmax-25-ft-x-1-14-premium-tape
+hand-tools  https://www.kleintools.com/catalog/high-leverage-side-cutting-pliers/linemans-pliers-9-inch-journeyman-handle
+hand-tools  https://www.crescenttool.com/all-tools/construction-hand-tools/adjustable-wrenches/ac28vs-8-adjustable-wrench-carded
+hand-tools  https://www.channellock.com/product/440/
+hand-tools  https://www.estwing.com/product/builder-series-framing-hammer/
+hand-tools  https://www.leevalley.com/en-us/shop/tools/hand-tools/planes/bevel-up/118457-veritas-low-angle-jack-plane
+hand-tools  https://www.bahco.com/us_en/ergotm-central-nut-wide-opening-jaw-adjustable-wrenches-with-rubber-handle-and-chrome-finish-pb_9031-rc-us_.html
+
+kitchen  https://www.kitchenaid.com/countertop-appliances/stand-mixers/tilt-head-stand-mixers/p.artisan-series-5-quart-tilt-head-stand-mixer.KSM150PSER.html
+kitchen  https://www.vitamix.com/us/en_us/shop/a3500
+kitchen  https://www.breville.com/en-us/product/bes870
+kitchen  https://www.cuisinart.com/custom-14-cup-food-processor/DFP-14BCNY.html
+kitchen  https://www.ninjakitchen.com/products/0/all/2532/ninja-foodi---the-pressure-cooker-that-crisps/
+kitchen  https://instantpot.com/products/instant-pot-duo-6qt-multi-use-pressure-cooker
+kitchen  https://www.all-clad.com/d3-stainless-3-ply-bonded-cookware-fry-pan-10-inch.html
+
+camping  https://www.rei.com/product/C01915/rei-co-op-trailmade-60-pack-mens
+camping  https://www.bigagnes.com/collections/ultralight-tents/products/copper-spur-hv-ul2
+camping  https://www.thenorthface.com/en-us/p/bags-and-gear/backpacks-224451/borealis-backpack-NF0A52SE
+camping  https://www.msrgear.com/stoves/canister-stoves/pocketrocket-2-stove/09884.html
+camping  https://www.coleman.com/camp-sports/tents-by-size/4-person-tents/sundome-4-person-camping-tent/SP_271238.html
+camping  https://www.yeti.com/coolers/hard-coolers/tundra/tundra-45.html
+camping  https://www.blackdiamondequipment.com/products/spot-400-headlamp
+camping  https://www.osprey.com/atmos-ag-65-atmos65s22-415
+
+sports  https://www.trekbikes.com/us/en_US/bikes/mountain-bikes/cross-country-mountain-bikes/marlin/marlin-6-gen-3/p/36966/
+sports  https://www.specialized.com/us/en/rockhopper/p/4274938
+sports  https://www.rossignol.com/us-en/experience-86-ti-open-RAMFP01000.html
+sports  https://k2snow.com/en-us/p/mindbender-99ti-womens-skis-2026
+sports  https://www.burton.com/us/en/p/mens-burton-custom-camber-snowboard/W26-106881.html
+sports  https://www.wilson.com/en-us/product/pro-staff-97-v14-frm-wr12570
+sports  https://www.manduka.com/products/manduka-pro-yoga-mat
+sports  https://wernerpaddles.com/products/werner-camano-2-piece-straight-shaft-kayak-paddle
+sports  https://www.thule.com/en-us/cargo-carrier/car-top-carrier/thule-force-xt-xxl-_-635901
+
+lawn-garden  https://www.husqvarna.com/us/chainsaws/460-rancher/
+lawn-garden  https://www.stihlusa.com/en/p/chainsaws-ms-250-gasoline-chainsaw-1027308
+lawn-garden  https://egopowerplus.com/21-inch-self-propelled-mower/
+lawn-garden  https://www.toro.com/en/product/21445
+lawn-garden  https://www.greenworkstools.com/products/pro-80v-cordless-21-inch-lawn-mower-2501202
+lawn-garden  https://www.worx.com/trivac-blower-mulcher-vacuum-wg509.html
+lawn-garden  https://www.fiskars.com/en-us/gardening-and-yard-care/products/loppers/powergear2-lopper-25-394771-1002
+
+electronics  https://www.bose.com/p/headphones/bose-quietcomfort-ultra-headphones-2nd-gen/QCUH2-HEADPHONEARN.html
+electronics  https://www.sonos.com/en-us/shop/era-300
+electronics  https://global.jbl.com/bluetooth-speakers/CHARGE5-.html
+electronics  https://www.soundcore.com/products/liberty-4-nc-a3947z11
+electronics  https://us.sennheiser-hearing.com/products/momentum-4-wireless
+electronics  https://epson.com/For-Home/Projectors/Streaming-Entertainment/Home-Cinema-2350-4K-PRO-UHD-3-Chip-3LCD-Smart-Streaming-Projector/p/V11HA73020
+electronics  https://us.kobobooks.com/products/kobo-libra-colour
+electronics  https://www.garmin.com/en-US/p/533999/

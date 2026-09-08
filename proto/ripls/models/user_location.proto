@@ -1,0 +1,23 @@
+// UserLocation tracks user-location associations with usage history.
+// Supports scalable location management (dozens to hundreds of locations per user).
+
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+message UserLocation {
+    // Unique identifier for this user-location association.
+    string id = 1;
+
+    // User ID who owns this location association.
+    string user_id = 2;
+
+    // Location ID being associated with the user.
+    string location_id = 3;
+
+    // When this location was last used (for sorting).
+    // Updated when user selects this location for gear/request/experience.
+    int64 last_used_at_unix_sec = 4;
+}

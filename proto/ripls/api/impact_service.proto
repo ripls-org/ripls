@@ -1,0 +1,858 @@
+// RPC service for community impact metrics.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/common.proto";
+import "ripls/api/impact.proto";
+import "ripls/api/impact_estimate.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// ImpactService provides community impact metrics.
+service ImpactService {
+  // GetCommunityImpactMetrics returns overall impact metrics for a community.
+  rpc GetCommunityImpactMetrics(GetCommunityImpactMetricsRequest)
+      returns (GetCommunityImpactMetricsResponse);
+
+  // GetUserImpactMetrics returns aggregated impact metrics for a user across
+  // all their contributions. Shows activity counts and savings generated for
+  // others through the user's sharing.
+  rpc GetUserImpactMetrics(GetUserImpactMetricsRequest)
+      returns (GetUserImpactMetricsResponse);
+
+  // GetCommunityMetricDetail returns detailed breakdown data for a specific
+  // impact metric dimension (money, time, emissions, or quality time) over a specified time period.
+  // Includes time series, source breakdowns, contributing factors, top items,
+  // top contributors, and community comparisons.
+  rpc GetCommunityMetricDetail(GetCommunityMetricDetailRequest)
+      returns (GetCommunityMetricDetailResponse);
+
+  // GetCommunityActsDetail returns the per-category and per-month
+  // breakdown of community acts. An act is one community participation
+  // row: items shared, help requested, help offered, events created,
+  // RSVPs (yes), planning pitch-ins, and completed loans/giveaways.
+  rpc GetCommunityActsDetail(GetCommunityActsDetailRequest)
+      returns (GetCommunityActsDetailResponse);
+
+  // GetCommunityActions returns a paginated list of individual sharing actions
+  // (loans, giveaways, requests, events) with per-transaction impact values.
+  rpc GetCommunityActions(GetCommunityActionsRequest)
+      returns (GetCommunityActionsResponse);
+
+  // GetCommunityProblemsSolvedDetail returns the community's "problems solved"
+  // breakdown: completed loans, fulfilled requests, and experiences that
+  // fulfilled a planning need (a completed experience with at least one
+  // contribution claimed from a need), plus the individual entries.
+  rpc GetCommunityProblemsSolvedDetail(GetCommunityProblemsSolvedDetailRequest)
+      returns (GetCommunityProblemsSolvedDetailResponse);
+
+  // GetCommunityUtilization returns utilization analytics for a community's
+  // shared library: utilization rate over time, per-item utilization breakdown,
+  // untapped potential items, and redundancy groups.
+  rpc GetCommunityUtilization(GetCommunityUtilizationRequest)
+      returns (GetCommunityUtilizationResponse);
+
+  // GetTimeToSolveDetail returns median time-to-solve plus recent fulfilled
+  // requests with individual solve times.
+  rpc GetTimeToSolveDetail(GetTimeToSolveDetailRequest)
+      returns (GetTimeToSolveDetailResponse);
+
+  // GetCommunityPercentileDetail returns historical percentile data and top
+  // communities for a given metric dimension.
+  rpc GetCommunityPercentileDetail(GetCommunityPercentileDetailRequest)
+      returns (GetCommunityPercentileDetailResponse);
+
+  // GetCommunityLeaderboard returns top N members ranked by impact for a
+  // specific dimension within a community.
+  rpc GetCommunityLeaderboard(GetCommunityLeaderboardRequest)
+      returns (GetCommunityLeaderboardResponse);
+
+  // GetUserCommunityImpactDetail returns a user's impact breakdown within
+  // a specific community: time series + transaction list.
+  rpc GetUserCommunityImpactDetail(GetUserCommunityImpactDetailRequest)
+      returns (GetUserCommunityImpactDetailResponse);
+
+  // DraftImpactEstimate produces an AI-enriched impact estimate for an
+  // experience or request without persisting it. The caller may inspect the
+  // draft and submit overrides via DraftImpactEstimateWithOverrides.
+  rpc DraftImpactEstimate(DraftImpactEstimateRequest)
+      returns (DraftImpactEstimateResponse);
+
+  // DraftImpactEstimateWithOverrides recomputes an impact estimate using
+  // caller-supplied input overrides. Does not invoke AI inference; all
+  // composite values are recomputed deterministically from the overrides.
+  rpc DraftImpactEstimateWithOverrides(DraftImpactEstimateWithOverridesRequest)
+      returns (DraftImpactEstimateWithOverridesResponse);
+}
+
+// Request/Response messages use flattened inline fields (no nested models)
+
+// Request for community impact metrics.
+message GetCommunityImpactMetricsRequest {
+  string community_id = 1;
+}
+
+// Response containing community impact metrics.
+message GetCommunityImpactMetricsResponse {
+  CommunityImpactMetrics metrics = 1;
+
+  // Server-generated insight strings per metric dimension. Each string is a
+  // self-contained behavioral or trend insight (not a restatement of visible
+  // numbers). The client displays these directly in the trend card area.
+  repeated string insights = 2;
+
+  // Total potential CO₂ savings (grams) if every library item were shared once.
+  // Sum of CarbonEstimate.co2e_grams across all gear in the community.
+  optional float co2_potential_grams = 3;
+
+  // Average quality time minutes per community member (total QT / member count).
+  optional float quality_time_per_person_minutes = 4;
+
+  // Median minutes from request creation to fulfillment for fulfilled requests.
+  optional float time_to_solve_minutes = 5;
+
+  // Cross-community percentile rankings (0–100) for each dimension.
+  optional int32 percentile_money = 6;
+  optional int32 percentile_co2 = 7;
+  optional int32 percentile_quality_time = 8;
+}
+
+// Request for user impact metrics.
+message GetUserImpactMetricsRequest {
+  string user_id = 1;
+}
+
+// Response containing user impact metrics.
+message GetUserImpactMetricsResponse {
+  UserImpactMetrics metrics = 1;
+
+  // User profile information (inline fields for UI display).
+  string user_name = 2;
+  string user_description = 3;
+  string user_location_name = 4;  // Primary location name
+  string user_media_id = 5;  // Primary profile media ID
+
+  // Server-generated insight strings (same format as community insights).
+  repeated string insights = 6;
+
+  // Source breakdown by transaction type (Loans, Giveaways, Requests, Events).
+  // Provides per-type totals for each metric dimension.
+  repeated SourceBreakdown source_breakdown_money = 7;
+  repeated SourceBreakdown source_breakdown_co2 = 8;
+  repeated SourceBreakdown source_breakdown_quality_time = 9;
+
+  // Time-series chart data (cumulative, per dimension).
+  repeated TimeSeriesPoint money_trend = 10;
+  repeated TimeSeriesPoint co2_trend = 11;
+  repeated TimeSeriesPoint quality_time_trend = 12;
+
+  // Whether the requesting user is viewing their own profile (true) or
+  // another user's profile (false). When false, transaction-level detail
+  // fields are omitted for privacy.
+  bool is_own_profile = 13;
+
+  // Removed (#3044). The Given/Received direction rows were computed on every
+  // profile load — two full Transfer scans — serialized, and read by no
+  // client. They also carried server-rendered English ("Given", "1
+  // transaction"), which in-app copy must not be (docs/server/l10n.md).
+  reserved 14, 15, 16;
+  reserved "direction_breakdown_money", "direction_breakdown_co2",
+    "direction_breakdown_quality_time";
+
+  // User's communities ranked by impact (all dimensions aggregated).
+  repeated UserRankedCommunity ranked_communities = 17;
+}
+
+// Enum for impact metric dimensions.
+enum ImpactMetricDimension {
+  IMPACT_METRIC_DIMENSION_UNSPECIFIED = 0;
+  IMPACT_METRIC_DIMENSION_MONEY = 1;
+  IMPACT_METRIC_DIMENSION_TIME = 2;
+  IMPACT_METRIC_DIMENSION_EMISSIONS = 3;
+  IMPACT_METRIC_DIMENSION_QUALITY_TIME = 4;
+}
+
+// Enum for impact metric time period filters.
+enum ImpactMetricPeriod {
+  IMPACT_METRIC_PERIOD_UNSPECIFIED = 0;
+  IMPACT_METRIC_PERIOD_ALL = 1;
+  IMPACT_METRIC_PERIOD_ONE_YEAR = 2;
+  IMPACT_METRIC_PERIOD_THREE_MONTHS = 3;
+  IMPACT_METRIC_PERIOD_FOUR_WEEKS = 4;
+}
+
+// Request for detailed metric breakdown.
+message GetCommunityMetricDetailRequest {
+  string community_id = 1;
+  ImpactMetricDimension dimension = 2;
+  ImpactMetricPeriod period = 3;
+}
+
+// Response with detailed metric breakdown.
+message GetCommunityMetricDetailResponse {
+  ImpactMetricDimension dimension = 1;
+
+  // Summary values (hero display).
+  Estimate total_value = 2;
+  string formatted_total = 3;
+
+  // Time series for main chart (cumulative).
+  repeated TimeSeriesPoint cumulative_trend = 4;
+
+  // Breakdown by source.
+  repeated SourceBreakdown source_breakdown = 5;
+
+  // Contributing factors (expandable cards).
+  repeated ContributingFactor factors = 6;
+
+  // Top items (ranked list).
+  repeated TopItem top_items = 7;
+
+  // Top contributors (people).
+  repeated TopContributor top_contributors = 8;
+
+  // Community comparisons.
+  CommunityComparison comparison = 9;
+
+  // Dimension-specific fields.
+  MoneySavedDetail money_detail = 10;
+  TimeSavedDetail time_detail = 11;
+  EmissionsPreventedDetail emissions_prevented_detail = 12;
+  QualityTimeDetail quality_time_detail = 13;
+
+  // All active library items sorted by value descending, for the LIBRARY pill
+  // drill-down view. Populated only for the MONEY dimension. Includes items
+  // with zero transactions (unlike top_items which requires completed activity).
+  repeated TopItem library_items = 14;
+  // Cumulative library value over time, for the chart in the LIBRARY pill
+  // drill-down. Shows how total library value grew as items were added.
+  // Populated only for the MONEY dimension.
+  repeated TimeSeriesPoint library_value_trend = 15;
+  // Cumulative item count over time, for the dual-axis overlay in the LIBRARY
+  // pill drill-down chart. Each point is the running total of active items
+  // added by that bucket. Populated only for the MONEY dimension.
+  repeated TimeSeriesPoint library_item_count_trend = 16;
+
+  // Most recent items that contributed to this metric, newest first.
+  // Populated for all dimensions; clients render this as a recent-contributors
+  // list on the detail screen.
+  repeated RecentActivity recent_items = 17;
+}
+
+// Request for the community acts detail breakdown.
+message GetCommunityActsDetailRequest {
+  string community_id = 1;
+}
+
+// Response with the community acts detail breakdown.
+message GetCommunityActsDetailResponse {
+  // Total acts across the community.
+  int32 total_count = 1;
+
+  // Per-category counts (Items, Events Created, RSVPs, Help Requested,
+  // Help Offered, Pitched In, Loans & Giveaways). Categories with zero
+  // count are still included so the client can render a stable row order.
+  repeated ActsCategoryBreakdown categories = 2;
+
+  // Monthly act counts, oldest first, for the bar chart in the detail
+  // screen. Months with zero acts are included as zero-value points so
+  // the chart preserves a continuous time axis.
+  repeated TimeSeriesPoint monthly_bars = 3;
+
+  // Most recent items that contributed to acts, newest first, drawn from
+  // the union of completed transfers, events, and pitch-ins.
+  repeated RecentActivity recent_items = 4;
+}
+
+// ActsCategoryBreakdown is one row in the per-category breakdown table.
+message ActsCategoryBreakdown {
+  // Stable category identifier — clients use this to map to a localized
+  // label and an icon. Values: "items_shared", "events_created",
+  // "rsvps", "help_requested", "help_offered", "pitched_in",
+  // "loans_giveaways".
+  string key = 1;
+
+  // Server-rendered label, used as a fallback when the client does not
+  // recognise [key] (e.g. "Items shared").
+  string label = 2;
+
+  // Number of acts in this category.
+  int32 count = 3;
+}
+
+// Time series data point.
+message TimeSeriesPoint {
+  // Server-rendered English axis label ("Jan"), retired by #2835 — clients
+  // derive it from [bucket_start_unix_sec] in the viewer's locale.
+  reserved 1;
+  reserved "label";
+
+  double value = 2;  // Cumulative or point value.
+  // Start of the time bucket this point covers (Unix seconds). Clients
+  // render the axis label from it in the viewer's locale.
+  optional int64 bucket_start_unix_sec = 3;
+}
+
+// The activity source a metric segment aggregates. Stable across every
+// response that embeds it; clients key ordering and localized labels on it.
+enum ImpactSourceType {
+  IMPACT_SOURCE_TYPE_UNSPECIFIED = 0;
+  IMPACT_SOURCE_TYPE_LOANS = 1;
+  IMPACT_SOURCE_TYPE_GIVEAWAYS = 2;
+  IMPACT_SOURCE_TYPE_REQUESTS = 3;
+  IMPACT_SOURCE_TYPE_EVENTS = 4;
+}
+
+// Source breakdown segment.
+message SourceBreakdown {
+  // Server-rendered English copy, retired by #2835. [label] was a
+  // string-matching contract the client keyed ordering on; [source_type]
+  // replaced it. Clients format [value] themselves.
+  reserved 1, 4;
+  reserved "label", "formatted";
+
+  // The activity source this segment aggregates.
+  ImpactSourceType source_type = 6;
+  double value = 2;            // Absolute value.
+  double percentage = 3;       // 0-100.
+  optional int32 count = 5;    // Number of contributing items.
+}
+
+// Contributing factor card data.
+message ContributingFactor {
+  // Server-rendered English copy and the stat tiles built from it, retired
+  // by #2835. No client reads the factors surface; a client that revives it
+  // renders labels from its own catalogue keyed on the factor's position.
+  reserved 1, 3, 7, 8;
+  reserved "label", "subtitle", "stats", "insight";
+
+  int32 count = 2;                          // 112, 59, 20, 26.
+  repeated TimeSeriesPoint trend = 4;       // Sparkline data.
+  repeated TimeSeriesPoint volume = 5;      // Bar chart data (for dual-axis).
+  repeated TimeSeriesPoint cumulative = 6;  // Line chart data (for dual-axis).
+  repeated RecentActivity recent_items = 9; // Recent activity list.
+}
+
+// Kind of content that produced a RecentActivity entry. Drives the
+// client's navigation routing when the row is tapped.
+enum RecentActivityKind {
+  RECENT_ACTIVITY_KIND_UNSPECIFIED = 0;
+  RECENT_ACTIVITY_KIND_GEAR = 1;
+  RECENT_ACTIVITY_KIND_EXPERIENCE = 2;
+  RECENT_ACTIVITY_KIND_REQUEST = 3;
+}
+
+// Recent activity item.
+message RecentActivity {
+  // Server-rendered English copy, retired by #2835 — replaced by
+  // [item_name] / [person_display_name] / [raw_value], with clients
+  // supplying localized fallbacks and unit formatting.
+  reserved 1, 2, 3;
+  reserved "label", "person_name", "value";
+
+  // The item's own name (gear name, event name, request title) — verbatim
+  // user content. Absent when the item has no name; clients render a
+  // localized fallback derived from [kind].
+  optional string item_name = 9;
+  // Display name of the person behind the activity — verbatim user
+  // content. Absent when unknown.
+  optional string person_display_name = 10;
+  // The value this activity contributed, in the requested dimension's base
+  // unit: dollars, minutes (time and quality time), or kilograms. Absent
+  // when no value applies.
+  optional double raw_value = 8;
+  // Media identifier for the item's thumbnail (gear photo, experience
+  // cover, etc.) rendered alongside the row.
+  string media_id = 4;
+  // Identifier of the underlying content. Combined with [kind], lets the
+  // client open the corresponding detail screen when the row is tapped.
+  string content_id = 5;
+  // Kind of content represented by this row.
+  RecentActivityKind kind = 6;
+  // Seconds since the Unix epoch at which the activity completed
+  // (e.g. transfer return, experience completion). Clients format this
+  // into a relative "time ago" string.
+  int64 completed_at_unix_sec = 7;
+}
+
+// Top item ranked by impact.
+message TopItem {
+  // Server-rendered English copy, retired by #2835. The top-items surface is
+  // unreachable in production clients; a client reviving it formats the
+  // values itself and keys the source on [ImpactSourceType].
+  reserved 4, 5, 9;
+  reserved "item_value", "cumulative_saved", "source_type";
+
+  string gear_id = 1;
+  string name = 2;
+  string sharer_name = 3;
+  int32 loan_count = 6;
+  string icon = 7;            // For CO2 view emoji icons.
+  string media_id = 8;        // For thumbnail.
+}
+
+// Top contributor ranked by impact.
+message TopContributor {
+  // Server-rendered English detail line, retired by #2835 — no client reads
+  // the top-contributors surface.
+  reserved 3;
+  reserved "detail";
+
+  string user_id = 1;
+  string name = 2;
+  string value = 4;          // "$890", "13.5 hrs", "22 kg".
+  string media_id = 5;       // For avatar.
+}
+
+// Community comparison data.
+message CommunityComparison {
+  // Radar chart dimensions.
+  repeated RadarDimension radar_dimensions = 1;
+
+  // Leaderboard.
+  int32 your_rank = 2;
+  string your_value = 3;
+  string per_member = 4;
+  repeated LeaderboardEntry leaderboard = 5;
+
+  // Ranking insight.
+  string ranking_title = 6;   // "#1 in savings per member".
+  string ranking_detail = 7;  // "$460/person - 19% above...".
+}
+
+// Radar chart dimension.
+message RadarDimension {
+  string label = 1;
+  int32 your_score = 2;   // 0-100.
+  int32 avg_score = 3;    // 0-100.
+}
+
+// Leaderboard entry.
+message LeaderboardEntry {
+  string name = 1;
+  int32 member_count = 2;
+  string total_value = 3;
+  string per_member = 4;
+}
+
+// Money saved specific details.
+message MoneySavedDetail {
+  string library_value = 1;      // "$8,450".
+  string utilization_rate = 2;   // "27%".
+  string summary_text = 3;       // "Your circle has saved...".
+  double current_usd = 4;        // Raw total savings in USD (for client-side comparisons).
+}
+
+// Time saved specific details.
+message TimeSavedDetail {
+  // Server-rendered English duration ("18 mins", or "—" when there was
+  // nothing to average), retired by #2835 — no client reads this surface.
+  reserved 3;
+  reserved "avg_per_loan";
+
+  int32 total_hours = 1;
+  int32 per_person_hours = 2;
+  int32 borrow_minutes = 4;     // 1.
+  int32 shop_minutes = 5;       // 45.
+  string speed_comparison = 6;   // "45x faster through your circle".
+}
+
+// Emissions prevented specific details.
+message EmissionsPreventedDetail {
+  double current_kg = 1;
+  double goal_kg = 2;
+  string equivalence = 3;        // "2 trees for a year".
+  repeated TimeSeriesPoint monthly_bars = 4;
+  double monthly_average = 5;
+}
+
+// Quality Time specific details.
+message QualityTimeDetail {
+  // Weekly average Quality Time minutes toward the sufficiency target.
+  Estimate weekly_average_minutes = 1;
+
+  // Progress toward weekly sufficiency threshold (0.0–1.0).
+  float sufficiency_pct = 2;
+
+  // Weekly Quality Time target in minutes (from config, e.g., 360).
+  int32 sufficiency_target = 3;
+
+  // Human-readable equivalence string (e.g., "31 hours of quality social time").
+  string equivalence = 4;
+
+  // Breakdown by interaction category.
+  repeated SocialCategory categories = 5;
+
+  // Subsidiary metrics (Belonging Minutes, Trust Credits, etc.).
+  repeated SubsidiaryMetric subsidiary_metrics = 6;
+
+  // Monthly bar data for social activity chart (6 months).
+  repeated TimeSeriesPoint monthly_bars = 7;
+
+  // Average Quality Time minutes per month across monthly bars.
+  double monthly_average = 8;
+
+  // Per-capita Quality Time minutes (total / member count).
+  double per_capita_minutes = 9;
+
+  // Recent social activity for the community.
+  repeated RecentActivity recent_activity = 10;
+
+  // Community members list for the social graph overlay.
+  // Populated only when dimension = QUALITY_TIME.
+  repeated CommunityMemberSummary members = 11;
+}
+
+// CommunityMemberSummary is a lightweight member record for the social
+// graph overlay in the Quality Time detail screen.
+message CommunityMemberSummary {
+  // User ID of this member.
+  string user_id = 1;
+
+  // Display name for this member.
+  string display_name = 2;
+
+  // Profile media ID for the member's avatar (may be empty).
+  string profile_media_id = 3;
+
+  // Unix timestamp (seconds) when this member joined the community.
+  int64 joined_at_unix_sec = 4;
+
+  // Display name of the member who invited this user, or empty if the
+  // member is the community founder.
+  string invited_by_display_name = 5;
+}
+
+// SocialCategory is one interaction category and its RM contribution.
+message SocialCategory {
+  string label = 1;         // "Shared experiences", "Collaborative help", etc.
+  double value = 2;         // Absolute RM in this category.
+  double percentage = 3;    // 0-100.
+  string icon = 4;          // Emoji or icon name.
+}
+
+// SubsidiaryMetric is one of the five subsidiary RM metrics.
+message SubsidiaryMetric {
+  // Server-rendered English copy and the stat tiles built from it, retired
+  // by #2835. No client reads this surface; a client reviving it maps [key]
+  // to a label in its own catalogue and formats [value] itself.
+  reserved 2, 3, 6, 7;
+  reserved "label", "formatted", "stats", "description";
+
+  string key = 1;           // "belonging_minutes", "trust_credits", etc.
+  double value = 4;         // Raw numeric value.
+  repeated TimeSeriesPoint sparkline = 5;  // Trend data.
+}
+
+// Request for paginated community actions list.
+message GetCommunityActionsRequest {
+  string community_id = 1;
+  optional string page_token = 2;
+  int32 page_size = 3;
+}
+
+// Response with paginated community actions list.
+message GetCommunityActionsResponse {
+  repeated ActionItem items = 1;
+  optional string next_page_token = 2;
+}
+
+// ActionItem represents a single sharing action with per-transaction impact.
+message ActionItem {
+  string transaction_id = 1;
+  // "loan", "giveaway", "request", "event".
+  string transaction_type = 2;
+  string item_name = 3;
+  string counterparty_name = 4;
+  optional string counterparty_user_id = 5;
+  int64 completed_at_unix_sec = 6;
+  ImpactEstimate impact = 7;
+}
+
+// Request for community utilization analytics.
+message GetCommunityUtilizationRequest {
+  string community_id = 1;
+}
+
+// Response with community utilization analytics.
+message GetCommunityUtilizationResponse {
+  // Overall utilization rate as a percentage (0–100).
+  double utilization_rate = 1;
+
+  // Formatted utilization rate, e.g. "27%".
+  string formatted_utilization = 2;
+
+  // Utilization rate over time (monthly data points, 0–100 per point).
+  repeated TimeSeriesPoint utilization_trend = 3;
+
+  // Items ranked by highest utilization rate (most active).
+  repeated UtilizationItem most_utilized = 4;
+
+  // Items with high value but low utilization (biggest opportunity).
+  repeated UtilizationItem untapped_potential = 5;
+
+  // Groups of similar items that overlap in function.
+  repeated RedundancyGroup redundancy_groups = 6;
+
+  // Total library value for context.
+  string formatted_library_value = 7;
+
+  // Number of items in the library.
+  int32 item_count = 8;
+}
+
+// UtilizationItem represents one gear item with its utilization metrics.
+message UtilizationItem {
+  string gear_id = 1;
+  string name = 2;
+  string owner_name = 3;
+  // Per-item utilization rate as a percentage (0–100).
+  double utilization_pct = 4;
+  // Number of completed loans.
+  int32 loan_count = 5;
+  // Formatted item value, e.g. "$350".
+  string formatted_value = 6;
+  // Days since the item was listed.
+  int32 days_listed = 7;
+  // Formatted cumulative savings generated, e.g. "$120".
+  string formatted_savings = 8;
+  // Category for display, e.g. "Power Tools".
+  string category = 9;
+}
+
+// RedundancyGroup is a set of similar items in the community library.
+message RedundancyGroup {
+  // Shared category or description for the group, e.g. "Camping Tents".
+  string label = 1;
+  // Number of items in this group.
+  int32 count = 2;
+  // Combined value of all items in the group.
+  string formatted_total_value = 3;
+  // Individual items in the group.
+  repeated UtilizationItem items = 4;
+}
+
+// Request for time-to-solve detail.
+message GetTimeToSolveDetailRequest {
+  string community_id = 1;
+}
+
+// Response with time-to-solve detail.
+message GetTimeToSolveDetailResponse {
+  // Median minutes from request creation to fulfillment.
+  float median_minutes = 1;
+  // Formatted median time (e.g., "4.2 hrs").
+  string formatted_median = 2;
+  // Trend over time (monthly median values).
+  repeated TimeSeriesPoint trend = 3;
+  // Recent fulfilled requests with individual solve times.
+  repeated SolvedRequest recent_requests = 4;
+}
+
+// SolvedRequest represents a fulfilled request with its solve time.
+message SolvedRequest {
+  string request_id = 1;
+  string title = 2;
+  string helper_name = 3;
+  float solve_minutes = 4;
+  string formatted_solve_time = 5;
+  int64 fulfilled_at_unix_sec = 6;
+}
+
+// Request for community percentile detail.
+message GetCommunityPercentileDetailRequest {
+  string community_id = 1;
+  ImpactMetricDimension dimension = 2;
+}
+
+// Response with community percentile detail.
+message GetCommunityPercentileDetailResponse {
+  int32 current_percentile = 1;
+  repeated PercentileDataPoint history = 2;
+  repeated RankedCommunity top_communities = 3;
+  int32 this_community_rank = 4;
+  string this_community_value = 5;
+}
+
+// PercentileDataPoint is a single point in the percentile history.
+message PercentileDataPoint {
+  int64 timestamp_unix_sec = 1;
+  int32 percentile = 2;
+}
+
+// RankedCommunity is one entry in the percentile top communities list.
+message RankedCommunity {
+  int32 rank = 1;
+  string community_name = 2;
+  string formatted_value = 3;
+  bool is_this_community = 4;
+}
+
+// Request for community leaderboard.
+message GetCommunityLeaderboardRequest {
+  string community_id = 1;
+  ImpactMetricDimension dimension = 2;
+  int32 limit = 3;
+}
+
+// Response with community leaderboard.
+message GetCommunityLeaderboardResponse {
+  repeated LeaderboardMember members = 1;
+  optional LeaderboardMember calling_user = 2;
+}
+
+// LeaderboardMember is one entry in the community leaderboard.
+message LeaderboardMember {
+  int32 rank = 1;
+  string user_id = 2;
+  string display_name = 3;
+  optional string media_id = 4;
+  string formatted_value = 5;
+}
+
+// Request for user community impact detail.
+message GetUserCommunityImpactDetailRequest {
+  string community_id = 1;
+  string user_id = 2;
+  ImpactMetricDimension dimension = 3;
+}
+
+// Response with user community impact detail.
+message GetUserCommunityImpactDetailResponse {
+  string display_name = 1;
+  optional string media_id = 2;
+  string formatted_total = 3;
+  repeated TimeSeriesPoint cumulative_trend = 4;
+  repeated UserImpactTransaction transactions = 5;
+}
+
+// UserImpactTransaction is a single transaction contributing to a user's
+// impact within a community.
+message UserImpactTransaction {
+  string transaction_id = 1;
+  string item_name = 2;
+  string transaction_type = 3;
+  string role = 4;
+  int64 completed_at_unix_sec = 5;
+  string formatted_value = 6;
+}
+
+// UserRankedCommunity is one community entry in a user's community ranking
+// table on the user impact screen.
+message UserRankedCommunity {
+  int32 rank = 1;
+  string community_id = 2;
+  string community_name = 3;
+  string formatted_value = 4;
+}
+
+// Request to produce an AI-enriched impact draft for an experience or request.
+message DraftImpactEstimateRequest {
+  // The target experience or request to draft an estimate for.
+  oneof target {
+    string experience_id = 1;
+    string request_id = 2;
+  }
+}
+
+// Response containing the AI-enriched impact draft.
+message DraftImpactEstimateResponse {
+  // The fully-stamped impact estimate with per-attribute provenance.
+  ImpactEstimate impact = 1;
+
+  // Always absent. This carried free-form model reasoning alongside the
+  // AI inference; no client ever read it (#2936).
+  //
+  // TODO(#2936): #2938 deletes this field and reserves 2 once the
+  // release carrying #2936 has soaked — see docs/proto_conventions.md.
+  optional string llm_reasoning = 2 [deprecated = true];
+}
+
+// Request to recompute an impact estimate using caller-supplied input overrides.
+message DraftImpactEstimateWithOverridesRequest {
+  // The target experience or request.
+  oneof target {
+    string experience_id = 1;
+    string request_id = 2;
+  }
+
+  // Optional overrides for quality time attribute inputs. Composite values
+  // (quality_time_minutes, belonging_minutes, trust_credits) are always
+  // recomputed from these inputs and cannot be set directly.
+  optional QualityTimeAttributes quality_time_input = 3;
+
+  // Optional overrides for money savings inputs. The composite value_usd is
+  // always recomputed from these inputs.
+  optional MoneySavings money_savings_input = 4;
+
+  // Optional overrides for emissions inputs. Composite totals are always
+  // recomputed from these inputs.
+  optional PreventedEmissions emissions_input = 5;
+}
+
+// Response containing the recomputed impact estimate.
+message DraftImpactEstimateWithOverridesResponse {
+  // The recomputed impact estimate with USER provenance on overridden inputs.
+  ImpactEstimate impact = 1;
+}
+
+message GetCommunityProblemsSolvedDetailRequest {
+  string community_id = 1;
+}
+
+// "Problems handled" detail as an X-of-Y fraction. The handled_* fields are
+// the numerator (completed loans + fulfilled requests + claimed needs); the
+// potential_* fields are the denominator (all non-cancelled loan transfers +
+// all non-cancelled requests + all posted needs). [items] lists the handled
+// entries, most-recent-first.
+message GetCommunityProblemsSolvedDetailResponse {
+  // Numerator (X): sum of the three handled bucket counts below.
+  int32 handled_count = 1;
+  // Completed gear loans (type LOAN, state COMPLETED).
+  int32 handled_loans = 2;
+  // Requests marked fulfilled.
+  int32 handled_requests = 3;
+  // Planning needs that have been claimed at least once.
+  int32 handled_needs = 4;
+  // The handled entries, most-recent-first.
+  repeated ProblemSolvedItem items = 5;
+  // Denominator (Y): sum of the three potential bucket counts below.
+  int32 potential_count = 6;
+  // All non-cancelled, non-deleted LOAN transfers.
+  int32 potential_loans = 7;
+  // All non-cancelled, non-deleted requests.
+  int32 potential_requests = 8;
+  // All non-deleted planning needs posted in the community.
+  int32 potential_needs = 9;
+}
+
+// What kind of entry a ProblemSolvedItem represents.
+enum ProblemSolvedKind {
+  PROBLEM_SOLVED_KIND_UNSPECIFIED = 0;
+  PROBLEM_SOLVED_KIND_LOAN = 1;
+  PROBLEM_SOLVED_KIND_REQUEST = 2;
+  PROBLEM_SOLVED_KIND_NEED = 3;
+}
+
+// One handled "problem" entry.
+message ProblemSolvedItem {
+  ProblemSolvedKind kind = 1;
+  // Gear name / request title / need name.
+  string title = 2;
+  // Borrower / confirmed helper / need claimer.
+  string person_name = 3;
+  // When the underlying transaction completed (loan returned, request
+  // fulfilled, need claimed).
+  int64 completed_at_unix_sec = 4;
+  // Navigation target id: gear_id (loan), request_id (request), or the need's
+  // parent experience_id/request_id (need).
+  string content_id = 5;
+  // Optional thumbnail media id.
+  string media_id = 6;
+  // Navigation route for [content_id]: "gear", "request", or "experience".
+  // Set because a need's parent may be either an experience or a request, so
+  // the route cannot be derived from [kind] alone.
+  string content_type = 7;
+}

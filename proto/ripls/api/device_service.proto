@@ -1,0 +1,52 @@
+// RPC service for managing device registrations for push notifications.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Device platforms
+enum DevicePlatform {
+  DEVICE_PLATFORM_UNSPECIFIED = 0;
+  DEVICE_PLATFORM_IOS = 1;
+  DEVICE_PLATFORM_ANDROID = 2;
+  DEVICE_PLATFORM_WEB = 3;
+}
+
+// Register a device token for push notifications
+message RegisterDeviceTokenRequest {
+  // The device token (FCM token, APNs token, etc.)
+  string device_token = 1;
+
+  // The platform of this device
+  DevicePlatform platform = 2;
+
+  // The Firebase installation ID for this app instance, when the client can
+  // supply one. FCM deprecated addressing a message by registration token in
+  // favour of the installation ID; the server sends to whichever it has, so
+  // an older client that omits this keeps working on device_token alone.
+  string installation_id = 3;
+}
+
+message RegisterDeviceTokenResponse {
+  // The ID of the device registration
+  string device_id = 1;
+}
+
+// Unregister a device token
+message UnregisterDeviceTokenRequest {
+  // The device token to remove
+  string device_token = 1;
+}
+
+message UnregisterDeviceTokenResponse {}
+
+// Service for managing device registrations
+service DeviceService {
+  // Register a device for push notifications
+  rpc RegisterDeviceToken(RegisterDeviceTokenRequest) returns (RegisterDeviceTokenResponse);
+
+  // Unregister a device
+  rpc UnregisterDeviceToken(UnregisterDeviceTokenRequest) returns (UnregisterDeviceTokenResponse);
+}

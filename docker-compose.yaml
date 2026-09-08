@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ripls
+      POSTGRES_PASSWORD: ripls_dev
+      POSTGRES_DB: ripls
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ripls"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    # Tag the locally-built image. Set SERVER_IMAGE to your own registry path
+    # (e.g. in .env) when you want `docker compose push`/`pull` to work against
+    # it; the default is local-only and pushes nowhere.
+    image: ${SERVER_IMAGE:-ripls/server:dev}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_USER=ripls
+      - DB_PASSWORD=ripls_dev
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=ripls
+      - PORT=8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local

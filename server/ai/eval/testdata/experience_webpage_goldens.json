@@ -1,0 +1,160 @@
+{
+  "description": "Golden eval cases for GenerateExperienceFromWebpage. Pre-fetched page text drives event extraction — these pages carry explicit dates and venues so the expectations are stricter than image-mode. Page bodies are authored (realistic but fictional contact details) so no real PII is committed.",
+  "version": 2,
+  "defaults": {
+    "region": "Denver, CO",
+    "current_time": "2026-03-01T10:00:00-07:00"
+  },
+  "cases": [
+    {
+      "id": "concert_event",
+      "tags": ["event_page", "concert"],
+      "page_title": "Summer Sounds Concert Series - Red Rocks Amphitheatre",
+      "page_description": "Join us for a night of live music under the stars at Red Rocks Amphitheatre.",
+      "page_body": "Summer Sounds Concert Series\nRed Rocks Amphitheatre, Morrison, CO\n\nDate: Saturday, June 14, 2026\nDoors: 5:30 PM | Show: 7:00 PM\n\nFeaturing: The Mountain Collective - a 5-piece folk-rock band blending Appalachian bluegrass with modern indie rock.\n\nTickets:\n- General Admission: $45\n- Reserved Seating: $65\n- VIP (includes meet & greet): $120\n\nWhat to Bring:\n- Blankets and low-back chairs\n- Sealed water bottles (no glass)\n- Layers - it gets cold after sunset!\n\nParking opens at 4:30 PM. Shuttle service available from downtown Denver.",
+      "region": "Denver, CO",
+      "current_time": "2026-03-01T10:00:00-07:00",
+      "expected": {
+        "title_contains": ["concert", "summer sounds", "red rocks", "music"],
+        "has_description": true,
+        "date": "2026-06-14",
+        "time": "19:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_contains": ["red rocks", "morrison"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "meetup_recurring",
+      "tags": ["event_page", "recurring"],
+      "page_title": "Boulder Trail Runners - Monthly Group Run",
+      "page_description": "Monthly trail running meetup for all levels in the Boulder area.",
+      "page_body": "Boulder Trail Runners Monthly Group Run\n\nJoin us for our monthly trail run! All paces welcome.\n\nNext Run: First Saturday of every month\nTime: 8:00 AM\nMeeting Point: Chautauqua Trailhead parking lot\n\nDistance: 4-8 miles depending on your preference. We split into pace groups after the first mile.\n\nWhat to Bring:\n- Trail running shoes\n- Water bottle or hydration pack\n- Sun protection\n\nCost: Free! Just show up.\n\nContact: bouldertrilrunners@example.com\n\nRecent photos from our March run at Mount Sanitas attached.",
+      "region": "Boulder, CO",
+      "current_time": "2026-03-15T10:00:00-07:00",
+      "expected": {
+        "title_contains": ["trail run", "group run", "boulder"],
+        "has_description": true,
+        "time": "08:00",
+        "time_confidence_any_of": ["EXPLICIT", "INFERRED"],
+        "location_query_contains": ["chautauqua"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "library_free_workshop",
+      "tags": ["event_page", "free", "workshop"],
+      "page_title": "Seed Starting Workshop | Longmont Public Library",
+      "page_description": "Learn to start your vegetable garden from seed with our master gardener volunteers.",
+      "page_body": "Seed Starting Workshop\nLongmont Public Library - Community Room B\n\nSaturday, March 21, 2026\n10:00 AM - 11:30 AM\n\nLearn to start tomatoes, peppers, and herbs from seed. Our master gardener volunteers will cover soil mixes, lighting, and transplant timing for the Front Range climate. All materials provided, and everyone takes home a seeded tray.\n\nCost: Free\nRegistration required - space limited to 24 participants.\nRegister at the front desk or online.",
+      "expected": {
+        "title_contains": ["seed", "workshop", "garden"],
+        "has_description": true,
+        "date": "2026-03-21",
+        "time": "10:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_contains": ["longmont", "library"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "festival_multiday",
+      "tags": ["event_page", "multi-day"],
+      "page_title": "Spring Makers Festival - April 10-12, 2026",
+      "page_description": "Three days of local makers, food trucks, and hands-on craft demos at Riverside Fairgrounds.",
+      "page_body": "Spring Makers Festival\nRiverside Fairgrounds\n\nFriday April 10 - Sunday April 12, 2026\nGates open 9:00 AM daily, close 6:00 PM\n\nOver 120 local makers: woodworking, ceramics, fiber arts, letterpress, and more. Hands-on demo tents run all three days. Food trucks on site.\n\nAdmission: $8/day or $20 weekend pass. Kids under 12 free.\nFree parking at the north lot.",
+      "expected": {
+        "title_contains": ["makers", "festival", "craft"],
+        "has_description": true,
+        "date": "2026-04-10",
+        "location_query_contains": ["riverside", "fairgrounds"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "workshop_registration_deadline",
+      "tags": ["event_page", "deadline-distractor"],
+      "page_title": "Intro to MIG Welding - Hands-On Class",
+      "page_description": "One-afternoon beginner welding class at the Makerspace.",
+      "page_body": "Intro to MIG Welding\nFront Range Makerspace, Bay 3\n\nClass date: Saturday, April 4, 2026\nTime: 1:00 PM - 4:30 PM\n\nRegistration closes Friday, March 27, 2026 at 5:00 PM - no walk-ins.\n\nLearn machine setup, bead technique, and basic joints. Safety gear provided; wear cotton clothing and closed-toe shoes. No experience needed.\n\nCost: $95, materials included.",
+      "expected": {
+        "title_contains": ["weld"],
+        "has_description": true,
+        "date": "2026-04-04",
+        "time": "13:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_contains": ["makerspace"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "virtual_book_club",
+      "tags": ["event_page", "online"],
+      "page_title": "Online Book Club: The Overstory - March Meeting",
+      "page_description": "Monthly online book discussion, everyone welcome.",
+      "page_body": "Online Book Club - March Meeting\n\nThis month we're discussing 'The Overstory' by Richard Powers.\n\nWhen: Thursday, March 12, 2026 at 7:00 PM Mountain Time\nWhere: Online via video call - the join link is emailed after you RSVP.\n\nNew members always welcome. Come even if you didn't finish the book!\n\nRSVP: bookclub@example.com",
+      "expected": {
+        "title_contains": ["book club", "book", "overstory"],
+        "has_description": true,
+        "date": "2026-03-12",
+        "time": "19:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_empty": true,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "venue_landing_no_event",
+      "tags": ["non-event", "venue-page"],
+      "page_title": "Oak Valley Community Center",
+      "page_description": "Programs, rentals, and activities at Oak Valley Community Center.",
+      "page_body": "Welcome to Oak Valley Community Center\n\nOur facility offers a gymnasium, two multipurpose rooms, a teaching kitchen, and outdoor pavilion rentals.\n\nPrograms run seasonally - check back for our summer schedule, posted in May.\n\nHours: Monday-Friday 8 AM - 9 PM, Saturday 9 AM - 5 PM\nRoom rental inquiries: rentals@example.com or (555) 010-0100",
+      "expected": {
+        "date_empty": true,
+        "max_confidence": 0.6
+      }
+    },
+    {
+      "id": "past_event_recap",
+      "tags": ["event_page", "past-date"],
+      "page_title": "Winter Lantern Walk - February 14, 2026",
+      "page_description": "An evening lantern-lit walk along the creek path.",
+      "page_body": "Winter Lantern Walk\nClear Creek Path, starting at the 9th Street trailhead\n\nSaturday, February 14, 2026\n5:30 PM - 7:00 PM\n\nBring your own lantern or borrow one of ours. Hot cider at the turnaround point. Dress warmly - the path is packed snow.\n\nFree community event.",
+      "expected": {
+        "title_contains": ["lantern", "walk", "winter"],
+        "has_description": true,
+        "date": "2026-02-14",
+        "time": "17:30",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_contains": ["clear creek", "9th street", "trailhead"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "sparse_event_page",
+      "tags": ["event_page", "sparse"],
+      "page_title": "Neighborhood Cleanup Day",
+      "page_description": "",
+      "page_body": "Neighborhood Cleanup Day\n\nSaturday, March 28, 2026.\nMeet at the Maple Street cul-de-sac. Gloves and bags provided.",
+      "expected": {
+        "title_contains": ["cleanup", "clean-up", "clean up"],
+        "date": "2026-03-28",
+        "time_confidence_any_of": ["UNKNOWN", "INFERRED"],
+        "location_query_contains": ["maple"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "non_event_blog",
+      "tags": ["non-event", "article"],
+      "page_title": "10 Tips for Hosting a Great Potluck",
+      "page_description": "Make your next potluck effortless with these hosting tips.",
+      "page_body": "10 Tips for Hosting a Great Potluck\n\n1. Use a shared sign-up list so you don't end up with five pasta salads.\n2. Ask guests to label dishes with ingredients for allergies.\n3. Have serving utensils ready - guests always forget them.\n4. Plan for seconds: people eat more at potlucks than you think.\n5. Set up a drink station away from the food table to spread people out.\n6. Keep hot dishes hot - borrow a couple of slow cookers.\n7. Have to-go containers for leftovers.\n8. Don't over-plan activities; conversation is the point.\n9. Send a reminder two days before.\n10. Take five minutes to enjoy your own party.",
+      "expected": {
+        "date_empty": true,
+        "location_query_empty": true,
+        "max_confidence": 0.6
+      }
+    }
+  ]
+}

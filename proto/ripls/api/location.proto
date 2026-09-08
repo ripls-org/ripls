@@ -1,0 +1,131 @@
+// API-level location types (not tied to storage). Includes the location-poll
+// proposal/vote types — mirrors how time.proto carries both ExperienceTime
+// and the time-poll proposal/vote types in a single API file.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Geocoded location result from external geocoding service.
+// Similar to models.Location but without ID/timestamps (not yet stored).
+// Suitable for API responses where location data is returned but not persisted.
+message GeocodedLocation {
+  string name = 1;                   // Place name (e.g., "Empower Field at Mile High")
+  double latitude_deg = 2;           // Latitude in degrees [-90, 90]
+  double longitude_deg = 3;          // Longitude in degrees [-180, 180]
+  string locality = 4;               // City/town (e.g., "Denver")
+  string region_code = 5;            // State/province code (e.g., "CO")
+  string postal_code = 6;            // Postal code (e.g., "80204")
+  repeated string address_lines = 7; // Street address lines
+
+  // Provider-specific opaque identifier for this place. Paired with
+  // external_place_provider, the client sends both back in SaveLocation
+  // so the server can deduplicate against prior saves of the same place.
+  string external_place_id = 8;
+
+  // The provider that issued external_place_id (e.g., "mapbox", "google").
+  // Empty when the geocoder didn't return a stable identifier.
+  string external_place_provider = 9;
+
+  // Neighborhood name (e.g., "Capitol Hill"). Optional.
+  string neighborhood = 10;
+
+  // County or equivalent administrative division (e.g., "Boulder County").
+  // Optional.
+  string county = 11;
+
+  // State/province/administrative area (e.g., "Colorado"). Optional.
+  string administrative_area = 12;
+}
+
+// Shared location data type for persisted locations.
+// Used across multiple RPCs and messages in location_service.proto.
+// Includes full address details and unique identifier.
+message Location {
+  // The unique identifier of the location.
+  string id = 1;
+
+  // Latitude in degrees, range [-90, 90].
+  double latitude_deg = 2;
+
+  // Longitude in degrees, range [-180, 180].
+  double longitude_deg = 3;
+
+  // CLDR region code (e.g., "US", "GB", "JP").
+  string region_code = 4;
+
+  // Postal code (e.g., "94043", "SW1A 1AA").
+  string postal_code = 5;
+
+  // City or locality name (e.g., "Mountain View", "London").
+  string locality = 6;
+
+  // Street address lines (e.g., ["1600 Amphitheatre Parkway", "Building 41"]).
+  repeated string address_lines = 7;
+
+  // Human-readable name of the location (e.g., "Empower Field at Mile High").
+  optional string name = 8;
+
+  // Neighborhood name (e.g., "Capitol Hill", "SoHo").
+  optional string neighborhood = 9;
+
+  // County or equivalent administrative division (e.g., "Boulder County").
+  optional string county = 10;
+
+  // State/province/administrative area (e.g., "Colorado", "California").
+  optional string administrative_area = 11;
+}
+
+// LocationVoteStatus represents a user's vote on a location proposal.
+enum LocationVoteStatus {
+  LOCATION_VOTE_STATUS_UNSPECIFIED = 0;
+  LOCATION_VOTE_STATUS_YES = 1;
+  LOCATION_VOTE_STATUS_NO = 2;
+  LOCATION_VOTE_STATUS_NONE_WORK = 3;
+
+  // The voter is flexible: any proposed spot works for them. A flexible vote
+  // counts toward every proposal in the poll, so it is shown as supporting
+  // all options rather than attached to a single one.
+  LOCATION_VOTE_STATUS_FLEXIBLE = 4;
+}
+
+// LocationVote represents a user's vote on a location proposal
+// (API type with enriched user data).
+message LocationVote {
+  User user = 1;
+  LocationVoteStatus status = 2;
+}
+
+// ProposedLocation carries the location being proposed. A proposal either
+// references a previously saved location (efficient, dedupes) or carries a
+// fresh geocoded result that will be saved on confirm.
+message ProposedLocation {
+  // Saved Location.id reference. Set when the proposer picked a saved spot
+  // from their place list. Mutually exclusive with [geocoded].
+  string location_id = 1;
+
+  // Inline geocoded result. Set when the proposer dropped a pin or picked a
+  // result from search that isn't saved yet. Materialized into a stored
+  // Location on confirm. Mutually exclusive with [location_id].
+  GeocodedLocation geocoded = 2;
+}
+
+// LocationProposal represents a proposed location with votes
+// (API type with enriched data).
+message LocationProposal {
+  string id = 1;
+  User proposed_by = 2;
+  ProposedLocation location = 3;
+  repeated LocationVote votes = 4;
+  bool is_confirmed = 5;
+  int64 proposed_at_unix_sec = 6;
+
+  // Identifier of the poll this proposal belongs to. All proposals created
+  // during the same poll run share the same poll_id, so the client can list
+  // every historical poll as its own group. Optional for legacy data.
+  optional string poll_id = 7;
+}

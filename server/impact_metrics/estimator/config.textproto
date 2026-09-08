@@ -1,0 +1,327 @@
+# Impact Estimation Configuration
+# All parameters, emission factors, and methodology assumptions.
+# Changes to this file affect how impact estimates are calculated.
+# Each parameter references a methodology doc in docs/impact/methods/.
+
+# Semantic version for staleness detection.
+# Increment when changing parameters that affect estimate values.
+version: "1.0.0"
+
+# --- Global Parameters ---
+
+global {
+  # Fraction of loans estimated to prevent a new purchase.
+  # Source: Library of Things 2024 impact methodology update.
+  # Methodology: docs/impact/methods/prevented_purchase_rate.md
+  loan_prevented_purchase_rate: 0.50
+
+  # Fraction of giveaways estimated to prevent a new purchase.
+  # Initial estimate; giveaway recipients likely would have bought otherwise.
+  # Methodology: docs/impact/methods/prevented_purchase_rate.md
+  giveaway_prevented_purchase_rate: 0.50
+
+  # Fraction of item's embodied carbon saved by repair vs. replacement.
+  # Methodology: docs/impact/methods/repair_carbon_fraction.md
+  repair_carbon_fraction: 0.35
+
+  # Default transportation CO2e per mile (kg). EPA 2024 gasoline vehicle.
+  # Methodology: docs/impact/methods/transportation_emissions.md
+  transportation_co2e_per_mile_kg: 0.000393
+
+  # Relative stddev for money savings estimates.
+  money_saved_relative_stddev: 0.30
+
+  # Waste carbon factor: kg CO2e per kg of item diverted from landfill.
+  # Source: Library of Things 2024 impact methodology update.
+  waste_co2e_per_kg: 1.0
+
+  # Flat default carbon (grams CO2e) for requests lacking detailed data.
+  # TODO: replace with LLM-assisted estimation per request type.
+  request_default_carbon_grams: 5000
+
+  # Flat default carbon (grams CO2e) for experiences.
+  # TODO: replace with LLM-assisted estimation.
+  experience_default_carbon_grams: 0
+}
+
+# --- Carbon Estimation Method Standard Deviations ---
+# Each value is the standard deviation as a fraction of the mean estimate.
+# Methodology: docs/impact/methods/uncertainty_model.md
+
+carbon_method_stddevs {
+  method: "product_lca_v1"
+  relative_stddev: 0.15
+}
+carbon_method_stddevs {
+  method: "weight_material_v1"
+  relative_stddev: 0.30
+}
+carbon_method_stddevs {
+  method: "category_average_v1"
+  relative_stddev: 0.40
+}
+carbon_method_stddevs {
+  method: "spend_based_v1"
+  relative_stddev: 0.50
+}
+carbon_method_stddevs {
+  method: "llm_inference_v1"
+  relative_stddev: 0.50
+}
+
+# --- LLM Confidence-to-Stddev Breakpoints ---
+# Linear interpolation between these breakpoints.
+
+llm_confidence_breakpoints { confidence: 1.0  relative_stddev: 0.20 }
+llm_confidence_breakpoints { confidence: 0.8  relative_stddev: 0.30 }
+llm_confidence_breakpoints { confidence: 0.5  relative_stddev: 0.50 }
+llm_confidence_breakpoints { confidence: 0.3  relative_stddev: 0.70 }
+llm_confidence_breakpoints { confidence: 0.0  relative_stddev: 1.00 }
+
+# --- Material Emission Factors (kg CO2e per kg of material) ---
+# The LLM estimates an item's material category and weight in grams.
+# Carbon is then: weight_kg * emission_factor.
+# Source: Edinburgh Tool Library / ICE Database (University of Bath).
+# Methodology: docs/impact/methods/material_emission_factors.md
+
+material_emission_factors {
+  category: MATERIAL_CATEGORY_SOLID_METAL
+  kg_co2e_per_kg: 3.25
+  assumption: "95% steel, 5% aluminum average"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_SOLID_PLASTIC
+  kg_co2e_per_kg: 3.22
+  assumption: "80% plastic, 20% rubber average"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_MIXED_PLASTIC_METAL
+  kg_co2e_per_kg: 3.23
+  assumption: "50/50 plastic-metal blend"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_MIXED_WOOD_METAL
+  kg_co2e_per_kg: 1.87
+  assumption: "50/50 wood-metal blend"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_MIXED_WOOD_PLASTIC
+  kg_co2e_per_kg: 1.86
+  assumption: "50/50 wood-plastic blend"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_WOOD
+  kg_co2e_per_kg: 0.49
+  assumption: "average softwood/hardwood"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_ALUMINUM
+  kg_co2e_per_kg: 7.63
+  assumption: "trade mix"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_FABRIC
+  kg_co2e_per_kg: 7.96
+  assumption: "50% cotton, 50% nylon average"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_CORDLESS_POWER_TOOL
+  kg_co2e_per_kg: 6.17
+  assumption: "30% battery, 15% motor, 55% housing materials"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_CORDED_POWER_TOOL
+  kg_co2e_per_kg: 3.77
+  assumption: "30% motor, 70% housing materials"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_PETROL_TOOL
+  kg_co2e_per_kg: 4.13
+  assumption: "50% engine, 50% housing materials"
+}
+material_emission_factors {
+  category: MATERIAL_CATEGORY_ELECTRONICS_SMALL
+  kg_co2e_per_kg: 1.76
+  assumption: "small device (WEEE) average"
+}
+
+# --- Spend-Based (EEIO) Emission Factors (kg CO2e per USD) ---
+# Fallback when neither weight nor category match is available.
+# Source: Decarbon open-source dataset (CC BY-SA 4.0).
+# Methodology: docs/impact/methods/spend_based_factors.md
+
+spend_based_emission_factors {
+  key: "electronics_appliances"
+  value: 0.15
+}
+spend_based_emission_factors {
+  key: "tools_hardware"
+  value: 0.12
+}
+spend_based_emission_factors {
+  key: "sporting_goods"
+  value: 0.10
+}
+spend_based_emission_factors {
+  key: "clothing_textiles"
+  value: 0.12
+}
+spend_based_emission_factors {
+  key: "books_media"
+  value: 0.05
+}
+spend_based_emission_factors {
+  key: "furniture"
+  value: 0.08
+}
+spend_based_emission_factors {
+  key: "toys_games"
+  value: 0.10
+}
+spend_based_emission_factors {
+  key: "general_consumer_goods"
+  value: 0.10
+}
+
+# --- Time Estimation Defaults (minutes) ---
+# Methodology: docs/impact/methods/time_estimation.md
+
+time_defaults {
+  gear_shopping_time_minutes: 120
+  request_labor_time_minutes: 120
+  experience_duration_minutes: 120
+  default_relative_stddev: 0.50   # High: population-level average, not item-specific
+  hint_relative_stddev: 0.30      # Lower: AI estimated from item-specific context
+}
+
+# --- Equivalency Display Factors ---
+# For secondary "equivalent to" displays.
+# Source: EPA Greenhouse Gas Equivalencies Calculator (2024).
+# Methodology: docs/impact/methods/equivalency_factors.md
+
+equivalencies {
+  miles_driven_per_kg_co2e: 2.544
+  smartphone_charges_per_kg_co2e: 80.645
+  tree_seedlings_10yr_per_tonne_co2e: 16.5
+}
+
+# --- Provenance Versions ---
+# Monotonically increasing version per named provenance source.
+# Bump when the corresponding algorithm, formula, or prompt changes.
+# Fields with stored version < current version will be re-estimated
+# by the backfill job (unless source is USER).
+
+# Money savings
+provenance_versions { key: "prevented_purchase"    value: 1 }
+provenance_versions { key: "service_value"          value: 1 }
+provenance_versions { key: "commercial_value"       value: 1 }
+
+# Carbon estimation
+provenance_versions { key: "weight_material_carbon" value: 1 }
+provenance_versions { key: "spend_based_carbon"     value: 1 }
+
+# Time estimation
+provenance_versions { key: "gear_shopping_time"     value: 1 }
+provenance_versions { key: "request_labor_time"     value: 1 }
+provenance_versions { key: "experience_duration"    value: 1 }
+provenance_versions { key: "genai_time_estimate"    value: 1 }
+
+# GenAI metadata provenance (gear detection modes)
+provenance_versions { key: "genai_from_text"       value: 1 }
+provenance_versions { key: "genai_from_image"      value: 1 }
+provenance_versions { key: "genai_from_web"        value: 1 }
+provenance_versions { key: "genai_value_estimate"  value: 1 }
+
+# Quality Time provenance
+provenance_versions { key: "quality_time_v1"       value: 1 }
+
+# --- Quality Time Defaults ---
+# Weights and defaults for Quality Time (QT) estimation.
+# QT = duration × modality × group_size × tie_strength × reciprocity × novelty × vulnerability
+# One QT minute approximates one minute of quality in-person social contact.
+# Methodology: docs/quality_time.md
+# Source: social_connection_metrics.md; directional research support, not precise calibration.
+
+quality_time {
+  # Duration defaults (minutes of face-to-face co-presence)
+  # Source: social_connection_metrics.md Attribute 1.
+  gear_handoff_duration_minutes: 15
+  giveaway_handoff_duration_minutes: 10
+  request_duration_minutes: 60
+  experience_duration_minutes: 120
+
+  # Modality weights (fraction of full in-person shared activity value)
+  # Rank order: Cacioppo & Cacioppo (2014); BBC Loneliness Experiment (Barreto et al., 2021).
+  # Specific ratios are modeling choices, not research findings.
+  modality_in_person_shared: 1.0
+  modality_in_person_transactional: 0.6
+  modality_video: 0.4
+  modality_phone: 0.3
+  modality_text: 0.1
+
+  # Group size factors (per-person wellbeing multiplier)
+  # Directional: Dunbar (1992, 2010); Baumeister & Leary (1995); Páez et al. (2015).
+  # Specific multipliers are modeling choices.
+  group_size_dyadic: 1.0
+  group_size_small: 1.2
+  group_size_medium: 1.3
+  group_size_large: 1.1
+
+  # Tie strength weights (based on prior interaction count)
+  # Directional: Granovetter (1973); Dunbar (1992); Cacioppo et al. (2015).
+  # Tier boundaries: 0 / 1-3 / 4-10 / 11+.
+  tie_strength_new: 0.8
+  tie_strength_acquaintance: 1.0
+  tie_strength_active: 1.1
+  tie_strength_close: 1.2
+
+  # Reciprocity multipliers
+  # Directional: Dunn, Aknin & Norton (2008); Post (2005). Ratio is a modeling choice.
+  reciprocity_giving: 1.0
+  reciprocity_receiving: 0.7
+  reciprocity_mutual: 1.0
+
+  # Novelty multipliers
+  # Directional: Aron et al. (2000). Threshold: 30 days since last same-type interaction.
+  novelty_novel: 1.3
+  novelty_infrequent: 1.0
+  novelty_routine: 0.8
+
+  # Vulnerability defaults by transaction type
+  # TODO(phase-8): Replace with LLM classification from item/request description.
+  vulnerability_gear_loan: 1.0
+  vulnerability_giveaway: 1.0
+  vulnerability_request: 1.0
+  vulnerability_experience: 1.3  # Hosting at home is high vulnerability by default.
+
+  # Relative standard deviations for uncertainty propagation
+  duration_relative_stddev: 0.40       # Config defaults: population-level average
+  modality_relative_stddev: 0.15
+  vulnerability_relative_stddev: 0.30  # Config defaults
+
+  # LLM-inferred relative standard deviations (item-specific context reduces uncertainty)
+  duration_llm_relative_stddev: 0.25      # Lower than config default (0.40)
+  vulnerability_llm_relative_stddev: 0.15  # Lower than config default (0.30)
+  group_size_experience_relative_stddev: 0.20
+  group_size_other_relative_stddev: 0.05
+  novelty_relative_stddev: 0.05
+  tie_strength_relative_stddev: 0.05
+
+  # Sufficiency threshold
+  # Source: Helliwell & Huang (2013); ATUS data (~6 hrs/week).
+  sufficiency_weekly_minutes: 360
+  minimum_transactions: 10
+
+  # Draft estimation parameters
+  experience_contribution_co_use_rate: 0.35
+  request_contribution_co_use_rate: 0.35
+  experience_travel_avoided_default_km: 0.0
+  experience_chat_transcript_max_messages: 50
+  experience_chat_transcript_max_tokens: 4000
+  attribute_user_override_relative_stddev: 0.10
+
+  # Phase 3 enrichment knobs.
+  quality_time_max_effort_asymmetry_factor: 1.25
+  quality_time_cross_community_tie_strength_factor: 1.10
+  quality_time_multi_host_vulnerability_blend: 0.50
+}

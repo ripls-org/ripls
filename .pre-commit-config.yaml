@@ -1,0 +1,13 @@
+# Pre-commit hooks for ripls. Install once with:
+#   brew install pre-commit && pre-commit install
+#
+# Hooks run automatically on `git commit`. To bypass in an emergency,
+# `git commit --no-verify` skips them, but the CI gates in
+# .github/workflows/gitleaks-{pr,push}.yaml will still catch new leaks.
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+        # Reads .gitleaks.toml and .gitleaksignore from the repo root.

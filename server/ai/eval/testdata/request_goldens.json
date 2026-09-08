@@ -1,0 +1,174 @@
+{
+  "description": "Golden eval cases for GenerateRequestContent. Opt-in per field: fields omitted from 'expected' are not checked. value_estimate semantic per buildRequestGenerationPrompt: SERVICE requests use the hire-someone-for-the-session cost; ITEM BORROW requests use a one-session rental-equivalent fee (not the item's retail/replacement value).",
+  "version": 1,
+  "defaults": {
+    "region": "Boulder, CO",
+    "value_estimate_tolerance_pct": 50.0
+  },
+  "cases": [
+    {
+      "id": "borrow_drill_weekend",
+      "tags": ["tool-borrow"],
+      "prompt": "looking to borrow a power drill for a weekend project building shelves",
+      "expected": {
+        "title_contains": ["drill"],
+        "title_contains_mode": "all",
+        "search_keywords_must_contain": ["drill"],
+        "search_keywords_general": ["tools", "workshop", "power tool", "DIY", "home improvement", "carpentry", "woodworking"],
+        "value_estimate_usd": 30,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "help_moving_saturday",
+      "tags": ["physical-help", "time-bounded"],
+      "prompt": "need help moving a couch and heavy boxes saturday",
+      "expected": {
+        "title_contains": ["mov"],
+        "title_contains_mode": "all",
+        "search_keywords_must_contain": ["moving"],
+        "search_keywords_general": ["boxes", "furniture", "heavy lifting", "moving day", "lifting", "truck", "packing"],
+        "value_estimate_usd": 80,
+        "value_estimate_tolerance_pct": 100,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "pressure_washer_borrow",
+      "tags": ["tool-borrow"],
+      "prompt": "anyone have a pressure washer I could borrow for a day?",
+      "expected": {
+        "title_contains": ["pressure washer"],
+        "title_contains_mode": "all",
+        "search_keywords_must_contain": ["pressure washer"],
+        "search_keywords_general": ["cleaning", "outdoor", "power tool", "power washing", "deep cleaning", "equipment", "exterior"],
+        "value_estimate_usd": 45,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "tent_next_weekend",
+      "tags": ["gear-borrow", "time-bounded"],
+      "prompt": "need a 4-person tent for camping next weekend",
+      "expected": {
+        "title_contains": ["tent"],
+        "title_contains_mode": "all",
+        "search_keywords_must_contain": ["tent"],
+        "search_keywords_general": ["camping", "outdoor", "backpacking", "gear", "campsite", "outdoors", "nature"],
+        "value_estimate_usd": 40,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "math_tutor_kid",
+      "tags": ["service", "tutoring"],
+      "prompt": "looking for a math tutor for my 10 year old",
+      "expected": {
+        "title_contains": ["tutor", "math"],
+        "title_contains_mode": "any",
+        "search_keywords_must_contain": ["tutor"],
+        "search_keywords_general": ["tutoring", "math", "education", "homework", "learning", "academic", "study", "school"],
+        "value_estimate_usd": 50,
+        "value_estimate_tolerance_pct": 60,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "sous_vide_borrow",
+      "tags": ["tool-borrow", "kitchen"],
+      "prompt": "looking to borrow a sous vide for a dinner party",
+      "expected": {
+        "title_contains": ["sous vide"],
+        "title_contains_mode": "all",
+        "search_keywords_must_contain": ["sous vide"],
+        "search_keywords_general": ["cooking", "kitchen", "appliance", "cookware", "culinary", "precision cooking", "dinner"],
+        "value_estimate_usd": 25,
+        "value_estimate_tolerance_pct": 80,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "projector_movie_night",
+      "tags": ["event-equipment"],
+      "prompt": "need a projector for family movie night friday",
+      "expected": {
+        "title_contains": ["projector"],
+        "title_contains_mode": "all",
+        "search_keywords_must_contain": ["projector"],
+        "search_keywords_general": ["movie", "screen", "entertainment", "home theater", "cinema", "family", "night"],
+        "value_estimate_usd": 30,
+        "value_estimate_tolerance_pct": 80,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "ladder_deck_painting",
+      "tags": ["tool-borrow", "with-context"],
+      "prompt": "borrow a ladder to paint the deck this weekend",
+      "expected": {
+        "title_contains": ["ladder"],
+        "title_contains_mode": "all",
+        "search_keywords_must_contain": ["ladder"],
+        "search_keywords_general": ["painting", "home improvement", "DIY", "deck", "outdoor", "project", "exterior"],
+        "value_estimate_usd": 25,
+        "value_estimate_tolerance_pct": 80,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "deck_repair_advice",
+      "tags": ["advice", "professional"],
+      "prompt": "need advice on repairing a damaged deck board",
+      "expected": {
+        "title_contains": ["deck"],
+        "title_contains_mode": "all",
+        "search_keywords_must_contain": ["deck", "repair"],
+        "search_keywords_general": ["carpentry", "construction", "wood", "home maintenance", "DIY", "woodworking", "home improvement"],
+        "value_estimate_usd": 75,
+        "value_estimate_tolerance_pct": 80,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "dog_walker_single",
+      "tags": ["service", "one-off"],
+      "prompt": "looking for a dog walker for a ~1 hour afternoon walk tomorrow",
+      "expected": {
+        "title_contains": ["dog walk"],
+        "title_contains_mode": "any",
+        "search_keywords_must_contain": ["dog walk"],
+        "search_keywords_general": ["pet", "pets", "leash", "outdoors", "walk", "animal care", "park"],
+        "value_estimate_usd": 30,
+        "value_estimate_tolerance_pct": 50,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "babysitter_weekend",
+      "tags": ["service", "care"],
+      "prompt": "looking for a babysitter for saturday evening",
+      "expected": {
+        "title_contains": ["sitt"],
+        "title_contains_mode": "all",
+        "search_keywords_must_contain": ["babysit"],
+        "search_keywords_general": ["childcare", "kids", "children", "care", "evening", "family", "nanny"],
+        "value_estimate_usd": 60,
+        "value_estimate_tolerance_pct": 80,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "bike_pump_home",
+      "tags": ["tool-borrow", "location"],
+      "prompt": "borrow a bike pump at my house",
+      "expected": {
+        "title_contains": ["bike pump", "pump"],
+        "title_contains_mode": "any",
+        "search_keywords_must_contain": ["pump"],
+        "search_keywords_general": ["bicycle", "bike", "cycling", "tire", "inflation", "bike repair", "cyclist"],
+        "location_query": "USER_PRIMARY_LOCATION",
+        "min_confidence": 0.4
+      }
+    }
+  ]
+}

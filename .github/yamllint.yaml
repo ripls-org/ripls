@@ -1,0 +1,18 @@
+# yamllint config for the workflow-correctness CI gate. Starts from the
+# default ruleset (duplicate keys, octal surprises, indentation, trailing
+# whitespace, comment hygiene, etc. are all enforced) and only relaxes the
+# two rules that are impractical or contrary to repo convention for GitHub
+# Actions YAML. actionlint handles the Actions schema/structure separately.
+extends: default
+rules:
+  # `on:` is a YAML 1.1 boolean key; don't flag it. Values stay restricted to
+  # the real booleans so a stray `yes`/`no` is still caught.
+  truthy:
+    check-keys: false
+    allowed-values: ["true", "false"]
+    level: error
+  # Workflow YAML routinely exceeds 80 cols (uses: refs, URLs, ${{ }}
+  # expressions, path globs) and most lines can't be wrapped.
+  line-length: disable
+  # Repo convention omits the leading `---` document marker on workflows.
+  document-start: disable

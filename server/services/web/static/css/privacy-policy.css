@@ -1,0 +1,39 @@
+/* Ripls Website - Privacy Policy Specific Styles */
+
+.last-updated {
+    color: #9a8d86;
+    margin-bottom: 40px;
+    font-style: italic;
+    font-size: 16px;
+}
+
+.intro {
+    background: linear-gradient(180deg, #f8f3ee 0%, #fdf8f3 100%);
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 40px;
+    border-left: 4px solid #e07a5f;
+}
+
+.intro p {
+    margin-bottom: 15px;
+}
+
+.intro p:last-child {
+    margin-bottom: 0;
+}
+
+.contact-info {
+    background: linear-gradient(180deg, #f8f3ee 0%, #fdf8f3 100%);
+    padding: 30px;
+    border-radius: 20px;
+    margin-top: 40px;
+}
+
+.contact-info p {
+    margin-bottom: 15px;
+}
+
+.contact-info p:last-child {
+    margin-bottom: 0;
+}

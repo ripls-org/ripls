@@ -1,0 +1,77 @@
+name: Test Docker Build
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - 'go.mod'
+      - 'go.sum'
+      - 'server/**'
+      - '.github/workflows/test_docker_build.yaml'
+  # No path filter on PRs: this is a required check, so it must report on every
+  # PR. The `changes` job gates the real work — a PR that doesn't touch the
+  # prod-image paths skips the `test-build` job, which reports success and
+  # satisfies the required check (the GitHub-recommended pattern; #2287).
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  changes:
+    name: Detect Docker build changes
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'Dockerfile'
+              - 'go.mod'
+              - 'go.sum'
+              - 'server/**'
+              - '.github/workflows/test_docker_build.yaml'
+
+  test-build:
+    needs: [changes]
+    # Push/dispatch: always run. PR: run only when prod-image paths changed;
+    # otherwise the job skips and reports success, satisfying the required check.
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.relevant == 'true') }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Test Docker build
+        uses: docker/build-push-action@v7
+        env:
+          # Suppress the auto-uploaded build-record artifact (*.dockerbuild);
+          # it ran on every PR and piled up ~1,600 artifacts in Actions storage.
+          DOCKER_BUILD_SUMMARY: 'false'
+          DOCKER_BUILD_RECORD_UPLOAD: 'false'
+        with:
+          context: .
+          push: false
+          tags: ripls-server:test
+          cache-from: type=local,src=/tmp/docker-cache
+          cache-to: type=local,dest=/tmp/docker-cache,mode=min

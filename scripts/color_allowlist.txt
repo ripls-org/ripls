@@ -1,0 +1,4 @@
+# scripts/color_allowlist.txt — ratchet for check_no_hardcoded_accent.js.
+# Format: <rule_name> <relative_path>. One file/rule pair per line.
+# May shrink but never grow on main. PRs adding entries must remove
+# an equal-or-greater number of entries elsewhere. See #1946 for context.

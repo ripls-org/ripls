@@ -1,0 +1,4044 @@
+{
+  "Austin": [
+    {
+      "name": "Lakeland Park",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3285368,
+        "longitude": -97.9258435
+      }
+    },
+    {
+      "name": "Saint Andrews Episcopal Upper School Football Field",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2627066,
+        "longitude": -97.8916747
+      }
+    },
+    {
+      "name": "Gus Fruh Park",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2449344,
+        "longitude": -97.793054
+      }
+    },
+    {
+      "name": "Bustin Memorial Park",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.508255,
+        "longitude": -97.6888963
+      }
+    },
+    {
+      "name": "Bee Caves Preserve",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2924221,
+        "longitude": -97.7902926
+      }
+    },
+    {
+      "name": "Northeast Park",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3146519,
+        "longitude": -97.6469478
+      }
+    },
+    {
+      "name": "West Bull Creek Preserve",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3773468,
+        "longitude": -97.8023013
+      }
+    },
+    {
+      "name": "Pease District Park",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.284111,
+        "longitude": -97.7528328
+      }
+    },
+    {
+      "name": "Bee Cave Central Park",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3148799,
+        "longitude": -97.9519236
+      }
+    },
+    {
+      "name": "Barton Springs Park",
+      "full_address": "Barton Springs Road, Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.263525,
+        "longitude": -97.7719879
+      }
+    },
+    {
+      "name": "Round Rock West Park",
+      "full_address": "2011 Round Rock West Drive, Round Rock, TX, 78681",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.5020743,
+        "longitude": -97.6928358
+      }
+    },
+    {
+      "name": "Bright Leaf Natural Area",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3345398,
+        "longitude": -97.7716036
+      }
+    },
+    {
+      "name": "McKinney Falls State Park",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.1838097,
+        "longitude": -97.7222697
+      }
+    },
+    {
+      "name": "Nelson Ranch Park",
+      "full_address": "905 Nelson Ranch Road, Cedar Park, TX, 78613",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.4944562,
+        "longitude": -97.83402
+      }
+    },
+    {
+      "name": "Rosemary Denny Park",
+      "full_address": "Austin, TX",
+      "category": "park",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.4786511,
+        "longitude": -97.8122226
+      }
+    },
+    {
+      "name": "Texas State Law Library",
+      "full_address": "Austin, TX",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2762364,
+        "longitude": -97.741983
+      }
+    },
+    {
+      "name": "Garfield Library",
+      "full_address": "Austin, TX",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.1878834,
+        "longitude": -97.5605691
+      }
+    },
+    {
+      "name": "Lantana Free Tiny Library",
+      "full_address": "Austin, TX",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2481061,
+        "longitude": -97.874167
+      }
+    },
+    {
+      "name": "Westlake Highschool Library",
+      "full_address": "Austin, TX",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2760098,
+        "longitude": -97.8140618
+      }
+    },
+    {
+      "name": "Bee Cave Public Library",
+      "full_address": "4000 Galleria Parkway, Bee Cave, TX, 78738",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3085389,
+        "longitude": -97.9398508
+      }
+    },
+    {
+      "name": "Austin Public Library - St. John Branch",
+      "full_address": "7500 Blessing Avenue, Austin, TX, 78752",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.332052,
+        "longitude": -97.6937228
+      }
+    },
+    {
+      "name": "Buda Public Library",
+      "full_address": "405 East Loop Street, Buda, TX, 78610",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.0868596,
+        "longitude": -97.8371606
+      }
+    },
+    {
+      "name": "Library Box",
+      "full_address": "Austin, TX",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2718597,
+        "longitude": -97.7746477
+      }
+    },
+    {
+      "name": "Perry-Castañeda Library Map Collection",
+      "full_address": "101 East 21st Street, Austin, TX, 78712",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2828335,
+        "longitude": -97.7385054
+      }
+    },
+    {
+      "name": "Perry-Castañeda Library",
+      "full_address": "101 East 21st Street, Austin, TX, 78705",
+      "category": "library",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2827769,
+        "longitude": -97.7381944
+      }
+    },
+    {
+      "name": "Senior Citizens Center",
+      "full_address": "Austin, TX",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2973142,
+        "longitude": -97.7485381
+      }
+    },
+    {
+      "name": "Montopolis Recreation Center",
+      "full_address": "1200 Montopolis Drive, Austin, TX, 78741",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2323049,
+        "longitude": -97.699897
+      }
+    },
+    {
+      "name": "Sierra Ridge Community Center",
+      "full_address": "201 West Saint Elmo Road, Austin, TX, 78745",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2183617,
+        "longitude": -97.7689027
+      }
+    },
+    {
+      "name": "Morris Hall",
+      "full_address": "5455 Bee Caves Road, Westlake Hills, TX, 78746",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2903267,
+        "longitude": -97.8238098
+      }
+    },
+    {
+      "name": "SGI-USA Buddhist Center",
+      "full_address": "911 West Anderson Lane, Austin, TX, 78757",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3471894,
+        "longitude": -97.7145626
+      }
+    },
+    {
+      "name": "Walter Davis Senior Young Adult Center",
+      "full_address": "Austin, TX",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.280072,
+        "longitude": -97.7179713
+      }
+    },
+    {
+      "name": "Virginia L Brown (St John) Community Center",
+      "full_address": "7500 Blessing Avenue, Austin, TX, 78752",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3325532,
+        "longitude": -97.6934284
+      }
+    },
+    {
+      "name": "Atheist Community of Austin",
+      "full_address": "1507 West Koenig Lane, Austin, TX, 78756",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3314128,
+        "longitude": -97.7330787
+      }
+    },
+    {
+      "name": "Oak Hill Community Center",
+      "full_address": "8656 State Highway 71 West, Austin, TX, 78735",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2514202,
+        "longitude": -97.8937799
+      }
+    },
+    {
+      "name": "Bishops Hall",
+      "full_address": "Austin, TX",
+      "category": "community_center",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2711088,
+        "longitude": -97.7395784
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "Austin, TX",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2682668,
+        "longitude": -97.7429695
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "Austin, TX",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.271876,
+        "longitude": -97.7411784
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "9600 F Escarpment Boulevard, Austin, TX, 78749",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2026426,
+        "longitude": -97.878822
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "11410 Century Oaks Terrace, Austin, TX, 78758",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.4019908,
+        "longitude": -97.7263957
+      }
+    },
+    {
+      "name": "Upper Crust Bakery",
+      "full_address": "Austin, TX",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3158003,
+        "longitude": -97.7416401
+      }
+    },
+    {
+      "name": "Pacha",
+      "full_address": "Austin, TX",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3173785,
+        "longitude": -97.7406015
+      }
+    },
+    {
+      "name": "Genuine Joe Coffeehouse",
+      "full_address": "Austin, TX",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3540549,
+        "longitude": -97.7272892
+      }
+    },
+    {
+      "name": "Teo's Gelato and Espresso",
+      "full_address": "Austin, TX",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3065679,
+        "longitude": -97.7451642
+      }
+    },
+    {
+      "name": "Russell's Bakery",
+      "full_address": "Austin, TX",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3327051,
+        "longitude": -97.7601993
+      }
+    },
+    {
+      "name": "Counter Cafe",
+      "full_address": "603 West 29th Street, Austin, TX, 78705",
+      "category": "cafe",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2953679,
+        "longitude": -97.7432778
+      }
+    },
+    {
+      "name": "La Palapa",
+      "full_address": "Austin, TX",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3221769,
+        "longitude": -97.6932173
+      }
+    },
+    {
+      "name": "Pappasitos",
+      "full_address": "Austin, TX",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3269188,
+        "longitude": -97.704881
+      }
+    },
+    {
+      "name": "Chinatown",
+      "full_address": "Austin, TX",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3565687,
+        "longitude": -97.7473599
+      }
+    },
+    {
+      "name": "Galaxy Cafe",
+      "full_address": "1000 West Lynn St, Austin, TX, 78703",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2794133,
+        "longitude": -97.7600581
+      }
+    },
+    {
+      "name": "Giovanni Pizza Stand",
+      "full_address": "Austin, TX",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2437468,
+        "longitude": -97.7828277
+      }
+    },
+    {
+      "name": "El Alma South (Westgate)",
+      "full_address": "4521 West Gate Boulevard, Austin, TX, 78745",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2316672,
+        "longitude": -97.8001648
+      }
+    },
+    {
+      "name": "Sap's Fine Thai Cuisine",
+      "full_address": "Austin, TX",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2314518,
+        "longitude": -97.8008555
+      }
+    },
+    {
+      "name": "Mexican grille",
+      "full_address": "Austin, TX",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.4433175,
+        "longitude": -97.6089675
+      }
+    },
+    {
+      "name": "Blue Star Cafeteria",
+      "full_address": "Austin, TX, 78756",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3185788,
+        "longitude": -97.7397518
+      }
+    },
+    {
+      "name": "Gusto Italian Kitchen",
+      "full_address": "Austin, TX, 78756",
+      "category": "restaurant",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3183417,
+        "longitude": -97.7399664
+      }
+    },
+    {
+      "name": "Deep Eddy Cabaret",
+      "full_address": "Austin, TX",
+      "category": "brewery",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.277787,
+        "longitude": -97.772558
+      }
+    },
+    {
+      "name": "Billy's on Burnet Road",
+      "full_address": "Austin, TX",
+      "category": "brewery",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3219573,
+        "longitude": -97.7395201
+      }
+    },
+    {
+      "name": "Posse East",
+      "full_address": "2900 Duval Street, Austin, TX, 78705",
+      "category": "brewery",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.291373,
+        "longitude": -97.7346937
+      }
+    },
+    {
+      "name": "Water Tank",
+      "full_address": "Austin, TX",
+      "category": "brewery",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.4350154,
+        "longitude": -97.766952
+      }
+    },
+    {
+      "name": "Black Sheep Lodge",
+      "full_address": "Austin, TX",
+      "category": "brewery",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2483397,
+        "longitude": -97.7711334
+      }
+    },
+    {
+      "name": "Fitness HQ",
+      "full_address": "Austin, TX",
+      "category": "gym",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3926772,
+        "longitude": -97.745541
+      }
+    },
+    {
+      "name": "Fitness 360",
+      "full_address": "Austin, TX",
+      "category": "gym",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3148586,
+        "longitude": -97.7352613
+      }
+    },
+    {
+      "name": "Studio Satya",
+      "full_address": "1308 West Anderson Lane, Austin, TX, 78757",
+      "category": "gym",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.3510432,
+        "longitude": -97.7192825
+      }
+    },
+    {
+      "name": "Gold's Gym",
+      "full_address": "13435 U.S. 183, Austin, TX, 78729",
+      "category": "gym",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.4485009,
+        "longitude": -97.7875564
+      }
+    },
+    {
+      "name": "Planet Fitness",
+      "full_address": "Manchaca Road, Austin, TX, 78748",
+      "category": "gym",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.1713357,
+        "longitude": -97.8235967
+      }
+    },
+    {
+      "name": "Center Union Church",
+      "full_address": "Austin, TX",
+      "category": "church",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.0310501,
+        "longitude": -97.7025013
+      }
+    },
+    {
+      "name": "Friendship Church",
+      "full_address": "Austin, TX",
+      "category": "church",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.1590983,
+        "longitude": -97.9544524
+      }
+    },
+    {
+      "name": "Martin Church",
+      "full_address": "Austin, TX",
+      "category": "church",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.032716,
+        "longitude": -97.7786141
+      }
+    },
+    {
+      "name": "Saint Marys Church",
+      "full_address": "Austin, TX",
+      "category": "church",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.0663274,
+        "longitude": -97.6244443
+      }
+    },
+    {
+      "name": "Union Lee Church",
+      "full_address": "Austin, TX",
+      "category": "church",
+      "city": "Austin",
+      "coordinates": {
+        "latitude": 30.2557667,
+        "longitude": -97.4811089
+      }
+    }
+  ],
+  "Baton Rouge": [
+    {
+      "name": "Clark Memorial Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.5604658,
+        "longitude": -91.1678851
+      }
+    },
+    {
+      "name": "Greenwell Springs Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.5215776,
+        "longitude": -91.0089919
+      }
+    },
+    {
+      "name": "Ken-Warren Playground",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.487412,
+        "longitude": -91.1614959
+      }
+    },
+    {
+      "name": "Lion Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.6501858,
+        "longitude": -91.1701075
+      }
+    },
+    {
+      "name": "Victory Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4513178,
+        "longitude": -91.1800376
+      }
+    },
+    {
+      "name": "Webb Memorial Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4346354,
+        "longitude": -91.1331615
+      }
+    },
+    {
+      "name": "Airline Highway Parish Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3446376,
+        "longitude": -90.9973239
+      }
+    },
+    {
+      "name": "Perkins Road Olympia Field",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3885254,
+        "longitude": -91.1176052
+      }
+    },
+    {
+      "name": "Thomas A Maher Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4815787,
+        "longitude": -91.1034387
+      }
+    },
+    {
+      "name": "Judson Baptist Recreation Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4899118,
+        "longitude": -91.0714935
+      }
+    },
+    {
+      "name": "Samuel D'Agostino Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.5001328,
+        "longitude": -91.0753251
+      }
+    },
+    {
+      "name": "Eastgate Drive Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4274436,
+        "longitude": -91.0494661
+      }
+    },
+    {
+      "name": "Flannery Road Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4838007,
+        "longitude": -91.0353814
+      }
+    },
+    {
+      "name": "Winterville Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4988016,
+        "longitude": -91.3012205
+      }
+    },
+    {
+      "name": "Joe Myhand Park",
+      "full_address": "Baton Rouge, LA",
+      "category": "park",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3490822,
+        "longitude": -91.2667754
+      }
+    },
+    {
+      "name": "Iberville Parish Library",
+      "full_address": "Baton Rouge, LA, 70764",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.265362,
+        "longitude": -91.2476343
+      }
+    },
+    {
+      "name": "Zachary Branch Library",
+      "full_address": "1900 Church Street, Zachary, LA, 70791",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.6528792,
+        "longitude": -91.1841555
+      }
+    },
+    {
+      "name": "River Center Branch Library",
+      "full_address": "250 North Boulevard, Baton Rouge, LA, 70802",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4466678,
+        "longitude": -91.1879228
+      }
+    },
+    {
+      "name": "Hill Memorial Library",
+      "full_address": "Baton Rouge, LA",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4143856,
+        "longitude": -91.1815122
+      }
+    },
+    {
+      "name": "Middleton Library",
+      "full_address": "Baton Rouge, LA",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4144305,
+        "longitude": -91.1800949
+      }
+    },
+    {
+      "name": "Louisiana State Library",
+      "full_address": "701 North 4th Street, Baton Rouge, LA, 70802",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.453847,
+        "longitude": -91.1879914
+      }
+    },
+    {
+      "name": "Main Library",
+      "full_address": "7711 Goodwood Boulevard, Baton Rouge, LA",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4438841,
+        "longitude": -91.1072618
+      }
+    },
+    {
+      "name": "Carver Branch Library",
+      "full_address": "720 Terrace Avenue, Baton Rouge, LA, 70802",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4359509,
+        "longitude": -91.1827017
+      }
+    },
+    {
+      "name": "Jones Creek Regional Library`",
+      "full_address": "6222 Jones Creek Road, Baton Rouge, LA, 70817",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3964607,
+        "longitude": -91.0186262
+      }
+    },
+    {
+      "name": "University Library",
+      "full_address": "5329 Didesse Drive, Baton Rouge, LA",
+      "category": "library",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4013523,
+        "longitude": -91.1105881
+      }
+    },
+    {
+      "name": "Recreation Center",
+      "full_address": "Baton Rouge, LA",
+      "category": "community_center",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3984604,
+        "longitude": -91.1165124
+      }
+    },
+    {
+      "name": "Belfair Teen Center",
+      "full_address": "4390 Fairfields Avenue, Baton Rouge, LA, 70802",
+      "category": "community_center",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4673436,
+        "longitude": -91.1460982
+      }
+    },
+    {
+      "name": "Antioch Recreational Center",
+      "full_address": "Antioch Boulevard, Baton Rouge, LA",
+      "category": "community_center",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3943989,
+        "longitude": -91.0010883
+      }
+    },
+    {
+      "name": "Leo S. Butler Senior Center",
+      "full_address": "950 East Washington Street, Baton Rouge, LA, 70802",
+      "category": "community_center",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4309184,
+        "longitude": -91.175808
+      }
+    },
+    {
+      "name": "Frenchtown Conservation Nature Station",
+      "full_address": "17819 Frenchtown Road, Greenwell Springs, LA, 70739",
+      "category": "community_center",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4761218,
+        "longitude": -90.9878705
+      }
+    },
+    {
+      "name": "PJ's Coffee and Tea",
+      "full_address": "Baton Rouge, LA",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3977652,
+        "longitude": -91.1073293
+      }
+    },
+    {
+      "name": "CC's Coffee House",
+      "full_address": "Baton Rouge, LA",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4145919,
+        "longitude": -91.1799963
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "14640 Village Market Street, Baton Rouge, LA, 70817",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3616445,
+        "longitude": -91.0130477
+      }
+    },
+    {
+      "name": "Light House Coffee",
+      "full_address": "257 Lee Drive, Baton Rouge, LA, 70808",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.396202,
+        "longitude": -91.1582605
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "2367 Corporal Shawn Kelly Memorial Boulevard, Denham Springs, LA, 70726",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4570797,
+        "longitude": -90.9570367
+      }
+    },
+    {
+      "name": "Coffee Call",
+      "full_address": "3132 College Drive, Baton Rouge, LA",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4188266,
+        "longitude": -91.1432231
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "7777 Bluebonnet Boulevard, Perkins Rowe, LA, 70810",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3795468,
+        "longitude": -91.0968818
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "3642 Nicholson Drive, Baton Rouge, LA, 70802",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4133078,
+        "longitude": -91.1873073
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "4857 Government Street, Baton Rouge, LA, 70806",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.445421,
+        "longitude": -91.1402926
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "9650 Airline Highway, Baton Rouge, LA, 70815",
+      "category": "cafe",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4321429,
+        "longitude": -91.0828531
+      }
+    },
+    {
+      "name": "India's",
+      "full_address": "5230 Essen Lane, Baton Rouge, LA",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4005011,
+        "longitude": -91.1067722
+      }
+    },
+    {
+      "name": "Chinese Combo King",
+      "full_address": "Baton Rouge, LA",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4174669,
+        "longitude": -91.1777526
+      }
+    },
+    {
+      "name": "Goodwood Grill",
+      "full_address": "Baton Rouge, LA",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4424418,
+        "longitude": -91.0955606
+      }
+    },
+    {
+      "name": "Drusilla Seafood Rest.",
+      "full_address": "Baton Rouge, LA",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4200363,
+        "longitude": -91.0910419
+      }
+    },
+    {
+      "name": "Brew-Bachers Restaurant",
+      "full_address": "3554 Drusilla Lane, Baton Rouge, LA, 70809",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4190081,
+        "longitude": -91.0901275
+      }
+    },
+    {
+      "name": "Juban's",
+      "full_address": "3739 Perkins Road, Baton Rouge, LA, 70808",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4210819,
+        "longitude": -91.1504207
+      }
+    },
+    {
+      "name": "Big Mikes Sports Bar And Grill",
+      "full_address": "Baton Rouge, LA",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4608277,
+        "longitude": -90.9551679
+      }
+    },
+    {
+      "name": "Cactus Cafe",
+      "full_address": "Baton Rouge, LA",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4608292,
+        "longitude": -90.9550264
+      }
+    },
+    {
+      "name": "Lashish",
+      "full_address": "Baton Rouge, LA",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4608282,
+        "longitude": -90.9548843
+      }
+    },
+    {
+      "name": "Another Broken Egg Cafe",
+      "full_address": "Baton Rouge, LA",
+      "category": "restaurant",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4246712,
+        "longitude": -91.1295047
+      }
+    },
+    {
+      "name": "The Chimes",
+      "full_address": "3357 Highland Road, Baton Rouge, LA",
+      "category": "brewery",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4173256,
+        "longitude": -91.1762781
+      }
+    },
+    {
+      "name": "Smiling Dog",
+      "full_address": "4215 South Sherwood Forest Boulevard, Baton Rouge, LA, 70816",
+      "category": "brewery",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4146646,
+        "longitude": -91.0511356
+      }
+    },
+    {
+      "name": "Le Chien Brewing Company",
+      "full_address": "Baton Rouge, LA",
+      "category": "brewery",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4839699,
+        "longitude": -90.9554129
+      }
+    },
+    {
+      "name": "JC Bar \u0026 Lounge",
+      "full_address": "Baton Rouge, LA",
+      "category": "brewery",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4692043,
+        "longitude": -91.1566781
+      }
+    },
+    {
+      "name": "Beat-2-Sleep",
+      "full_address": "12021 Florida Boulevard, Baton Rouge, LA",
+      "category": "gym",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.4608169,
+        "longitude": -91.0495587
+      }
+    },
+    {
+      "name": "Snap Fitness",
+      "full_address": "17002 Jefferson Highway, Baton Rouge, LA, 70817",
+      "category": "gym",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3616104,
+        "longitude": -91.0036433
+      }
+    },
+    {
+      "name": "Snap Fitness",
+      "full_address": "257 Lee Drive, Baton Rouge, LA, 70808",
+      "category": "gym",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3959314,
+        "longitude": -91.1585338
+      }
+    },
+    {
+      "name": "Hyper Fitness",
+      "full_address": "18181 Jefferson Highway, Baton Rouge, LA, 70817",
+      "category": "gym",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3563433,
+        "longitude": -90.9926948
+      }
+    },
+    {
+      "name": "Anytime Fitness",
+      "full_address": "17900 Airline Highway, Prairieville, LA, 70769",
+      "category": "gym",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.3391109,
+        "longitude": -90.9885756
+      }
+    },
+    {
+      "name": "Bueche Church",
+      "full_address": "Baton Rouge, LA",
+      "category": "church",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.5649113,
+        "longitude": -91.3392767
+      }
+    },
+    {
+      "name": "Calvary Church",
+      "full_address": "Baton Rouge, LA",
+      "category": "church",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.5415788,
+        "longitude": -91.347332
+      }
+    },
+    {
+      "name": "Comite Church",
+      "full_address": "Baton Rouge, LA",
+      "category": "church",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.499356,
+        "longitude": -91.0467707
+      }
+    },
+    {
+      "name": "Cypress Grove Church",
+      "full_address": "Baton Rouge, LA",
+      "category": "church",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.644908,
+        "longitude": -91.0976057
+      }
+    },
+    {
+      "name": "Friendship Church",
+      "full_address": "Baton Rouge, LA",
+      "category": "church",
+      "city": "Baton Rouge",
+      "coordinates": {
+        "latitude": 30.5524103,
+        "longitude": -91.0892719
+      }
+    }
+  ],
+  "Boulder": [
+    {
+      "name": "Boulder Mountain Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9741527,
+        "longitude": -105.2969355
+      }
+    },
+    {
+      "name": "Coal Creek Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9791667,
+        "longitude": -105.1083333
+      }
+    },
+    {
+      "name": "Red Oak Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.982548,
+        "longitude": -105.1129169
+      }
+    },
+    {
+      "name": "Larwence D Enrietto Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9841667,
+        "longitude": -105.1361111
+      }
+    },
+    {
+      "name": "Saratoga Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.974421,
+        "longitude": -105.1423868
+      }
+    },
+    {
+      "name": "Baseline Lake Recreation Group",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0012902,
+        "longitude": -105.1979612
+      }
+    },
+    {
+      "name": "Niwot Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0983983,
+        "longitude": -105.1658251
+      }
+    },
+    {
+      "name": "Restoration Area",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9964778,
+        "longitude": -105.248803
+      }
+    },
+    {
+      "name": "Greenleaf Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.021748,
+        "longitude": -105.2638038
+      }
+    },
+    {
+      "name": "Martin Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9879136,
+        "longitude": -105.2503109
+      }
+    },
+    {
+      "name": "North Boulder Park",
+      "full_address": "800 Dellwood Avenue, Boulder, CO, 80304",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0275908,
+        "longitude": -105.2864987
+      }
+    },
+    {
+      "name": "Autumn Ash Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.010592,
+        "longitude": -105.0965289
+      }
+    },
+    {
+      "name": "Lindenwood Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0073604,
+        "longitude": -105.0879357
+      }
+    },
+    {
+      "name": "Cherrywood Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9751321,
+        "longitude": -105.0936822
+      }
+    },
+    {
+      "name": "Whitetail Park",
+      "full_address": "Boulder, CO",
+      "category": "park",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9697669,
+        "longitude": -105.0942338
+      }
+    },
+    {
+      "name": "Boulder Public Library, Meadows Branch",
+      "full_address": "Boulder, CO",
+      "category": "library",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9976559,
+        "longitude": -105.2340255
+      }
+    },
+    {
+      "name": "Lafayette Public Library",
+      "full_address": "775 West Baseline Road, Lafayette, CO, 80026",
+      "category": "library",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0008865,
+        "longitude": -105.0995063
+      }
+    },
+    {
+      "name": "Louisville Public Library",
+      "full_address": "951 Spruce Street, Boulder, CO",
+      "category": "library",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9780907,
+        "longitude": -105.1311363
+      }
+    },
+    {
+      "name": "George Reynolds Branch",
+      "full_address": "3595 Table Mesa Drive, Boulder, CO, 80305",
+      "category": "library",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9844238,
+        "longitude": -105.252589
+      }
+    },
+    {
+      "name": "Allen Ginsberg Library",
+      "full_address": "Boulder, CO",
+      "category": "library",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0140583,
+        "longitude": -105.2664156
+      }
+    },
+    {
+      "name": "Boulder Public Library - Main Branch",
+      "full_address": "1000;1001 Arapahoe Avenue, Boulder, CO, 80302",
+      "category": "library",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0143686,
+        "longitude": -105.2819296
+      }
+    },
+    {
+      "name": "Carnegie Library",
+      "full_address": "1125 Pine Street, Boulder, CO, 80302",
+      "category": "library",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0200813,
+        "longitude": -105.2815184
+      }
+    },
+    {
+      "name": "Boulder Public Library Carnegie Branch of Local History",
+      "full_address": "1109 Pine Street, Boulder, CO, 80302",
+      "category": "library",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0199242,
+        "longitude": -105.2818965
+      }
+    },
+    {
+      "name": "North Boulder Library",
+      "full_address": "4500 13th Street, Boulder, CO, 80304",
+      "category": "library",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0561106,
+        "longitude": -105.2809883
+      }
+    },
+    {
+      "name": "Sister Carmen Community Center",
+      "full_address": "Boulder, CO",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0034298,
+        "longitude": -105.1070353
+      }
+    },
+    {
+      "name": "Coal Creek Community Hall",
+      "full_address": "31528 Coal Creek Canyon Drive, Boulder, CO",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9184556,
+        "longitude": -105.360982
+      }
+    },
+    {
+      "name": "East Age Well Center",
+      "full_address": "Boulder, CO",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9923117,
+        "longitude": -105.2204884
+      }
+    },
+    {
+      "name": "Smiley Court Community Center (Formerly)",
+      "full_address": "Boulder, CO",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0092012,
+        "longitude": -105.2511859
+      }
+    },
+    {
+      "name": "University Memorial Center",
+      "full_address": "1669 Euclid Avenue, Boulder, CO",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0067153,
+        "longitude": -105.2715542
+      }
+    },
+    {
+      "name": "Center for Community (C4C)",
+      "full_address": "2249 Willard Loop Drive, Boulder, CO",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0043725,
+        "longitude": -105.2649516
+      }
+    },
+    {
+      "name": "Superior Community Center",
+      "full_address": "1500 Coalton Road, Superior, CO, 80027",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9282063,
+        "longitude": -105.148457
+      }
+    },
+    {
+      "name": "Williams Village Center Dining \u0026 Community Commons",
+      "full_address": "510 30th Street, Boulder, CO, 80303",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9976757,
+        "longitude": -105.2518312
+      }
+    },
+    {
+      "name": "Boulder Jewish Community Center (JCC)",
+      "full_address": "5980 Arapahoe Road, Boulder, CO, 80303",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0141187,
+        "longitude": -105.2109145
+      }
+    },
+    {
+      "name": "Foothills Community Carden",
+      "full_address": "895 Locust Avenue, Boulder, CO, 80304",
+      "category": "community_center",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0548134,
+        "longitude": -105.2874458
+      }
+    },
+    {
+      "name": "Giovannitti Coffee Roasters",
+      "full_address": "801 Main Street, Louisville, CO, 80027",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9779632,
+        "longitude": -105.132284
+      }
+    },
+    {
+      "name": "South Side Walnut Cafe",
+      "full_address": "673 South Broadway, Boulder, CO, 80305",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9830151,
+        "longitude": -105.2493688
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "2400 Baseline Road, Boulder, CO, 80305",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9999497,
+        "longitude": -105.2630757
+      }
+    },
+    {
+      "name": "Boxcar Coffee Roasters",
+      "full_address": "637 South Broadway, Boulder, CO",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9831108,
+        "longitude": -105.2498788
+      }
+    },
+    {
+      "name": "Mickey C's Bagels",
+      "full_address": "Boulder, CO",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9835535,
+        "longitude": -105.2502596
+      }
+    },
+    {
+      "name": "Capital One Cafe",
+      "full_address": "Boulder, CO",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0182543,
+        "longitude": -105.2789067
+      }
+    },
+    {
+      "name": "Ku Cha House of Tea",
+      "full_address": "1211 Pearl Street, Boulder, CO, 80302",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0180957,
+        "longitude": -105.2796866
+      }
+    },
+    {
+      "name": "Amante",
+      "full_address": "4580 Broadway, Boulder, CO, 80304",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.057976,
+        "longitude": -105.28193
+      }
+    },
+    {
+      "name": "Rush II",
+      "full_address": "Boulder, CO",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0580356,
+        "longitude": -105.2825456
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "3336 Arapahoe, Erie, CO, 80516",
+      "category": "cafe",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0157796,
+        "longitude": -105.1023978
+      }
+    },
+    {
+      "name": "Southern Sun Pub \u0026 Brewery",
+      "full_address": "Boulder, CO",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9842201,
+        "longitude": -105.2493
+      }
+    },
+    {
+      "name": "Señor Gomez",
+      "full_address": "Boulder, CO",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.993854,
+        "longitude": -105.0901332
+      }
+    },
+    {
+      "name": "Tangerine",
+      "full_address": "300 South Public Road, Boulder, CO",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9960268,
+        "longitude": -105.090297
+      }
+    },
+    {
+      "name": "Santiagos",
+      "full_address": "104 North Public Road, Lafayette, CO, 80026",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9986509,
+        "longitude": -105.09029
+      }
+    },
+    {
+      "name": "Colorado Wok",
+      "full_address": "385 Crossing Drive, Boulder, CO",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0009871,
+        "longitude": -105.100705
+      }
+    },
+    {
+      "name": "Cugini Pizzeria",
+      "full_address": "385 Crossing Drive, Lafayette, CO, 80026",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0012617,
+        "longitude": -105.100709
+      }
+    },
+    {
+      "name": "Big Daddy's Bagels",
+      "full_address": "Boulder, CO",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0018675,
+        "longitude": -105.1039575
+      }
+    },
+    {
+      "name": "Protos",
+      "full_address": "Boulder, CO",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0022107,
+        "longitude": -105.1037865
+      }
+    },
+    {
+      "name": "Mumtaz",
+      "full_address": "Boulder, CO",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0033726,
+        "longitude": -105.1024327
+      }
+    },
+    {
+      "name": "Casian Seafood",
+      "full_address": "Boulder, CO",
+      "category": "restaurant",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9999298,
+        "longitude": -105.090698
+      }
+    },
+    {
+      "name": "Niwot Tavern",
+      "full_address": "Boulder, CO",
+      "category": "brewery",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.1004384,
+        "longitude": -105.1683083
+      }
+    },
+    {
+      "name": "Liquid Mechanics",
+      "full_address": "Boulder, CO",
+      "category": "brewery",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9997484,
+        "longitude": -105.1035673
+      }
+    },
+    {
+      "name": "Boulder Social",
+      "full_address": "1600 38th Street, Boulder, CO, 80301",
+      "category": "brewery",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0149794,
+        "longitude": -105.245481
+      }
+    },
+    {
+      "name": "Twisted Pine Brewing Company",
+      "full_address": "Boulder, CO",
+      "category": "brewery",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0205129,
+        "longitude": -105.2511717
+      }
+    },
+    {
+      "name": "Outback Saloon",
+      "full_address": "Boulder, CO",
+      "category": "brewery",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0317256,
+        "longitude": -105.25942
+      }
+    },
+    {
+      "name": "IronWorks Fitness",
+      "full_address": "Boulder, CO",
+      "category": "gym",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0593008,
+        "longitude": -105.2819107
+      }
+    },
+    {
+      "name": "The Exercise Coach",
+      "full_address": "1075 East South Boulder Road, Louisville, CO, 80027",
+      "category": "gym",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9873279,
+        "longitude": -105.130065
+      }
+    },
+    {
+      "name": "Barre 3",
+      "full_address": "Boulder, CO",
+      "category": "gym",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0153715,
+        "longitude": -105.2601238
+      }
+    },
+    {
+      "name": "Fit Tec",
+      "full_address": "3151 Walnut Street, Boulder, CO",
+      "category": "gym",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0206998,
+        "longitude": -105.2520264
+      }
+    },
+    {
+      "name": "Louisville Community Yoga",
+      "full_address": "535 East South Boulder Road, Louisville, CO, 80027",
+      "category": "gym",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9875255,
+        "longitude": -105.136229
+      }
+    },
+    {
+      "name": "Chapel in the Hills",
+      "full_address": "Boulder, CO",
+      "category": "church",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.8939048,
+        "longitude": -105.3352123
+      }
+    },
+    {
+      "name": "Boulder Seventh-day Adventist Church",
+      "full_address": "345 Mapleton Avenue, Boulder, CO, 80304",
+      "category": "church",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0208492,
+        "longitude": -105.2919414
+      }
+    },
+    {
+      "name": "Eternal Savior Lutheran Church",
+      "full_address": "Boulder, CO",
+      "category": "church",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0124595,
+        "longitude": -105.130443
+      }
+    },
+    {
+      "name": "City On the Hill Church",
+      "full_address": "Boulder, CO",
+      "category": "church",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0149852,
+        "longitude": -105.1791534
+      }
+    },
+    {
+      "name": "Fairview Bible Chapel",
+      "full_address": "Boulder, CO",
+      "category": "church",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9944296,
+        "longitude": -105.1749867
+      }
+    },
+    {
+      "name": "High Peaks Elementary School",
+      "full_address": "Boulder, CO",
+      "category": "school",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0041535,
+        "longitude": -105.2436511
+      }
+    },
+    {
+      "name": "Niwot Elementary School",
+      "full_address": "Boulder, CO",
+      "category": "school",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0997072,
+        "longitude": -105.1474851
+      }
+    },
+    {
+      "name": "New Vista High School",
+      "full_address": "Boulder, CO",
+      "category": "school",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0011195,
+        "longitude": -105.2662385
+      }
+    },
+    {
+      "name": "Front Range Community College - Boulder Campus",
+      "full_address": "Boulder, CO",
+      "category": "school",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 40.0452632,
+        "longitude": -105.2188769
+      }
+    },
+    {
+      "name": "Angevine Middle School",
+      "full_address": "Boulder, CO",
+      "category": "school",
+      "city": "Boulder",
+      "coordinates": {
+        "latitude": 39.9886,
+        "longitude": -105.1041831
+      }
+    }
+  ],
+  "Los Angeles": [
+    {
+      "name": "Sepulveda Dam Recreation Area",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1763942,
+        "longitude": -118.485361
+      }
+    },
+    {
+      "name": "Arroyo Seco Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.104089,
+        "longitude": -118.1895507
+      }
+    },
+    {
+      "name": "Cabrillo Beach Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.7098918,
+        "longitude": -118.2834937
+      }
+    },
+    {
+      "name": "Camp Suanga",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.8758493,
+        "longitude": -118.1884031
+      }
+    },
+    {
+      "name": "Crescenta Valley Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.2252818,
+        "longitude": -118.2592425
+      }
+    },
+    {
+      "name": "Eaton Blanche Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1394516,
+        "longitude": -118.0831244
+      }
+    },
+    {
+      "name": "Glenoaks Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.295279,
+        "longitude": -118.4317493
+      }
+    },
+    {
+      "name": "Lower Arroyo Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1402854,
+        "longitude": -118.167294
+      }
+    },
+    {
+      "name": "Pritchard Field",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.9691809,
+        "longitude": -118.173404
+      }
+    },
+    {
+      "name": "Reeves Field",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.7513327,
+        "longitude": -118.2537947
+      }
+    },
+    {
+      "name": "Hugo Reid Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1386183,
+        "longitude": -118.0672905
+      }
+    },
+    {
+      "name": "Santa Cruz Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.7666847,
+        "longitude": -118.2022909
+      }
+    },
+    {
+      "name": "Whittier Narrows Dam County Recreational Area",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0429521,
+        "longitude": -118.0660427
+      }
+    },
+    {
+      "name": "Wildwood Canyon Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.2029152,
+        "longitude": -118.2967595
+      }
+    },
+    {
+      "name": "Pasko Park",
+      "full_address": "Los Angeles, CA",
+      "category": "park",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.2488919,
+        "longitude": -118.299522
+      }
+    },
+    {
+      "name": "Westchester-Loyola Village Branch Library",
+      "full_address": "7114 West Manchester Avenue, Los Angeles, CA, 90045",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.9594189,
+        "longitude": -118.417116
+      }
+    },
+    {
+      "name": "Sunland-Tujunga Library",
+      "full_address": "Los Angeles, CA",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.2582533,
+        "longitude": -118.3013483
+      }
+    },
+    {
+      "name": "Beverly Hills Public Library",
+      "full_address": "Los Angeles, CA",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.072877,
+        "longitude": -118.3991019
+      }
+    },
+    {
+      "name": "Ocean Park Branch Santa Monica Public Library",
+      "full_address": "Los Angeles, CA",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0027398,
+        "longitude": -118.483636
+      }
+    },
+    {
+      "name": "Santa Monica College Library",
+      "full_address": "Los Angeles, CA",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0160907,
+        "longitude": -118.470092
+      }
+    },
+    {
+      "name": "Brentwood Branch Los Angeles Public Library",
+      "full_address": "Los Angeles, CA",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0526979,
+        "longitude": -118.4687138
+      }
+    },
+    {
+      "name": "Margaret Herrick Library",
+      "full_address": "Los Angeles, CA",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0605657,
+        "longitude": -118.3767443
+      }
+    },
+    {
+      "name": "Robertson Branch Los Angeles Public Library",
+      "full_address": "Los Angeles, CA",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0483437,
+        "longitude": -118.3859111
+      }
+    },
+    {
+      "name": "Fairview Branch Library",
+      "full_address": "Los Angeles, CA",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.014622,
+        "longitude": -118.4635887
+      }
+    },
+    {
+      "name": "Lawndale Branch County of Los Angeles Public Library",
+      "full_address": "14615 Burin Avenue, Lawndale, CA, 90260",
+      "category": "library",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.8985378,
+        "longitude": -118.3542318
+      }
+    },
+    {
+      "name": "YMCA of the Foothills",
+      "full_address": "1930 Foothill Boulevard, La Cañada Flintridge, CA, 91011",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.2120141,
+        "longitude": -118.2188064
+      }
+    },
+    {
+      "name": "Jackie Robinson Center",
+      "full_address": "1020 North Fair Oaks Avenue, Pasadena, CA, 91103",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1636092,
+        "longitude": -118.1501584
+      }
+    },
+    {
+      "name": "KUBO Theatre and Community Center",
+      "full_address": "Los Angeles, CA",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.8330723,
+        "longitude": -118.188124
+      }
+    },
+    {
+      "name": "Boys and Girls Club of Santa Monica",
+      "full_address": "Los Angeles, CA",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0211209,
+        "longitude": -118.4934135
+      }
+    },
+    {
+      "name": "Claude Pepper Senior Citizen Center",
+      "full_address": "1762 La Cienega Boulevard, Los Angeles, CA, 90035",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0451945,
+        "longitude": -118.376304
+      }
+    },
+    {
+      "name": "Edwards Community Center",
+      "full_address": "Los Angeles, CA",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0146811,
+        "longitude": -118.4928406
+      }
+    },
+    {
+      "name": "Elsanto Nino Community Center",
+      "full_address": "Los Angeles, CA",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0252909,
+        "longitude": -118.261463
+      }
+    },
+    {
+      "name": "J-Town Senior Connection",
+      "full_address": "353 East 1st Street, Los Angeles, CA, 90012",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0495853,
+        "longitude": -118.2395246
+      }
+    },
+    {
+      "name": "Pasadena Senior Center",
+      "full_address": "85 East Holly Street, Pasadena, CA, 91103",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1479246,
+        "longitude": -118.1484195
+      }
+    },
+    {
+      "name": "Bradley-Milken Youth and Family Center",
+      "full_address": "1773 East Century Boulevard, Los Angeles, CA, 90002-3024",
+      "category": "community_center",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.945834,
+        "longitude": -118.2410584
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "5705 Rosemead Boulevard, Temple City, CA, 91780",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1037593,
+        "longitude": -118.074087
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "230 South Rosemead Boulevard, Pasadena, CA, 91107",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1423141,
+        "longitude": -118.0729354
+      }
+    },
+    {
+      "name": "Roadhouse",
+      "full_address": "Los Angeles, CA",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1039115,
+        "longitude": -118.0753829
+      }
+    },
+    {
+      "name": "Klatch Coffee",
+      "full_address": "3007 Huntington Drive, Pasadena, CA, 91107",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1276536,
+        "longitude": -118.0911026
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "3429 East Foothill Boulevard, Pasadena, CA, 91107",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1502968,
+        "longitude": -118.0802678
+      }
+    },
+    {
+      "name": "Backdoor Bakery",
+      "full_address": "Los Angeles, CA",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.2599805,
+        "longitude": -118.3152399
+      }
+    },
+    {
+      "name": "Corner Bakery",
+      "full_address": "5312 C, Los Angeles, CA",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.8540298,
+        "longitude": -118.133493
+      }
+    },
+    {
+      "name": "Motto Tea Cafe",
+      "full_address": "250 West Valley Boulevard, San Gabriel, CA, 91776",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0793152,
+        "longitude": -118.1036414
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "3699 East Foothill Boulevard, Pasadena, CA, 91107",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1504398,
+        "longitude": -118.0731156
+      }
+    },
+    {
+      "name": "Peet's Coffee",
+      "full_address": "3571 East Foothill Boulevard, Pasadena, CA, 91107-3119",
+      "category": "cafe",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.150356,
+        "longitude": -118.0759673
+      }
+    },
+    {
+      "name": "Yokohama Sushi",
+      "full_address": "Los Angeles, CA",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0169087,
+        "longitude": -118.4066108
+      }
+    },
+    {
+      "name": "Applebee's",
+      "full_address": "4935 Greywood Avenue, Los Angeles, CA, 90712",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.8481878,
+        "longitude": -118.1384731
+      }
+    },
+    {
+      "name": "Round Table Pizza",
+      "full_address": "Los Angeles, CA",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.8529261,
+        "longitude": -118.1362187
+      }
+    },
+    {
+      "name": "El Torito",
+      "full_address": "Los Angeles, CA",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.8532397,
+        "longitude": -118.1418578
+      }
+    },
+    {
+      "name": "Red Lobster",
+      "full_address": "Los Angeles, CA",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.8542302,
+        "longitude": -118.1411997
+      }
+    },
+    {
+      "name": "Ono Hawaiian BBQ",
+      "full_address": "5819 Rosemead Boulevard, Temple City, CA, 91780",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1048368,
+        "longitude": -118.073962
+      }
+    },
+    {
+      "name": "Shiki Seafood Buffet",
+      "full_address": "5535 Rosemead Boulevard, Temple City, CA, 91780",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0997264,
+        "longitude": -118.074771
+      }
+    },
+    {
+      "name": "Me Bo Club",
+      "full_address": "5807 Rosemead Boulevard, Temple City, CA, 91780",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1054762,
+        "longitude": -118.074404
+      }
+    },
+    {
+      "name": "Kim Hoa Hue",
+      "full_address": "9082 Las Tunas Drive, Temple City, CA, 91780",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.104467,
+        "longitude": -118.0709798
+      }
+    },
+    {
+      "name": "Bella Italia",
+      "full_address": "Los Angeles, CA",
+      "category": "restaurant",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1285902,
+        "longitude": -118.0728527
+      }
+    },
+    {
+      "name": "Father's Office",
+      "full_address": "1018 Montana Avenue, Santa Monica, CA, 90403",
+      "category": "brewery",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.029328,
+        "longitude": -118.4984834
+      }
+    },
+    {
+      "name": "Casey's Irish",
+      "full_address": "Los Angeles, CA",
+      "category": "brewery",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0484694,
+        "longitude": -118.2557823
+      }
+    },
+    {
+      "name": "Closed (Was 1739 Pub)",
+      "full_address": "1739 North Vermont Avenue, Los Angeles, CA, 90027",
+      "category": "brewery",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1028381,
+        "longitude": -118.291931
+      }
+    },
+    {
+      "name": "Jameson's Pub",
+      "full_address": "2702 Main Street, Santa Monica, CA, 90405",
+      "category": "brewery",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0007973,
+        "longitude": -118.482601
+      }
+    },
+    {
+      "name": "K.C. Branaghan's",
+      "full_address": "5734 East 2nd Street, Los Angeles, CA, 90803",
+      "category": "brewery",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.7565119,
+        "longitude": -118.1222849
+      }
+    },
+    {
+      "name": "Mission Street Yoga",
+      "full_address": "1017 Mission Street, South Pasadena, CA, 91030",
+      "category": "gym",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1156242,
+        "longitude": -118.1565145
+      }
+    },
+    {
+      "name": "Snap Fitness",
+      "full_address": "807 Meridian Avenue, South Pasadena, CA, 91030",
+      "category": "gym",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.1162164,
+        "longitude": -118.1572824
+      }
+    },
+    {
+      "name": "LA Fitness",
+      "full_address": "Los Angeles, CA",
+      "category": "gym",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.9852854,
+        "longitude": -118.0978183
+      }
+    },
+    {
+      "name": "Kor Gym",
+      "full_address": "Los Angeles, CA",
+      "category": "gym",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 34.0856832,
+        "longitude": -118.344277
+      }
+    },
+    {
+      "name": "24 Hour Fitness",
+      "full_address": "8430 On the Mall, Buena Park, CA, 90620",
+      "category": "gym",
+      "city": "Los Angeles",
+      "coordinates": {
+        "latitude": 33.8443777,
+        "longitude": -117.9877432
+      }
+    }
+  ],
+  "Minneapolis": [
+    {
+      "name": "Airport Park",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.1583306,
+        "longitude": -93.2163898
+      }
+    },
+    {
+      "name": "Blaine Soccer Complex",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.159768,
+        "longitude": -93.2190612
+      }
+    },
+    {
+      "name": "Sand Dunes Natural History Area",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.0789966,
+        "longitude": -93.2501402
+      }
+    },
+    {
+      "name": "Anderson Lakes Regional Park",
+      "full_address": "9800 Anderson Lakes Parkway, Eden Prairie, MN, 55344",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.8393077,
+        "longitude": -93.4025615
+      }
+    },
+    {
+      "name": "Shadow Falls Park",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9424742,
+        "longitude": -93.1963938
+      }
+    },
+    {
+      "name": "Staring Lake Disc Golf Course",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.8331645,
+        "longitude": -93.4595982
+      }
+    },
+    {
+      "name": "Central Park Frank Rog Amphitheatre",
+      "full_address": "2540 Lexington Avenue North, Roseville, MN, 55113",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.0182118,
+        "longitude": -93.1442779
+      }
+    },
+    {
+      "name": "Cedar Island Playfields",
+      "full_address": "6777 Hemlock Lane, Maple Grove, MN, 55369",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.077681,
+        "longitude": -93.4347934
+      }
+    },
+    {
+      "name": "Thomas Lake Park (West Entrance)",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.79417,
+        "longitude": -93.1772756
+      }
+    },
+    {
+      "name": "Rock Island",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9510714,
+        "longitude": -93.347393
+      }
+    },
+    {
+      "name": "Mill Ruins Park",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9793458,
+        "longitude": -93.2556249
+      }
+    },
+    {
+      "name": "Bassett Creek Park",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9911344,
+        "longitude": -93.2737582
+      }
+    },
+    {
+      "name": "Orvin \"Ole\" Olson Park",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9987978,
+        "longitude": -93.2769483
+      }
+    },
+    {
+      "name": "Van Cleve Park Recreation Center",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9859558,
+        "longitude": -93.2310434
+      }
+    },
+    {
+      "name": "Tamarack Nature Preserve",
+      "full_address": "Minneapolis, MN",
+      "category": "park",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.1014226,
+        "longitude": -93.0386665
+      }
+    },
+    {
+      "name": "Ridgedale Library",
+      "full_address": "Minneapolis, MN",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.964839,
+        "longitude": -93.4399654
+      }
+    },
+    {
+      "name": "Northtown Central Library",
+      "full_address": "County Hwy 10 Frontage Rd 711, Minneapolis, MN",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.127,
+        "longitude": -93.2528
+      }
+    },
+    {
+      "name": "Highland Park Library",
+      "full_address": "Minneapolis, MN",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9176417,
+        "longitude": -93.1829884
+      }
+    },
+    {
+      "name": "Hayden Heights Branch Library",
+      "full_address": "Minneapolis, MN",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9852668,
+        "longitude": -93.0248041
+      }
+    },
+    {
+      "name": "Hennepin County Library - Southdale Branch",
+      "full_address": "7001 York Avenue South, Edina, MN, 55435",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.8755331,
+        "longitude": -93.3198831
+      }
+    },
+    {
+      "name": "Saint Anthony Library",
+      "full_address": "2941 Pentagon Drive, Saint Anthony, MN, 55418",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.016008,
+        "longitude": -93.2189996
+      }
+    },
+    {
+      "name": "Arlington Hills Library",
+      "full_address": "Minneapolis, MN",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9772721,
+        "longitude": -93.0731955
+      }
+    },
+    {
+      "name": "Edina Library",
+      "full_address": "Minneapolis, MN",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9079036,
+        "longitude": -93.3560925
+      }
+    },
+    {
+      "name": "Seminary Library",
+      "full_address": "Minneapolis, MN",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.0604712,
+        "longitude": -93.1626904
+      }
+    },
+    {
+      "name": "New Brighton Library",
+      "full_address": "400 10th Street Northwest, New Brighton, MN, 55112",
+      "category": "library",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.066088,
+        "longitude": -93.1907404
+      }
+    },
+    {
+      "name": "Off-Campus Safety Center",
+      "full_address": "315 Southeast 14th Avenue, Minneapolis, MN, 55414",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9800236,
+        "longitude": -93.2363642
+      }
+    },
+    {
+      "name": "Linwood Recreation Center",
+      "full_address": "Minneapolis, MN",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9335795,
+        "longitude": -93.1361364
+      }
+    },
+    {
+      "name": "Hopkins Eisenhower Community Center",
+      "full_address": "Minneapolis, MN",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9337891,
+        "longitude": -93.411769
+      }
+    },
+    {
+      "name": "Hillcrest Recreation Center",
+      "full_address": "Minneapolis, MN",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9173054,
+        "longitude": -93.183023
+      }
+    },
+    {
+      "name": "Roger Imme Center",
+      "full_address": "Minneapolis, MN",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9551482,
+        "longitude": -93.2845122
+      }
+    },
+    {
+      "name": "East Side Community Center",
+      "full_address": "1526 East 6th Street, Saint Paul, MN",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9601095,
+        "longitude": -93.0373907
+      }
+    },
+    {
+      "name": "Queermunity",
+      "full_address": "3036 Hennepin Avenue South, Minneapolis, MN, 55408",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9469627,
+        "longitude": -93.2985937
+      }
+    },
+    {
+      "name": "Eritrean Community Center",
+      "full_address": "1935 University Avenue, Saint Paul, MN, 55104",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9577074,
+        "longitude": -93.1814446
+      }
+    },
+    {
+      "name": "Luxton Park Recreation Center",
+      "full_address": "112 Southeast Williams Avenue, Minneapolis, MN, 55414",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9682213,
+        "longitude": -93.2191844
+      }
+    },
+    {
+      "name": "Whole Music Club",
+      "full_address": "300 Southeast Washington Avenue, Minneapolis, MN, 55455",
+      "category": "community_center",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9726108,
+        "longitude": -93.2349882
+      }
+    },
+    {
+      "name": "Corner Coffee",
+      "full_address": "514 3rd Street North, Minneapolis, MN, 55401",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9857583,
+        "longitude": -93.2762636
+      }
+    },
+    {
+      "name": "Milkweed Cafe",
+      "full_address": "3822 East Lake Street, Minneapolis, MN, 55406",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9485384,
+        "longitude": -93.2167458
+      }
+    },
+    {
+      "name": "Dunn Brothers",
+      "full_address": "1569 Grand Avenue, Saint Paul, MN, 55105",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9402205,
+        "longitude": -93.166327
+      }
+    },
+    {
+      "name": "Ginkgo Coffeehouse",
+      "full_address": "721 Snelling Avenue, Minneapolis, MN, 55104",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9630288,
+        "longitude": -93.1672903
+      }
+    },
+    {
+      "name": "Caribou Coffee",
+      "full_address": "Minneapolis, MN",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9486033,
+        "longitude": -93.0923409
+      }
+    },
+    {
+      "name": "Groundswell",
+      "full_address": "1340 Thomas Avenue, Saint Paul, MN, 55104",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9592162,
+        "longitude": -93.1569997
+      }
+    },
+    {
+      "name": "Caribou Coffee",
+      "full_address": "1650 Park Place Boulevard, Saint Louis Park, MN, 55416",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9662247,
+        "longitude": -93.3499316
+      }
+    },
+    {
+      "name": "May Day Cafe",
+      "full_address": "3440 Bloomington Avenue South, Minneapolis, MN",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9398848,
+        "longitude": -93.2526453
+      }
+    },
+    {
+      "name": "Keys Cafe",
+      "full_address": "Minneapolis, MN",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9511461,
+        "longitude": -93.0941212
+      }
+    },
+    {
+      "name": "Sebastian Joe's Ice Cream",
+      "full_address": "Minneapolis, MN",
+      "category": "cafe",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.923833,
+        "longitude": -93.314676
+      }
+    },
+    {
+      "name": "Legendary Spice",
+      "full_address": "2501 Southeast University Avenue, Minneapolis, MN, 55414",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9734722,
+        "longitude": -93.220995
+      }
+    },
+    {
+      "name": "Pink Flower",
+      "full_address": "2563 Mounds View Boulevard, Minneapolis, MN, 55112",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.1075207,
+        "longitude": -93.2104692
+      }
+    },
+    {
+      "name": "Annies Wok",
+      "full_address": "Minneapolis, MN",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.1372766,
+        "longitude": -93.1680151
+      }
+    },
+    {
+      "name": "El Loro",
+      "full_address": "Minneapolis, MN",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.1374401,
+        "longitude": -93.1677576
+      }
+    },
+    {
+      "name": "Chilango",
+      "full_address": "2730 Lake Street West, Minneapolis, MN, 55416",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9496328,
+        "longitude": -93.3152638
+      }
+    },
+    {
+      "name": "Longfellow Grill",
+      "full_address": "2990 West River Parkway, Minneapolis, MN, 55406",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9486814,
+        "longitude": -93.2060589
+      }
+    },
+    {
+      "name": "Andiamo Italian Ristorante",
+      "full_address": "80 Snelling Avenue, Saint Paul, MN, 55104",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.943716,
+        "longitude": -93.1660614
+      }
+    },
+    {
+      "name": "Davanni's Pizza \u0026 Hot Hoagies",
+      "full_address": "41 Cleveland Avenue South, Saint Paul, MN, 55105",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9399208,
+        "longitude": -93.1875805
+      }
+    },
+    {
+      "name": "iPho by Saigon",
+      "full_address": "704 University Avenue West, St Paul, MN, 55104",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9555354,
+        "longitude": -93.1300187
+      }
+    },
+    {
+      "name": "Wok in the Park",
+      "full_address": "3005 Utah Avenue South, Saint Louis Park, MN, 55426",
+      "category": "restaurant",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9490964,
+        "longitude": -93.3817357
+      }
+    },
+    {
+      "name": "Time Out Restaurant \u0026 Sports Bar",
+      "full_address": "Minneapolis, MN",
+      "category": "brewery",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.1583485,
+        "longitude": -93.2341221
+      }
+    },
+    {
+      "name": "Sally's Saloon",
+      "full_address": "700 Southeast Washington Avenue, Minneapolis, MN, 55414",
+      "category": "brewery",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9735342,
+        "longitude": -93.228451
+      }
+    },
+    {
+      "name": "Bull's Horn Food and Drink",
+      "full_address": "4563 34th Avenue South, Minneapolis, MN, 55406",
+      "category": "brewery",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.919781,
+        "longitude": -93.2227829
+      }
+    },
+    {
+      "name": "Sweeney's Saloon",
+      "full_address": "96 Dale Street North, Saint Paul, MN, 55102",
+      "category": "brewery",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.944192,
+        "longitude": -93.1261063
+      }
+    },
+    {
+      "name": "Gabe's",
+      "full_address": "991 Lexington Parkway North, Saint Paul, MN, 55103",
+      "category": "brewery",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9709722,
+        "longitude": -93.147116
+      }
+    },
+    {
+      "name": "Planet Fitness",
+      "full_address": "1278 Town Centre Drive, Eagan, MN, 55123",
+      "category": "gym",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.8303044,
+        "longitude": -93.1610358
+      }
+    },
+    {
+      "name": "LA Fitness",
+      "full_address": "Minneapolis, MN",
+      "category": "gym",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9481982,
+        "longitude": -93.2975037
+      }
+    },
+    {
+      "name": "Snap Fitness",
+      "full_address": "Minneapolis, MN",
+      "category": "gym",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9490625,
+        "longitude": -93.2948372
+      }
+    },
+    {
+      "name": "Anytime Fitness",
+      "full_address": "Minneapolis, MN",
+      "category": "gym",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 44.9413873,
+        "longitude": -93.5030363
+      }
+    },
+    {
+      "name": "Shorin Ryu Minnesota Karate",
+      "full_address": "2914 Pentagon Drive, Saint Anthony, MN, 55418",
+      "category": "gym",
+      "city": "Minneapolis",
+      "coordinates": {
+        "latitude": 45.0153712,
+        "longitude": -93.2199256
+      }
+    }
+  ],
+  "New York": [
+    {
+      "name": "Baker Field",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8731554,
+        "longitude": -73.9140253
+      }
+    },
+    {
+      "name": "New Springville Park",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.5964931,
+        "longitude": -74.1715325
+      }
+    },
+    {
+      "name": "Rice Memorial Stadium",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8491077,
+        "longitude": -73.8229011
+      }
+    },
+    {
+      "name": "Lower Forecourt",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8892662,
+        "longitude": -73.9023583
+      }
+    },
+    {
+      "name": "Upper Forecourt",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8895439,
+        "longitude": -73.9020805
+      }
+    },
+    {
+      "name": "South Street Seaport Historic District",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7065114,
+        "longitude": -74.0033727
+      }
+    },
+    {
+      "name": "Pumphouse Park",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7120735,
+        "longitude": -74.0161706
+      }
+    },
+    {
+      "name": "Charlton-Thompson Garden",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8246865,
+        "longitude": -73.9071411
+      }
+    },
+    {
+      "name": "Longfellow Gardens",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8256117,
+        "longitude": -73.8875026
+      }
+    },
+    {
+      "name": "Chatham Square",
+      "full_address": "New York, NY, 10038",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7135058,
+        "longitude": -73.9985306
+      }
+    },
+    {
+      "name": "George Farkas Square",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8625183,
+        "longitude": -73.8981361
+      }
+    },
+    {
+      "name": "Westchester Square",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8408333,
+        "longitude": -73.8430556
+      }
+    },
+    {
+      "name": "Zimmerman Memorial Playground",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8658333,
+        "longitude": -73.8686111
+      }
+    },
+    {
+      "name": "Schneider-Sampson Park",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8362069,
+        "longitude": -73.8257236
+      }
+    },
+    {
+      "name": "Edwards Parade",
+      "full_address": "New York, NY",
+      "category": "park",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8611723,
+        "longitude": -73.8849882
+      }
+    },
+    {
+      "name": "East Rutherford Memorial Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8328779,
+        "longitude": -74.0984755
+      }
+    },
+    {
+      "name": "William E Dermody Free Public Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8381556,
+        "longitude": -74.091253
+      }
+    },
+    {
+      "name": "Tenafly Public Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.9264877,
+        "longitude": -73.9687489
+      }
+    },
+    {
+      "name": "Reid Memorial Branch Passaic Public Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8640509,
+        "longitude": -74.1153039
+      }
+    },
+    {
+      "name": "New Milford Public Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.9200579,
+        "longitude": -74.023411
+      }
+    },
+    {
+      "name": "Garfield Free Public Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.88073,
+        "longitude": -74.1009383
+      }
+    },
+    {
+      "name": "Maywood Public Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.9011907,
+        "longitude": -74.0632986
+      }
+    },
+    {
+      "name": "Rochelle Park Public Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.9122222,
+        "longitude": -74.0783333
+      }
+    },
+    {
+      "name": "Elmwood Park Public Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.9086111,
+        "longitude": -74.1197222
+      }
+    },
+    {
+      "name": "Bogota Public Library",
+      "full_address": "New York, NJ",
+      "category": "library",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8794462,
+        "longitude": -74.0299971
+      }
+    },
+    {
+      "name": "Romanian Cultural Center",
+      "full_address": "200 East 38th Street, New York, NY, 10016",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7480509,
+        "longitude": -73.9760744
+      }
+    },
+    {
+      "name": "Sixth Street Community Center",
+      "full_address": "New York, NY",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7237397,
+        "longitude": -73.9802085
+      }
+    },
+    {
+      "name": "John Lovejoy Elliott Center",
+      "full_address": "441 West 26th Street, New York, NY, 10001",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7495468,
+        "longitude": -74.0014911
+      }
+    },
+    {
+      "name": "Open Door Senior Center",
+      "full_address": "168 Grand Street, New York, NY, 10013",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7197599,
+        "longitude": -73.9981915
+      }
+    },
+    {
+      "name": "The Solidarity Room Project",
+      "full_address": "136 Lawrence Street, Brooklyn, NY, 11201",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.692056,
+        "longitude": -73.9865056
+      }
+    },
+    {
+      "name": "Netzach Community Youth Center",
+      "full_address": "179-11 Union Turnpike, New York, NY, 11366",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7268791,
+        "longitude": -73.7887697
+      }
+    },
+    {
+      "name": "Chinese American Planning Council",
+      "full_address": "165 Eldridge Street, New York, NY, 10002",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.720009,
+        "longitude": -73.991158
+      }
+    },
+    {
+      "name": "National Arts Club",
+      "full_address": "15 Gramercy Park South, New York, NY, 10003",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7377541,
+        "longitude": -73.9866814
+      }
+    },
+    {
+      "name": "Downtown Community Television Center",
+      "full_address": "87 Lafayette Street, New York, NY, 10013",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7173727,
+        "longitude": -74.0012731
+      }
+    },
+    {
+      "name": "GG's Social Trade \u0026 Treasure Club",
+      "full_address": "1339 DeKalb Avenue, Brooklyn, NY, 11221",
+      "category": "community_center",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.6985202,
+        "longitude": -73.9250729
+      }
+    },
+    {
+      "name": "Everything Goes Book Cafe",
+      "full_address": "208 Bay Street, Staten Island, NY",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.636934,
+        "longitude": -74.076656
+      }
+    },
+    {
+      "name": "Mocha Hookah",
+      "full_address": "New York, NY",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.6901914,
+        "longitude": -73.9935675
+      }
+    },
+    {
+      "name": "Blank Street Coffee",
+      "full_address": "New York, NY",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.6872881,
+        "longitude": -73.9753082
+      }
+    },
+    {
+      "name": "Lenox Coffee",
+      "full_address": "New York, NY",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.810011,
+        "longitude": -73.9431823
+      }
+    },
+    {
+      "name": "Southside Coffee",
+      "full_address": "652 6th Avenue, New York, NY, 11215",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.6611342,
+        "longitude": -73.9902727
+      }
+    },
+    {
+      "name": "Starbucks",
+      "full_address": "1 Battery Park Plaza, New York, NY, 10004",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7032771,
+        "longitude": -74.0141339
+      }
+    },
+    {
+      "name": "Cafe Delecctica",
+      "full_address": "564 3rd Avenue, New York, NY, 10016",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7481687,
+        "longitude": -73.9766084
+      }
+    },
+    {
+      "name": "Best Bagel \u0026 Coffee",
+      "full_address": "225 West 35th Street, New York, NY, 10001",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7522171,
+        "longitude": -73.9911323
+      }
+    },
+    {
+      "name": "Toasties",
+      "full_address": "6 East 48th Street, New York, NY",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.757084,
+        "longitude": -73.977893
+      }
+    },
+    {
+      "name": "City Market Cafe",
+      "full_address": "New York, NY",
+      "category": "cafe",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7786106,
+        "longitude": -73.9606629
+      }
+    },
+    {
+      "name": "The Brass Rail",
+      "full_address": "New York, NY",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7385968,
+        "longitude": -74.0303486
+      }
+    },
+    {
+      "name": "Court Street",
+      "full_address": "61 6th St, Hoboken, NY",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7433179,
+        "longitude": -74.0285824
+      }
+    },
+    {
+      "name": "Hooters",
+      "full_address": "61-09 190th Street, Fresh Meadows, NY, 11365",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7408217,
+        "longitude": -73.784295
+      }
+    },
+    {
+      "name": "Sam Sunny",
+      "full_address": "New York, NY",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7415576,
+        "longitude": -73.9784628
+      }
+    },
+    {
+      "name": "Pedro's",
+      "full_address": "73 Jay Street, Brooklyn, NY, 11201",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7025302,
+        "longitude": -73.9865515
+      }
+    },
+    {
+      "name": "Trudy's Ice Cream",
+      "full_address": "975 Columbus Avenue, New York, NY, 10025",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.8003773,
+        "longitude": -73.9618056
+      }
+    },
+    {
+      "name": "Talay Thai Restaurant",
+      "full_address": "154 Stuyvesant Place, New York, NY",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.6424804,
+        "longitude": -74.0766747
+      }
+    },
+    {
+      "name": "Boutros",
+      "full_address": "New York, NY",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.6901687,
+        "longitude": -73.9934852
+      }
+    },
+    {
+      "name": "Bubo",
+      "full_address": "New York, NY",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7460362,
+        "longitude": -73.9776676
+      }
+    },
+    {
+      "name": "Little Alley",
+      "full_address": "550 3rd Avenue, New York, NY, 10016",
+      "category": "restaurant",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7473845,
+        "longitude": -73.9771526
+      }
+    },
+    {
+      "name": "Whiskey Tavern",
+      "full_address": "79 Baxter Street, New York, NY, 10013",
+      "category": "brewery",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7165068,
+        "longitude": -73.9998287
+      }
+    },
+    {
+      "name": "Battle Hill Tavern",
+      "full_address": "New York, NY",
+      "category": "brewery",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.66019,
+        "longitude": -73.9912599
+      }
+    },
+    {
+      "name": "Swift Hibernian Lounge",
+      "full_address": "34 East 4th Street, New York, NY, 10003",
+      "category": "brewery",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7273093,
+        "longitude": -73.9922879
+      }
+    },
+    {
+      "name": "Mother's",
+      "full_address": "347 Graham Avenue, New York, NY, 11211",
+      "category": "brewery",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7148868,
+        "longitude": -73.9446095
+      }
+    },
+    {
+      "name": "Harefield Road",
+      "full_address": "769 Metropolitan Avenue, New York, NY, 11203",
+      "category": "brewery",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7147528,
+        "longitude": -73.9434202
+      }
+    },
+    {
+      "name": "Chelsea Piers Fitness",
+      "full_address": "645 Dean Street, Brooklyn, NY, 11238",
+      "category": "gym",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.6805096,
+        "longitude": -73.968937
+      }
+    },
+    {
+      "name": "Solace",
+      "full_address": "New York, NY",
+      "category": "gym",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7460194,
+        "longitude": -73.9831064
+      }
+    },
+    {
+      "name": "Equinox",
+      "full_address": "New York, NY",
+      "category": "gym",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7688735,
+        "longitude": -73.9826023
+      }
+    },
+    {
+      "name": "Equinox",
+      "full_address": "160 Columbus Avenue, New York, NY",
+      "category": "gym",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.7744583,
+        "longitude": -73.9811766
+      }
+    },
+    {
+      "name": "Retro Fitness",
+      "full_address": "347 Franklin Ave., Belleville, NJ, 07109",
+      "category": "gym",
+      "city": "New York",
+      "coordinates": {
+        "latitude": 40.80224,
+        "longitude": -74.170501
+      }
+    }
+  ]
+}

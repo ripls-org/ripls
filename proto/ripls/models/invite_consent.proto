@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/common.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// InviteConsent is the durable, timestamped record of a host's attestation that
+// they knew the people they invited to an item at creation and that those
+// people were okay receiving an invite. One row is written per create-time
+// invite send that includes a phone or email invitee. This is a compliance and
+// audit artifact: it captures who attested, to whom, for which item, and when.
+message InviteConsent {
+  // Unique identifier.
+  string id = 1;
+
+  // Host who attested and sent the invites.
+  string host_user_id = 2;
+
+  // Ad-hoc community the invites provisioned (the invited audience).
+  string community_id = 3;
+
+  // Item the invites were for. Exactly one is set, mirroring
+  // Community.origin_item.
+  oneof origin_item {
+    string origin_experience_id = 4;
+    string origin_gear_id = 5;
+    string origin_request_id = 6;
+    string origin_transfer_id = 7;
+  }
+
+  // The people the host attested to. PII: phone/email handles are stored here
+  // for the audit record and must never be exposed on the API or logged
+  // unmasked.
+  repeated Invitee invitees = 8;
+
+  // The host's attestation as received from the client.
+  HostInviteConsent consent = 9;
+
+  // Server receipt time (Unix seconds) — the authoritative record timestamp.
+  int64 created_at_unix_sec = 10;
+
+  // Locale of the inviting request (resolved from Accept-Language, default
+  // "en"), captured so backgrounded off-app invites localize correctly and as
+  // part of the audit record.
+  optional string accept_language = 11;
+}

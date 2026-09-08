@@ -1,0 +1,121 @@
+// Storage models for Experience Sampling Methodology (ESM) prompts and
+// responses. ESM lets a host ask attendees a short structured question
+// about a recently completed experience (e.g., "worth doing again?") and
+// aggregates the responses into signal that drives the Workshop tab's
+// Quest hero cascade.
+//
+// Responses are persisted in a dedicated table separate from CommunityEvent;
+// no undo registry entry is required. See docs/issues/1580-esm-cards.md.
+
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/common.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// ESMResponseOption is a single quick-tap option offered by an ESM prompt.
+// Stored on the prompt; clients render the label and submit the key on tap.
+message ESMResponseOption {
+  // Stable key used to identify this option in aggregations and across
+  // prompt versions. Lower-case snake_case (e.g., "do_again", "skip", "maybe").
+  // The Workshop's repeat-signal threshold check looks up the literal key
+  // "do_again" — see docs/issues/1579-workshop-tab.md for the convention.
+  string key = 1;
+
+  // Human-readable label rendered on the response button. Authored in the
+  // audience's language; never resolved through l10n at render time.
+  string label = 2;
+}
+
+// ESMConsumedAction records what the recipient did with an ESM prompt.
+enum ESMConsumedAction {
+  // Default zero value: the prompt has been targeted at the recipient but
+  // no action has been taken yet. The presence of this row is what makes
+  // the prompt visible in the recipient's feed.
+  ESM_CONSUMED_ACTION_UNSPECIFIED = 0;
+
+  // Recipient submitted a structured response (response_option_key set).
+  ESM_CONSUMED_ACTION_RESPONDED = 1;
+
+  // Recipient dismissed the prompt without responding.
+  ESM_CONSUMED_ACTION_DISMISSED = 2;
+}
+
+// StoredESMPrompt is a question authored against a specific experience and
+// offered to a list of recipients. Each prompt has one structured question
+// and 2-4 quick-tap response options.
+message StoredESMPrompt {
+  // Unique identifier.
+  string id = 1;
+
+  // Experience this prompt is asking about. Required.
+  string experience_id = 2;
+
+  // Community context for the experience.
+  string community_id = 3;
+
+  // The single structured question shown on the card.
+  string question = 4;
+
+  // Quick-tap response options (typically 2-4). Order is preserved in the UI.
+  repeated ESMResponseOption response_options = 5;
+
+  // When this prompt was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 7;
+
+  // When the prompt stops surfacing in feeds (Unix timestamp in seconds).
+  // Default at creation time: experience.completed_at_unix_sec + 48h.
+  int64 closes_at_unix_sec = 8;
+
+  // User who authored the prompt (automated trigger service identity in v2;
+  // experience host in v1's recap-story materialization).
+  string created_by_user_id = 9;
+
+  // Soft-delete metadata. Present when the prompt has been retracted or
+  // expired. Retained for analytics queries.
+  optional DeletedMetadata deleted = 10;
+}
+
+// StoredESMResponse is a single recipient's row for a single prompt.
+//
+// One row per (recipient, prompt) pair is created at prompt-authoring time
+// with consumed_action == UNRESOLVED. The recipient's feed query surfaces
+// prompts by joining this table; the row's existence is what gates
+// visibility. Submitting a response or dismissing the card transitions the
+// row to RESPONDED or DISMISSED and clears the card from the feed.
+message StoredESMResponse {
+  // Unique identifier.
+  string id = 1;
+
+  // Prompt this row belongs to.
+  string prompt_id = 2;
+
+  // Experience the prompt is about (denormalized from prompt for query
+  // efficiency on the per-experience aggregation path).
+  string experience_id = 3;
+
+  // Recipient this row was targeted at.
+  string user_id = 4;
+
+  // When the recipient acted on the prompt (submit or dismiss). Nil when
+  // consumed_action == UNRESOLVED.
+  optional int64 consumed_at_unix_sec = 5;
+
+  // What the recipient did. Default UNRESOLVED.
+  ESMConsumedAction consumed_action = 6;
+
+  // The option_key the recipient selected. Set only when
+  // consumed_action == RESPONDED.
+  optional string response_option_key = 7;
+
+  // Whether the respondent attended the experience the prompt asks about.
+  // Set at insert time by checking ExperienceRSVP.attended == YES for the
+  // (user, experience) pair. Distinguishes pre-seeded attendee rows from
+  // rows created lazily when a non-attendee Story viewer submits a
+  // response. Aggregations that need the post-event satisfaction signal
+  // (vs. the wider sentiment from anyone who saw the recap) filter on
+  // this field.
+  optional bool respondent_was_attendee = 9;
+}

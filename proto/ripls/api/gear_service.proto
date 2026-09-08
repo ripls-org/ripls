@@ -1,0 +1,544 @@
+// RPC service for managing gear.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+import "ripls/api/gear.proto";
+import "ripls/api/gear_booking.proto";
+import "ripls/api/location.proto";
+import "ripls/api/value.proto";
+import "ripls/api/common.proto";
+import "ripls/api/impact_estimate.proto";
+import "ripls/api/gen_stream.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Possible states of gear availability. This matches the enum in models/gear.proto
+enum GearItemState {
+    GEAR_ITEM_STATE_UNSPECIFIED = 0;
+    GEAR_ITEM_STATE_UNAVAILABLE = 1;  // Not available for borrowing
+    GEAR_ITEM_STATE_AVAILABLE = 2;    // Available for borrowing
+    GEAR_ITEM_STATE_GIVEN_AWAY = 4;   // Permanently transferred via giveaway
+}
+
+// Request to save (insert or update) an item of gear.
+// If id is omitted, a new gear item is created.
+// If id is provided, the existing gear item is updated.
+// Only fields that are set in the request are updated; omitted fields are ignored.
+// Set an optional scalar to update it (empty string clears the field); omit entirely to leave it unchanged.
+// Repeated fields (like media_ids) are replaced entirely, not appended.
+message SaveGearRequest {
+    // The unique identifier of the gear (omit for new gear).
+    string id = 1;
+
+    // The name of the gear. Set to clear or update; omit to leave unchanged.
+    optional string name = 3;
+
+    // A description of the gear. Set to clear or update; omit to leave unchanged.
+    optional string description = 4;
+
+    // Media items associated with this gear.
+    repeated string media_ids = 5;
+
+    // The location where this gear is stored. Set to clear or update; omit to leave unchanged.
+    optional string location_id = 6;
+
+    // AI-generated metadata for this gear (value, category, brand, model, material, weight, carbon).
+    // Typically passed through from GenGearResponse when user confirms gear creation.
+    GearMetadata metadata = 7;
+
+    // Generation mode that produced this gear's metadata ("text", "image", "web").
+    // Used to assign LLM provenance to metadata fields on insert.
+    // Empty for manually created gear (no AI generation). Set to clear or update; omit to leave unchanged.
+    optional string generation_mode = 8;
+
+    // Source URL where gear info was originally extracted from (URL mode only).
+    // Provides attribution for value estimates extracted from product pages.
+    optional string source_url = 9;
+
+    // Initial sharing availability for the gear's per-item community
+    // provisioned at creation (the create preview's Lend/Give choice).
+    // Honored on insert only — after creation, per-community availability
+    // is managed via ShareGear. Defaults to AVAILABILITY_FOR_LOAN when
+    // unset.
+    optional Availability availability = 10;
+}
+
+// Response after saving gear.
+message SaveGearResponse {
+    // The unique identifier of the saved gear.
+    string id = 1;
+
+    // The gear's per-item community (#2492), provisioned host-only the moment the
+    // gear is first created and the gear shared into it (carrying the Lend/Give
+    // availability). The client opens the share/invite sheet against this
+    // community. Set on insert; empty on update.
+    optional string item_community_id = 2;
+}
+
+// Metadata for a gear item.
+message GearMetadata {
+    // Product category (e.g., "Power Tools", "Camping & Outdoors").
+    TrackedString category = 1;
+
+    // Brand name.
+    TrackedString brand = 2;
+
+    // Model identifier.
+    TrackedString model = 3;
+
+    // Material composition category for carbon estimation.
+    TrackedMaterialCategory material_category = 4;
+
+    // Estimated weight in grams (mean + uncertainty).
+    TrackedEstimate weight_grams = 5;
+
+    // Embodied carbon (CO2e to manufacture this item).
+    CarbonEstimate embodied_carbon = 6;
+
+    // Estimated monetary value of this item.
+    ValueEstimate value_estimate = 7;
+}
+
+// Request to get an item of gear.
+message GetGearRequest {
+    // The unique identifier of the gear to retrieve.
+    string id = 1;
+
+    // Optional: Community context for getting community-specific conversation_id and active_loan.
+    // If not provided, returns null for community-specific fields.
+    string community_id = 2;
+}
+
+// Response containing gear details.
+message GetGearResponse {
+    // A unique identifier for the gear.
+    string id = 1;
+
+    // The name of the gear.
+    string name = 3;
+
+    // A description of the gear.
+    string description = 4;
+
+    // The user who owns this gear.
+    User owner = 5;
+
+    // Media items associated with this gear.
+    repeated string media_ids = 6;
+
+    GearItemState state = 7;
+
+    // The location where this gear is stored.
+    string location_id = 8;
+
+    // Availability setting for this gear in the community context.
+    // Only populated when community_id is provided in the request.
+    Availability availability = 9;
+
+    // Conversation ID for this gear in the specified community context.
+    // Empty if community_id not provided or gear not shared with community.
+    string conversation_id = 10;
+
+    // Active loan information (only when gear is currently loaned out in the specified community).
+    optional ActiveLoan active_loan = 11;
+
+    // Number of messages in the gear's conversation.
+    // Only populated when conversation_id is present.
+    int32 message_count = 12;
+
+    // Unix timestamp (seconds) when the gear was shared to the community.
+    // Only populated when community_id is provided in the request.
+    // Returns 0 if not shared to the specified community.
+    int64 shared_at_unix_sec = 13;
+
+    // Unix timestamp (seconds) when this gear was first shared. For gear
+    // shared with one or more communities, this is the earliest share
+    // timestamp across all communities; for gear that has never been
+    // shared, this is the gear's creation timestamp. Distinct from
+    // shared_at_unix_sec, which carries the timestamp of when the gear
+    // was shared with the community identified in the request.
+    int64 created_at_unix_sec = 25;
+
+    // Value estimate for this gear item.
+    // Contains estimated value, confidence, and reasoning.
+    ValueEstimate value_estimate = 14;
+
+    // AI-generated metadata (category, brand, model, material, weight, carbon).
+    GearMetadata metadata = 15;
+
+    // Source URL where gear info was originally extracted from (URL mode only).
+    // Provides attribution for value estimates extracted from product pages.
+    string source_url = 16;
+
+    // Number of unread messages in the conversation for the current user.
+    int32 unread_count = 17;
+
+    // Truncated text of the most recent user message (~100 chars).
+    optional string last_message_text = 18;
+
+    // The user who sent the most recent message.
+    optional User last_message_sender = 19;
+
+    // Relative time string for the most recent message (e.g., "2h", "3d").
+    optional string last_message_time_ago = 20;
+
+    // Up to 3 most recent unique commenters, ordered by recency.
+    repeated User recent_commenters = 21;
+
+    // Communities this gear is shared with that the caller is an active member
+    // of. Used for the community-switcher dropdown and the access ring. Owners
+    // always receive the full list. Non-owner callers receive only the
+    // communities they belong to; use total_shared_community_count to learn
+    // the item's full reach without leaking names or avatars of communities
+    // the caller is not in.
+    repeated SharedCommunity shared_communities = 22;
+
+    // Number of times this gear has been loaned out (completed or active loans only).
+    // Used to guard the "View Impact" menu item — only shown when > 0.
+    optional int32 times_loaned = 23;
+
+    // Total number of distinct users across all communities this gear is shared
+    // with. Accounts for users who belong to more than one of those
+    // communities. Covers the full sharing scope regardless of which
+    // communities appear in shared_communities.
+    int32 total_distinct_member_count = 24;
+
+    // Total number of communities this gear is shared with, regardless of
+    // whether the caller is a member of each community. Use this alongside
+    // shared_communities (the caller-scoped subset) to compute how many
+    // additional communities exist beyond those visible to the caller.
+    int32 total_shared_community_count = 26;
+
+    // People individually invited to this gear's own ad-hoc origin community
+    // (the contacts the owner invited one by one), excluding the owner. The
+    // "Shared with" surface lists these as individuals, whereas named
+    // communities stay collapsed to their member count. Scoped to the origin
+    // community (only surfaced to callers who can see it) and capped. (#2492)
+    repeated User invited_individuals = 28;
+
+    // True if this gear has been deleted by its owner. Clients should
+    // render a placeholder card (e.g. "Item no longer available") instead
+    // of treating the response as live gear. When true, fields beyond
+    // id / name / description / media_ids / owner may be unpopulated.
+    optional bool deleted = 27;
+}
+
+// Request to list the authenticated user's gear.
+message ListUserGearRequest {}
+
+// Response containing a list of the authenticated user's gear.
+message ListUserGearResponse {
+    // The list of gear items.
+    repeated GearItem items = 1;
+}
+
+// A single gear item in a list.
+message GearItem {
+    // A unique identifier for the gear.
+    string id = 1;
+
+    // The name of the gear.
+    string name = 3;
+
+    // A description of the gear.
+    string description = 4;
+
+    // The user who owns this gear.
+    User owner = 5;
+
+    // The location where this gear is stored.
+    string location_id = 6;
+
+    // Media items associated with this gear.
+    repeated string media_ids = 7;
+
+    // IDs of communities this gear is shared with.
+    repeated string shared_community_ids = 8;
+
+    // Value estimate for this gear item.
+    // Contains estimated value, confidence, and reasoning.
+    ValueEstimate value_estimate = 9;
+
+    // Unix timestamp (seconds) when this gear was created.
+    int64 created_at_unix_sec = 10;
+
+    // The lifecycle state of this gear item.
+    optional GearItemState state = 11;
+}
+
+// Request to delete gear.
+message DeleteGearRequest {
+    // The unique identifier of the gear to delete.
+    string gear_id = 1;
+}
+
+// Response after deleting gear.
+message DeleteGearResponse {}
+
+// Request to generate gear content from text prompt or image.
+// Either prompt (text mode) or media_id (image mode) must be provided, but not both.
+// If the prompt contains a URL, it will be detected and used for URL-based generation.
+message GenGearRequest {
+    // Optional: user's description of the item (e.g., "camping tent") or a product URL.
+    // If the text contains a URL (http:// or https://), URL-based generation is used.
+    // Required if media_id is not provided.
+    string prompt = 1;
+
+    // Optional: media ID to analyze for gear detection.
+    // Required if prompt is not provided.
+    string media_id = 2;
+
+    // Optional: user's primary location ID.
+    string location_id = 3;
+
+    // Optional: GPS latitude for location context.
+    double latitude_deg = 4;
+
+    // Optional: GPS longitude for location context.
+    double longitude_deg = 5;
+}
+
+// Response containing AI-generated gear details (from text or image).
+message GenGearResponse {
+    // The detected/generated gear item.
+    // Contains all AI-analyzed fields including title, description,
+    // location, confidence, and media IDs.
+    DetectedGearItem detected_gear = 1;
+}
+
+// Request to extract product metadata from a product page URL.
+message DetectGearFromURLRequest {
+    // The product page URL to fetch and extract metadata from.
+    string url = 1;
+}
+
+// Response containing metadata extracted from a product page URL.
+// Only metadata fields are populated (brand, model, category, material, weight, value).
+// Title, description, media, and location fields are intentionally omitted.
+message DetectGearFromURLResponse {
+    // Extracted product metadata. Only brand, model, category, material_category,
+    // weight_grams, and value_estimate are populated.
+    DetectedGearItem detected_gear = 1;
+}
+
+// Request to get transfer request count for a gear item.
+message GetTransferRequestCountRequest {
+    // The unique identifier of the gear.
+    string gear_id = 1;
+}
+
+// Response containing transfer request counts and active request info.
+message GetTransferRequestCountResponse {
+    // For owners: how many non-archived requests received (across all communities).
+    int32 received_count = 1;
+
+    // For borrowers: whether the current user has an active request for this gear.
+    bool has_active_request = 2;
+
+    // If has_active_request is true, the conversation ID for that request.
+    string active_conversation_id = 3;
+
+    // For borrowers viewing giveaways: the number of participants in the giveaway conversation.
+    // This is 0 for loans or if no giveaway transfer exists.
+    int32 participant_count = 4;
+}
+
+// A single detected gear item from AI analysis.
+message DetectedGearItem {
+    // The name/title of the detected gear.
+    string title = 1;
+
+    // Detailed description of the gear.
+    string description = 2;
+
+    // Confidence score for this detection (0.0 to 1.0).
+    float confidence = 6;
+
+    // AI-extracted geocoded location (not yet saved to database).
+    // Client should save this when user confirms gear creation.
+    GeocodedLocation geocoded_location = 7;
+
+    // AI-extracted location string (for debugging/logging).
+    string location_query = 8;
+
+    // Media IDs for preview (uploaded image for image mode, stock imagery for text mode).
+    repeated string media_ids = 9;
+
+    // Source URL where gear info was extracted from (URL mode only).
+    // Provides attribution and allows users to visit the original product page.
+    string source_url = 10;
+
+    // LLM-generated value estimate with confidence and reasoning.
+    // Populated for all generation modes (text, image, URL).
+    ValueEstimate value_estimate = 11;
+
+    // AI-detected product category (e.g., "Power Tools", "Camping & Outdoors").
+    string category = 12;
+
+    // AI-detected brand name.
+    string brand = 13;
+
+    // AI-detected model identifier.
+    string model = 14;
+
+    // Material composition category for carbon estimation.
+    MaterialCategory material_category = 15;
+
+    // Estimated weight in grams (mean + uncertainty).
+    Estimate weight_grams = 16;
+}
+
+// Request to get people associated with a gear item.
+message GetGearPeopleRequest {
+    // The unique identifier of the gear.
+    string gear_id = 1;
+
+    // Optional: Community context for filtering community-specific borrowers.
+    // If not provided, returns people across all communities.
+    string community_id = 2;
+}
+
+// Response containing people associated with a gear item.
+message GetGearPeopleResponse {
+    // The owner of the gear.
+    User owner = 1;
+
+    // Current borrower (if gear is currently loaned out).
+    User current_borrower = 2;
+
+    // Past borrowers (users who have borrowed this gear before).
+    repeated User past_borrowers = 3;
+
+    // Users who have expressed interest (e.g., viewed, asked about).
+    repeated User interested_parties = 4;
+
+    // Total count of unique people associated with this gear.
+    int32 total_count = 5;
+}
+
+// Request to get statistics for a gear item.
+message GetGearStatsRequest {
+    // The unique identifier of the gear.
+    string gear_id = 1;
+
+    // Optional: Community context for community-specific stats.
+    // If not provided, returns aggregate stats across all communities.
+    string community_id = 2;
+}
+
+// Response containing statistics for a gear item.
+message GetGearStatsResponse {
+    // Number of times this gear has been loaned out.
+    int32 times_loaned = 1;
+
+    // Number of unique people helped by this gear.
+    int32 people_helped = 2;
+
+    // Total value shared (estimated value × times loaned) in USD.
+    float value_shared_usd = 3;
+
+    // Number of users who have expressed interest.
+    int32 interest_count = 4;
+
+    // Aggregate impact estimate (cost, carbon, time).
+    ImpactEstimate impact = 5;
+
+    // Potential impact estimate for the first transaction (when times_loaned == 0).
+    // Shows what one loan would save. Only populated when no transactions exist yet.
+    ImpactEstimate potential_impact = 6;
+}
+
+// Request to generate gear content with an incremental event stream.
+// Takes the same inputs as GenGearRequest.
+message StreamGenGearRequest {
+    string prompt = 1;
+    string media_id = 2;
+    string location_id = 3;
+    double latitude_deg = 4;
+    double longitude_deg = 5;
+    string website_url = 6;
+}
+
+// One event in a StreamGenGear stream. Terminated by exactly one of `final`
+// or `error`. Non-terminal events (`title`, `description`, `geocoded`,
+// `media_ready`) may arrive in any order before the terminal event. No
+// ordering between non-terminal events is guaranteed or implied — clients
+// must not depend on one event arriving before another.
+//
+// Variants are listed below in semantic order (identity → location →
+// media → terminal); field numbers reflect introduction order and must
+// not be reused.
+message StreamGenGearResponse {
+    oneof event {
+        // Title for the gear item.
+        string title = 1;
+        // Description for the gear item. Generated by the AI from the prompt.
+        string description = 6;
+        // Geocoded location for the gear item. Absent when no geocodable
+        // location was identified.
+        GeocodedLocation geocoded = 2;
+        // Media selected for the preview.
+        MediaReady media_ready = 3;
+        // Terminal: full GenGearResponse in the same shape as the unary RPC.
+        GenGearResponse final = 4;
+        // Terminal alternative.
+        GenStreamError error = 5;
+    }
+}
+
+// RPC service for managing gear.
+service GearService {
+    // Save (insert or update) an item of gear in the library.
+    // If id is omitted, creates new gear. If id is provided, updates existing gear.
+    rpc SaveGear(SaveGearRequest) returns (SaveGearResponse);
+
+    // Get an item of gear from the library.
+    rpc GetGear(GetGearRequest) returns (GetGearResponse);
+
+    // List the authenticated user's gear.
+    rpc ListUserGear(ListUserGearRequest) returns (ListUserGearResponse);
+
+    // Delete gear from the library.
+    rpc DeleteGear(DeleteGearRequest) returns (DeleteGearResponse);
+
+    // Generate gear content from text prompt or image using AI.
+    // Provide either prompt (text mode) or media_id (image mode), but not both.
+    rpc GenGear(GenGearRequest) returns (GenGearResponse);
+
+    // Streaming variant of GenGear. Same inputs, same final shape; emits
+    // title / geocoded / media_ready events as each resolves.
+    rpc StreamGenGear(StreamGenGearRequest) returns (stream StreamGenGearResponse);
+
+    // Get transfer request count for a gear item.
+    rpc GetTransferRequestCount(GetTransferRequestCountRequest) returns (GetTransferRequestCountResponse);
+
+    // Get people associated with a gear item (owner, borrowers, interested parties).
+    rpc GetGearPeople(GetGearPeopleRequest) returns (GetGearPeopleResponse);
+
+    // Get statistics for a gear item (loans, people helped, value shared).
+    rpc GetGearStats(GetGearStatsRequest) returns (GetGearStatsResponse);
+
+    // Extract product metadata (brand, model, category, weight, value) from a product page URL.
+    // Fetches the webpage and uses AI to extract structured metadata fields only.
+    // Returns an error if the URL cannot be fetched — no fallback to text generation.
+    rpc DetectGearFromURL(DetectGearFromURLRequest) returns (DetectGearFromURLResponse);
+
+    // List the bookings (who-has-it-which-days schedule) for a gear item.
+    rpc ListGearBookings(ListGearBookingsRequest) returns (ListGearBookingsResponse);
+
+    // Claim an inclusive range of days for the authenticated user (or, for the
+    // owner, reserve on someone's behalf / block / mint a pending accept link).
+    rpc ClaimGearDays(ClaimGearDaysRequest) returns (ClaimGearDaysResponse);
+
+    // Accept (claim) a pending owner-created reservation via its link token.
+    rpc AcceptGearBooking(AcceptGearBookingRequest) returns (AcceptGearBookingResponse);
+
+    // Release (drop) a booking the authenticated user owns.
+    rpc ReleaseGearBooking(ReleaseGearBookingRequest) returns (ReleaseGearBookingResponse);
+
+    // Set or clear the pickup / drop-off hand-off on a booking.
+    rpc UpdateGearBookingHandoff(UpdateGearBookingHandoffRequest) returns (UpdateGearBookingHandoffResponse);
+}

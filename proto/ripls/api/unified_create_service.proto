@@ -1,0 +1,120 @@
+// RPC service for the unified create flow. A client submits a single
+// prompt (text, image, or URL) and streams back a typed content draft
+// (gear, event, or request) along with related fields (title,
+// description, geocoded location, suggested media, extracted event
+// time).
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/gear_service.proto";
+import "ripls/api/experience_service.proto";
+import "ripls/api/request_service.proto";
+import "ripls/api/location.proto";
+import "ripls/api/gen_stream.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Content type a unified-create stream is producing.
+enum DetectedContentType {
+  DETECTED_CONTENT_TYPE_UNSPECIFIED = 0;
+  // A physical item.
+  DETECTED_CONTENT_TYPE_GEAR    = 1;
+  // An event or activity.
+  DETECTED_CONTENT_TYPE_EVENT   = 2;
+  // A request for an item, help, or someone's time.
+  DETECTED_CONTENT_TYPE_REQUEST = 3;
+}
+
+// Input for a unified-create stream. Exactly one of text, media_id, or
+// website_url must be set.
+message StreamGenUnifiedCreateRequest {
+  oneof prompt {
+    string text        = 1;
+    string media_id    = 2;
+    string website_url = 3;
+  }
+
+  // User's primary location ID. When set, the response may include
+  // location-related context derived from that location.
+  optional string location_id = 4;
+
+  // GPS latitude in degrees. When supplied alongside longitude_deg,
+  // any geocoded location in the response will prefer points near
+  // this coordinate.
+  optional double latitude_deg = 5;
+
+  // GPS longitude in degrees. When supplied alongside latitude_deg,
+  // any geocoded location in the response will prefer points near
+  // this coordinate.
+  optional double longitude_deg = 6;
+
+  // Current time as Unix seconds since epoch. Anchors how relative
+  // date phrases ("tomorrow", "next week") in the prompt resolve in
+  // the response's `time` event.
+  optional int64 current_time_unix_sec = 7;
+
+  // User's IANA timezone (e.g., "America/Denver"). Anchors how
+  // relative date phrases in the prompt resolve in the response's
+  // `time` event. Defaults to UTC when unset.
+  optional string timezone = 8;
+
+  // When set, the response's detected type matches this value and the
+  // response carries the matching per-type payload. When unset, the
+  // type is inferred from the input.
+  optional DetectedContentType force_type = 9;
+}
+
+// Terminal response of a unified-create stream. Carries the detected
+// type and the corresponding per-type response.
+message StreamGenUnifiedCreateFinal {
+  // Detected content type for this response.
+  DetectedContentType type = 1;
+
+  // Per-type response matching `type`.
+  oneof payload {
+    GenGearResponse       gear       = 2;
+    GenExperienceResponse experience = 3;
+    GenRequestResponse    request    = 4;
+  }
+}
+
+// One event in a StreamGenUnifiedCreate stream. The stream terminates
+// with exactly one `final` or `error`. Non-terminal events (`type`,
+// `title`, `description`, `geocoded`, `media_ready`, `time`) may
+// arrive in any order and any subset before the terminal event.
+// Clients must not depend on a particular order of non-terminal
+// events.
+message StreamGenUnifiedCreateResponse {
+  oneof event {
+    // Detected content type for this stream. Once emitted, subsequent
+    // non-terminal events relate to this type.
+    DetectedContentType         type        = 1;
+    // Title of the content being drafted.
+    string                      title       = 2;
+    // Description of the content being drafted.
+    string                      description = 3;
+    // Geocoded location, when one could be resolved from the input
+    // or supplied location context.
+    GeocodedLocation            geocoded    = 4;
+    // Suggested media for the draft.
+    MediaReady                  media_ready = 5;
+    // Time / date extraction. Only emitted when `type` is
+    // DETECTED_CONTENT_TYPE_EVENT.
+    ExperienceTimeExtraction    time        = 6;
+    // Terminal: complete response for the detected type.
+    StreamGenUnifiedCreateFinal final       = 7;
+    // Terminal: a complete response could not be produced.
+    GenStreamError              error       = 8;
+  }
+}
+
+// Service for the unified-create flow.
+service UnifiedCreateService {
+  // Stream a unified-create generation from a single text, media, or
+  // website-URL input. The response is a stream of typed events
+  // ending in either a `final` payload matching the detected type or
+  // a terminal `error`.
+  rpc StreamGenUnifiedCreate(StreamGenUnifiedCreateRequest) returns (stream StreamGenUnifiedCreateResponse);
+}

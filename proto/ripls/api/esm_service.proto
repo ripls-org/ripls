@@ -1,0 +1,39 @@
+// RPC service for Experience Sampling Methodology (ESM).
+//
+// ESM lets a recipient submit a structured response to a post-experience
+// prompt. Responses are private and aggregated server-internally to drive
+// downstream signal detection.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request to submit a response to an ESM prompt.
+//
+// Either response_option_key or dismissed must be set: the recipient is
+// either responding (with an option key) or dismissing.
+message RespondToESMPromptRequest {
+  // ID of the prompt being responded to.
+  string prompt_id = 1;
+
+  // Option key the recipient selected. Required when dismissed is false.
+  optional string response_option_key = 2;
+
+  // True when the recipient dismissed the prompt without selecting an option.
+  // Mutually exclusive with response_option_key.
+  bool dismissed = 3;
+}
+
+// Response after recording an ESM response. Empty by design — the client
+// removes the card optimistically on tap.
+message RespondToESMPromptResponse {}
+
+// Service for ESM prompt response submission.
+service ESMService {
+  // Submit a response or dismissal for an ESM prompt the caller was targeted
+  // by. Authorization: caller must have a pending (UNRESOLVED) row for the
+  // prompt; the prompt must not be expired or soft-deleted.
+  rpc RespondToESMPrompt(RespondToESMPromptRequest) returns (RespondToESMPromptResponse);
+}

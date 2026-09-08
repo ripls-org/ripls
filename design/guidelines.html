@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<!--
+  GENERATED from design/tokens.json by scripts/gen_design_tokens.js — DO NOT EDIT.
+  Edit design/tokens.json and run `npm run generate:design-tokens`. CI
+  (`npm run lint:design-tokens`) fails if this file drifts from the source.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ripls design tokens — guidelines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #141714; color: #F4F4EF; font-family: 'Public Sans', sans-serif; padding: 48px 28px 96px; }
+  .wrap { max-width: 1160px; margin: 0 auto; }
+  h1 { font-family: 'Libre Baskerville', serif; font-weight: 400; font-size: 30px; margin-bottom: 6px; }
+  .src { font-size: 12px; color: #ABB3AB; margin-bottom: 30px; }
+  .src code { background: #1F2421; padding: 1px 6px; border-radius: 5px; }
+  .prose { max-width: 860px; line-height: 1.7; font-size: 14.5px; color: #D6D9D2; margin-bottom: 40px; }
+  .prose h2 { font-family: 'Libre Baskerville', serif; font-weight: 400; font-size: 21px; margin: 26px 0 10px; color: #F4F4EF; }
+  .prose h3 { font-size: 15px; margin: 18px 0 8px; color: #F4F4EF; }
+  .prose p { margin-bottom: 10px; }
+  .prose ul { margin: 0 0 12px 20px; }
+  .prose li { margin-bottom: 6px; }
+  .prose code { background: #1F2421; padding: 1px 6px; border-radius: 5px; font-size: 13px; }
+  .prose b { color: #F4F4EF; }
+  .themes { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 1000px) { .themes { grid-template-columns: 1fr; } }
+  .theme { background: var(--bg); color: var(--text); border-radius: 16px; padding: 22px; border: 1px solid #323832; }
+  .theme-name { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text2); margin-bottom: 16px; }
+  .specimen { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 18px; }
+  .spec-display { font-family: 'Libre Baskerville', serif; font-size: 24px; line-height: 1.25; margin-bottom: 8px; }
+  .spec-display .acc { color: var(--primary); box-shadow: inset 0 -0.14em 0 0 color-mix(in srgb, var(--primary) 38%, transparent); }
+  .spec-body { font-size: 13.5px; line-height: 1.7; color: var(--text2); margin-bottom: 14px; }
+  .spec-ui { display: flex; gap: 12px; align-items: center; }
+  .btn { background: var(--primary); color: var(--on-primary); font-size: 12px; font-weight: 700; padding: 10px 20px; border-radius: 999px; }
+  .lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; color: var(--faint); }
+  .toks { display: grid; gap: 8px; margin-bottom: 18px; }
+  .tok { display: flex; gap: 12px; align-items: flex-start; }
+  .chip { width: 42px; height: 42px; border-radius: 9px; flex: none; border: 1px solid var(--border); }
+  .tn { font-size: 12.5px; font-weight: 600; }
+  .tn code { font-weight: 400; color: var(--text2); font-size: 11.5px; margin-left: 5px; }
+  .td { font-size: 11.5px; line-height: 1.5; color: var(--text2); }
+  .ratios { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .ratios th { text-align: left; font-weight: 600; color: var(--text2); padding: 4px 6px; border-bottom: 1px solid var(--border); }
+  .ratios td { padding: 3px 6px; border-bottom: 1px solid var(--border); color: var(--text2); font-variant-numeric: tabular-nums; }
+  .ratios tr.ok td:nth-child(2) { color: var(--text); }
+  .ratios tr.bad td { color: #B5492B; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Ripls design tokens</h1>
+  <p class="src">Generated from <code>design/tokens.json</code> — every swatch, hex, and ratio on this page comes from the token source. Fonts: <b>Libre Baskerville</b> (display) + <b>Public Sans</b> (body/UI).</p>
+  <div class="prose">
+<h2>Ripls visual guidelines</h2>
+<p>One palette, one font pair, everywhere. The app, the server-rendered web pages, and the marketing site all draw from the same token set — <b>Ink &amp; Sage</b>: white and near-black neutrals with a faint green cast, deep sage reserved for actions, and ink as the emphasis accent. Selected in issue #2441 from the Phase 1 choice sheet.</p>
+<h3>Color</h3>
+<ul>
+<li><b>Sage owns actions.</b> <code>primary</code> is the only fill for buttons and primary CTAs; <code>on-primary</code> is the only text/icon color on it. Don't use sage for decoration — if everything is sage, nothing is.</li>
+<li><b>Ink is the emphasis accent.</b> Headline accent words, marketing band sections, and highlights use <code>accent</code> — rendered as color plus underline, <b>never italics</b>.</li>
+<li><b>Neutrals do the work.</b> Page on <code>background</code>, cards on <code>surface</code> with <code>border</code> — no shadows-as-borders. Text steps down <code>text-primary</code> → <code>text-secondary</code> → <code>text-faint</code>; faint is for placeholders and footnotes only (it clears 3:1, not 4.5:1).</li>
+<li><b>Status colors are per-theme.</b> Success/warning/error/info have different values in light and dark — use the theme's set, never hard-code one. All pass 4.5:1 as text on both <code>background</code> and <code>surface</code>.</li>
+<li><b>Not allowed:</b> warm cream/off-white fields (the <code>#F4F1EA</code> family), terracotta/amber brand accents, and any raw hex that isn't in <code>tokens.json</code>. Content-type colors, chat bubbles, and the glass modal material are app-level concerns layered on top — see <code>docs/client/design.md</code>.</li>
+</ul>
+<h3>Type</h3>
+<ul>
+<li><b>Libre Baskerville</b> for display and headings, weights 400 and 700 only. No italic display type.</li>
+<li><b>Public Sans</b> for body, labels, and UI, weights 400–700, falling back to the platform system sans.</li>
+<li>Body line-height stays at 1.7; headings at 1.1–1.3.</li>
+</ul>
+<h3>Changing the tokens</h3>
+<p>Edit <code>design/tokens.json</code> — nothing else. Then run <code>npm run generate:design-tokens</code> and commit the JSON together with the regenerated outputs (Dart, CSS, this page's HTML). CI (<code>npm run lint:design-tokens</code>) fails on any drift between them, and generation itself fails if any declared contrast pair drops below WCAG thresholds.</p>
+  </div>
+  <div class="themes">
+
+    <section class="theme" data-theme="light" style="--bg:#FFFFFF; --surface:#F2F2EE; --border:#DDDDD4; --text:#191C19; --text2:#4A524C; --faint:#7C837C; --primary:#3E5A47; --on-primary:#F4F7F1; --accent:#1F2421; --on-accent:#F4F4EF;">
+      <h3 class="theme-name">light</h3>
+      <div class="specimen">
+        <div class="spec-display">The things we <span class="acc">share</span> hold us together.</div>
+        <div class="spec-body">Lend the ladder. Host the potluck. Ask for the ride. Body text is Public Sans at 1.7 line-height.</div>
+        <div class="spec-ui"><span class="btn">Get the app</span><span class="lbl">LABEL · PUBLIC SANS</span></div>
+      </div>
+      <div class="toks">
+      <div class="tok">
+        <div class="chip" style="background:#FFFFFF"></div>
+        <div class="ti">
+          <div class="tn">background <code>#FFFFFF</code></div>
+          <div class="td">Page background.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#F2F2EE"></div>
+        <div class="ti">
+          <div class="tn">surface <code>#F2F2EE</code></div>
+          <div class="td">Raised surface: cards, sheets, alternating sections.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#DDDDD4"></div>
+        <div class="ti">
+          <div class="tn">border <code>#DDDDD4</code></div>
+          <div class="td">Borders and dividers; cards are bordered, not shadowed.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#191C19"></div>
+        <div class="ti">
+          <div class="tn">text-primary <code>#191C19</code></div>
+          <div class="td">Primary text.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#4A524C"></div>
+        <div class="ti">
+          <div class="tn">text-secondary <code>#4A524C</code></div>
+          <div class="td">Secondary text: body copy, descriptions.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#7C837C"></div>
+        <div class="ti">
+          <div class="tn">text-faint <code>#7C837C</code></div>
+          <div class="td">Faint text: placeholders, footnotes, timestamps. Clears 3:1, not 4.5:1 — never for body copy.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#3E5A47"></div>
+        <div class="ti">
+          <div class="tn">primary <code>#3E5A47</code></div>
+          <div class="td">Deep sage. The only fill for buttons and primary CTAs; also passes as link/text on background.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#F4F7F1"></div>
+        <div class="ti">
+          <div class="tn">on-primary <code>#F4F7F1</code></div>
+          <div class="td">Text and icons on primary fills.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#2F4636"></div>
+        <div class="ti">
+          <div class="tn">primary-hover <code>#2F4636</code></div>
+          <div class="td">Hover/pressed deepening of primary.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#1F2421"></div>
+        <div class="ti">
+          <div class="tn">accent <code>#1F2421</code></div>
+          <div class="td">Ink. Emphasis accent: headline accent words (color + underline, never italics), marketing band sections.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#F4F4EF"></div>
+        <div class="ti">
+          <div class="tn">on-accent <code>#F4F4EF</code></div>
+          <div class="td">Text and icons on accent fills (e.g. marketing bands).</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#2E7041"></div>
+        <div class="ti">
+          <div class="tn">success <code>#2E7041</code></div>
+          <div class="td">Success status. Clear green, deliberately distinct from the sage primary.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#8A6200"></div>
+        <div class="ti">
+          <div class="tn">warning <code>#8A6200</code></div>
+          <div class="td">Warning status. Amber-brown, distinguishable from both sage and error.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#B5492B"></div>
+        <div class="ti">
+          <div class="tn">error <code>#B5492B</code></div>
+          <div class="td">Error status: form errors, destructive actions, failure banners.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#3E6471"></div>
+        <div class="ti">
+          <div class="tn">info <code>#3E6471</code></div>
+          <div class="td">Info status. Stone blue.</div>
+        </div>
+      </div></div>
+      <table class="ratios"><thead><tr><th>pair</th><th>ratio</th><th>required</th></tr></thead><tbody>
+      <tr class="ok"><td>text-primary / background</td><td>17.19:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>text-primary / surface</td><td>15.32:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>text-secondary / background</td><td>8.07:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>text-secondary / surface</td><td>7.19:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>text-faint / background</td><td>3.89:1</td><td>&ge; 3:1</td></tr>
+      <tr class="ok"><td>on-primary / primary</td><td>7.04:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>on-primary / primary-hover</td><td>9.47:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>primary / background</td><td>7.61:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>on-accent / accent</td><td>14.28:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>success / background</td><td>5.98:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>success / surface</td><td>5.33:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>warning / background</td><td>5.49:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>warning / surface</td><td>4.89:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>error / background</td><td>5.31:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>error / surface</td><td>4.73:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>info / background</td><td>6.43:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>info / surface</td><td>5.73:1</td><td>&ge; 4.5:1</td></tr></tbody></table>
+    </section>
+
+    <section class="theme" data-theme="dark" style="--bg:#141714; --surface:#1F2421; --border:#323832; --text:#F4F4EF; --text2:#ABB3AB; --faint:#7B837B; --primary:#9DBFA8; --on-primary:#14241A; --accent:#E6E8E1; --on-accent:#191C19;">
+      <h3 class="theme-name">dark</h3>
+      <div class="specimen">
+        <div class="spec-display">The things we <span class="acc">share</span> hold us together.</div>
+        <div class="spec-body">Lend the ladder. Host the potluck. Ask for the ride. Body text is Public Sans at 1.7 line-height.</div>
+        <div class="spec-ui"><span class="btn">Get the app</span><span class="lbl">LABEL · PUBLIC SANS</span></div>
+      </div>
+      <div class="toks">
+      <div class="tok">
+        <div class="chip" style="background:#141714"></div>
+        <div class="ti">
+          <div class="tn">background <code>#141714</code></div>
+          <div class="td">Page background.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#1F2421"></div>
+        <div class="ti">
+          <div class="tn">surface <code>#1F2421</code></div>
+          <div class="td">Raised surface: cards, sheets, alternating sections.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#323832"></div>
+        <div class="ti">
+          <div class="tn">border <code>#323832</code></div>
+          <div class="td">Borders and dividers; cards are bordered, not shadowed.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#F4F4EF"></div>
+        <div class="ti">
+          <div class="tn">text-primary <code>#F4F4EF</code></div>
+          <div class="td">Primary text.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#ABB3AB"></div>
+        <div class="ti">
+          <div class="tn">text-secondary <code>#ABB3AB</code></div>
+          <div class="td">Secondary text: body copy, descriptions.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#7B837B"></div>
+        <div class="ti">
+          <div class="tn">text-faint <code>#7B837B</code></div>
+          <div class="td">Faint text: placeholders, footnotes, timestamps. Clears 3:1, not 4.5:1 — never for body copy.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#9DBFA8"></div>
+        <div class="ti">
+          <div class="tn">primary <code>#9DBFA8</code></div>
+          <div class="td">Light sage. The only fill for buttons and primary CTAs; also passes as link/text on background.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#14241A"></div>
+        <div class="ti">
+          <div class="tn">on-primary <code>#14241A</code></div>
+          <div class="td">Text and icons on primary fills.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#B1CFBA"></div>
+        <div class="ti">
+          <div class="tn">primary-hover <code>#B1CFBA</code></div>
+          <div class="td">Hover/pressed lightening of primary.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#E6E8E1"></div>
+        <div class="ti">
+          <div class="tn">accent <code>#E6E8E1</code></div>
+          <div class="td">Chalk — the dark-theme counterpart of the ink accent. Headline accent words (color + underline, never italics).</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#191C19"></div>
+        <div class="ti">
+          <div class="tn">on-accent <code>#191C19</code></div>
+          <div class="td">Text and icons on accent fills.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#7A9B76"></div>
+        <div class="ti">
+          <div class="tn">success <code>#7A9B76</code></div>
+          <div class="td">Success status.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#E8A661"></div>
+        <div class="ti">
+          <div class="tn">warning <code>#E8A661</code></div>
+          <div class="td">Warning status.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#DB7F63"></div>
+        <div class="ti">
+          <div class="tn">error <code>#DB7F63</code></div>
+          <div class="td">Error status: lightened from the legacy #D16B4E to clear 4.5:1 on dark surfaces.</div>
+        </div>
+      </div>
+      <div class="tok">
+        <div class="chip" style="background:#7FA0A9"></div>
+        <div class="ti">
+          <div class="tn">info <code>#7FA0A9</code></div>
+          <div class="td">Info status: lightened from the legacy #5A7A82 to clear 4.5:1 on dark surfaces.</div>
+        </div>
+      </div></div>
+      <table class="ratios"><thead><tr><th>pair</th><th>ratio</th><th>required</th></tr></thead><tbody>
+      <tr class="ok"><td>text-primary / background</td><td>16.37:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>text-primary / surface</td><td>14.28:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>text-secondary / background</td><td>8.40:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>text-secondary / surface</td><td>7.33:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>text-faint / background</td><td>4.62:1</td><td>&ge; 3:1</td></tr>
+      <tr class="ok"><td>on-primary / primary</td><td>8.06:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>on-primary / primary-hover</td><td>9.64:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>primary / background</td><td>8.99:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>on-accent / accent</td><td>13.91:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>success / background</td><td>5.83:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>success / surface</td><td>5.09:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>warning / background</td><td>8.65:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>warning / surface</td><td>7.55:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>error / background</td><td>6.22:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>error / surface</td><td>5.42:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>info / background</td><td>6.46:1</td><td>&ge; 4.5:1</td></tr>
+      <tr class="ok"><td>info / surface</td><td>5.63:1</td><td>&ge; 4.5:1</td></tr></tbody></table>
+    </section>
+  </div>
+</div>
+</body>
+</html>

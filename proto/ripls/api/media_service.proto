@@ -1,0 +1,154 @@
+// RPC service for managing media.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/user.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request to add media.
+message AddMediaRequest {
+    // The actual body of the media, encoded in the specified format.
+    bytes encoded_bytes = 1;
+
+    // MIME content type (e.g., "image/jpeg", "image/heic", "video/mp4").
+    string content_type = 2;
+
+    // Filename (optional).
+    string filename = 3;
+
+    // Description (optional).
+    string description = 4;
+}
+
+// Response after adding media.
+message AddMediaResponse {
+    // The unique identifier assigned to the media.
+    string id = 1;
+}
+
+// Request to add media by fetching a URL server-side. Used by the
+// streaming Gen* flows so a client that selected an alternate candidate
+// (a thumbnail in Replace Media) can import that URL into the user's
+// media library without round-tripping the bytes through the device.
+//
+// When `provider` and `provider_photo_id` are set together, the server
+// routes through the corresponding stock-image import path so
+// attribution metadata is populated. Otherwise the URL is fetched and
+// stored as an opaque image.
+message AddMediaFromURLRequest {
+    // Source URL. Must be https:// and resolve to a response whose
+    // Content-Type begins with "image/" or "video/".
+    string url = 1;
+
+    // Description (optional).
+    optional string description = 2;
+
+    // Stock image provider that produced this URL, when known. Drives
+    // attribution at import time.
+    optional StockImageProvider provider = 3;
+
+    // Provider-specific photo or video id, when known. Required when
+    // `provider` is set to enable an attribution-preserving import.
+    optional string provider_photo_id = 4;
+}
+
+// Response after adding media from a URL.
+message AddMediaFromURLResponse {
+    // The unique identifier assigned to the newly-created media row.
+    string id = 1;
+}
+
+// Request to get media.
+message GetMediaRequest {
+    // The unique identifier of the media to retrieve.
+    string id = 1;
+}
+
+// Stock image providers supported for attribution.
+enum StockImageProvider {
+    STOCK_IMAGE_PROVIDER_UNSPECIFIED = 0;
+    STOCK_IMAGE_PROVIDER_UNSPLASH = 1;
+    STOCK_IMAGE_PROVIDER_PEXELS = 2;
+}
+
+// Attribution information for media derived from stock imagery.
+message Attribution {
+    // The stock image provider.
+    StockImageProvider provider = 1;
+
+    // URL to the original image on the provider's platform (for hotlinking).
+    string original_url = 2;
+
+    // Creator's display name.
+    string creator_name = 3;
+
+    // Creator's username on the provider platform.
+    string creator_username = 4;
+
+    // Full URL to the photographer's profile on the provider platform.
+    // Used for attribution links when username-based URL construction isn't possible (e.g., Pexels).
+    string photographer_url = 5;
+}
+
+// Response containing media details.
+message GetMediaResponse {
+    // A unique identifier.
+    string id = 1;
+
+    // MIME content type (e.g., "image/jpeg", "image/heic", "video/mp4").
+    string content_type = 2;
+
+    // Time-limited presigned URL for accessing the media.
+    // This URL expires after a short period (e.g., 15 minutes).
+    string url = 3;
+
+    // Presigned URL for smaller thumbnail image.
+    // Callers should fall back to fetching 'url' if absent.
+    string thumbnail_url = 6;
+
+    // Filename.
+    string filename = 4;
+
+    // Description.
+    string description = 5;
+
+    // Attribution for stock imagery. Only present when the media is derived from stock imagery.
+    Attribution attribution = 7;
+
+    // The user who uploaded this media. Absent if the uploader cannot be
+    // resolved (e.g. deleted account) or if this is stock imagery.
+    optional User uploader = 8;
+
+    // Unix timestamp (seconds) when this media was uploaded.
+    int64 created_at_unix_sec = 9;
+}
+
+// Request to delete media.
+message DeleteMediaRequest {
+    // The unique identifier of the media to delete.
+    string id = 1;
+}
+
+// Response after deleting media.
+message DeleteMediaResponse {}
+
+// RPC service for managing media.
+service MediaService {
+    // Add media.
+    rpc AddMedia(AddMediaRequest) returns (AddMediaResponse);
+
+    // Add media by fetching a URL server-side. The fetched bytes are
+    // validated for content type and size, then stored. Returns the
+    // newly-created media id, ready to be referenced from any other
+    // entity that points at media.
+    rpc AddMediaFromURL(AddMediaFromURLRequest) returns (AddMediaFromURLResponse);
+
+    // Get media by ID.
+    rpc GetMedia(GetMediaRequest) returns (GetMediaResponse);
+
+    // Delete media by ID.
+    rpc DeleteMedia(DeleteMediaRequest) returns (DeleteMediaResponse);
+}

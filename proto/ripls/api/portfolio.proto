@@ -1,0 +1,960 @@
+// Portfolio service for the personal cross-community inbox and metrics screen.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/feed_service.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// PortfolioService provides the personal portfolio inbox and impact metrics.
+service PortfolioService {
+  // GetDirectoryPeople returns the people rows for the Directory address
+  // book: everyone the viewer shares a community with who has something
+  // shared, most recently active first.
+  rpc GetDirectoryPeople(GetDirectoryPeopleRequest)
+      returns (GetDirectoryPeopleResponse);
+
+  // GetPortfolioMetrics returns three-perspective impact metrics for the
+  // authenticated user: what they saved themselves, what they gave to others,
+  // and the combined total across all their communities.
+  rpc GetPortfolioMetrics(GetPortfolioMetricsRequest)
+      returns (GetPortfolioMetricsResponse);
+
+  // GetHomeView assembles the sectioned Home tab (v4.1 redesign, #2435):
+  // the Needs-you decision queue, the Up-next agenda (events plus dated
+  // gear obligations), the viewer's open requests with claim progress, gear
+  // rows with loan-state pills, and recent activity. All sections span
+  // every community the user belongs to. Sections with zero items return
+  // empty lists — the client renders no header for them.
+  rpc GetHomeView(GetHomeViewRequest) returns (GetHomeViewResponse);
+
+  // SetWeeklyGoals saves the user's personal weekly impact goals and returns
+  // the effective values after saving.
+  rpc SetWeeklyGoals(SetWeeklyGoalsRequest)
+      returns (SetWeeklyGoalsResponse);
+
+  // MarkInboxItemRead marks a watched item as read for the authenticated user.
+  // Called when the user taps an inbox row.
+  rpc MarkInboxItemRead(MarkInboxItemReadRequest)
+      returns (MarkInboxItemReadResponse);
+
+  // WatchItem manually adds an item to the authenticated user's watch list.
+  // If the item is already watched (or was previously dismissed), it is
+  // reactivated. Called when the user taps the watch icon on a content screen.
+  rpc WatchItem(WatchItemRequest) returns (WatchItemResponse);
+
+  // DismissInboxItem removes an item from the authenticated user's inbox by
+  // soft-deleting the watch entry. The item will reappear if new activity
+  // occurs. Called on swipe-to-unwatch or watch icon toggle.
+  rpc DismissInboxItem(DismissInboxItemRequest) returns (DismissInboxItemResponse);
+
+  // IsWatched returns whether the authenticated user is currently watching a
+  // specific item. Called on content screen load to initialize the watch icon.
+  rpc IsWatched(IsWatchedRequest) returns (IsWatchedResponse);
+}
+
+// PortfolioPerspective identifies which perspective to aggregate in a portfolio
+// metric detail request.
+enum PortfolioPerspective {
+  PORTFOLIO_PERSPECTIVE_UNSPECIFIED = 0;
+  // Combined impact across all of the user's communities.
+  PORTFOLIO_PERSPECTIVE_FULL_IMPACT = 1;
+  // Impact the user generated for others through their sharing.
+  PORTFOLIO_PERSPECTIVE_GIVEN = 2;
+  // Impact the user saved themselves by borrowing and receiving.
+  PORTFOLIO_PERSPECTIVE_RECEIVED = 3;
+}
+
+// GetDirectoryPeopleRequest takes no arguments — the people set is derived
+// entirely from the authenticated user's own communities.
+message GetDirectoryPeopleRequest {}
+
+// GetDirectoryPeopleResponse carries the Directory's people rows.
+message GetDirectoryPeopleResponse {
+  // People the viewer shares a community with who currently have something
+  // shared, most recently active first. Excludes the viewer. Connection-scoped
+  // by construction: a person the viewer shares no community with never
+  // appears.
+  repeated DailyPerson people = 1;
+}
+
+// GetPortfolioMetricsRequest optionally scopes results to specific communities.
+message GetPortfolioMetricsRequest {
+  // Optional list of community IDs to include. When empty, all communities the
+  // user belongs to are included.
+  repeated string community_ids = 1;
+}
+
+// GetPortfolioMetricsResponse contains three-perspective portfolio impact metrics.
+message GetPortfolioMetricsResponse {
+  // Impact the user saved themselves by borrowing, receiving, and attending.
+  PortfolioMetricsSection saved_self = 1;
+
+  // Impact the user generated for others through their sharing.
+  PortfolioMetricsSection saved_others = 2;
+
+  // Combined impact across all of the user's communities.
+  PortfolioMetricsSection communities_total = 3;
+
+  // Total potential CO₂ savings in grams if every library item were shared once.
+  float co2_potential_grams = 10;
+
+  // Average quality time earned per active week, in minutes.
+  float quality_time_per_week_minutes = 11;
+
+  // Number of distinct ISO weeks in which the user had at least one QT-generating interaction.
+  int32 active_weeks = 12;
+
+  // Median time from request creation to fulfillment, in minutes. Zero if no data.
+  float time_to_solve_minutes = 13;
+
+  // User's percentile rank for money saved (0 = placeholder, populated in future phase).
+  int32 percentile_money = 14;
+
+  // User's percentile rank for CO₂ avoided (0 = placeholder, populated in future phase).
+  int32 percentile_co2 = 15;
+
+  // User's percentile rank for quality time (0 = placeholder, populated in future phase).
+  int32 percentile_quality_time = 16;
+}
+
+// PortfolioMetricsSection is one perspective of portfolio impact.
+message PortfolioMetricsSection {
+  reserved 8;
+  reserved "breakdown";
+
+  // Section title, e.g. "What I've saved", "What I've given", "My communities".
+  string title = 1;
+
+  // Section subtitle, e.g. "Impact of borrowing and receiving".
+  string subtitle = 2;
+
+  // Formatted cost saved / generated, e.g. "$127".
+  string cost_saved = 3;
+
+  // Formatted time recovered, e.g. "2.5h".
+  string time_recovered = 4;
+
+  // Formatted CO₂ avoided, e.g. "0.8kg".
+  string co2_avoided = 5;
+
+  // Quality time minutes earned (for the ring widget).
+  int32 quality_time_minutes = 6;
+
+  // Activity count summary line, e.g. "12 items borrowed, 3 events attended".
+  string activity_summary = 7;
+}
+
+// DailyPerson represents a person involved in a daily item.
+message DailyPerson {
+  // The user's ID.
+  string user_id = 1;
+
+  // The user's display name.
+  string display_name = 2;
+
+  // The user's profile media ID, for UserAvatar display.
+  string media_id = 3;
+
+  // The person's most recent shared-activity time (the latest item they
+  // shared into a community the viewer can see). Drives the directory's
+  // recency ordering and day grouping. Absent when no activity time is known.
+  optional int64 last_activity_unix_sec = 4;
+
+  // Display names of the communities this person shares with the viewer,
+  // ordered most-recently-active first and capped at three for one-line
+  // display. Only communities the viewer belongs to ever appear here — a
+  // community the viewer is not a member of is never named, even if the
+  // person belongs to it.
+  repeated string shared_community_names = 5;
+}
+
+// DailyItemType identifies the source type of a daily item.
+enum DailyItemType {
+  DAILY_ITEM_TYPE_UNSPECIFIED = 0;
+  DAILY_ITEM_TYPE_TRANSFER = 1;
+  DAILY_ITEM_TYPE_EXPERIENCE = 2;
+  DAILY_ITEM_TYPE_REQUEST = 3;
+  DAILY_ITEM_TYPE_GIVEAWAY = 4;
+  // Community milestone events such as creating or joining a community.
+  DAILY_ITEM_TYPE_COMMUNITY = 5;
+  // An open decision in the Home tab's Needs-you queue. Used only as the
+  // item_type on DismissInboxItem ("Not now" on a decision card); decisions
+  // never appear in the watch-driven inbox feed itself.
+  DAILY_ITEM_TYPE_DECISION = 6;
+}
+
+// SetWeeklyGoalsRequest sets the user's personal weekly impact goals.
+message SetWeeklyGoalsRequest {
+  // Target quality-time minutes per week. 0 = use system default (360 min).
+  int32 social_time_minutes_goal = 1;
+
+  // Target cost saved in cents per week. 0 = use system default ($500 = 50000 cents).
+  int32 money_saved_cents_goal = 2;
+
+  // Target CO₂ avoided in grams per week. 0 = use system default (30000 g = 30 kg).
+  int32 co2_avoided_grams_goal = 3;
+}
+
+// SetWeeklyGoalsResponse returns the effective goals after saving.
+message SetWeeklyGoalsResponse {
+  // Effective quality-time minutes goal per week.
+  int32 social_time_minutes_goal = 1;
+
+  // Effective cost saved goal in cents per week.
+  int32 money_saved_cents_goal = 2;
+
+  // Effective CO₂ avoided goal in grams per week.
+  int32 co2_avoided_grams_goal = 3;
+}
+
+// MarkInboxItemReadRequest marks a specific watched item as read.
+message MarkInboxItemReadRequest {
+  // The type of item being marked as read.
+  DailyItemType item_type = 1;
+
+  // The ID of the item (gear ID, experience ID, or request ID).
+  string item_id = 2;
+}
+
+// MarkInboxItemReadResponse is empty on success.
+message MarkInboxItemReadResponse {}
+
+// WatchItemRequest manually adds an item to the authenticated user's watch list.
+message WatchItemRequest {
+  // The type of item to watch.
+  DailyItemType item_type = 1;
+
+  // The ID of the item (gear ID, experience ID, or request ID).
+  string item_id = 2;
+}
+
+// WatchItemResponse is empty on success.
+message WatchItemResponse {}
+
+// DismissInboxItemRequest removes an item from the authenticated user's inbox.
+message DismissInboxItemRequest {
+  // The type of item to dismiss.
+  DailyItemType item_type = 1;
+
+  // The ID of the item (gear ID, experience ID, or request ID).
+  string item_id = 2;
+}
+
+// DismissInboxItemResponse is empty on success.
+message DismissInboxItemResponse {}
+
+// IsWatchedRequest checks whether the authenticated user is watching an item.
+message IsWatchedRequest {
+  // The type of item to check.
+  DailyItemType item_type = 1;
+
+  // The ID of the item (gear ID, experience ID, or request ID).
+  string item_id = 2;
+}
+
+// IsWatchedResponse indicates whether the item is currently watched.
+message IsWatchedResponse {
+  // True when the user has an active (non-dismissed) watch entry for this item.
+  bool is_watched = 1;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Home view (v4.1 Home tab redesign, #2435)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// GetHomeViewRequest specifies the timezone for the Home view. The
+// authenticated user's ID comes from the auth context; all of the user's
+// communities are included automatically.
+message GetHomeViewRequest {
+  // The user's local IANA timezone, e.g. "America/Denver". Used to compute
+  // day boundaries and relative labels such as "due Sun".
+  string timezone = 1;
+}
+
+// GetHomeViewResponse contains every section of the Home tab. Each section
+// is independently capped server-side; zero-item sections are empty lists
+// and render no header on the client.
+message GetHomeViewResponse {
+  // Open decisions for the Needs-you queue, oldest first. Capped at 50.
+  // The client renders the top 3 with a "See all" affordance for the rest.
+  repeated HomeDecision decisions = 1;
+
+  // Total number of open decisions before the cap was applied. Drives the
+  // Home tab badge; the badge is hidden entirely at zero.
+  int32 decision_count = 2;
+
+  // Upcoming entries — events the viewer is going to or hosting, plus dated
+  // gear obligations (pickups, due-backs) — ascending by time. Capped at 20.
+  // The list view filters to kind == EVENT (max 4 rendered); the week view
+  // shows both kinds. Undated items never appear here; they live in Gear.
+  repeated HomeUpNextEntry up_next = 3;
+
+  // The viewer's open help requests, most recently created first.
+  // Fully-claimed requests remain until they are archived. Capped at 20.
+  repeated HomeAsk your_asks = 4;
+
+  // Gear rows across all categories: dated obligations ascending, then
+  // undated active loans, then listed and at-home items. Capped at 100.
+  // The root screen renders only OUT/BORROWING rows capped at 3 with a
+  // "See all" affordance; the see-all screen shows every category behind
+  // filter chips.
+  repeated HomeGearItem gear = 5;
+
+  // True when the gear list was truncated by the server cap.
+  bool gear_has_more = 6;
+
+  // Per-category gear totals, computed before the cap, for the see-all
+  // filter chips' live counts.
+  HomeGearCounts gear_counts = 7;
+
+  // Recent activity — completed loans, concluded events, fulfilled requests —
+  // newest first, capped at 50. The client derives the "N new" pill by
+  // counting entries newer than its locally-stored last-opened timestamp.
+  repeated HomeActivityEntry recent_activity = 8;
+
+  // The viewer's hosted events (active, not concluded), most recent first.
+  // Part of "Your stuff" alongside gear and requests. Capped at 20.
+  repeated HomeOwnedEvent your_events = 9;
+
+  // Calendar timeline entries for the on-demand calendar screen, spanning
+  // everything the viewer has access to regardless of owner (items shared into
+  // their communities, not just their own): events on their scheduled date,
+  // requests on their due date (or first-shared date when undated), gear on the
+  // date it was first shared / the viewer got access, and upcoming loan /
+  // giveaway pickups and returns. Unlike up_next (upcoming-only, for the root
+  // hero), this includes recent past milestones so the calendar can be paged
+  // backward. Ascending by time, capped at 200.
+  repeated HomeUpNextEntry calendar = 10;
+
+  // An optional contextual nudge surfaced in the inbox — rendered on an empty
+  // calendar day and in the zero-state — reusing the feed nudge system
+  // (generation, imagery, CTA→creation routing, ConsumeNudge). Unset when no
+  // nudge is ready (the pool is empty or imagery hasn't arrived); the client
+  // falls back to its static prompt. See docs/nudges.md.
+  NudgePayload nudge = 11;
+
+  // Per-day weather for the calendar, one entry per day in the calendar window
+  // that has a forecast or climate estimate. Weather is the calendar's
+  // substrate — present on planned and open days alike — so the client paints a
+  // glyph in every day cell and a summary in the day detail. Empty when weather
+  // is unavailable; a weather failure never blocks the rest of the view. See
+  // docs/weather.md.
+  repeated DayForecast forecast = 12;
+
+  // Suggestions for open calendar days (days with no planned items), each
+  // proposing something to do built from that day's weather, the viewer's past
+  // activity, and the people who usually join. Empty when the suggestion engine
+  // is unavailable. See docs/weather.md.
+  repeated OpenDaySuggestion open_day_suggestions = 13;
+}
+
+// DayForecastCondition is a coarse sky condition the client maps to a weather
+// glyph. The set is intentionally small — five buckets cover the calendar's
+// substrate without implying more precision than a daily forecast carries.
+enum DayForecastCondition {
+  DAY_FORECAST_CONDITION_UNSPECIFIED = 0;
+  // Clear / sunny.
+  DAY_FORECAST_CONDITION_CLEAR = 1;
+  // Mostly sunny with some cloud.
+  DAY_FORECAST_CONDITION_MOSTLY_SUNNY = 2;
+  // Partly cloudy / mild.
+  DAY_FORECAST_CONDITION_PARTLY_CLOUDY = 3;
+  // Overcast but dry.
+  DAY_FORECAST_CONDITION_OVERCAST = 4;
+  // Rain / showers.
+  DAY_FORECAST_CONDITION_RAIN = 5;
+}
+
+// DayForecast is the weather for a single calendar day at the viewer's place.
+// One per day in the calendar window; the client matches it to a grid cell by
+// date_unix_sec. Beyond the forecast horizon (and for future months) the value
+// is a climate normal rather than a real forecast — is_typical marks that.
+message DayForecast {
+  // The local calendar day this applies to (Unix seconds at local midnight),
+  // so the client matches it to a day cell without re-deriving dates.
+  int64 date_unix_sec = 1;
+
+  // The coarse sky condition for the cell glyph.
+  DayForecastCondition condition = 2;
+
+  // Pre-formatted high-temperature label in the recipient's locale, e.g.
+  // "72°". Rendered verbatim; the client never converts units.
+  string temperature_display = 3;
+
+  // A short human label combining condition and temperature, for the weather
+  // pill and the day cell's accessibility announcement, e.g. "Clear and 72°".
+  string summary = 4;
+
+  // True when this is a climate normal (a long-run typical for the day and
+  // place) rather than a real forecast — beyond the forecast horizon or a
+  // future month. The client styles these days distinctly ("typical"), and any
+  // suggestion built on them is lower confidence.
+  bool is_typical = 5;
+}
+
+// HourForecast is the weather for a single hour at a place — the granularity the
+// event "When" screen paints around the scheduled window. One per hour; the
+// client matches it to a column by time_unix_sec. Only real-forecast hours are
+// returned (no climate-normal proxy), so a far-future day yields none.
+message HourForecast {
+  // The start of the hour this applies to (Unix seconds).
+  int64 time_unix_sec = 1;
+
+  // The coarse sky condition for the column glyph.
+  DayForecastCondition condition = 2;
+
+  // Pre-formatted temperature label in the recipient's locale, e.g. "63°".
+  // Rendered verbatim; the client never converts units.
+  string temperature_display = 3;
+}
+
+// OpenDaySuggestionAlternative is a secondary activity chip on an open day,
+// letting the viewer flip the lead suggestion to another fit.
+message OpenDaySuggestionAlternative {
+  // A stable activity-kind id, so a tapped chip can swap the lead suggestion.
+  string id = 1;
+
+  // Short activity label, e.g. "lookout picnic".
+  string label = 2;
+
+  // A glyph token for the chip, e.g. "🧺".
+  string glyph = 3;
+}
+
+// OpenDaySuggestion proposes something to do on an open calendar day, built
+// from that day's weather, the viewer's past activity, and the people who tend
+// to join. Surfaced only for days with no planned items.
+message OpenDaySuggestion {
+  // The local calendar day (Unix seconds at local midnight) this is for,
+  // matching a DayForecast and an empty day cell.
+  int64 date_unix_sec = 1;
+
+  // The lead suggestion's headline, e.g. "A Flatirons hike?".
+  string title = 2;
+
+  // The "why" line tying weather and history together, e.g. "Clear and 72° —
+  // you've done a Flatirons hike 6× before, mostly on days like this."
+  string reason = 3;
+
+  // The people to invite — the regulars for this activity. Only people the
+  // viewer is already entitled to see are included.
+  repeated DailyPerson people = 4;
+
+  // A short line naming why these people, e.g. "Mia & Ben were on your last 3".
+  string people_reason = 5;
+
+  // Alternative activities the viewer can flip to, best-fit first.
+  repeated OpenDaySuggestionAlternative alternatives = 6;
+
+  // True when the suggestion is built on a climate normal rather than a real
+  // forecast (a far-future day), so the client can soften the copy.
+  bool is_low_confidence = 7;
+
+  // A recommended start moment (Unix seconds) — the suggestion's day at the
+  // time of day the viewer usually does this activity (a sensible default when
+  // there's no pattern). The client seeds the create flow with it so the
+  // generated draft lands on the right day at a plausible time.
+  int64 recommended_start_unix_sec = 8;
+
+  // The recommended start time of day as minutes past local midnight (e.g.
+  // 540 = 9:00 AM). The client combines this with the day it is showing
+  // locally — avoiding any timezone skew from an absolute timestamp.
+  int32 recommended_start_minutes = 9;
+}
+
+// HomeDecisionKind identifies what kind of accept/decline/confirm decision
+// a Needs-you card represents.
+enum HomeDecisionKind {
+  HOME_DECISION_KIND_UNSPECIFIED = 0;
+  // Someone wants to borrow the viewer's gear; the transfer awaits the
+  // owner's accept/decline.
+  HOME_DECISION_KIND_LENDING_REQUEST = 1;
+  // Someone wants the viewer's giveaway item; awaits recipient selection.
+  HOME_DECISION_KIND_GIVEAWAY_REQUEST = 2;
+  // Someone offered to help on the viewer's request; awaits confirmation.
+  HOME_DECISION_KIND_ASK_CLAIM = 3;
+  // An unread conversation (object thread or comment on the viewer's
+  // request) that needs a reply.
+  HOME_DECISION_KIND_REPLY = 4;
+  // A past event the viewer hosted, or a past request, that should be
+  // closed out (marked done).
+  HOME_DECISION_KIND_MARK_DONE = 5;
+  // Gear the viewer is borrowing whose status the viewer should advance:
+  // mark it picked up (awaiting handoff) or returned (currently held).
+  HOME_DECISION_KIND_TRANSFER_UPDATE = 6;
+}
+
+// HomeDecisionReason is the typed context behind a decision's supporting
+// line. The client renders it in the viewer's locale: dated reasons pair
+// with [HomeDecision.due_at_unix_sec], MESSAGE_PREVIEW pairs with
+// [HomeDecision.message_preview].
+enum HomeDecisionReason {
+  HOME_DECISION_REASON_UNSPECIFIED = 0;
+  // A human message is the context — the requester's note on a lend/give
+  // row, or the unread message on a reply row. The text is in
+  // [HomeDecision.message_preview].
+  HOME_DECISION_REASON_MESSAGE_PREVIEW = 1;
+  // A pickup is scheduled for [HomeDecision.due_at_unix_sec].
+  HOME_DECISION_REASON_PICKUP_SCHEDULED = 2;
+  // The item is ready to pick up, with no scheduled date.
+  HOME_DECISION_REASON_READY_TO_PICK_UP = 3;
+  // The borrowed item is due back on [HomeDecision.due_at_unix_sec].
+  HOME_DECISION_REASON_RETURN_DUE = 4;
+  // The viewer is borrowing the item, with no return date set.
+  HOME_DECISION_REASON_BORROWING = 5;
+  // A hosted event took place on [HomeDecision.due_at_unix_sec] and awaits
+  // wrap-up.
+  HOME_DECISION_REASON_PAST_EVENT = 6;
+  // The viewer's request passed its needed-by date
+  // ([HomeDecision.due_at_unix_sec]) and awaits wrap-up.
+  HOME_DECISION_REASON_PAST_REQUEST = 7;
+}
+
+// HomeDecision is one open decision in the Needs-you queue. Only items
+// requiring an explicit accept / decline / confirm qualify — replies,
+// comments, and FYIs never appear here.
+message HomeDecision {
+  // Server-rendered English copy, retired by #2835. Clients derive the
+  // category from [kind], the headline from [counterparty] + [subject_title],
+  // the context line from [reason] / [due_at_unix_sec] / [message_preview],
+  // and the chip label from [kind] + [transfer_action].
+  reserved 3, 4, 5, 6;
+  reserved "kind_label", "title", "why", "accept_label";
+
+  // Stable identifier for this decision. Transfer decisions use the
+  // transfer ID; request claims use "<request_id>:<offerer_user_id>". Pass as
+  // the item_id to DismissInboxItem with DAILY_ITEM_TYPE_DECISION to
+  // resolve "Not now" — the decision leaves this queue without resolving
+  // and remains actionable on the item's detail screen.
+  string id = 1;
+
+  // What kind of decision this is.
+  HomeDecisionKind kind = 2;
+
+  // Why this decision needs attention, as a typed value the client renders
+  // in the viewer's locale. UNSPECIFIED when there is no context line.
+  HomeDecisionReason reason = 23;
+
+  // The date behind a dated [reason] (Unix seconds): the scheduled pickup
+  // for PICKUP_SCHEDULED, the expected return for RETURN_DUE, the past
+  // event's scheduled time for PAST_EVENT, the needed-by date for
+  // PAST_REQUEST. Absent for undated reasons.
+  optional int64 due_at_unix_sec = 24;
+
+  // The message text quoted when [reason] is MESSAGE_PREVIEW: the most
+  // recent relevant human message. Verbatim user content — never localized.
+  optional string message_preview = 25;
+
+  // The person whose action created this decision.
+  DailyPerson counterparty = 7;
+
+  // Community provenance. Display-only in this release.
+  string community_id = 8;
+
+  // Human-readable name for community_id.
+  string community_name = 9;
+
+  // Thumbnail media: the gear photo for lending/giveaway requests. Empty
+  // for request claims — the client falls back to the counterparty avatar.
+  string thumbnail_media_id = 10;
+
+  // Navigation target: the underlying content screen's ID and type.
+  string content_id = 11;
+
+  // Item type of content_id, for routing to the right content screen.
+  DailyItemType item_type = 12;
+
+  // The transfer being decided, for lending/giveaway kinds. Empty otherwise.
+  string transfer_id = 13;
+
+  // The request whose claim is being confirmed, for request-claim kind.
+  // Empty otherwise.
+  string request_id = 14;
+
+  // The offerer being confirmed, for request-claim kind. Empty otherwise.
+  string offerer_user_id = 15;
+
+  // Conversation tied to this decision when it spawned mid-conversation;
+  // the client renders "from your conversation · view thread". Empty when
+  // no human messages exist yet.
+  string conversation_id = 16;
+
+  // When the decision was created (Unix seconds). Drives oldest-first
+  // ordering.
+  int64 created_at_unix_sec = 17;
+
+  // The subject the decision is about, on its own: the gear name for
+  // lending/giveaway requests, the request title for request claims. Lets
+  // the client lead the card with the distinctive information (the
+  // request) instead of the counterparty, and label the rows of a bundled
+  // card ("{name} claimed N of your requests") without re-deriving titles.
+  string subject_title = 18;
+
+  // The people behind an aggregated decision — the helpers who pitched in
+  // on a request-claim ("Say thanks") row. Empty for single-counterparty
+  // kinds (lend / reply), which use `counterparty`. The client renders an
+  // overlapping face stack.
+  repeated DailyPerson helpers = 19;
+
+  // A small object thumbnail overlaid on the counterparty avatar — the gear
+  // photo on a lending/reply row whose subject is gear. Empty when there is
+  // no distinct object image.
+  string object_media_id = 20;
+
+  // Total number of helpers behind an aggregated "Say thanks" row, before
+  // any display cap on `helpers`. Drives copy like "Alfred, Maya & Sam
+  // pitched in". Zero for non-aggregated kinds.
+  int32 helper_count = 21;
+
+  // For TRANSFER_UPDATE decisions, the typed mutation the chip runs so the
+  // client can advance the transfer in place (a confirm sheet) instead of
+  // pushing the gear screen. Resolves the (state, loan-vs-giveaway) ambiguity
+  // server-side, so the client picks its chip copy from a typed value rather
+  // than parsing a rendered label. UNSPECIFIED for every other kind.
+  HomeTransferAction transfer_action = 22;
+}
+
+// HomeTransferAction is the typed action a TRANSFER_UPDATE chip runs when the
+// recipient confirms it in place. The server resolves which mutation applies
+// from the transfer's state and whether it is a loan or a giveaway.
+enum HomeTransferAction {
+  HOME_TRANSFER_ACTION_UNSPECIFIED = 0;
+  // Loan handoff: RECIPIENT_SELECTED → ACTIVE ("Mark picked up"). StartLoan.
+  HOME_TRANSFER_ACTION_START_LOAN = 1;
+  // Loan return: ACTIVE → completed ("Mark returned"). CompleteTransfer.
+  HOME_TRANSFER_ACTION_COMPLETE_LOAN = 2;
+  // Giveaway handoff: picking up completes it ("Mark picked up").
+  // CompleteTransfer.
+  HOME_TRANSFER_ACTION_COMPLETE_GIVEAWAY = 3;
+}
+
+// HomeUpNextKind distinguishes events from dated gear obligations in the
+// Up-next section.
+enum HomeUpNextKind {
+  HOME_UP_NEXT_KIND_UNSPECIFIED = 0;
+  // An event the viewer is going to or hosting.
+  HOME_UP_NEXT_KIND_EVENT = 1;
+  // A dated gear obligation: a pickup, handoff, or due-back.
+  HOME_UP_NEXT_KIND_GEAR_OBLIGATION = 2;
+  // One of the viewer's own requests placed on its needed-by date.
+  HOME_UP_NEXT_KIND_ASK = 3;
+  // A gear item placed on the date it was first shared / the viewer got
+  // access — a milestone marker, calendar-only (never appears in up_next).
+  HOME_UP_NEXT_KIND_GEAR_SHARED = 4;
+}
+
+// HomeUpNextEntry is one row of the Up-next agenda. Entries always carry a
+// real scheduled moment — the server never invents times; undated items are
+// excluded.
+// HomeUpNextStatus is the viewer's relationship to a calendar / up-next
+// entry — the typed value behind its role/state line, rendered by the
+// client in the viewer's locale. Obligation values also select the composed
+// row-title template (pick up / hand off / due back / return), with
+// [HomeUpNextEntry.is_giveaway] choosing loan vs giveaway wording.
+enum HomeUpNextStatus {
+  HOME_UP_NEXT_STATUS_UNSPECIFIED = 0;
+  // The viewer hosts this event.
+  HOME_UP_NEXT_STATUS_HOSTING = 1;
+  // The viewer RSVP'd yes.
+  HOME_UP_NEXT_STATUS_GOING = 2;
+  // The viewer RSVP'd maybe.
+  HOME_UP_NEXT_STATUS_MAYBE = 3;
+  // The viewer was invited and has not responded.
+  HOME_UP_NEXT_STATUS_INVITED = 4;
+  // Others are going; the viewer has no stance. Pairs with
+  // [HomeUpNextEntry.going_count].
+  HOME_UP_NEXT_STATUS_OTHERS_GOING = 5;
+  // Someone else's request, placed on its due date.
+  HOME_UP_NEXT_STATUS_REQUEST_DUE = 6;
+  // The viewer's own request, placed on its due date.
+  HOME_UP_NEXT_STATUS_YOUR_REQUEST_DUE = 7;
+  // Someone else's request, placed on the date it was shared.
+  HOME_UP_NEXT_STATUS_REQUEST_SHARED = 8;
+  // The viewer's own request, placed on the date it was shared.
+  HOME_UP_NEXT_STATUS_YOUR_REQUEST = 9;
+  // Gear the viewer added to their library.
+  HOME_UP_NEXT_STATUS_ADDED_TO_LIBRARY = 10;
+  // Gear someone else shared into one of the viewer's communities.
+  HOME_UP_NEXT_STATUS_SHARED_WITH_YOU = 11;
+  // The viewer picks the item up from its owner on this date.
+  HOME_UP_NEXT_STATUS_OBLIGATION_PICKUP = 12;
+  // The viewer hands the item off to its recipient on this date.
+  HOME_UP_NEXT_STATUS_OBLIGATION_HANDOFF = 13;
+  // The viewer's lent item is due back from its borrower on this date.
+  HOME_UP_NEXT_STATUS_OBLIGATION_DUE_BACK = 14;
+  // The viewer returns the borrowed item to its owner on this date.
+  HOME_UP_NEXT_STATUS_OBLIGATION_RETURN = 15;
+}
+
+message HomeUpNextEntry {
+  // Server-rendered English copy, retired by #2835. Clients render the
+  // role/state line from [status] (+ [going_count]) and the clock from
+  // [time_unix_sec] / [all_day].
+  reserved 4, 6;
+  reserved "subtitle", "time_display";
+
+  // The source item ID (experience ID or transfer ID).
+  string id = 1;
+
+  // Whether this is an event or a gear obligation.
+  HomeUpNextKind kind = 2;
+
+  // Row title: the item's own name, verbatim user content. Empty for gear
+  // obligations — the client composes that headline ("Drill due back from
+  // Mike") from [status], [gear_name] and [counterparty_first_name]. The
+  // server used to compose it here too, until #2835.
+  string title = 3;
+
+  // The viewer's relationship to this entry, as a typed value the client
+  // renders in the viewer's locale. UNSPECIFIED when there is no
+  // role/state line.
+  HomeUpNextStatus status = 16;
+
+  // Number of people going, for HOSTING / OTHERS_GOING attendance lines.
+  // Zero when not applicable.
+  int32 going_count = 17;
+
+  // The scheduled moment (Unix seconds). Always > 0.
+  int64 time_unix_sec = 5;
+
+  // The entry carries a date but no time of day (requests, gear
+  // obligations, all-day events) — the client shows an all-day label
+  // instead of a clock.
+  bool all_day = 18;
+
+  // For gear-obligation entries: the transfer is a giveaway rather than a
+  // loan, which selects the receiving/giving-away wording.
+  bool is_giveaway = 19;
+
+  // For gear-obligation entries: the gear's name, one of the values the
+  // client composes the row title from. Verbatim user content.
+  optional string gear_name = 20;
+
+  // For gear-obligation entries: the first name of the person on the other
+  // side of the handoff. Verbatim user content.
+  optional string counterparty_first_name = 21;
+
+  // Community provenance for display: a real, user-facing community when the
+  // item is shared into one (never the item's own nameless ad-hoc community
+  // if a named one exists).
+  string community_id = 7;
+
+  // Human-readable name for community_id.
+  string community_name = 8;
+
+  // Every community this item is shared into, including its nameless ad-hoc
+  // per-item community. Ordered named-first, so community_ids[0] == community_id
+  // when a named community exists. The community-scoped calendar matches an
+  // entry when ANY of these is in scope, so an item shared into several
+  // communities appears on each one's calendar (#2675). Empty from older
+  // servers — clients fall back to community_id.
+  repeated string community_ids = 15;
+
+  // Thumbnail media for the row. May be empty.
+  string thumbnail_media_id = 9;
+
+  // Navigation target: the underlying content screen's ID and type.
+  string content_id = 10;
+
+  // Item type of content_id, for routing to the right content screen.
+  DailyItemType item_type = 11;
+
+  // For request entries (kind == ASK): the kind-of-help category tag rendered
+  // as a chip, e.g. "childcare", "muscle + truck". Empty for events/obligations.
+  string kind_tag = 12;
+
+  // For request entries: the helpers who have offered/claimed, for the face
+  // stack. Empty for events/obligations.
+  repeated DailyPerson helpers = 13;
+
+  // For request entries: unclaimed slots remaining, driving the "+N needed"
+  // pill. Zero for events/obligations and for fully-covered requests.
+  int32 needed_count = 14;
+}
+
+// HomeAsk is one of the viewer's open help requests with claim progress.
+message HomeAsk {
+  // The request's ID (navigation target).
+  string request_id = 1;
+
+  // The request's title.
+  string title = 2;
+
+  // Claimed need slots across the request's posted needs. Zero when the
+  // request has no needs posted.
+  int32 claimed_count = 3;
+
+  // Total need slots across the request's posted needs. Zero when the
+  // request has no needs posted; the client hides the progress bar. The
+  // Share chip renders only while claimed_count/total_count <= 1/2.
+  int32 total_count = 4;
+
+  // Thumbnail media for the row. May be empty.
+  string thumbnail_media_id = 5;
+
+  // Community provenance. Display-only in this release.
+  string community_id = 6;
+
+  // Human-readable name for community_id.
+  string community_name = 7;
+
+  // When the request was created (Unix seconds). Drives the "Posted 3d ago"
+  // subtitle on rows without posted need slots.
+  int64 created_at_unix_sec = 8;
+
+  // Help received so far: the count of non-withdrawn offers on the request.
+  // Distinct from claimed_count, which counts filled need slots; offers
+  // exist even when the request has no posted needs. Drives "2 offers".
+  int32 offer_count = 9;
+}
+
+// HomeGearCategory buckets a gear row for the see-all filter chips.
+enum HomeGearCategory {
+  HOME_GEAR_CATEGORY_UNSPECIFIED = 0;
+  // The viewer's gear out on loan, or awaiting handoff to a borrower.
+  HOME_GEAR_CATEGORY_OUT = 1;
+  // Gear the viewer is borrowing, or picking up soon.
+  HOME_GEAR_CATEGORY_BORROWING = 2;
+  // The viewer's gear listed as available in at least one community.
+  HOME_GEAR_CATEGORY_LISTED = 3;
+  // The viewer's gear at home: not out, not listed.
+  HOME_GEAR_CATEGORY_WITH_YOU = 4;
+}
+
+// HomeGearPillStyle is the server-resolved status-pill style: amber for due
+// within 72 hours, green for inbound (pickup/borrowing), clay for out with
+// no date (or a far-off date), neutral for listed/home.
+enum HomeGearPillStyle {
+  HOME_GEAR_PILL_STYLE_UNSPECIFIED = 0;
+  HOME_GEAR_PILL_STYLE_AMBER = 1;
+  HOME_GEAR_PILL_STYLE_GREEN = 2;
+  HOME_GEAR_PILL_STYLE_CLAY = 3;
+  HOME_GEAR_PILL_STYLE_NEUTRAL = 4;
+}
+
+// HomeGearItem is one gear row in the Gear section and the see-all screen.
+message HomeGearItem {
+  // Server-rendered English copy, retired by #2835. The Yours rendering that
+  // read these was deleted by #2634 and no client has read them since. If a
+  // future surface revives these rows, add structured [gear_name] /
+  // [counterparty_first_name] fields and compose the title client-side —
+  // do not reinstate a server-composed one.
+  reserved 3, 4, 5;
+  reserved "title", "subtitle", "pill_label";
+
+  // The gear's ID (navigation target).
+  string gear_id = 1;
+
+  // Which see-all filter chip this row belongs to.
+  HomeGearCategory category = 2;
+
+  // Server-resolved pill style.
+  HomeGearPillStyle pill_style = 6;
+
+  // The active transfer behind an OUT/BORROWING row. Empty otherwise.
+  string transfer_id = 7;
+
+  // The dated obligation (pickup or expected return, Unix seconds) used
+  // for ascending sort. Zero when the row has no date.
+  int64 due_at_unix_sec = 8;
+
+  // True for an out loan with no return date — the client offers the
+  // "Set a date" affordance opening the loan's return-date picker.
+  bool can_set_date = 9;
+
+  // Thumbnail media for the row. May be empty.
+  string thumbnail_media_id = 10;
+
+  // Community provenance. Display-only in this release.
+  string community_id = 11;
+
+  // Human-readable name for community_id.
+  string community_name = 12;
+
+  // When the gear was added to the library (Unix seconds). Drives the
+  // "added N ago" line and recency sort on the Yours → Items section.
+  int64 created_at_unix_sec = 13;
+}
+
+// HomeGearCounts carries per-category gear totals for the see-all filter
+// chips, computed before the response cap.
+message HomeGearCounts {
+  // Count across all categories.
+  int32 total = 1;
+
+  // Count of HOME_GEAR_CATEGORY_OUT rows.
+  int32 out = 2;
+
+  // Count of HOME_GEAR_CATEGORY_BORROWING rows.
+  int32 borrowing = 3;
+
+  // Count of HOME_GEAR_CATEGORY_LISTED rows.
+  int32 listed = 4;
+
+  // Count of HOME_GEAR_CATEGORY_WITH_YOU rows.
+  int32 with_you = 5;
+}
+
+// HomeActivityEntry is one row of the Recent-activity list: something that
+// wrapped up — a completed loan, a concluded event, a fulfilled request.
+message HomeActivityEntry {
+  // Stable ID of the underlying item.
+  string id = 1;
+
+  // Headline, e.g. "Drill came back from Mike".
+  string title = 2;
+
+  // Secondary line: the community name when known. May be empty.
+  string subtitle = 3;
+
+  // When the activity happened (Unix seconds). Entries sort newest first.
+  int64 occurred_at_unix_sec = 4;
+
+  // Navigation target: the underlying content screen's ID and type.
+  string content_id = 5;
+
+  // Item type of content_id, for routing to the right content screen.
+  DailyItemType item_type = 6;
+}
+
+// HomeOwnedEvent is one of the viewer's hosted events shown under "Your
+// stuff" — their own content, distinct from the action-only Needs-you queue
+// and the dated Up-next agenda.
+message HomeOwnedEvent {
+  // Server-rendered English copy, retired by #2835 — the Yours rendering that
+  // read it was deleted by #2634. A client reviving this row composes the
+  // secondary line from [date_unix_sec] / [all_day] and the event's own
+  // attendance data.
+  reserved 3;
+  reserved "subtitle";
+
+  // The experience ID (navigation target).
+  string event_id = 1;
+
+  // The event's name.
+  string title = 2;
+
+  // Thumbnail media for the row. May be empty.
+  string thumbnail_media_id = 4;
+
+  // The scheduled day/time (Unix seconds). Zero for undated (TBD) events.
+  int64 date_unix_sec = 5;
+
+  // True when the event has a date but no time-of-day, so the client shows
+  // "All day" rather than a midnight clock.
+  bool all_day = 6;
+
+  // Community provenance.
+  string community_id = 7;
+
+  // Human-readable name for community_id.
+  string community_name = 8;
+
+  // When the event was created (Unix seconds). Drives most-recent-first
+  // ordering of the "Yours" section. Zero for events created before the
+  // model carried a creation timestamp.
+  int64 created_at_unix_sec = 9;
+}

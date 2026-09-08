@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="{{.Lang}}" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.OGTitle}}</title>
+
+  <!-- Open Graph metadata for link previews -->
+  <meta property="og:title" content="{{.OGTitle}}">
+  <meta property="og:description" content="{{.OGDescription}}">
+  <meta property="og:image" content="{{.HeroImageURL}}">
+  <meta property="og:url" content="{{.BaseURL}}/go/{{.ShortCode}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{.Brand.Name}}">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{.OGTitle}}">
+  <meta name="twitter:description" content="{{.OGDescription}}">
+  <meta name="twitter:image" content="{{.HeroImageURL}}">
+
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/event.css">
+</head>
+<body>
+  <header class="event-hero">
+    {{if .HeroImageURL}}<img src="{{.HeroImageURL}}" alt="">{{end}}
+    <div class="event-hero-inner">
+      <div class="event-kicker">{{if .CommunityIsNamed}}{{.CommunityName}} · {{end}}{{.Kicker}}</div>
+      <h1>{{.GearName}}</h1>
+    </div>
+  </header>
+
+  <main class="event-main">
+    <a id="item-open-in-app"
+       class="event-open-in-app hidden"
+       href="#"
+       aria-label="{{.Str.OpenInApp}}"
+       data-short-code="{{.ShortCode}}"
+       data-gear-id="{{.GearID}}"
+       data-android-package="{{.AndroidPackage}}"
+       data-app-host="{{.Brand.AppHost}}"
+       data-scheme="{{.Brand.DeepLinkScheme}}"
+       data-base-host="{{.BaseURL}}">{{.Str.OpenInApp}}</a>
+
+    <div class="event-host">
+      <div class="event-avatar">
+        {{if .OwnerInitial -}}
+        <span class="event-avatar-fallback" aria-hidden="true">{{.OwnerInitial}}</span>
+        {{- end}}
+      </div>
+      <div class="event-host-text">
+        <strong>{{.OwnerName}}</strong> <span class="role">{{.RoleText}}</span>
+      </div>
+    </div>
+  </main>
+
+  {{if .IsAtCapacity}}
+  <div class="event-cta-full" role="status" aria-live="polite">
+    <strong>{{.Str.Capacity.Title}}</strong>
+    {{.Str.Capacity.Body}}
+    {{.Str.Capacity.Ask}}
+  </div>
+  {{else}}
+  <nav class="event-cta-bar" id="item-cta-bar" aria-label="{{.CtaLabel}}">
+    <div class="event-cta-bar-inner">
+      <a class="event-cta event-cta-primary"
+         href="/item/{{.GearID}}?intent={{.IntentValue}}&amp;code={{.ShortCode}}&amp;n={{.GearName}}{{if .HasHeroImage}}&amp;img={{.HeroImageURL}}{{end}}"
+         aria-label="{{.CtaAria}}">{{.CtaLabel}}</a>
+    </div>
+  </nav>
+  <script>
+  // Open-in-app hint — identical mechanics to event.html (see its comment).
+  // Universal/App Links cover the installed-app case; this residual button
+  // handles in-app webviews, copy-paste, and typed URLs. The custom-scheme
+  // deep link carries gear_id so the app routes to the gear detail.
+  (function () {
+    var link = document.getElementById('item-open-in-app');
+    if (!link) return;
+    var ua = navigator.userAgent;
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
+    if (!isIOS && !isAndroid) return;
+    var code = link.dataset.shortCode;
+    var gearId = link.dataset.gearId;
+    if (!code || !gearId) return;
+    var scheme = link.dataset.scheme || '';
+    var appHost = (link.dataset.appHost || '').split(':')[0];
+    if (isAndroid) {
+      var pkg = link.dataset.androidPackage;
+      var host = (link.dataset.baseHost || '').replace(/^https?:\/\//, '');
+      if (!pkg) return;
+      var fallback = 'https://play.google.com/store/apps/details?id=' + encodeURIComponent(pkg);
+      if (appHost && host.split(':')[0] === appHost) {
+        link.href = 'intent://' + host + '/go/' + encodeURIComponent(code)
+          + '#Intent;scheme=https'
+          + ';package=' + pkg
+          + ';S.browser_fallback_url=' + encodeURIComponent(fallback)
+          + ';end';
+      } else {
+        if (!scheme) return;
+        link.href = 'intent://invite?token=' + encodeURIComponent(code)
+          + '&gear_id=' + encodeURIComponent(gearId)
+          + '#Intent;scheme=' + scheme
+          + ';package=' + pkg
+          + ';S.browser_fallback_url=' + encodeURIComponent(fallback)
+          + ';end';
+      }
+    } else {
+      if (!scheme) return;
+      link.href = scheme + '://invite?token=' + encodeURIComponent(code)
+        + '&gear_id=' + encodeURIComponent(gearId);
+    }
+    link.classList.remove('hidden');
+  })();
+  </script>
+  {{end}}
+</body>
+</html>

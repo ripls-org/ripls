@@ -1,0 +1,14 @@
+Estás en la lista
+
+Gracias por apuntarte. Estamos creando algo para que compartir con tus amigos funcione de verdad.
+
+La parte difícil de compartir no es la generosidad -- es la coordinación. Ripls se encarga de la logística para que tu grupo de amigos pueda:
+
+- Hacer visible lo que tienen -- herramientas, equipo, cosas guardadas en garajes
+- Ayudarse entre sí -- mudanzas, viajes, reparaciones, gastos compartidos
+- Pedir lo que necesitas, ofrecer lo que puedes -- sin mensajes grupales incómodos
+
+Te avisaremos cuando estemos listos para ti.
+Mientras tanto, piensa en cuáles 5-10 amigos invitarías primero.
+{{if .LegalEntityName}}
+{{.LegalEntityName}}{{end}}

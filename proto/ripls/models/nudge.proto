@@ -1,0 +1,169 @@
+// Storage model for system-generated nudge cards in the feed.
+
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/common.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// NudgeSurface identifies which surface a nudge is generated for.
+//
+// FEED nudges interleave into the personalized feed (the existing default).
+// WORKSHOP_* surfaces are read by the Workshop tab's curation layer; they
+// share the same StoredNudge data model and generation pipeline as feed
+// nudges but are filtered out of feed assembly so they don't double-show.
+enum NudgeSurface {
+  // Default zero value. Pre-existing rows with no surface field are treated
+  // as feed-interleaved nudges at read time (same behavior as NUDGE_SURFACE_FEED).
+  NUDGE_SURFACE_UNSPECIFIED = 0;
+
+  // Feed-interleaved nudge. New rows are written with this value. Pre-existing
+  // rows decode as NUDGE_SURFACE_UNSPECIFIED (0) and are also treated as feed.
+  NUDGE_SURFACE_FEED = 4;
+
+  // Hero card on the Workshop tab. One card per recently completed event
+  // (per-event Hero card model), plus drift Hero cards for calendar gap,
+  // seasonal trigger, and idle offer signals that don't anchor to a recent
+  // event. The detector chain runs per event to pick the slot variant.
+  NUDGE_SURFACE_WORKSHOP_HERO_CARD = 1;
+
+  // Bring Something Back item on the Workshop tab. Repeat-or-rest, love-revival,
+  // and decay-revival items render here.
+  NUDGE_SURFACE_WORKSHOP_BRING_BACK = 2;
+
+  // Seed-the-catalyst prompt on the Workshop tab. Surfaces when the load is
+  // genuinely lopsided but no host-mode-eligible recipient exists in the circle.
+  NUDGE_SURFACE_WORKSHOP_SEED_CATALYST = 3;
+}
+
+// StoredNudgeStat is a key-value pair displayed on stat-style nudge variants.
+message StoredNudgeStat {
+  // Human-readable numeric value (e.g., "21").
+  string value = 1;
+
+  // Label describing what the value represents (e.g., "days since last share").
+  string label = 2;
+}
+
+// StoredNudgeEvidence is an optional supporting quote rendered beneath a
+// Hero card's narrative, lending the suggestion a research-backed framing.
+message StoredNudgeEvidence {
+  // The quote itself, pre-localized (e.g., "Showing up imperfectly is
+  // what builds a habit.").
+  string quote = 1;
+
+  // Attribution string (e.g., "Roberts, Univ. of Illinois.").
+  string attribution = 2;
+}
+
+// StoredNudge is a persisted nudge card record.
+//
+// Nudges are pre-generated server-side and stored here so they can be
+// interleaved into the feed on demand. They become visible only after
+// imagery is attached (media_id is set). Consumed and expired nudges
+// are soft-deleted rather than hard-deleted for analytics.
+message StoredNudge {
+  // Unique identifier.
+  string id = 1;
+
+  // User this nudge was generated for.
+  string user_id = 2;
+
+  // Community context this nudge belongs to.
+  string community_id = 3;
+
+  // Layout variant index (1–3) controlling card layout.
+  int32 nudge_variant = 4;
+
+  // Pre-localized headline text (server-generated, locale-specific).
+  string headline = 5;
+
+  // Pre-localized description text (server-generated, locale-specific).
+  string description = 6;
+
+  // Pre-localized primary CTA label (server-generated, locale-specific).
+  string cta_label = 7;
+
+  // Client-side action identifier for primary CTA routing.
+  // Values: "plan_experience", "list_item", "ask_for_help", "check_listings".
+  string cta_action = 8;
+
+  // Pre-localized secondary CTA label (optional).
+  optional string secondary_cta_label = 9;
+
+  // Client-side action identifier for secondary CTA routing (optional).
+  optional string secondary_cta_action = 10;
+
+  // Optional location context shown on the card.
+  optional string location_hint = 11;
+
+  // Media ID for background image (empty until stock imagery fetch completes).
+  // Nudges with empty media_id are invisible in the feed.
+  optional string media_id = 12;
+
+  // User IDs of community members featured in social nudges.
+  repeated string participant_ids = 13;
+
+  // Stats displayed on stat-style nudge variants (e.g., variant 3).
+  repeated StoredNudgeStat stats = 14;
+
+  // Search query used to fetch the background stock image.
+  string stock_query = 15;
+
+  // When this nudge was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 16;
+
+  // True for the daily "go outside" feed-terminator nudge.
+  // Terminators are not subject to seen-expiry and are soft-deleted when
+  // a new day's terminator is created.
+  bool is_terminator = 17;
+
+  // When the user tapped the primary or secondary CTA (Unix timestamp, optional).
+  // Set on consumption; nil means the nudge has not yet been tapped.
+  optional int64 consumed_at_unix_sec = 18;
+
+  // Which CTA was tapped ("primary" or the cta_action value), for analytics.
+  optional string consumed_action = 19;
+
+  // Soft-delete metadata. Present when the nudge has been expired or deleted.
+  // Retained for analytics queries.
+  optional DeletedMetadata deleted = 20;
+
+  // Which surface this nudge is generated for. Default NUDGE_SURFACE_FEED.
+  // Workshop-surface nudges (NUDGE_SURFACE_WORKSHOP_*) are filtered out of
+  // feed assembly so they only appear on the Workshop tab.
+  //
+  // New cta_action values reserved for Workshop surfaces:
+  //   - "schedule_repeat"  — Quest hero "schedule round N" lever.
+  //   - "revive_experience" — Bring Something Back "bring it back" lever.
+  //   - "seed_subhost"      — Seed-the-catalyst "invite [name] to claim a
+  //                           sub-host slot" lever.
+  // Existing values ("plan_experience", "list_item", "ask_for_help",
+  // "check_listings") continue to work on feed-surface nudges.
+  //
+  // "propose_share" is retired (#2892) and no longer written or dispatched.
+  NudgeSurface surface = 21;
+
+  // ID of the experience this nudge references, so tapping the CTA can route
+  // to that event rather than a blank creation modal. Empty for feed-surface
+  // nudges, which dispatch by cta_action alone.
+  optional string context_id = 22;
+
+  // Pre-localized kicker label rendered above the headline (e.g.,
+  // "On the way", "Worth doing again"). Populated for Hero card surfaces;
+  // empty for feed nudges that don't render a kicker.
+  optional string kicker_label = 23;
+
+  // Pre-localized atmosphere line rendered between the headline and the
+  // lever (e.g., "Round 5 hosted by Mike · last Saturday at 9"). Names
+  // + date + role; describes the prior instance the lever rides on.
+  optional string atmosphere_line = 24;
+
+  // Optional supporting quote + attribution rendered beneath the
+  // narrative on Hero cards in the calendar-gap / seasonal / idle
+  // offer slots. Absent on the active-quest and ESM-repeat slots
+  // (where the audience signal is the evidence).
+  optional StoredNudgeEvidence evidence = 25;
+}

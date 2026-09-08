@@ -1,0 +1,20 @@
+// Value estimation for API responses.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+import "ripls/api/common.proto";
+
+// ValueEstimate contains LLM-generated value estimation with provenance.
+// Used in API responses to communicate estimated item values to clients.
+message ValueEstimate {
+  // Estimated value in USD (e.g., 50.0 = $50.00).
+  // Returns 0 if unable to estimate.
+  float estimated_value_usd = 1;
+
+  // How this value estimate was produced (source, reasoning, references).
+  Provenance provenance = 2;
+}

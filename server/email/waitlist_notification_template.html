@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  {{template "head" .}}
+  <body
+    class="r-page"
+    style="
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: {{.Colors.TextSecondary}};
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    "
+  >
+    <h2 class="r-link" style="color: {{.Colors.Primary}}; margin-bottom: 20px">
+      New Waitlist Signup
+    </h2>
+
+    <p style="font-size: 16px; margin-bottom: 15px">
+      Someone just joined the Ripls waitlist:
+    </p>
+
+    <div
+      class="r-inset r-rule"
+      style="
+        background-color: {{.Colors.Surface}};
+        border-left: 4px solid {{.Colors.Primary}};
+        padding: 15px 20px;
+        margin: 20px 0;
+      "
+    >
+      <p style="margin: 0; font-size: 16px">
+        <strong>Email:</strong> {{.SignupEmail}}
+      </p>
+      {{if .Name}}<p style="margin: 10px 0 0 0; font-size: 16px">
+        <strong>Name:</strong> {{.Name}}
+      </p>{{end}}
+      {{if .ReferralSource}}<p style="margin: 10px 0 0 0; font-size: 16px">
+        <strong>Heard about us from:</strong> {{.ReferralSource}}
+      </p>{{end}}
+      {{if .IntendedUse}}<p style="margin: 10px 0 0 0; font-size: 16px">
+        <strong>Wants to:</strong> {{.IntendedUse}}
+      </p>{{end}}
+      <p class="r-t" style="margin: 10px 0 0 0; font-size: 14px; color: {{.Colors.TextSecondary}}">
+        <strong>Time:</strong> {{.Timestamp}}
+      </p>
+    </div>
+
+    <p class="r-t" style="font-size: 14px; color: {{.Colors.TextSecondary}}; margin-top: 30px">
+      This is an automated notification from the Ripls waitlist system.
+    </p>
+  </body>
+</html>

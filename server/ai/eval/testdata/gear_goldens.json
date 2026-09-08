@@ -1,0 +1,206 @@
+{
+  "description": "Golden eval cases for GenerateGearFromText. Opt-in per field: fields omitted from 'expected' are not checked. Text-mode gear generation does NOT populate search_keywords (webpage mode does); signal comes from title, category, brand, material_category, weight_grams, and value_estimate.",
+  "version": 2,
+  "defaults": {
+    "region": "Boulder, CO",
+    "value_estimate_tolerance_pct": 40.0,
+    "weight_tolerance_pct": 50.0
+  },
+  "cases": [
+    {
+      "id": "dewalt_drill_branded",
+      "tags": ["branded", "power-tool"],
+      "prompt": "DeWalt 20V MAX cordless drill with lithium battery",
+      "expected": {
+        "title_contains": ["drill"],
+        "title_contains_mode": "all",
+        "category_contains_any_of": ["Power Tool", "Tool"],
+        "brand": "DeWalt",
+        "material_category_any_of": ["cordless_power_tool"],
+        "weight_grams_approx": 2000,
+        "weight_tolerance_pct": 60,
+        "value_estimate_usd": 140,
+        "min_confidence": 0.6
+      }
+    },
+    {
+      "id": "camping_tent_generic",
+      "tags": ["camping", "fabric"],
+      "prompt": "4-person backpacking tent",
+      "expected": {
+        "title_contains": ["tent"],
+        "title_contains_mode": "all",
+        "category_contains_any_of": ["Camping", "Outdoor"],
+        "brand_empty": true,
+        "material_category_any_of": ["fabric"],
+        "weight_grams_approx": 3000,
+        "weight_tolerance_pct": 60,
+        "value_estimate_usd": 250,
+        "value_estimate_tolerance_pct": 70,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "japanese_pull_saw",
+      "tags": ["hand-tool", "wood"],
+      "prompt": "Japanese pull saw for woodworking",
+      "expected": {
+        "title_contains": ["saw"],
+        "title_contains_mode": "all",
+        "category_contains_any_of": ["Hand Tool", "Tool", "Woodworking"],
+        "brand_empty": true,
+        "material_category_any_of": ["mixed_wood_metal", "solid_metal", "mixed_plastic_metal"],
+        "value_estimate_usd": 60,
+        "value_estimate_tolerance_pct": 70,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "kitchenaid_mixer",
+      "tags": ["branded", "kitchen", "electronics"],
+      "prompt": "KitchenAid Artisan stand mixer",
+      "expected": {
+        "title_contains": ["mixer"],
+        "title_contains_mode": "all",
+        "brand": "KitchenAid",
+        "material_category_any_of": ["solid_metal", "corded_power_tool", "electronics_small", "mixed_plastic_metal"],
+        "weight_grams_approx": 10000,
+        "weight_tolerance_pct": 60,
+        "value_estimate_usd": 450,
+        "value_estimate_tolerance_pct": 60,
+        "min_confidence": 0.6
+      }
+    },
+    {
+      "id": "gas_lawn_mower",
+      "tags": ["outdoor", "petrol"],
+      "prompt": "gas powered push lawn mower",
+      "expected": {
+        "title_contains": ["mower"],
+        "title_contains_mode": "all",
+        "category_contains_any_of": ["Lawn", "Garden", "Outdoor"],
+        "brand_empty": true,
+        "material_category_any_of": ["petrol_tool"],
+        "value_estimate_usd": 250,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "pickleball_paddle",
+      "tags": ["sports", "fiberglass"],
+      "prompt": "pickleball paddle",
+      "expected": {
+        "title_contains": ["paddle"],
+        "title_contains_mode": "all",
+        "category_contains_any_of": ["Sport", "Equipment"],
+        "brand_empty": true,
+        "value_estimate_usd": 60,
+        "value_estimate_tolerance_pct": 60,
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "bluetooth_speaker",
+      "tags": ["electronics"],
+      "prompt": "portable bluetooth speaker",
+      "expected": {
+        "title_contains": ["speaker"],
+        "title_contains_mode": "all",
+        "category_contains_any_of": ["Electronic", "Audio"],
+        "brand_empty": true,
+        "material_category_any_of": ["electronics_small"],
+        "value_estimate_usd": 60,
+        "value_estimate_tolerance_pct": 60,
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "northface_backpack",
+      "tags": ["branded", "fabric", "outdoor"],
+      "prompt": "North Face hiking backpack 65L",
+      "expected": {
+        "title_contains": ["backpack", "pack"],
+        "title_contains_mode": "any",
+        "brand_contains": ["north face"],
+        "material_category_any_of": ["fabric"],
+        "value_estimate_usd": 180,
+        "value_estimate_tolerance_pct": 50,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "aluminum_ladder",
+      "tags": ["aluminum", "home"],
+      "prompt": "6-foot aluminum step ladder",
+      "expected": {
+        "title_contains": ["ladder"],
+        "title_contains_mode": "all",
+        "material_category_any_of": ["aluminum", "solid_metal"],
+        "brand_empty": true,
+        "weight_grams_approx": 5000,
+        "weight_tolerance_pct": 70,
+        "value_estimate_usd": 100,
+        "value_estimate_tolerance_pct": 60,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "trek_road_bike_frameset",
+      "tags": ["branded", "bicycle", "frame-only"],
+      "prompt": "Trek aluminum road bike frame 54cm, frameset only",
+      "expected": {
+        "title_contains": ["frame"],
+        "title_contains_mode": "all",
+        "category_contains_any_of": ["Bicycle", "Cycling"],
+        "brand": "Trek",
+        "weight_grams_approx": 1700,
+        "weight_tolerance_pct": 60,
+        "value_estimate_usd": 400,
+        "value_estimate_tolerance_pct": 60,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "coleman_cooler",
+      "tags": ["branded", "camping", "plastic"],
+      "prompt": "Coleman 48-quart ice chest cooler",
+      "expected": {
+        "title_contains": ["cooler", "chest"],
+        "title_contains_mode": "any",
+        "brand": "Coleman",
+        "material_category_any_of": ["solid_plastic", "mixed_plastic_metal"],
+        "value_estimate_usd": 55,
+        "value_estimate_tolerance_pct": 60,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "corded_circular_saw",
+      "tags": ["power-tool", "corded"],
+      "prompt": "corded circular saw 7-1/4 inch",
+      "expected": {
+        "title_contains": ["saw"],
+        "title_contains_mode": "all",
+        "category_contains_any_of": ["Power Tool", "Tool"],
+        "brand_empty": true,
+        "material_category_any_of": ["corded_power_tool"],
+        "value_estimate_usd": 100,
+        "value_estimate_tolerance_pct": 70,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "tent_with_location",
+      "tags": ["location", "camping"],
+      "prompt": "camping tent in my garage",
+      "expected": {
+        "title_contains": ["tent"],
+        "title_contains_mode": "all",
+        "location_query_contains": ["garage", "USER_PRIMARY_LOCATION"],
+        "location_query_contains_mode": "any",
+        "material_category_any_of": ["fabric"],
+        "min_confidence": 0.3
+      }
+    }
+  ]
+}

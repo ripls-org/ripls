@@ -1,0 +1,69 @@
+// Item — the shared reference to a domain entity (gear, experience,
+// request, giveaway, loan, or community milestone) carried in every
+// list-style response. Carries the identifier and kind needed to
+// locate the underlying entity plus the denormalized display fields
+// callers need to present the entry without a follow-up lookup.
+//
+// Lives in its own file so messages that embed it (workshop, profile,
+// portfolio) avoid cyclic imports.
+
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Item references a single domain entity along with its denormalized
+// display labels. The same shape is reused everywhere the API returns
+// a list of such references so a single discriminator drives lookup.
+message Item {
+  // Identifier of the referenced entity. Resolves against the entity
+  // collection indicated by [kind] (gear, experience, request,
+  // giveaway, transfer, or community).
+  string context_id = 1;
+
+  // The kind of entity [context_id] refers to.
+  ItemKind kind = 2;
+
+  // Primary display label for the entity (e.g. gear name, experience
+  // name, request title).
+  string title = 3;
+
+  // Secondary display label — typically a short status, location, or
+  // attendance string already composed by the server. Absent when the
+  // entity has no secondary line to surface.
+  optional string subtitle = 4;
+
+  // Short categorical label distinguishing presentational modes for
+  // this entity (e.g. "BORROW", "GIVEAWAY", "REQUEST", or a date
+  // label for upcoming experiences). Absent when the response does
+  // not categorize entries this way.
+  optional string mini_label = 5;
+
+  // Identifier of the entity's primary thumbnail media. Absent when
+  // the entity has no associated media.
+  optional string media_id = 6;
+}
+
+// ItemKind names which entity collection [Item.context_id] resolves
+// against. Stable across every response that embeds [Item]. Adding
+// new values is safe; reordering existing values is not.
+enum ItemKind {
+  ITEM_KIND_UNSPECIFIED = 0;
+  // A gear entity — a thing one member can lend to another.
+  ITEM_KIND_GEAR = 1;
+  // An experience — a community-hosted event.
+  ITEM_KIND_EXPERIENCE = 2;
+  // A giveaway — a gear entity in a terminal "given away" state.
+  ITEM_KIND_GIVEAWAY = 3;
+  // A help request — a member asking for something.
+  ITEM_KIND_REQUEST = 4;
+  // A transfer — an in-progress loan of a gear entity, surfaced
+  // distinctly from a browse-mode gear listing so passive surfaces
+  // (e.g. an inbox feed) can label the row by its lifecycle state.
+  ITEM_KIND_TRANSFER = 5;
+  // A community milestone — joining or creating a community. Has no
+  // standalone detail entity today; consumers may surface the row
+  // without a follow-up resolution.
+  ITEM_KIND_COMMUNITY = 6;
+}

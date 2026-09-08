@@ -1,0 +1,462 @@
+// RPC service for managing transfers (loans and giveaways).
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/transfer.proto";
+import "ripls/api/impact_estimate.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Request to list ongoing transfers.
+message ListTransfersRequest {
+    // The community to list transfers from.
+    string community_id = 1;
+
+    // Optional filter by transfer type.
+    TransferType transfer_type = 2;
+
+    // Optional filter by state.
+    TransferState state = 3;
+}
+
+// Response with list of transfers.
+message ListTransfersResponse {
+    // List of available transfers.
+    repeated Transfer transfers = 1;
+}
+
+// Request to express interest in a transfer.
+message ExpressInterestRequest {
+    // The gear we're interested in.
+    string gear_id = 1;
+}
+
+// Response after expressing interest.
+message ExpressInterestResponse {
+    // Full transfer details with current state and conversation ID.
+    Transfer transfer = 1;
+}
+
+// Request to select a recipient from interested users.
+message SelectRecipientRequest {
+    // The unique identifier of the transfer.
+    string transfer_id = 1;
+
+    // The ID of the user to select as recipient.
+    string recipient_id = 2;
+}
+
+// Response after selecting a recipient.
+message SelectRecipientResponse {
+    // The conversation ID for the 1:1 chat with the selected recipient.
+    string conversation_id = 1;
+
+    // Identifier to pass to UndoSelectRecipient to reverse this call.
+    string community_event_id = 2;
+}
+
+// Request to start a loan (doesn't apply to giveaways).
+message StartLoanRequest {
+    // The unique identifier of the transfer to start.
+    string transfer_id = 1;
+}
+
+// Response after starting a transfer.
+message StartLoanResponse {
+  // Identifier to pass to UndoStartLoan to reverse this call.
+  string community_event_id = 1;
+}
+
+// Request to complete a transfer.
+message CompleteTransferRequest {
+    // The unique identifier of the transfer to complete.
+    string transfer_id = 1;
+}
+
+// Response after completing a transfer.
+message CompleteTransferResponse {
+  // Impact estimate for this transaction.
+  ImpactEstimate impact = 1;
+
+  // Identifier to pass to UndoCompleteLoan (for loans) or
+  // UndoCompleteGiveaway (for giveaways) to reverse this call.
+  string community_event_id = 2;
+}
+
+// Request to cancel a transfer.
+message CancelTransferRequest {
+    // The unique identifier of the transfer to cancel.
+    string transfer_id = 1;
+}
+
+// Response after cancelling a transfer.
+message CancelTransferResponse {
+  // Identifier to pass to UndoCancelTransfer to reverse this call.
+  string community_event_id = 1;
+}
+
+// Request to update a transfer.
+message UpdateTransferRequest {
+    // The unique identifier of the transfer to update.
+    string transfer_id = 1;
+
+    // Type of transfer (loan or giveaway).
+    TransferType transfer_type = 3;
+
+    // Optional estimated pickup time.
+    optional int64 estimated_pickup_unix_sec = 4;
+
+    // Optional estimated loan duration in days.
+    optional int32 loan_duration_days = 5;
+}
+
+// Response after updating a transfer.
+message UpdateTransferResponse {}
+
+// Request to list transfers made by the current user.
+message ListMyTransfersRequest {
+    // Optional filter by transfer type.
+    TransferType transfer_type = 1;
+
+    // Optional filter by state.
+    TransferState state = 2;
+}
+
+// Response with list of my transfers.
+message ListMyTransfersResponse {
+    // List of transfers made by the current user.
+    repeated Transfer transfers = 1;
+}
+
+// Request to list transfers received by the current user (as recipient).
+message ListReceivedTransfersRequest {
+    // Optional filter by transfer type.
+    TransferType transfer_type = 1;
+
+    // Optional filter by state.
+    TransferState state = 2;
+}
+
+// Response with list of received transfers.
+message ListReceivedTransfersResponse {
+    // List of transfers received by the current user.
+    repeated Transfer transfers = 1;
+}
+
+// Request to get a single transfer by ID.
+message GetTransferRequest {
+    // The unique identifier of the transfer.
+    string transfer_id = 1;
+}
+
+// Response with transfer details.
+message GetTransferResponse {
+    // The requested transfer.
+    Transfer transfer = 1;
+}
+
+// Request to get all active transfers for a gear item.
+message GetGearTransfersRequest {
+    // The unique identifier of the gear.
+    string gear_id = 1;
+}
+
+// Response with list of active transfers for a gear item.
+message GetGearTransfersResponse {
+    // All non-archived transfers for this gear.
+    repeated Transfer transfers = 1;
+}
+
+// Request to check current user's transfer status for a gear item.
+message GetUserTransferStatusRequest {
+    // The unique identifier of the gear.
+    string gear_id = 1;
+}
+
+// Response with current user's transfer status.
+message GetUserTransferStatusResponse {
+    // Current user's active transfer, if any.
+    optional Transfer active_transfer = 1;
+
+    // Whether the current user has an active transfer for this gear.
+    bool has_active_transfer = 2;
+}
+
+// Request to withdraw interest from a transfer.
+message WithdrawInterestRequest {
+    // The unique identifier of the transfer.
+    string transfer_id = 1;
+}
+
+// Response after withdrawing interest.
+message WithdrawInterestResponse {}
+
+// Request to get transfer context for a gear item.
+message GetGearTransferContextRequest {
+    // The unique identifier of the gear.
+    string gear_id = 1;
+
+    // The community ID for context.
+    string community_id = 2;
+}
+
+// Response with gear transfer context.
+message GetGearTransferContextResponse {
+    // Transfer context including user's transfer, available actions, and pending requests.
+    GearTransferContext context = 1;
+}
+
+// Request to create a transfer that has already happened (past-tense creation).
+//
+// When completed_at_unix_sec is set and in the past, the server skips the normal
+// interest/selection state machine and creates the transfer in COMPLETED state directly.
+// Exactly one of recipient_user_id and provisional_user_id must be set.
+message CreateTransferRequest {
+    // The gear being transferred.
+    string gear_id = 1;
+
+    // Type of transfer (LOAN or GIVEAWAY).
+    TransferType transfer_type = 2;
+
+    // The registered user receiving/borrowing the gear.
+    // Exactly one of recipient_user_id / provisional_user_id must be set.
+    optional string recipient_user_id = 3;
+
+    // A provisional user (non-registered participant) receiving/borrowing the gear.
+    // Exactly one of recipient_user_id / provisional_user_id must be set.
+    optional string provisional_user_id = 4;
+
+    // Unix timestamp when the transfer was completed.
+    // Must be set and in the past for past-tense creation.
+    optional int64 completed_at_unix_sec = 5;
+
+    // For loans only: unix timestamp when the item was returned.
+    // When set alongside completed_at_unix_sec, the loan is created as RETURNED.
+    optional int64 returned_at_unix_sec = 6;
+
+    // The community context for this transfer.
+    string community_id = 7;
+}
+
+// Response after creating a transfer.
+message CreateTransferResponse {
+    // The created transfer.
+    Transfer transfer = 1;
+
+    // Impact estimate for this transaction (populated for completed transfers).
+    optional ImpactEstimate impact = 2;
+}
+
+// Request to offer gear toward a community request: creates a live transfer
+// targeted at the requester, born in RECIPIENT_SELECTED (the owner commits by
+// offering; the requester already signaled by asking). The gear is also shared
+// into the community with the availability matching transfer_type.
+message OfferTransferRequest {
+    // The gear being offered. Must be owned by the caller and available.
+    string gear_id = 1;
+
+    // Type of transfer offered (LOAN or GIVEAWAY).
+    TransferType transfer_type = 2;
+
+    // The user receiving the gear. Must be the creator of the request
+    // identified by origin_request_id.
+    string recipient_user_id = 3;
+
+    // The community through which the caller saw the request. Both the caller
+    // and the recipient must be members, and the request must be shared into it.
+    string community_id = 4;
+
+    // The request this offer fulfills.
+    string origin_request_id = 5;
+
+    // The planning contribution (claim) this offer escalates. Required: a
+    // gear-backed offer always rides on a claim or freestanding contribution,
+    // and the created transfer is linked back onto it.
+    string contribution_id = 6;
+
+    // Estimated loan duration in days (loans only).
+    optional int32 loan_duration_days = 7;
+}
+
+// Response after offering gear toward a request.
+message OfferTransferResponse {
+    // The created transfer, in RECIPIENT_SELECTED state.
+    Transfer transfer = 1;
+}
+
+// Request to bring gear to an event: creates a live transfer of the caller's
+// gear to the event's host for the event's duration, born in RECIPIENT_SELECTED
+// (the host receives on the event's behalf). The gear is also shared into the
+// community with the availability matching transfer_type. The recipient is the
+// event host and is not supplied by the caller.
+message OfferExperienceTransferRequest {
+    // The gear being brought. Must be owned by the caller and available.
+    string gear_id = 1;
+
+    // Type of transfer offered (LOAN to lend for the event, GIVEAWAY to donate).
+    TransferType transfer_type = 2;
+
+    // The community through which the caller saw the event. The caller must be
+    // a member, and the event must be shared into it.
+    string community_id = 3;
+
+    // The event this contribution is for.
+    string origin_experience_id = 4;
+
+    // The planning contribution (claim) this offer escalates. Required: a
+    // gear-backed contribution always rides on a claim, and the created
+    // transfer is linked back onto it.
+    string contribution_id = 5;
+
+    // Estimated loan duration in days (loans only). When absent, the server
+    // derives it from the event's scheduled end.
+    optional int32 loan_duration_days = 6;
+}
+
+// Response after bringing gear to an event.
+message OfferExperienceTransferResponse {
+    // The created transfer, in RECIPIENT_SELECTED state.
+    Transfer transfer = 1;
+}
+
+// Request to undo a prior SelectRecipient call.
+message UndoSelectRecipientRequest {
+    // The CommunityEvent id returned by SelectRecipient. Required.
+    string community_event_id = 1;
+}
+
+// Response to UndoSelectRecipient. Empty on success. Failures are
+// returned as typed Connect error details (UndoErrorDetail).
+message UndoSelectRecipientResponse {}
+
+// Request to undo a prior CompleteTransfer call on a loan.
+message UndoCompleteLoanRequest {
+    // The CommunityEvent id returned by CompleteTransfer. Required.
+    string community_event_id = 1;
+}
+
+// Response to UndoCompleteLoan. Empty on success. Failures are
+// returned as typed Connect error details (UndoErrorDetail).
+message UndoCompleteLoanResponse {}
+
+// Request to undo a prior CompleteTransfer call on a giveaway.
+message UndoCompleteGiveawayRequest {
+    // The CommunityEvent id returned by CompleteTransfer. Required.
+    string community_event_id = 1;
+}
+
+// Response to UndoCompleteGiveaway. Empty on success. Failures are
+// returned as typed Connect error details (UndoErrorDetail).
+message UndoCompleteGiveawayResponse {}
+
+// Request to undo a prior StartLoan call.
+message UndoStartLoanRequest {
+    // The CommunityEvent id returned by StartLoan. Required.
+    string community_event_id = 1;
+}
+
+// Response to UndoStartLoan. Empty on success. Failures are returned
+// as typed Connect error details (UndoErrorDetail).
+message UndoStartLoanResponse {}
+
+// Request to undo a prior CancelTransfer call.
+message UndoCancelTransferRequest {
+    // The CommunityEvent id returned by CancelTransfer. Required.
+    string community_event_id = 1;
+}
+
+// Response to UndoCancelTransfer. Empty on success. Failures are
+// returned as typed Connect error details (UndoErrorDetail).
+message UndoCancelTransferResponse {}
+
+// RPC service for managing transfers.
+service TransferService {
+    // List available transfers in a community.
+    rpc ListTransfers(ListTransfersRequest) returns (ListTransfersResponse);
+
+    // Express interest in a transfer (works for both loans and giveaways).
+    rpc ExpressInterest(ExpressInterestRequest) returns (ExpressInterestResponse);
+
+    // Select a recipient from interested users (owner only).
+    rpc SelectRecipient(SelectRecipientRequest) returns (SelectRecipientResponse);
+
+    // Start a loan (doesn't apply to giveaways).
+    rpc StartLoan(StartLoanRequest) returns (StartLoanResponse);
+
+    // Complete a transfer (loan returned or giveaway ownership transferred).
+    rpc CompleteTransfer(CompleteTransferRequest) returns (CompleteTransferResponse);
+
+    // Cancel a transfer.
+    rpc CancelTransfer(CancelTransferRequest) returns (CancelTransferResponse);
+
+    // Update a transfer.
+    rpc UpdateTransfer(UpdateTransferRequest) returns (UpdateTransferResponse);
+
+    // List transfers made by the current user.
+    rpc ListMyTransfers(ListMyTransfersRequest) returns (ListMyTransfersResponse);
+
+    // List transfers received by the current user (as recipient).
+    rpc ListReceivedTransfers(ListReceivedTransfersRequest) returns (ListReceivedTransfersResponse);
+
+    // Get a single transfer by ID.
+    rpc GetTransfer(GetTransferRequest) returns (GetTransferResponse);
+
+    // Get all active transfers for a gear item.
+    rpc GetGearTransfers(GetGearTransfersRequest) returns (GetGearTransfersResponse);
+
+    // Check current user's transfer status for a gear item.
+    rpc GetUserTransferStatus(GetUserTransferStatusRequest) returns (GetUserTransferStatusResponse);
+
+    // Withdraw interest from a transfer (removes user from conversation).
+    rpc WithdrawInterest(WithdrawInterestRequest) returns (WithdrawInterestResponse);
+
+    // Get transfer context for a gear item (includes user's transfer, available actions, and pending requests).
+    rpc GetGearTransferContext(GetGearTransferContextRequest) returns (GetGearTransferContextResponse);
+
+    // Create a transfer that has already happened (past-tense, single-step creation).
+    // Skips the normal interest/selection state machine when completed_at_unix_sec is set.
+    rpc CreateTransfer(CreateTransferRequest) returns (CreateTransferResponse);
+
+    // Offer gear toward a community request: creates a live transfer targeted
+    // at the requester (born in RECIPIENT_SELECTED) and shares the gear into
+    // the community with the availability matching the transfer type.
+    rpc OfferTransfer(OfferTransferRequest) returns (OfferTransferResponse);
+
+    // Bring gear to an event: creates a live transfer of the caller's gear to
+    // the event's host for the event's duration (born in RECIPIENT_SELECTED)
+    // and shares the gear into the community with the availability matching the
+    // transfer type. The transfer completes when the event completes.
+    rpc OfferExperienceTransfer(OfferExperienceTransferRequest) returns (OfferExperienceTransferResponse);
+
+    // Undo a previous SelectRecipient call, returning the transfer to
+    // the state it was in beforehand. Fails with FailedPrecondition +
+    // UndoErrorDetail when the action cannot be undone (not-actor,
+    // already-undone, entity-changed, wrong-event-type).
+    rpc UndoSelectRecipient(UndoSelectRecipientRequest) returns (UndoSelectRecipientResponse);
+
+    // Undo a previous CompleteTransfer call on a loan, returning the
+    // loan to the state it was in beforehand. Fails with
+    // FailedPrecondition + UndoErrorDetail when the action cannot be
+    // undone.
+    rpc UndoCompleteLoan(UndoCompleteLoanRequest) returns (UndoCompleteLoanResponse);
+
+    // Undo a previous CompleteTransfer call on a giveaway, restoring
+    // the gear to its prior availability, reviving sibling transfers
+    // that were auto-cancelled by the completion, and un-archiving
+    // the community-gear relationships the completion archived. Fails
+    // with FailedPrecondition + UndoErrorDetail when the action
+    // cannot be undone.
+    rpc UndoCompleteGiveaway(UndoCompleteGiveawayRequest) returns (UndoCompleteGiveawayResponse);
+
+    // Undo a previous StartLoan call, returning the loan to the state
+    // it was in beforehand. Fails with FailedPrecondition +
+    // UndoErrorDetail when the action cannot be undone.
+    rpc UndoStartLoan(UndoStartLoanRequest) returns (UndoStartLoanResponse);
+
+    // Undo a previous CancelTransfer call, returning the transfer to
+    // the state it was in beforehand. Fails with FailedPrecondition +
+    // UndoErrorDetail when the action cannot be undone.
+    rpc UndoCancelTransfer(UndoCancelTransferRequest) returns (UndoCancelTransferResponse);
+}

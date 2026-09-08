@@ -1,0 +1,353 @@
+{
+  "description": "Golden eval cases for GenerateExperienceFromText. Each case runs a prompt against the provider and asserts a subset of fields. Opt-in per field: fields omitted from 'expected' are not checked. Loaded by the per-type evaluators in server/ai/eval/.",
+  "version": 2,
+  "defaults": {
+    "region": "Boulder, CO",
+    "current_time": "2026-04-21T09:00:00-06:00",
+    "value_estimate_tolerance_pct": 30.0
+  },
+  "cases": [
+    {
+      "id": "explicit_hike_tomorrow",
+      "tags": ["explicit", "time", "location"],
+      "prompt": "hiking at 10am tomorrow at Chautauqua",
+      "expected": {
+        "title_contains": ["hik"],
+        "title_contains_mode": "all",
+        "date": "2026-04-22",
+        "time": "10:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_contains": ["Chautauqua"],
+        "search_keywords_must_contain": ["hik"],
+        "search_keywords_general": ["trail", "outdoors", "mountain", "nature", "adventure", "wilderness"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "explicit_boardgames_friday_7pm",
+      "tags": ["explicit", "time", "home"],
+      "prompt": "board game night at my place friday 7pm",
+      "expected": {
+        "title_contains": ["board game"],
+        "title_contains_mode": "any",
+        "date": "2026-04-24",
+        "time": "19:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query": "USER_PRIMARY_LOCATION",
+        "search_keywords_must_contain": ["board game"],
+        "search_keywords_general": ["tabletop", "social", "friends", "night", "indoor", "gathering"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "explicit_dinner_dec15",
+      "tags": ["explicit", "time", "named-venue"],
+      "prompt": "dinner December 15 at 7pm at Frasca",
+      "expected": {
+        "title_contains": ["dinner"],
+        "title_contains_mode": "all",
+        "date": "2026-12-15",
+        "time": "19:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_contains": ["Frasca"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "explicit_pickleball_longmont",
+      "tags": ["explicit", "contextual-venue"],
+      "prompt": "go play pickleball at 3rd shot in longmont",
+      "expected": {
+        "title_contains": ["pickleball"],
+        "title_contains_mode": "all",
+        "location_query_contains": ["3rd shot", "longmont"],
+        "location_query_contains_mode": "any",
+        "search_keywords_must_contain": ["pickleball"],
+        "search_keywords_must_not_contain": ["3rd shot", "longmont"],
+        "search_keywords_general": ["sport", "paddle", "court", "recreation", "athletic", "game"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "explicit_breakfast_tomorrow_morning",
+      "tags": ["inferred-time", "relative-date"],
+      "prompt": "breakfast tomorrow morning",
+      "expected": {
+        "title_contains": ["breakfast"],
+        "title_contains_mode": "all",
+        "date": "2026-04-22",
+        "time_confidence_any_of": ["INFERRED", "EXPLICIT"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "relative_saturday_run",
+      "tags": ["inferred-time", "relative-date"],
+      "prompt": "this Saturday morning let's go for a run",
+      "expected": {
+        "title_contains": ["run"],
+        "title_contains_mode": "all",
+        "date": "2026-04-25",
+        "time_confidence_any_of": ["INFERRED", "EXPLICIT"],
+        "search_keywords_must_contain": ["run"],
+        "search_keywords_general": ["fitness", "outdoors", "morning", "exercise", "workout", "jogging"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "vague_coffee_sometime",
+      "tags": ["vague", "no-time"],
+      "prompt": "coffee sometime",
+      "expected": {
+        "title_contains": ["coffee"],
+        "title_contains_mode": "all",
+        "time_confidence_any_of": ["UNKNOWN", "INFERRED"],
+        "min_confidence": 0.1
+      }
+    },
+    {
+      "id": "vague_dinner_friends",
+      "tags": ["vague", "no-time"],
+      "prompt": "dinner with friends",
+      "expected": {
+        "title_contains": ["dinner"],
+        "title_contains_mode": "all",
+        "time_confidence_any_of": ["UNKNOWN", "INFERRED"],
+        "min_confidence": 0.1
+      }
+    },
+    {
+      "id": "named_participants_hike",
+      "tags": ["named-participants", "relative-date"],
+      "prompt": "hike with Mike and Bhavna saturday",
+      "expected": {
+        "title_contains": ["hike", "hik"],
+        "title_contains_mode": "any",
+        "date": "2026-04-25",
+        "mentioned_names_set": ["Mike", "Bhavna"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "named_participants_lunch_pearl",
+      "tags": ["named-participants", "named-venue", "no-time"],
+      "prompt": "lunch with Sarah at Pearl Street Mall",
+      "expected": {
+        "title_contains": ["lunch"],
+        "title_contains_mode": "all",
+        "location_query_contains": ["Pearl Street", "Pearl St"],
+        "location_query_contains_mode": "any",
+        "search_keywords_must_not_contain": ["pearl", "sarah"],
+        "mentioned_names_set": ["Sarah"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "named_participants_drinks",
+      "tags": ["named-participants", "vague-time"],
+      "prompt": "meeting Alex and Rachel for drinks",
+      "expected": {
+        "title_contains": ["drink"],
+        "title_contains_mode": "all",
+        "mentioned_names_set": ["Alex", "Rachel"],
+        "time_confidence_any_of": ["UNKNOWN", "INFERRED"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "past_tense_coffee",
+      "tags": ["past-tense"],
+      "prompt": "coffee with Jane last Thursday",
+      "expected": {
+        "title_contains": ["coffee"],
+        "title_contains_mode": "all",
+        "date": "2026-04-16",
+        "mentioned_names_set": ["Jane"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "past_tense_hike",
+      "tags": ["past-tense"],
+      "prompt": "hiked Chautauqua yesterday",
+      "expected": {
+        "title_contains": ["chautauqua", "hike", "hik"],
+        "title_contains_mode": "any",
+        "date": "2026-04-20",
+        "location_query_contains": ["Chautauqua"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "outdoor_camping_july4",
+      "tags": ["explicit-date", "outdoor"],
+      "prompt": "camping at Brainard Lake july 4th weekend",
+      "current_time": "2026-05-01T09:00:00-06:00",
+      "expected": {
+        "title_contains": ["camp"],
+        "title_contains_mode": "all",
+        "location_query_contains": ["Brainard"],
+        "search_keywords_must_contain": ["camp"],
+        "search_keywords_must_not_contain": ["brainard"],
+        "search_keywords_general": ["outdoors", "nature", "lake", "tent", "wilderness", "weekend", "mountain", "campfire", "forest"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "kids_birthday_saturday",
+      "tags": ["kids", "relative-date", "vague-location"],
+      "prompt": "kids birthday party at the park this saturday",
+      "expected": {
+        "title_contains": ["birthday"],
+        "title_contains_mode": "all",
+        "date": "2026-04-25",
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "value_cooking_class",
+      "tags": ["value", "explicit-price"],
+      "prompt": "cooking class $25 per person at the community center saturday 2pm",
+      "expected": {
+        "title_contains": ["cook"],
+        "title_contains_mode": "all",
+        "date": "2026-04-25",
+        "time": "14:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "value_estimate_usd": 25,
+        "value_estimate_tolerance_pct": 30,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "value_wine_tasting",
+      "tags": ["value", "explicit-price", "named-venue"],
+      "prompt": "wine tasting at Frasca tickets $45",
+      "expected": {
+        "title_contains": ["wine"],
+        "title_contains_mode": "all",
+        "location_query_contains": ["Frasca"],
+        "search_keywords_must_not_contain": ["frasca"],
+        "value_estimate_usd": 45,
+        "value_estimate_tolerance_pct": 30,
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "value_yoga_retreat",
+      "tags": ["value", "explicit-price"],
+      "prompt": "yoga retreat weekend $200",
+      "expected": {
+        "title_contains": ["yoga"],
+        "title_contains_mode": "all",
+        "value_estimate_usd": 200,
+        "value_estimate_tolerance_pct": 30,
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "contextual_yoga_rec",
+      "tags": ["contextual-venue", "vague-time"],
+      "prompt": "sunset yoga at the rec center",
+      "expected": {
+        "title_contains": ["yoga"],
+        "title_contains_mode": "all",
+        "location_query_contains": ["rec"],
+        "search_keywords_must_contain": ["yoga"],
+        "search_keywords_must_not_contain": ["rec center"],
+        "search_keywords_general": ["fitness", "wellness", "stretching", "meditation", "evening", "class", "community", "sunset"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "run_club_weekly",
+      "tags": ["recurring", "explicit-time"],
+      "prompt": "run club tuesday mornings 6am at North Boulder Park",
+      "expected": {
+        "title_contains": ["run"],
+        "title_contains_mode": "all",
+        "time": "06:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_contains": ["North Boulder Park", "Boulder"],
+        "location_query_contains_mode": "any",
+        "search_keywords_must_not_contain": ["boulder"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "painting_workshop_kids",
+      "tags": ["kids", "relative-date"],
+      "prompt": "painting workshop for kids saturday afternoon",
+      "expected": {
+        "title_contains": ["paint"],
+        "title_contains_mode": "all",
+        "date": "2026-04-25",
+        "time_confidence_any_of": ["INFERRED", "EXPLICIT"],
+        "search_keywords_must_contain": ["paint"],
+        "search_keywords_general": ["kids", "art", "workshop", "creative", "children", "class"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "stargazing_anne_white",
+      "tags": ["outdoor", "named-venue", "evening"],
+      "prompt": "stargazing at Anne U. White friday night",
+      "expected": {
+        "title_contains": ["stargaz", "star"],
+        "title_contains_mode": "any",
+        "date": "2026-04-24",
+        "location_query_contains": ["Anne"],
+        "search_keywords_must_not_contain": ["anne u"],
+        "time_confidence_any_of": ["INFERRED", "EXPLICIT"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "potluck_sunday_evening",
+      "tags": ["inferred-time", "vague-location"],
+      "prompt": "potluck sunday evening at someone's house",
+      "expected": {
+        "title_contains": ["potluck"],
+        "title_contains_mode": "all",
+        "date": "2026-04-26",
+        "time_confidence_any_of": ["INFERRED", "EXPLICIT"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "movie_night_tbd",
+      "tags": ["vague-location", "inferred-time"],
+      "prompt": "movie night next week",
+      "expected": {
+        "title_contains": ["movie"],
+        "title_contains_mode": "all",
+        "time_confidence_any_of": ["UNKNOWN", "INFERRED"],
+        "min_confidence": 0.2
+      }
+    },
+    {
+      "id": "denver_gardens_visit",
+      "tags": ["named-venue", "no-time"],
+      "prompt": "visit to Denver Botanic Gardens",
+      "expected": {
+        "title_contains": ["garden", "denver"],
+        "title_contains_mode": "any",
+        "location_query_contains": ["Denver Botanic", "Denver"],
+        "location_query_contains_mode": "any",
+        "search_keywords_must_not_contain": ["denver"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "family_reunion_vague",
+      "tags": ["vague", "far-future"],
+      "prompt": "family reunion next month",
+      "expected": {
+        "title_contains": ["family", "reunion"],
+        "title_contains_mode": "any",
+        "time_confidence_any_of": ["UNKNOWN", "INFERRED"],
+        "min_confidence": 0.2
+      }
+    }
+  ]
+}

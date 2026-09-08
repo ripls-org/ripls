@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// A user's registered device for push notifications
+message UserDevice {
+  // Unique identifier for this device registration
+  string id = 1;
+
+  // The user who owns this device
+  string user_id = 2;
+
+  // Platform-specific push token (FCM token, APNs token, etc.)
+  string device_token = 3;
+
+  // Platform of this device
+  DevicePlatform platform = 4;
+
+  // When this device was registered
+  int64 created_at_unix_sec = 5;
+
+  // Last time we successfully sent a notification to this device
+  int64 last_used_unix_sec = 6;
+
+  // Firebase installation ID for this app instance, when the client reported
+  // one. Empty for registrations made before the client started sending it,
+  // and for platforms where it is unavailable — the FCM provider falls back
+  // to device_token in that case.
+  string installation_id = 7;
+}
+
+// Device platforms
+enum DevicePlatform {
+  DEVICE_PLATFORM_UNSPECIFIED = 0;
+  DEVICE_PLATFORM_IOS = 1;
+  DEVICE_PLATFORM_ANDROID = 2;
+  DEVICE_PLATFORM_WEB = 3;
+}

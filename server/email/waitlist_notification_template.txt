@@ -1,0 +1,11 @@
+New Waitlist Signup
+
+Someone just joined the Ripls waitlist:
+
+Email: {{.SignupEmail}}
+{{if .Name}}Name: {{.Name}}
+{{end}}{{if .ReferralSource}}Heard about us from: {{.ReferralSource}}
+{{end}}{{if .IntendedUse}}Wants to: {{.IntendedUse}}
+{{end}}Time: {{.Timestamp}}
+
+This is an automated notification from the Ripls waitlist system.

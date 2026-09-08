@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package ripls.models;
+
+import "ripls/models/common.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// ProvisionalUser is a lightweight, contact-keyed placeholder for a
+// not-yet-registered participant.
+//
+// Provisional users are scoped to a single community and do not count toward
+// the community member limit. They may carry an off-app contact handle (phone
+// or email) so they can be notified before registering. If the person later
+// registers, the provisional account is merged into the real account via the
+// merge library (server/provisional/merge.go).
+message ProvisionalUser {
+  // Unique identifier.
+  string id = 1;
+
+  // Display name provided by the creator (e.g. "Mike" or "Bhavna").
+  string name = 2;
+
+  // Community this provisional user belongs to.
+  // Provisional users are community-scoped: they are visible to all members of
+  // this community but are not members themselves.
+  string community_id = 3;
+
+  // User ID of the community member who created this provisional account.
+  string created_by_user_id = 4;
+
+  // When this provisional user was created (Unix timestamp in seconds).
+  int64 created_at_unix_sec = 5;
+
+  // ID of the CommunityInvitationLink associated with this provisional user.
+  // Set when an invite link is generated so the provisional account can be
+  // claimed when the invitee registers.
+  optional string invite_link_id = 6;
+
+  // User ID of the real account that claimed this provisional user.
+  // Set during merge. Once claimed, the provisional user is effectively
+  // read-only.
+  optional string claimed_by_user_id = 7;
+
+  // Off-app contact handle for a contact-keyed provisional member. Exactly one
+  // of phone_number / email is set when the placeholder was created from an
+  // invite; both are absent for a name-only provisional user. The handle makes
+  // the member reachable off-app (text or email) and is the dedup key — one
+  // provisional member per handle per community. PII: never expose on the API
+  // or in unmasked logs.
+  oneof contact {
+    // E.164 phone number (e.g. "+15551234567").
+    string phone_number = 8;
+
+    // Email address.
+    string email = 9;
+  }
+
+  // Soft deletion metadata.
+  optional DeletedMetadata deleted = 20;
+}

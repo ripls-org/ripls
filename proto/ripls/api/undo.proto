@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package ripls.api;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// UndoFailureReason enumerates the distinct reasons an Undo* RPC can
+// decline to reverse an action. Carried in UndoErrorDetail.
+enum UndoFailureReason {
+  UNDO_FAILURE_REASON_UNSPECIFIED = 0;
+
+  // This action has already been undone.
+  UNDO_FAILURE_REASON_ALREADY_UNDONE = 1;
+
+  // The affected entity has changed since the action was performed.
+  UNDO_FAILURE_REASON_ENTITY_CHANGED = 2;
+
+  // Related entities have diverged such that the action cannot be
+  // reversed cleanly.
+  UNDO_FAILURE_REASON_CASCADE_UNRECOVERABLE = 3;
+
+  // The requesting user is not the actor who performed the action.
+  UNDO_FAILURE_REASON_NOT_ACTOR = 4;
+
+  // The supplied community_event_id does not identify an action this
+  // RPC can undo.
+  UNDO_FAILURE_REASON_WRONG_EVENT_TYPE = 5;
+}
+
+// UndoErrorDetail is attached as a Connect error detail on Undo* RPC
+// failures.
+message UndoErrorDetail {
+  // Machine-readable reason the undo was declined.
+  UndoFailureReason reason = 1;
+
+  // Human-readable explanation. Safe to surface to the user verbatim.
+  string user_message = 2;
+}
+
+// UndoableAction, when present on an entity-detail response, signals
+// that the requesting user can reverse a prior action on that entity
+// by calling the relevant Undo* RPC with community_event_id.
+message UndoableAction {
+  // Identifier to pass to the Undo* RPC.
+  string community_event_id = 1;
+
+  // Human-readable label for the undo affordance
+  // (e.g., "Undo mark returned").
+  string label = 2;
+}

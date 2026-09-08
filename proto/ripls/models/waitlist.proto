@@ -1,0 +1,27 @@
+// A waitlist entry for users interested in Ripls before launch.
+syntax = "proto3";
+
+package ripls.models;
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
+
+// WaitlistEntry represents a user who signed up for the waitlist.
+message WaitlistEntry {
+  // Unique identifier for this waitlist entry.
+  string id = 1;
+
+  // Email address of the interested user.
+  string email = 2;
+
+  // Timestamp when the user joined the waitlist.
+  int64 created_at_unix_sec = 3;
+
+  // Name of the person who signed up (optional).
+  optional string name = 4;
+
+  // How the person heard about Ripls (optional).
+  optional string referral_source = 5;
+
+  // What the person wants to use Ripls for (optional).
+  optional string intended_use = 6;
+}

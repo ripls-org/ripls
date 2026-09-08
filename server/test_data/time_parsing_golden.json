@@ -1,0 +1,643 @@
+{
+  "description": "Golden test scenarios for experience time parsing. Each scenario defines an input (text prompt or webpage content) with user context (timezone, current time) and the expected parsed output. Used by integration tests (live LLM) and unit tests (scenario mock).",
+  "generate_experience_from_text": [
+    {
+      "id": "text_explicit_time_mst",
+      "name": "Explicit time in MST timezone",
+      "prompt": "hiking at 10am tomorrow",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T21:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-15",
+        "expected_time": "10:00",
+        "expected_datetime_iso": "2026-04-15T10:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["hik"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_explicit_date_time",
+      "name": "Explicit date and time",
+      "prompt": "dinner December 15 at 7pm",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-12-15",
+        "expected_time": "19:00",
+        "expected_datetime_iso": "2026-12-15T19:00:00-07:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["dinner"],
+        "has_description": true,
+        "min_confidence": 0.7
+      }
+    },
+    {
+      "id": "text_relative_date_morning",
+      "name": "Relative date with fuzzy time",
+      "prompt": "this Saturday morning let's go for a run",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-18",
+        "expected_time": "08:00",
+        "expected_datetime_iso": "2026-04-18T08:00:00-06:00",
+        "time_confidence": ["INFERRED"],
+        "title_contains": ["run"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_fuzzy_no_specific_time",
+      "name": "Fuzzy time with no specifics",
+      "prompt": "coffee sometime next week",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "",
+        "expected_time": "",
+        "expected_datetime_iso": "",
+        "time_confidence": ["UNKNOWN", "INFERRED"],
+        "title_contains": ["coffee"],
+        "has_description": true,
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "text_past_tense",
+      "name": "Past tense event",
+      "prompt": "we hiked yesterday at 8am at Chautauqua",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-13",
+        "expected_time": "08:00",
+        "expected_datetime_iso": "2026-04-13T08:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["hik"],
+        "has_description": true,
+        "location_contains": ["chautauqua"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_no_time",
+      "name": "No time information at all",
+      "prompt": "want to go climbing",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "",
+        "expected_time": "",
+        "expected_datetime_iso": "",
+        "time_confidence": ["UNKNOWN"],
+        "title_contains": ["climb"],
+        "has_description": true,
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "text_explicit_timezone_est",
+      "name": "User specifies different timezone than their own — 3pm Eastern (EDT in April, UTC-4) on April 20 = 1pm MDT (UTC-6)",
+      "prompt": "meeting at 3pm EST on April 20",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-20",
+        "expected_time": "13:00",
+        "expected_datetime_iso": "2026-04-20T13:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["meeting"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_24h_format",
+      "name": "24-hour time format",
+      "prompt": "departing at 14:30 on Friday",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-17",
+        "expected_time": "14:30",
+        "expected_datetime_iso": "2026-04-17T14:30:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": [],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_weekend_multiday",
+      "name": "Multi-day weekend event",
+      "prompt": "camping trip this weekend",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-18",
+        "expected_time": "",
+        "expected_datetime_iso": "",
+        "time_confidence": ["INFERRED"],
+        "title_contains": ["camp"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_recurring",
+      "name": "Recurring event",
+      "prompt": "every Tuesday at 6pm yoga in the park",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-21",
+        "expected_time": "18:00",
+        "expected_datetime_iso": "2026-04-21T18:00:00-06:00",
+        "time_confidence": ["EXPLICIT", "INFERRED"],
+        "title_contains": ["yoga"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_late_night_date_rollover",
+      "name": "Tomorrow at 11pm local when UTC is already next day",
+      "prompt": "hiking tomorrow morning at 8am",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T23:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-15",
+        "expected_time": "08:00",
+        "expected_datetime_iso": "2026-04-15T08:00:00-06:00",
+        "time_confidence": ["EXPLICIT", "INFERRED"],
+        "title_contains": ["hik"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_utc_plus12_auckland",
+      "name": "User in UTC+12 Auckland — large UTC offset",
+      "prompt": "brunch tomorrow at 10:30am",
+      "region": "Auckland, New Zealand",
+      "current_time": "2026-04-14T20:00:00+12:00",
+      "timezone": "Pacific/Auckland",
+      "expected": {
+        "expected_date": "2026-04-15",
+        "expected_time": "10:30",
+        "expected_datetime_iso": "2026-04-15T10:30:00+12:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["brunch"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_utc_plus530_india",
+      "name": "User in UTC+5:30 India — half-hour offset",
+      "prompt": "chai meetup at 4pm tomorrow",
+      "region": "Mumbai, India",
+      "current_time": "2026-04-14T18:30:00+05:30",
+      "timezone": "Asia/Kolkata",
+      "expected": {
+        "expected_date": "2026-04-15",
+        "expected_time": "16:00",
+        "expected_datetime_iso": "2026-04-15T16:00:00+05:30",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["chai", "meetup"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_utc_london",
+      "name": "User in UTC+0 London",
+      "prompt": "pub quiz tonight at 7:30pm",
+      "region": "London, UK",
+      "current_time": "2026-04-14T14:00:00+00:00",
+      "timezone": "Europe/London",
+      "expected": {
+        "expected_date": "2026-04-14",
+        "expected_time": "19:30",
+        "expected_datetime_iso": "2026-04-14T19:30:00+01:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["pub", "quiz"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_noon_ambiguity",
+      "name": "Noon should be 12:00 not 00:00",
+      "prompt": "lunch at noon tomorrow",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-15",
+        "expected_time": "12:00",
+        "expected_datetime_iso": "2026-04-15T12:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["lunch"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_midnight_12am",
+      "name": "12am is midnight (00:00)",
+      "prompt": "midnight screening at 12am Friday",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-17",
+        "expected_time": "00:00",
+        "expected_datetime_iso": "2026-04-17T00:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["midnight", "screen"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_next_wednesday_on_wednesday",
+      "name": "Next Wednesday when today is Wednesday",
+      "prompt": "game night next Wednesday at 7pm",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-15T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-22",
+        "expected_time": "19:00",
+        "expected_datetime_iso": "2026-04-22T19:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["game"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_empty_input",
+      "name": "Empty input string",
+      "prompt": "",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected_error": true
+    },
+    {
+      "id": "text_dst_spring_forward",
+      "name": "DST spring forward — this Sunday when clocks jump ahead",
+      "prompt": "brunch this Sunday at 10am",
+      "region": "Boulder, CO",
+      "current_time": "2026-03-06T12:00:00-07:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-03-08",
+        "expected_time": "10:00",
+        "expected_datetime_iso": "2026-03-08T10:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["brunch"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "text_very_long_input",
+      "name": "Very long input (1000+ characters) — should not crash or timeout",
+      "prompt": "Hey everyone! I was thinking we could organize a really amazing community potluck dinner this Saturday evening around 6pm at the community center on Pearl Street. I was thinking we could have a theme this time, maybe something like 'comfort food from around the world' where everyone brings a dish from their cultural background or a recipe they learned while traveling. Last time we did this it was such a hit - remember when Maria brought that incredible mole and Tom made his grandmother's pierogies? I think we had about 30 people show up which was great. This time I'm hoping for even more. We should probably coordinate who's bringing what so we don't end up with 15 salads like that one time. I can bring a main dish - I've been perfecting my Thai green curry recipe. Also someone should bring plates and utensils since the community center doesn't always have enough. Oh and we should probably set up around 5:30 so everything is ready when people arrive at 6. Kids are welcome too! There's that play area in the back they can use. Let me know if you're in and what you want to bring!",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-18",
+        "expected_time": "18:00",
+        "expected_datetime_iso": "2026-04-18T18:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["potluck", "dinner", "community"],
+        "has_description": true,
+        "location_contains": ["pearl", "community center"],
+        "min_confidence": 0.5
+      }
+    }
+  ],
+  "generate_experience_from_webpage": [
+    {
+      "id": "web_eventbrite_explicit",
+      "name": "Eventbrite-style page with explicit datetime",
+      "page_title": "Summer Jazz Festival 2026 - Tickets",
+      "page_description": "Experience an evening of smooth jazz at Main Street Plaza",
+      "page_body": "Summer Jazz Festival 2026\n\nDate: July 18, 2026\nTime: 7:00 PM MDT\nDoors Open: 6:00 PM\n\nMain Street Plaza\n123 Main Street\nBoulder, CO 80302\n\nTickets: $25-45\n\nJoin us for an unforgettable evening of live jazz music featuring the Sarah Johnson Quartet.",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-07-18",
+        "expected_time": "19:00",
+        "expected_datetime_iso": "2026-07-18T19:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["jazz"],
+        "has_description": true,
+        "location_contains": ["main street", "boulder"],
+        "min_confidence": 0.7
+      }
+    },
+    {
+      "id": "web_meetup_recurring",
+      "name": "Meetup-style page with recurring pattern",
+      "page_title": "Boulder Trail Runners - Monthly Group Run",
+      "page_description": "Monthly group run for all skill levels",
+      "page_body": "Boulder Trail Runners Monthly Group Run\n\nJoin us the first Saturday of every month at Chautauqua Park for our group trail run.\n\nTime: 8:00 AM\nDistance: 5-10 miles, all paces welcome\nMeet at the Chautauqua Ranger Cottage\n\nFree for all! Just show up and run.\n\nNext runs:\n- May 2, 2026\n- June 6, 2026\n- July 4, 2026",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-05-02",
+        "expected_time": "08:00",
+        "expected_datetime_iso": "2026-05-02T08:00:00-06:00",
+        "time_confidence": ["EXPLICIT", "INFERRED"],
+        "title_contains": ["trail run", "group run", "boulder"],
+        "has_description": true,
+        "location_contains": ["chautauqua"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "web_timezone_abbreviation",
+      "name": "Page with timezone abbreviation PST",
+      "page_title": "SF Tech Meetup - AI Demo Night",
+      "page_description": "Monthly AI demo night in San Francisco",
+      "page_body": "SF Tech Meetup presents AI Demo Night\n\nWhen: April 25, 2026 at 6:30 PM PST\nWhere: TechHub SF, 123 Market Street, San Francisco, CA\n\nNetwork with AI professionals and see live demos of the latest AI projects.\n\nFree admission, RSVP required.",
+      "region": "San Francisco, CA",
+      "current_time": "2026-04-14T12:00:00-07:00",
+      "timezone": "America/Los_Angeles",
+      "expected": {
+        "expected_date": "2026-04-25",
+        "expected_time": "18:30",
+        "expected_datetime_iso": "2026-04-25T18:30:00-07:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["tech", "ai", "demo"],
+        "has_description": true,
+        "location_contains": ["market street", "san francisco", "techhub"],
+        "min_confidence": 0.7
+      }
+    },
+    {
+      "id": "web_iso8601_in_body",
+      "name": "Page with ISO 8601 datetime in body",
+      "page_title": "Conference Registration",
+      "page_description": "Annual developer conference",
+      "page_body": "DevCon 2026\n\nStart: 2026-05-20T09:00:00-06:00\nEnd: 2026-05-22T17:00:00-06:00\n\nVenue: Boulder Convention Center\n1850 Pearl Street, Boulder, CO\n\nEarly bird registration: $299\nRegular: $499\n\nThree days of talks, workshops, and networking.",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-05-20",
+        "expected_time": "09:00",
+        "expected_datetime_iso": "2026-05-20T09:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["devcon", "conference"],
+        "has_description": true,
+        "location_contains": ["boulder", "convention", "pearl"],
+        "min_confidence": 0.7
+      }
+    },
+    {
+      "id": "web_date_no_time",
+      "name": "Page with date but no specific time",
+      "page_title": "Community Garden Volunteer Day",
+      "page_description": "Help plant the spring garden",
+      "page_body": "Community Garden Volunteer Day\n\nDate: Saturday, April 25, 2026\n\nCome help us plant the spring garden! All skill levels welcome.\n\nBring: Gloves, water bottle, sunscreen\nLocation: Community Garden, 5th & Arapahoe, Boulder",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-04-25",
+        "expected_time": "",
+        "expected_datetime_iso": "",
+        "time_confidence": ["EXPLICIT", "INFERRED", "UNKNOWN"],
+        "title_contains": ["garden", "volunteer"],
+        "has_description": true,
+        "location_contains": ["garden", "boulder", "arapahoe"],
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "web_multiday_festival",
+      "name": "Multi-day festival with multiple dates",
+      "page_title": "Boulder Creek Festival 2026",
+      "page_description": "Three days of music, food, and fun",
+      "page_body": "Boulder Creek Festival 2026\n\nMay 22-24, 2026\n\nFriday May 22: 5:00 PM - 10:00 PM\nSaturday May 23: 10:00 AM - 10:00 PM\nSunday May 24: 10:00 AM - 6:00 PM\n\nCentral Park, Boulder Creek Path\nFree admission!\n\nLive music on 3 stages, 40+ food vendors, kids zone, craft beer garden.",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-05-22",
+        "expected_time": "17:00",
+        "expected_datetime_iso": "2026-05-22T17:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["boulder creek", "festival"],
+        "has_description": true,
+        "location_contains": ["central park", "boulder creek"],
+        "min_confidence": 0.7
+      }
+    },
+    {
+      "id": "web_past_event",
+      "name": "Page with past date (recap/recording)",
+      "page_title": "March Community Cleanup - Recap",
+      "page_description": "Thank you to everyone who helped!",
+      "page_body": "March Community Cleanup Recap\n\nDate: March 15, 2026\nTime: 9:00 AM - 12:00 PM\n\nThank you to the 45 volunteers who showed up to clean Boulder Creek! Together we collected over 200 lbs of trash.\n\nNext cleanup: TBD",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-03-15",
+        "expected_time": "09:00",
+        "expected_datetime_iso": "2026-03-15T09:00:00-06:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["cleanup"],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "web_different_timezone_event",
+      "name": "Event timezone differs from user timezone",
+      "page_title": "NYC Broadway Show",
+      "page_description": "Hamilton on Broadway",
+      "page_body": "Hamilton\nRichard Rodgers Theatre\n226 W 46th St, New York, NY 10036\n\nPerformance: May 10, 2026 at 8:00 PM ET\nDoors open at 7:00 PM\n\nTickets from $199",
+      "region": "Boulder, CO",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "expected_date": "2026-05-10",
+        "expected_time": "20:00",
+        "expected_datetime_iso": "2026-05-10T20:00:00-04:00",
+        "time_confidence": ["EXPLICIT"],
+        "title_contains": ["hamilton", "broadway"],
+        "has_description": true,
+        "location_contains": ["46th", "new york", "richard rodgers"],
+        "min_confidence": 0.7
+      }
+    }
+  ],
+  "convert_informal_time": [
+    {
+      "id": "informal_tomorrow_afternoon",
+      "name": "Tomorrow afternoon",
+      "informal_description": "tomorrow afternoon",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "time_type": "specific",
+        "expected_date": "2026-04-15",
+        "expected_time": "14:00",
+        "expected_datetime_iso": "2026-04-15T14:00:00-06:00",
+        "confidence": ["INFERRED"]
+      }
+    },
+    {
+      "id": "informal_next_friday_6pm",
+      "name": "Next Friday at explicit time",
+      "informal_description": "next Friday at 6pm",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "time_type": "specific",
+        "expected_date": "2026-04-24",
+        "expected_time": "18:00",
+        "expected_datetime_iso": "2026-04-24T18:00:00-06:00",
+        "confidence": ["EXPLICIT"]
+      }
+    },
+    {
+      "id": "informal_this_weekend",
+      "name": "This weekend as range",
+      "informal_description": "this weekend",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "time_type": "range",
+        "expected_date": "2026-04-18",
+        "expected_time": "",
+        "expected_datetime_iso": "",
+        "confidence": ["INFERRED"]
+      }
+    },
+    {
+      "id": "informal_tonight",
+      "name": "Tonight defaults to evening",
+      "informal_description": "tonight",
+      "current_time": "2026-04-14T14:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "time_type": "specific",
+        "expected_date": "2026-04-14",
+        "expected_time": "20:00",
+        "expected_datetime_iso": "2026-04-14T20:00:00-06:00",
+        "confidence": ["INFERRED"]
+      }
+    },
+    {
+      "id": "informal_tbd",
+      "name": "No time info returns TBD",
+      "informal_description": "whenever works",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "time_type": "tbd",
+        "expected_date": "",
+        "expected_time": "",
+        "expected_datetime_iso": "",
+        "confidence": ["UNKNOWN"]
+      }
+    },
+    {
+      "id": "informal_late_night_rollover",
+      "name": "Tomorrow at 11pm local — UTC already next day",
+      "informal_description": "tomorrow morning at 9am",
+      "current_time": "2026-04-14T23:30:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "time_type": "specific",
+        "expected_date": "2026-04-15",
+        "expected_time": "09:00",
+        "expected_datetime_iso": "2026-04-15T09:00:00-06:00",
+        "confidence": ["EXPLICIT"]
+      }
+    },
+    {
+      "id": "informal_auckland_timezone",
+      "name": "User in Auckland UTC+12",
+      "informal_description": "Saturday at 2pm",
+      "current_time": "2026-04-14T20:00:00+12:00",
+      "timezone": "Pacific/Auckland",
+      "expected": {
+        "time_type": "specific",
+        "expected_date": "2026-04-18",
+        "expected_time": "14:00",
+        "expected_datetime_iso": "2026-04-18T14:00:00+12:00",
+        "confidence": ["EXPLICIT"]
+      }
+    },
+    {
+      "id": "informal_with_duration",
+      "name": "Time with duration",
+      "informal_description": "coffee for 1 hour tomorrow at 9am",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "time_type": "specific",
+        "expected_date": "2026-04-15",
+        "expected_time": "09:00",
+        "expected_datetime_iso": "2026-04-15T09:00:00-06:00",
+        "duration_minutes": 60,
+        "confidence": ["EXPLICIT"]
+      }
+    },
+    {
+      "id": "informal_noon",
+      "name": "Noon is 12:00 not 00:00",
+      "informal_description": "noon on Wednesday",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "time_type": "specific",
+        "expected_date": "2026-04-15",
+        "expected_time": "12:00",
+        "expected_datetime_iso": "2026-04-15T12:00:00-06:00",
+        "confidence": ["EXPLICIT"]
+      }
+    },
+    {
+      "id": "informal_midnight",
+      "name": "Midnight is 00:00",
+      "informal_description": "midnight Friday",
+      "current_time": "2026-04-14T12:00:00-06:00",
+      "timezone": "America/Denver",
+      "expected": {
+        "time_type": "specific",
+        "expected_date": "2026-04-17",
+        "expected_time": "00:00",
+        "expected_datetime_iso": "2026-04-17T00:00:00-06:00",
+        "confidence": ["EXPLICIT"]
+      }
+    }
+  ]
+}

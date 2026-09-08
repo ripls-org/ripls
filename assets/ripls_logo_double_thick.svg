@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="329"
+   height="356"
+   viewBox="0 0 197.4 213.6"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="ripls_logo_double_thick.svg"
+   inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview12"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.0525"
+     inkscape:cx="200.24361"
+     inkscape:cy="200"
+     inkscape:window-width="1520"
+     inkscape:window-height="1040"
+     inkscape:window-x="1646"
+     inkscape:window-y="115"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg12" />
+  <!-- 
+    Simplified version for small display (favicon, notification icon)
+    6 circles with inner concentric circles arranged radially
+    Monochrome with heavy stroke weight for better visibility at small sizes
+  -->
+  <defs
+     id="defs1">
+    <style
+       id="style1">
+      .circle-stroke {
+        fill: none;
+        stroke: #3b5998;
+        stroke-width: 12;
+      }
+    </style>
+  </defs>
+  <!-- Center of main circle -->
+  <g
+     transform="translate(98.952497,106.84531)"
+     id="g12">
+    <!-- Radius from center to each circle's center -->
+    <!-- Circle radius r=40, overlap by r/4 = 10 -->
+    <!-- Distance between centers = 2r - 2(r/4) = 3r/2 = 60 -->
+    <!-- Circle 1: Top -->
+    <circle
+       cx="0"
+       cy="-60"
+       r="40"
+       class="circle-stroke"
+       id="circle1" />
+    <circle
+       cx="0"
+       cy="-60"
+       r="20"
+       class="circle-stroke"
+       id="circle2" />
+    <!-- Circle 2: 60° clockwise from top -->
+    <circle
+       cx="51.959999"
+       cy="-30"
+       r="40"
+       class="circle-stroke"
+       id="circle3" />
+    <circle
+       cx="51.959999"
+       cy="-30"
+       r="20"
+       class="circle-stroke"
+       id="circle4" />
+    <!-- Circle 3: 120° clockwise from top -->
+    <circle
+       cx="51.959999"
+       cy="30"
+       r="40"
+       class="circle-stroke"
+       id="circle5" />
+    <circle
+       cx="51.959999"
+       cy="30"
+       r="20"
+       class="circle-stroke"
+       id="circle6" />
+    <!-- Circle 4: Bottom -->
+    <circle
+       cx="0"
+       cy="60"
+       r="40"
+       class="circle-stroke"
+       id="circle7" />
+    <circle
+       cx="0"
+       cy="60"
+       r="20"
+       class="circle-stroke"
+       id="circle8" />
+    <!-- Circle 5: 240° clockwise from top -->
+    <circle
+       cx="-51.959999"
+       cy="30"
+       r="40"
+       class="circle-stroke"
+       id="circle9" />
+    <circle
+       cx="-51.959999"
+       cy="30"
+       r="20"
+       class="circle-stroke"
+       id="circle10" />
+    <!-- Circle 6: 300° clockwise from top -->
+    <circle
+       cx="-51.959999"
+       cy="-30"
+       r="40"
+       class="circle-stroke"
+       id="circle11" />
+    <circle
+       cx="-51.959999"
+       cy="-30"
+       r="20"
+       class="circle-stroke"
+       id="circle12" />
+  </g>
+</svg>

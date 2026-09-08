@@ -1,0 +1,37 @@
+name: gitleaks-pr
+
+# Scan every PR's diff for secrets. Required status check via branch protection.
+# Reads .gitleaks.toml and .gitleaksignore from the repo root.
+#
+# Runs the gitleaks binary via .github/actions/gitleaks-scan; that action's
+# header explains why, and holds the version pin shared with gitleaks-push.
+
+# Supersede in-progress scans on the same PR (rapid pushes / Renovate rebases)
+# so redundant runs don't pile up — the latest PR commit is the one that gates
+# merge. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Gitleaks (PR)
+    # See gitleaks-push for why this stays on a hosted runner.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Only the commits this PR adds. checkout gives us a merge commit, so
+      # the range is stated from the event payload rather than HEAD.
+      - uses: ./.github/actions/gitleaks-scan
+        with:
+          log-opts: ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}

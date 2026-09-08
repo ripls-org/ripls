@@ -1,0 +1,21 @@
+// Template for Dev.xcconfig — copy it to `Dev.xcconfig` and fill in your own
+// values. Debug.xcconfig and Profile.xcconfig `#include` that name, so the
+// iOS project will not configure until it exists.
+//
+// It holds a deployment's identity rather than project structure, which is why
+// the upstream copy is excluded from the open-source export (#2953).
+
+PRODUCT_BUNDLE_IDENTIFIER = org.example.app.dev
+DISPLAY_NAME = Example Dev
+
+// Apple Developer Team that signs local device builds. Find it under
+// Membership in the Apple Developer portal. Release builds do not read this:
+// `fastlane ios release` calls update_code_signing_settings with
+// ENV["APPLE_TEAM_ID"], which rewrites the project at build time.
+DEVELOPMENT_TEAM = ABCDE12345
+
+// Google Sign-In OAuth client IDs for the iOS app, from the same Firebase
+// project as ios/config/dev/GoogleService-Info.plist. The reversed form is the
+// custom URL scheme the sign-in callback returns on, so the two must agree.
+GOOGLE_IOS_CLIENT_ID = 000000000000-example.apps.googleusercontent.com
+GOOGLE_IOS_REVERSED_CLIENT_ID = com.googleusercontent.apps.000000000000-example

@@ -1,0 +1,169 @@
+{
+  "description": "Golden eval cases for GenerateExperienceFromImage. Each case points at a real photo under server/test_data/ and asserts what the AI recovers. Opt-in per field: fields omitted from 'expected' are not checked. Scene photos rarely carry date/time/location so those cases assert only title + description + min_confidence; the flyer images under server/test_data/flyers/ DO carry printed dates, times, and venues, and their cases assert extraction accordingly (provenance in flyers/README.md).",
+  "version": 2,
+  "defaults": {
+    "region": "Boulder, CO",
+    "current_time": "2025-12-01T10:00:00-07:00"
+  },
+  "cases": [
+    {
+      "id": "guided_nature_walk",
+      "tags": ["outdoor", "scene"],
+      "image_file": "experience.jpg",
+      "mime_type": "image/jpeg",
+      "region": "Boulder, CO",
+      "current_time": "2025-12-01T10:00:00-07:00",
+      "expected": {
+        "title_contains": ["hike", "walk", "nature", "tour", "trail", "guide", "outdoor", "jungle", "forest"],
+        "has_description": true,
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "brewery_social",
+      "tags": ["indoor", "social"],
+      "image_file": "community.jpg",
+      "mime_type": "image/jpeg",
+      "region": "Denver, CO",
+      "current_time": "2025-12-01T10:00:00-07:00",
+      "expected": {
+        "title_contains": ["beer", "brew", "happy hour", "social", "gathering", "meetup", "drinks", "cheers", "toast", "tasting"],
+        "has_description": true,
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "flyer_charity_event",
+      "tags": ["flyer", "explicit-date", "explicit-time"],
+      "image_file": "flyers/charity_event.jpg",
+      "mime_type": "image/jpeg",
+      "notes": "Green charity-event flyer: 'CHARITY EVENT!', August 12, 8 AM - 5 PM, Borcelle Park. No year printed - should resolve to the next Aug 12 after current_time.",
+      "expected": {
+        "title_contains": ["charity", "fundrais", "borcelle"],
+        "has_description": true,
+        "date": "2026-08-12",
+        "time": "08:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_contains": ["borcelle"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "flyer_fall_block_party",
+      "tags": ["flyer", "explicit-time", "inconsistent-date"],
+      "image_file": "flyers/fall_block_party.jpg",
+      "mime_type": "image/jpeg",
+      "notes": "'FALL BLOCK PARTY', OCT 14 + SAT 7PM. The printed weekday and date disagree in most years, so date is deliberately unasserted; time is the reliable signal.",
+      "expected": {
+        "title_contains": ["block party", "fall", "party"],
+        "has_description": true,
+        "time": "19:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "flyer_grand_opening",
+      "tags": ["flyer", "no-date", "explicit-time"],
+      "image_file": "flyers/grand_opening.png",
+      "mime_type": "image/png",
+      "notes": "'Grand Opening', Saturday & Sunday 2PM-4PM, no calendar date printed - which weekend is unknowable, so date is unasserted.",
+      "expected": {
+        "title_contains": ["grand opening", "opening"],
+        "has_description": true,
+        "time": "14:00",
+        "time_confidence_any_of": ["EXPLICIT", "INFERRED"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "flyer_speed_networking",
+      "tags": ["flyer", "no-date", "no-time", "venue"],
+      "image_file": "flyers/speed_networking.png",
+      "mime_type": "image/png",
+      "notes": "'SPEED NETWORKING EVENT', 322 West 14th Street New York. No date or time anywhere on the flyer.",
+      "expected": {
+        "title_contains": ["network"],
+        "has_description": true,
+        "date_empty": true,
+        "time_confidence_any_of": ["UNKNOWN"],
+        "location_query_contains": ["322", "14th", "new york"],
+        "min_confidence": 0.3
+      }
+    },
+    {
+      "id": "flyer_business_conference_past",
+      "tags": ["flyer", "explicit-year", "past-date", "multi-day"],
+      "image_file": "flyers/business_conference.png",
+      "mime_type": "image/png",
+      "notes": "'+2018 ANNUAL BUSINESS CONFERENCE', February 5-7 2018, Seaport Hotel Boston. Explicit past year - extraction should return the printed start date, not roll it forward.",
+      "expected": {
+        "title_contains": ["conference", "business"],
+        "has_description": true,
+        "date": "2018-02-05",
+        "location_query_contains": ["seaport", "boston"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "flyer_street_fair_future_year",
+      "tags": ["flyer", "explicit-year", "explicit-time"],
+      "image_file": "flyers/street_fair.png",
+      "mime_type": "image/png",
+      "notes": "'Street Fair 2028', 24 NOV, 08 AM - 09 PM, $15 entry. Year appears in the title, day/month elsewhere - model must combine them into 2028-11-24.",
+      "expected": {
+        "title_contains": ["street fair", "fair"],
+        "has_description": true,
+        "date": "2028-11-24",
+        "time": "08:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "flyer_fall_gala",
+      "tags": ["flyer", "explicit-time", "venue"],
+      "image_file": "flyers/fall_gala.png",
+      "mime_type": "image/png",
+      "notes": "'FALL GALA' fundraising dinner, September 23rd at 6:00 PM, 123 45th Ave Chicago. No year printed - should resolve to the next Sep 23 after current_time.",
+      "expected": {
+        "title_contains": ["gala", "fall"],
+        "has_description": true,
+        "date": "2026-09-23",
+        "time": "18:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "location_query_contains": ["45th", "chicago"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "flyer_summer_festival",
+      "tags": ["flyer", "explicit-time", "24h-time"],
+      "image_file": "flyers/summer_festival.png",
+      "mime_type": "image/png",
+      "notes": "'SUMMER FESTIVAL', 5 August, START AT 15:00, free entry. Day-month order and 24-hour time on the flyer; no year - next Aug 5 after current_time.",
+      "expected": {
+        "title_contains": ["summer", "festival"],
+        "has_description": true,
+        "date": "2026-08-05",
+        "time": "15:00",
+        "time_confidence_any_of": ["EXPLICIT"],
+        "min_confidence": 0.4
+      }
+    },
+    {
+      "id": "flyer_design_expo_no_dates",
+      "tags": ["flyer", "no-date", "no-time", "multi-day"],
+      "image_file": "flyers/design_expo.png",
+      "mime_type": "image/png",
+      "notes": "'Twine + Burlap INTERIOR DESIGN EXPO' with DAY ONE..DAY FOUR agenda but no calendar dates, times, or venue.",
+      "expected": {
+        "title_contains": ["design", "expo", "twine", "burlap"],
+        "has_description": true,
+        "date_empty": true,
+        "time_confidence_any_of": ["UNKNOWN"],
+        "min_confidence": 0.3
+      }
+    }
+  ]
+}

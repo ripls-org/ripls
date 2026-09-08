@@ -1,0 +1,349 @@
+/*
+ * event.css — styles for the SSR landing pages served at /go/{code}.
+ * Despite the name it dresses all four content landings (event.html,
+ * gear.html, request.html, community.html); only the error-surface
+ * invite.html uses deeplink.css. Companion to tokens.css (which
+ * provides the color/typography/spacing variables).
+ *
+ * Class names are all `event-*` prefixed to avoid collisions with
+ * shared.css and deeplink.css (used by the community-invite landing).
+ *
+ * Visual direction approved in Phase 0 of #2049 — see
+ * docs/issues/2049-mocks/mock-h-hybrid.html for the design source.
+ * Tuned to match the Ripls app's visual language (sage pill CTAs,
+ * backdrop-blurred sticky bar, OS-aware theme).
+ */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+:root {
+  /* The landings' content measure (#2918). One number for the hero text,
+     the body, and the sticky CTA bar, so the page reads as one column at
+     desktop widths instead of a left-anchored hero over centered content.
+     Lives here rather than in tokens.css: every consumer is in this file,
+     and it is a property of this page family, not a site-wide scale. */
+  --ssr-measure: 560px;
+}
+body {
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  padding-bottom: 100px; /* clear the sticky CTA bar */
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hero — full-bleed photo with a long soft fade into body. The
+ * gradient starts well below mid-height so most of the photo
+ * shows crisply; readability of the overlaid kicker/title is
+ * handled by text-shadow rather than a heavy scrim. */
+.event-hero {
+  position: relative;
+  height: 56vh;
+  min-height: 420px;
+  overflow: hidden;
+}
+.event-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.event-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 65%,
+    rgba(0, 0, 0, 0.18) 80%,
+    rgba(0, 0, 0, 0.45) 92%,
+    var(--color-background) 100%
+  );
+}
+.event-hero-inner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-block: var(--space-5) var(--space-4);
+  /* Hold the body's measure instead of the window's left edge (#2918).
+     Two facts this rule rests on:
+       - `100%` resolves against the containing block — .event-hero's
+         padding box, which is window-wide because .event-hero is the
+         full-bleed `position: relative` banner. Constraining .event-hero
+         would silently change what this means.
+       - Above the measure the resulting content box is
+         --ssr-measure minus 2 x --space-4, i.e. exactly .event-main's, so
+         the hero title and the body text share a left edge. That equality
+         is the invariant web-landing-desktop.spec.ts asserts.
+     Below the measure max() picks --space-5 and phones render unchanged. */
+  padding-inline: max(
+    var(--space-5),
+    calc((100% - var(--ssr-measure)) / 2 + var(--space-4))
+  );
+  z-index: 2;
+  color: var(--light-background);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+.event-kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: var(--font-size-micro);
+  font-weight: 600;
+  color: color-mix(in srgb, var(--light-background) 92%, transparent);
+  margin-bottom: var(--space-2);
+}
+.event-hero h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.875rem, 6vw, 2.625rem);
+  line-height: 1.1;
+  font-weight: 400;
+  max-width: 18ch;
+  color: var(--light-background);
+  margin: 0;
+}
+
+/* Body */
+.event-main {
+  max-width: var(--ssr-measure);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) var(--space-5);
+}
+
+/* Open-in-app hint — shown only when the inline script detects iOS or
+ * Android (otherwise the .hidden class keeps it offscreen). Sits
+ * above the event meta-pill as a low-attention chip; the primary
+ * action is still the RSVP CTA bar at the bottom of the page. */
+.event-open-in-app {
+  display: block;
+  width: fit-content;
+  margin: 0 auto var(--space-3);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+}
+
+.event-open-in-app::after {
+  content: " \2192";
+  opacity: 0.6;
+}
+
+.event-open-in-app.hidden {
+  display: none;
+}
+
+/* Meta-pill — single row, surface background, subtle */
+.event-meta-pill {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-primary);
+}
+.event-meta-pill .event-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.event-meta-pill .event-meta-icon {
+  color: var(--color-text-secondary);
+  width: 16px;
+  height: 16px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 14px;
+}
+.event-meta-pill .event-meta-sep {
+  color: var(--color-text-tertiary);
+  margin: 0 var(--space-1);
+}
+
+/* The item's own pitch, between the facts pill and the host/requester row.
+ * Rendered by the request landing (a guest decides whether to offer help
+ * from this text); preserves the author's line breaks. */
+.event-description {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-body);
+  line-height: 1.55;
+  color: var(--color-text-primary);
+  white-space: pre-line;
+  overflow-wrap: break-word;
+}
+
+/* Host single-row */
+.event-host {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-divider);
+  border-bottom: 1px solid var(--color-divider);
+  margin-bottom: var(--space-3);
+}
+.event-host-text {
+  font-size: var(--font-size-meta);
+  line-height: 1.4;
+}
+.event-host-text strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.event-host-text .role {
+  color: var(--color-text-secondary);
+}
+
+/* Avatar — used in host row and attendee cluster */
+.event-avatar {
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--color-surface);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+.event-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.event-avatar-fallback {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+.event-host .event-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+/* Attendee cluster */
+.event-attendees {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+.event-avatars {
+  display: flex;
+}
+.event-avatars .event-avatar {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--color-background);
+  margin-left: -8px;
+}
+.event-avatars .event-avatar:first-child {
+  margin-left: 0;
+}
+.event-attendees-text {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+.event-attendees-text strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* Sticky CTA bar — app-style backdrop blur + sage pills */
+.event-cta-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: color-mix(in srgb, var(--color-background) 85%, transparent);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border-top: 1px solid var(--color-divider);
+  padding: var(--space-3) var(--space-4);
+  z-index: 10;
+}
+.event-cta-bar-inner {
+  max-width: var(--ssr-measure);
+  margin: 0 auto;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.event-cta {
+  flex: 1;
+  padding: var(--space-3) var(--space-3);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  font-family: var(--font-body);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: opacity 120ms ease, transform 120ms ease;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--color-text-primary);
+  /* Mix of <button> ("I'm out") and <a> ("Maybe" / "I'm in") CTAs —
+     normalize text alignment + remove anchor underline so both render
+     identically. */
+  text-align: center;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.event-cta:hover:not([disabled]) {
+  transform: translateY(-1px);
+}
+.event-cta-primary {
+  background: var(--color-cta-primary);
+  color: var(--color-on-primary);
+}
+.event-cta-secondary {
+  background: transparent;
+  border-color: var(--color-divider);
+  color: var(--color-text-primary);
+}
+.event-cta-subtle {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-color: transparent;
+}
+.event-cta[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* At-capacity message — replaces the sticky CTA bar entirely */
+.event-cta-full {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: color-mix(in srgb, var(--color-background) 92%, transparent);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border-top: 1px solid var(--color-divider);
+  padding: var(--space-4);
+  text-align: center;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  z-index: 10;
+}
+.event-cta-full strong {
+  display: block;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}

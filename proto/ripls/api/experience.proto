@@ -1,0 +1,218 @@
+// Experience types for API responses.
+
+syntax = "proto3";
+
+package ripls.api;
+
+import "ripls/api/location.proto";
+import "ripls/api/user.proto";
+import "ripls/api/time.proto";
+import "ripls/api/transfer.proto";
+
+option go_package = "go.ripls.org/ripls/server/gen/ripls/api;api";
+
+// Possible states of an experience lifecycle.
+enum ExperienceState {
+  EXPERIENCE_STATE_UNSPECIFIED = 0;
+  EXPERIENCE_STATE_ACTIVE = 1; // Created & available for RSVPs
+  EXPERIENCE_STATE_JOINED = 2; // Someone besides owner RSVPed Yes/Maybe
+  EXPERIENCE_STATE_IN_PROCESS = 3; // Experience is happening
+  EXPERIENCE_STATE_COMPLETED = 4; // Experience finished
+  EXPERIENCE_STATE_CANCELLED = 5; // Experience called off
+}
+
+// ExperienceNeedResponse is an enriched experience need for API responses.
+message ExperienceNeedResponse {
+  string id = 1;
+  string experience_id = 2;
+  User proposer = 3;
+  string name = 4;
+  optional string note = 5;
+  int32 slots = 6;
+  int32 slots_remaining = 7;
+  int64 created_at_unix_sec = 8;
+}
+
+// ExperienceContributionResponse is an enriched experience contribution for API responses.
+message ExperienceContributionResponse {
+  string id = 1;
+  string experience_id = 2;
+  User contributor = 3;
+  string title = 4;
+  optional string description = 5;
+  optional string from_need_id = 6;
+  optional string original_need_name = 7;
+  optional string original_need_note = 8;
+  int64 created_at_unix_sec = 9;
+  optional int64 updated_at_unix_sec = 10;
+  // Optional Gear item the contributor linked to this contribution.
+  optional string gear_id = 11;
+
+  // When the contributor brought their linked gear to the event as a real
+  // loan/giveaway (#2708), the transfer created for it. Absent when the gear
+  // link is display-only or there is no gear.
+  optional string transfer_id = 12;
+  // The state of that transfer, when present — lets the row show whether the
+  // item is still coming (RECIPIENT_SELECTED) or handed over (COMPLETED).
+  optional TransferState transfer_state = 13;
+  // Whether the brought item is a loan (returned after the event) or a
+  // giveaway (kept). Present only alongside transfer_id.
+  optional TransferType transfer_type = 14;
+}
+
+// Experience represents a fully enriched experience item for API responses.
+// Use this type when returning experience information for display purposes.
+message Experience {
+  // A unique identifier for the experience.
+  string id = 1;
+
+  // The name of the experience.
+  string name = 2;
+
+  // A description of the experience.
+  string description = 3;
+
+  // Source URL if experience was created from a website.
+  optional string source_url = 22;
+
+  // The user who created/hosts the experience.
+  User owner = 4;
+
+  // Media items associated with this experience.
+  repeated string media_ids = 5;
+
+  // The location where this experience takes place.
+  string location_id = 6;
+
+  // ID of the conversation for this experience. Set after 2+ RSVPs.
+  optional string conversation_id = 14;
+
+  // Latitude of experience's location in degrees.
+  double latitude_deg = 7;
+
+  // Longitude of experience's location in degrees.
+  double longitude_deg = 8;
+
+  // Current state of the experience.
+  ExperienceState state = 9;
+
+  // When the experience occurs.
+  ExperienceTime time = 10;
+
+  // Maximum number of participants (0 = unlimited).
+  int32 max_participants = 11;
+
+  // Count of YES RSVPs (for list display).
+  int32 rsvp_yes_count = 12;
+
+  // Count of MAYBE RSVPs (for list display).
+  int32 rsvp_maybe_count = 13;
+
+  // Number of messages in the conversation for this experience (community-specific).
+  // Always populated, 0 if no conversation exists yet.
+  int32 message_count = 15;
+
+  // State transition timestamps.
+  optional int64 started_at_unix_sec = 16; // When experience was marked as IN_PROCESS.
+  optional int64 completed_at_unix_sec = 17; // When experience was marked as COMPLETED.
+
+  // Summary of how the experience went (owner-written, AI-generated).
+  // Only populated if experience is COMPLETED and summary was provided.
+  optional string completion_summary = 18;
+
+  // ID of the community where this experience was posted.
+  string community_id = 19;
+
+  // All communities this experience is shared with (for multi-community display).
+  // This is populated by joining CommunityExperience records.
+  repeated string shared_community_ids = 20;
+
+  // Unix timestamp (seconds) when the experience was created.
+  int64 created_at_unix_sec = 21;
+
+  // Reserved field 23 (was is_time_fixed, removed - confirmation locks time and location instead).
+  reserved 23;
+
+  // All proposed time slots with votes (for time coordination).
+  repeated TimeProposal time_proposals = 24;
+
+  // Whether the owner has an active time poll (Ask the Group flow).
+  // When true, non-owners should see the VoteCard instead of reading-only mode.
+  bool time_poll_active = 25;
+
+  // Whether a time poll was completed (ended or cancelled after being created).
+  // Used to distinguish "proposals from direct time set" from "proposals from
+  // a completed poll" — the Alternatives tab shows "pick winner" only when this
+  // is true.
+  optional bool time_poll_completed = 31;
+
+  // Identifier of the most recently started poll. Stamped on every proposal
+  // created while [time_poll_active] is true. Lets the client filter
+  // proposals by which poll they belong to and show a per-poll history.
+  optional string current_poll_id = 34;
+
+  // Number of unread messages in the conversation for the current user.
+  int32 unread_count = 26;
+
+  // Truncated text of the most recent user message (~100 chars).
+  optional string last_message_text = 27;
+
+  // The user who sent the most recent message.
+  optional User last_message_sender = 28;
+
+  // Relative time string for the most recent message (e.g., "2h", "3d").
+  optional string last_message_time_ago = 29;
+
+  // Up to 3 most recent unique commenters, ordered by recency.
+  repeated User recent_commenters = 30;
+
+  // LLM-generated suggestion chip labels for the Plan tab (e.g., "bring folding chairs").
+  // Generated eagerly at creation time; empty if generation failed or was unavailable.
+  repeated string suggestions = 32;
+
+  // Short human-readable category label generated alongside suggestions (e.g., "outdoor hike").
+  // May be empty if suggestions were not generated.
+  optional string category_hint = 33;
+
+  // All proposed locations with votes (for location coordination).
+  repeated LocationProposal location_proposals = 35;
+
+  // Whether a location poll is currently active.
+  // When true, non-owners should see the location vote view instead of the
+  // single confirmed location.
+  bool location_poll_active = 36;
+
+  // Whether a location poll was ended awaiting owner confirmation —
+  // proposals exist and the owner should pick a winner. The "pick winner"
+  // entry point shows only when this is true. Cancelling a poll clears
+  // this flag (cancel returns the experience to a fresh "no poll" state);
+  // confirming a winner clears it implicitly by setting [location_id].
+  optional bool location_poll_completed = 37;
+
+  // Identifier of the most recently started location poll. Stamped on every
+  // proposal created while [location_poll_active] is true. Lets the client
+  // filter proposals by which poll they belong to and show a per-poll history.
+  optional string current_location_poll_id = 38;
+
+  // Unix-second deadline by which group members should reply to the active
+  // location poll. Informational only — the server does not auto-close the
+  // poll at the deadline; clients use it to render a reply-by hint. Unset
+  // means no deadline.
+  optional int64 location_poll_deadline_unix_sec = 39;
+
+  // When true, no new location proposals can be added to the active poll.
+  // Existing proposals stay votable. Set via LockLocationProposals; cleared
+  // when a new poll is opened or the experience location is confirmed.
+  optional bool location_proposals_locked = 40;
+
+  // Unix-second deadline by which group members should reply to the active
+  // time poll. Informational only — the server does not auto-close the
+  // poll at the deadline; clients use it to render a reply-by hint. Unset
+  // means no deadline.
+  optional int64 time_poll_deadline_unix_sec = 41;
+
+  // When true, no new time proposals can be added to the active poll.
+  // Existing proposals stay votable. Set via LockTimeProposals; cleared
+  // when a new poll is opened or the experience time is confirmed.
+  optional bool time_proposals_locked = 42;
+}

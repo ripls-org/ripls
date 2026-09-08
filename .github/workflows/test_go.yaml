@@ -1,0 +1,329 @@
+name: Go Tests
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "server/**"
+      - "proto/**"
+      - "go.mod"
+      - "go.sum"
+      - "scripts/check_ephemeral_comments.js"
+      - "scripts/check_todo_refs.js"
+      - "scripts/check_go_file_size.sh"
+      - "package.json"
+      - ".github/workflows/test_go.yaml"
+  # No path filter on PRs: this is a required check, so it must report on every
+  # PR. The `changes` job gates the real work — a PR that doesn't touch Go paths
+  # skips the `test` job, which reports success and satisfies the required check
+  # (the GitHub-recommended pattern for path-scoped required checks; #2287).
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+jobs:
+  changes:
+    name: Detect Go changes
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'server/**'
+              - 'proto/**'
+              - 'go.mod'
+              - 'go.sum'
+              - 'scripts/check_ephemeral_comments.js'
+              - 'scripts/check_todo_refs.js'
+              - 'scripts/check_go_file_size.sh'
+              - 'package.json'
+              - '.github/workflows/test_go.yaml'
+
+  test:
+    name: Go Tests
+    needs: [changes]
+    # Push/dispatch: always run. PR: run only when Go paths changed; otherwise
+    # the job skips and reports success, satisfying the required check.
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.relevant == 'true') }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    # 30 minutes was marginal on BOTH runners, which is easy to miss because
+    # the job usually skips: `gh pr checks` shows 4-6 minutes for a run where
+    # the `changes` gate skipped the work, not for one that did it.
+    #
+    # Measured on runs that actually executed. Fleet: 6.3m, 7.1m, 12.7m, 18.7m
+    # across recent merges to main, of which the test step alone was 3.6m to
+    # 13.3m — and on 2026-09-08, with the rest of the post-merge fan-out
+    # running beside it, 30m and cancelled. A hosted runner is slower again but
+    # not dramatically: `npm run lint:go` takes 7m there against 4.7m on the
+    # fleet. It was 21m into `go test ./...` when the cap killed it, with every
+    # earlier step green — a cap, not a hang.
+    #
+    # So this is not a concession to hosted runners. The fleet has hit the same
+    # ceiling under load, and a ceiling costs nothing where it is not reached:
+    # a run that takes 7m is unaffected by whether the cap is 30 or 60.
+    # `go test -timeout 20m` below still catches a single wedged package — that
+    # timeout is per test binary, which is also why the whole run can exceed it
+    # with nothing hanging.
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      # No-op on the baked runner image, which already carries all of these.
+      # Installs them anywhere that does not — see the action's own notes
+      # (#2959). `go-lint` additionally reinstalls when the baked golangci-lint
+      # or gofumpt DIFFERS from the versions.env pin, which is what lets a
+      # lint-toolchain bump take effect in the PR that makes it rather than
+      # only after the fleet rolls (#3008).
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-toolchain
+        with:
+          go: "true"
+          node: "true"
+          protoc-plugins: "true"
+          go-lint: "true"
+          onnxruntime: "true"
+
+      - name: Ensure Git LFS files are pulled
+        run: |
+          git lfs install --local
+          git lfs pull
+
+      # The suite is already built to run without Google Cloud: VERTEX_AI_PROJECT
+      # is a repo *variable* whose absence makes the Gemini tests self-skip, the
+      # fetch_secret.sh calls below are already `|| true`, and the signed-URL
+      # test skips without real credentials. The one thing that was NOT built
+      # for it is this auth step, which errors on an empty input rather than
+      # doing nothing — so the whole job died at step 6 in the open-source repo
+      # and would die identically on any fork PR, since GitHub never passes
+      # secrets to those. Everything hermetic — Postgres testcontainers, lint,
+      # the proto gates, the bulk of the tests — works fine without it.
+      #
+      # `secrets` is not a context available to a step `if:`, hence the presence
+      # check as a separate step. Hoisting the key into job-level `env` would
+      # also work and would put a deploy credential in the environment of every
+      # step in the job; this keeps it to the one step that needs it.
+      - name: Check for Google Cloud credentials
+        id: gcp
+        env:
+          KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+        run: |
+          set -euo pipefail
+          if [ -n "$KEY" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "available=false" >> "$GITHUB_OUTPUT"
+          # Loud, not silent. A degraded run must not be mistakable for a full
+          # one: this annotation is what stops "Go Tests passed" from being
+          # read as "the Vertex AI path passed".
+          echo "::warning title=Running without Google Cloud credentials::GCP_SERVICE_ACCOUNT_KEY_DEV is unset. Vertex AI, signed-URL and Twilio tests will self-skip; everything else runs."
+          {
+            echo "### Go Tests ran without Google Cloud credentials"
+            echo
+            echo "\`GCP_SERVICE_ACCOUNT_KEY_DEV\` is not available to this run."
+            echo "These self-skipped and were **not** verified:"
+            echo
+            echo "- Vertex AI / Gemini provider tests (\`VERTEX_AI_PROJECT\` unset)"
+            echo "- GCS signed-URL generation"
+            echo "- Twilio SMS provider (test credentials come from Secret Manager)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Authenticate to Google Cloud
+        if: steps.gcp.outputs.available == 'true'
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      # The full Go lint chain — gofumpt formatting, golangci-lint against
+      # server/.golangci.yml, the goroutine-safety checker, and the custom
+      # CodeInternal / event-terminology / active-community / l10n-parity /
+      # inline-user-string gates. This is the SAME command contributors run
+      # locally (docs/server/conventions.md), so CI and local cannot drift.
+      #
+      # Before #1611 this workflow ran only `gofmt -l .` and the CodeInternal
+      # ratchet: `golangci-lint` ran in no workflow at all, and because
+      # `npm run lint:go` invoked it from the repo root — where golangci-lint
+      # finds no config — server/.golangci.yml had never been applied even
+      # locally. Both gaps are closed here; keep this step blocking.
+      - name: Lint Go code (npm run lint:go)
+        run: npm run lint:go
+
+      # Scans server/ *.go as well as app/lib *.dart; test_flutter.yaml runs
+      # the same check so whichever side a PR touches, the gate reports.
+      - name: Check for ephemeral phase labels in comments
+        run: node scripts/check_ephemeral_comments.js
+
+      # Scans server/ *.go as well as app/lib *.dart; the sibling workflow runs
+      # the same check so whichever side a PR touches, the gate reports.
+      - name: Check TODOs reference an issue
+        run: npm run lint:todo-refs
+
+      - name: "Check Go file sizes (issue #1424)"
+        run: npm run lint:go:size
+
+      - name: Lint proto files
+        run: npx @bufbuild/buf lint
+
+      # Wire-compatibility gate (#2828). buf.yaml declared a `breaking:` config
+      # for months with nothing invoking it, so #2020/#2820 deleted 27 proto
+      # fields reviewed by eye alone. Compares against origin/main, which the
+      # shallow checkout above does not have — hence the explicit fetch.
+      #
+      # PR-only: on a push to main the ref IS main, so there is nothing to
+      # compare against.
+      - name: Fetch main for breaking-change comparison
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --depth=1 origin main:refs/heads/main
+
+      - name: Check proto wire compatibility
+        if: github.event_name == 'pull_request'
+        run: npm run lint:proto:breaking
+
+      - name: Install gotestfmt
+        run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@v2.5.0
+
+      # Warm the testcontainer images into the HOST Docker daemon before the
+      # suite runs. Applies to a containerized runner fleet that mounts
+      # /var/run/docker.sock (which is how this repo's private deploy side runs
+      # CI); on a GitHub-hosted runner the guard below finds the images absent,
+      # pulls them once, and the rest is a no-op. So the shared
+      # Postgres testcontainer (pgvector/pgvector:pg16 in server/storage/
+      # testing.go) and the raw ContainerCreate in the cleanup test (alpine:3)
+      # create containers on the HOST daemon — NOT inside this runner. Under the
+      # parallel `./...` + coverage load the daemon intermittently can't pull an
+      # image on demand, which surfaces as `No such image: alpine:3` and flakes
+      # unrelated tests run-to-run (#2709). Seeding the images here removes that
+      # race. Baking them into the runner image would NOT help — those layers
+      # live in the runner's filesystem, invisible to the host daemon's store.
+      #
+      # Guard on local presence so the steady-state path makes ZERO registry
+      # calls: an unguarded `docker pull` on every Go Tests job, fleet-wide from
+      # a single egress IP, would itself trip Docker Hub's anonymous rate
+      # limit. The pull (bounded retry) fires only when an image is genuinely
+      # absent; testcontainers' default pull policy then skips the registry
+      # because the tag is already resident. Fails loudly if an image truly can't
+      # be pulled — a clear, retryable failure beats a flake deep in the suite.
+      - name: Warm testcontainer images (host daemon)
+        run: |
+          set -euo pipefail
+          warm() {
+            local ref="$1" n
+            if docker image inspect "$ref" >/dev/null 2>&1; then
+              echo "warm: $ref already present on host daemon"
+              return 0
+            fi
+            for n in 1 2 3; do
+              if docker pull "$ref"; then
+                return 0
+              fi
+              echo "warm: pull $ref failed (attempt $n/3); retrying" >&2
+              sleep $((n * 5))
+            done
+            echo "::error::warm: could not pull $ref after 3 attempts"
+            return 1
+          }
+          warm pgvector/pgvector:pg16
+          warm alpine:3
+
+      - name: Run Go tests with coverage
+        env:
+          CI: "true"
+          VERTEX_AI_PROJECT: ${{ vars.GCP_PROJECT_DEV }}
+          # fetch_secret.sh below resolves "dev" through scripts/gcp_project.sh,
+          # which reads this.
+          GCP_PROJECT_DEV: ${{ vars.GCP_PROJECT_DEV }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -o pipefail
+          # Twilio TEST credentials (#2492) from the dev project's Secret
+          # Manager, fetched with the same wrapper as every other secret (the GCP auth
+          # step above already configured gcloud). Tolerant of a not-yet-created
+          # secret: an empty value makes the SMS provider integration test
+          # self-skip instead of failing. No real SMS is sent — test mode uses
+          # magic numbers.
+          TWILIO_TEST_ACCOUNT_SID="$(scripts/fetch_secret.sh dev twilio-test-account-sid 2>/dev/null || true)"
+          TWILIO_TEST_AUTH_TOKEN="$(scripts/fetch_secret.sh dev twilio-test-auth-token 2>/dev/null || true)"
+          export TWILIO_TEST_ACCOUNT_SID TWILIO_TEST_AUTH_TOKEN
+          go test -v -json -tags=integration -timeout 20m -coverprofile=coverage.out -covermode=atomic ./... \
+            | stdbuf -oL tee test-output.json \
+            | gotestfmt --hide=empty-packages,successful-tests
+
+      - name: Report coverage
+        if: always()
+        run: |
+          [ -f coverage.out ] || { echo "no coverage.out"; exit 0; }
+          go tool cover -func=coverage.out | tail -1
+
+      - name: Require tests on every Go package
+        run: |
+          allowlist=$(grep -v '^#' .github/coverage-allowlist.txt | grep . | sort -u)
+          untested=$(go list -f '{{if and (ne .Name "main") (eq (len .TestGoFiles) 0) (eq (len .XTestGoFiles) 0)}}{{.ImportPath}}{{end}}' ./server/... \
+            | grep -v '/gen/' | sort -u)
+          new=$(comm -23 <(echo "$untested") <(echo "$allowlist"))
+          if [ -n "$new" ]; then
+            echo "::error::Go packages without tests (not on .github/coverage-allowlist.txt):"
+            echo "$new"
+            exit 1
+          fi
+          stale=$(comm -13 <(echo "$untested") <(echo "$allowlist"))
+          if [ -n "$stale" ]; then
+            echo "::warning::Allowlist entries now have tests — remove from .github/coverage-allowlist.txt:"
+            echo "$stale"
+          fi
+
+      - name: Upload raw test output
+        # Only needed to debug failures. Uploading on green runs accumulated
+        # ~900 artifacts (~1.4 GB) against the org's 2 GB Actions storage cap.
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: go-test-output
+          path: test-output.json
+          retention-days: 7
+
+      # `if: failure()` fires for ANY earlier failure, not just a failing test —
+      # so when the job died at lint, or at proto generation, this ran with no
+      # test-output.json and added a second red step whose traceback
+      # (`FileNotFoundError: test-output.json`) is what a reader sees first.
+      # Both of the open-source repo's Go Tests failures reported it, and in
+      # both cases it was noise on top of the real cause. Nothing to annotate is
+      # not an error.
+      - name: Annotate failing tests on PR diff
+        if: failure() && hashFiles('test-output.json') != ''
+        shell: bash
+        run: python3 .github/scripts/annotate_go_test_failures.py test-output.json
+
+      - name: Clean up test postgres container
+        if: always()
+        uses: ./.github/actions/cleanup-test-postgres

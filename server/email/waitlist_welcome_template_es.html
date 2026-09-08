@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  {{template "head" .}}
+  <body
+    class="r-page"
+    style="
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: {{.Colors.TextSecondary}};
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background: {{.Colors.Surface}};
+    "
+  >
+    <div
+      class="r-card"
+      style="
+        background-color: {{.Colors.Background}};
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 20px;
+        box-shadow: 0 12px 40px rgba(25, 28, 25, 0.1);
+      "
+    >
+      <!-- Header -->
+      <div style="text-align: center; margin-bottom: 30px">
+        {{template "logo" .}}
+        <h1 class="r-h" style="color: {{.Colors.TextPrimary}}; margin: 0; font-size: 28px; font-weight: 700">
+          Estás en la lista
+        </h1>
+      </div>
+
+      <!-- Main Content -->
+      <p
+        class="r-t"
+        style="
+          font-size: 16px;
+          margin-bottom: 20px;
+          color: {{.Colors.TextSecondary}};
+          text-align: center;
+        "
+      >
+        Gracias por apuntarte. Estamos creando algo para que compartir
+        con tus amigos funcione de verdad.
+      </p>
+
+      <div
+        class="r-inset"
+        style="
+          background-color: {{.Colors.Surface}};
+          border-radius: 10px;
+          padding: 25px;
+          margin: 25px 0;
+        "
+      >
+        <p class="r-t" style="font-size: 16px; color: {{.Colors.TextSecondary}}; margin: 0 0 15px 0">
+          La parte difícil de compartir no es la generosidad &mdash; es la
+          coordinación. Ripls se encarga de la logística para que tu grupo
+          de amigos pueda:
+        </p>
+        <ul class="r-t" style="color: {{.Colors.TextSecondary}}; margin: 0; padding-left: 20px">
+          <li style="margin-bottom: 8px">
+            Hacer visible lo que tienen &mdash; herramientas, equipo,
+            cosas guardadas en garajes
+          </li>
+          <li style="margin-bottom: 8px">
+            Ayudarse entre sí &mdash; mudanzas, viajes, reparaciones,
+            gastos compartidos
+          </li>
+          <li style="margin-bottom: 8px">
+            Pedir lo que necesitas, ofrecer lo que puedes &mdash; sin
+            mensajes grupales incómodos
+          </li>
+        </ul>
+      </div>
+
+      <p class="r-t" style="font-size: 16px; color: {{.Colors.TextSecondary}}; text-align: center; margin: 25px 0">
+        Te avisaremos cuando estemos listos para ti.
+        <br />
+        Mientras tanto, piensa en cuáles 5&ndash;10 amigos invitarías primero.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="r-f"
+      style="font-size: 12px; color: {{.Colors.TextFaint}}; text-align: center; padding: 20px"
+    >
+      {{if .LegalEntityName}}<p style="margin: 5px 0">
+        {{.LegalEntityName}}
+      </p>{{end}}
+    </div>
+  </body>
+</html>

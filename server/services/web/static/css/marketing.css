@@ -1,0 +1,642 @@
+/*
+  marketing.css — shared foundation for the full-bleed marketing pages:
+  the homescreen landing page at `/` and the audience pages (/moms/, /kids/,
+  /simple/, /crew/) plus the investor/partner pages (/green/, /builders/,
+  /social/).
+
+  This is the common design system all of these pages draw on: the dark
+  photo-overlay section system, the Libre Baskerville/Public Sans type scale,
+  the brand wordmark, phone mockups, the light closing section, the signup
+  form, and the shared components that used to be copy-pasted into per-page
+  style blocks (hero category line, pull-quotes, metric strips, founder bios,
+  inline figures).
+
+  Colors and fonts come from the generated design tokens (#2441):
+  gen/tokens.gen.css is imported below, and this file's local variables alias
+  the FIXED-theme token variables (--light-… / --dark-…) because the section
+  system does not follow the OS color-scheme — photo-overlay sections are
+  always dark, light sections always light. No brand/neutral hex may be
+  defined here. Fonts are self-hosted via fonts.css (no Google Fonts CDN).
+
+  Each page links fonts.css + this file, then adds a slim page-specific
+  <style> block for components only it uses (homescreen: outcome grid, FAQ;
+  kids/simple: nothing beyond overrides). The shared behavior (background
+  loader, fade-in, phone-video fallback) lives in /js/marketing.js.
+
+  Served statically by nginx (not embedded in the Go server), so no embed.go
+  entry is needed.
+*/
+
+@import url('gen/tokens.gen.css');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --overlay: rgba(0, 0, 0, 0.62);
+  --overlay-mobile: rgba(0, 0, 0, 0.68);
+  --overlay-feature: rgba(0, 0, 0, 0.78);
+  --overlay-soft: rgba(0, 0, 0, 0.55);
+  --text: var(--dark-text-primary);
+  --text-muted: rgba(255, 255, 255, 0.94);
+  --text-faint: rgba(255, 255, 255, 0.7);
+  --fallback: #0c0c0c;
+  --fallback-warm: var(--dark-background);
+
+  /* Sage highlight family — fixed-theme token aliases: deep sage on light
+     surfaces, lighter sages on the always-dark photo overlays. */
+  --sage: var(--light-primary);
+  --sage-deep: var(--light-primary-hover);
+  --sage-soft: var(--dark-primary);
+  --accent: var(--dark-primary-hover); /* palest sage — display accents on dark */
+
+  /* Light section palette — ink-green neutrals (cream retired in #2441;
+     the legacy --cream names are kept for page-level style blocks). */
+  --cream: var(--light-surface);
+  --cream-warm: var(--light-surface);
+  --ink: var(--light-text-primary);
+  --ink-muted: var(--light-text-secondary);
+  --ink-faint: var(--light-text-faint);
+
+  --serif: var(--font-serif);
+  --sans: var(--font-sans);
+
+  --content-max: 760px;
+  --feature-max: 1080px;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--fallback);
+}
+
+body {
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--fallback);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Full-viewport photo section with dark overlay */
+.section {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--fallback-warm);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7rem 2rem 7rem;
+  overflow: hidden;
+}
+
+.section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--overlay);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.section.feature::before { background: var(--overlay-feature); }
+.section.soft::before { background: var(--overlay-soft); }
+
+/* Light section variant — token surface background, ink text, no overlay */
+.section.light {
+  background-color: var(--cream);
+  color: var(--ink);
+}
+.section.light::before { display: none; }
+.section.light .brand { color: var(--ink-faint); }
+.section.light .headline { color: var(--ink); }
+.section.light .body { color: var(--ink-muted); }
+.section.light .body strong { color: var(--ink); }
+
+.content {
+  position: relative;
+  z-index: 2;
+  max-width: var(--content-max);
+  width: 100%;
+  margin: 0 auto;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 1.4s cubic-bezier(0.2, 0.6, 0.2, 1),
+              transform 1.4s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+.section.visible .content {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Brand wordmark, persistent top-left */
+.brand {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  z-index: 3;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  text-decoration: none;
+  line-height: 1;
+}
+.brand .dot {
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  margin-right: 8px;
+  vertical-align: -0.35em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 14;
+}
+
+.headline {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 4.6vw, 3.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+  margin-bottom: 1.75rem;
+}
+
+/* Emphasized headline text carries the sage highlight — soft sage over
+   dark photo overlays, deep sage on light sections. Treatment is color +
+   underline, never italics (#2441). */
+.headline em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--sage-soft);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--sage-soft) 45%, transparent);
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.14em;
+}
+.section.light .headline em {
+  color: var(--sage);
+  text-decoration-color: color-mix(in srgb, var(--sage) 40%, transparent);
+}
+
+.subhead {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  line-height: 1.4;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+.body {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: clamp(1rem, 1.25vw, 1.18rem);
+  line-height: 1.75;
+  color: var(--text-muted);
+}
+
+.body p + p { margin-top: 1.1rem; }
+
+.body strong {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.body em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Hero */
+.hero { text-align: left; }
+
+.hero .headline {
+  font-size: clamp(2.4rem, 5.6vw, 4.6rem);
+  line-height: 1.08;
+  margin-bottom: 1.5rem;
+}
+
+/* Hero subhead runs sans on every page */
+.hero .subhead {
+  font-family: var(--sans);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(1.2rem, 2.2vw, 1.65rem);
+  margin-bottom: 1.5rem;
+}
+
+/* Hero category line — small label under the CTA */
+.hero .category {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.32);
+}
+
+.hero-cta {
+  display: block;
+  width: fit-content;
+  margin: 0.5rem 0 1.75rem;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 4px;
+  padding: 0.9rem 1.5rem;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
+}
+.hero-cta:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.56);
+}
+.hero-cta:active { transform: translateY(1px); }
+.hero-cta .arrow {
+  display: inline-block;
+  margin-left: 0.4rem;
+  transition: transform 0.2s ease;
+}
+.hero-cta:hover .arrow { transform: translateX(3px); }
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  font-family: var(--sans);
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.scroll-indicator::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 36px;
+  background: var(--text-faint);
+  margin: 0.75rem auto 0;
+  animation: pulse 2.6s ease-in-out infinite;
+  transform-origin: top;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.3; }
+  50% { transform: scaleY(1); opacity: 0.7; }
+}
+
+/* TL;DR sections — larger, airier body */
+.tldr .body {
+  font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+  line-height: 1.7;
+}
+.tldr .body p + p { margin-top: 0.75rem; }
+
+/* Feature sections — text + phone screen */
+.feature .content {
+  max-width: var(--feature-max);
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 300px);
+  gap: 5rem;
+  align-items: center;
+}
+
+.feature.flip .content {
+  grid-template-columns: minmax(0, 300px) 1fr;
+}
+
+.feature.flip .feature-text { order: 2; }
+.feature.flip .feature-media { order: 1; }
+
+.feature .headline {
+  font-size: clamp(1.7rem, 3.2vw, 2.6rem);
+  margin-bottom: 1.25rem;
+}
+
+.feature .body {
+  font-size: clamp(1rem, 1.15vw, 1.1rem);
+}
+
+.phone-frame {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.55),
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  background: #0a0a0a;
+}
+
+.phone-frame video,
+.phone-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Phone frame on light sections — softer ink-toned shadow */
+.section.light .phone-frame {
+  box-shadow:
+    0 24px 60px rgba(25, 28, 25, 0.22),
+    0 6px 18px rgba(25, 28, 25, 0.12),
+    0 0 0 1px rgba(25, 28, 25, 0.05) inset;
+}
+
+/* Metric strip — three named measures under a body block */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 2.25rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+.metrics .metric-name {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+.metrics .metric-desc {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+.section.light .metrics { border-top-color: rgba(25, 28, 25, 0.14); }
+.section.light .metrics .metric-name { color: var(--sage); }
+.section.light .metrics .metric-desc { color: var(--ink-muted); }
+
+/* Founders block — two bios side by side */
+.founders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.75rem;
+  margin-top: 2.5rem;
+}
+.founder-name {
+  font-family: var(--serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.founder-bio {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* Inline figure — a small chart or diagram inside a section.
+   SVG inside inherits currentColor; use .figure-note for the caption /
+   honesty line ("illustrative") under the graphic. */
+.figure {
+  margin-top: 2.25rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+.figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.figure .figure-note {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-top: 0.85rem;
+}
+.section.light .figure { border-top-color: rgba(25, 28, 25, 0.14); }
+.section.light .figure .figure-note { color: var(--ink-faint); }
+
+/* Closing — light section */
+.closing { text-align: left; }
+
+.closing .content { max-width: 640px; }
+
+.closing .headline {
+  color: var(--ink);
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  margin-bottom: 1rem;
+}
+
+.closing .subhead {
+  color: var(--ink-muted);
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  margin-bottom: 2rem;
+}
+
+/* Closing pull-quote (testimonial) */
+.closing .quote {
+  font-family: var(--serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  line-height: 1.4;
+  color: var(--ink);
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.005em;
+}
+.closing .quote::before {
+  content: '“';
+  display: inline-block;
+  margin-right: 0.05em;
+  color: var(--sage);
+}
+.closing .quote::after {
+  content: '”';
+  display: inline-block;
+  margin-left: 0.05em;
+  color: var(--sage);
+}
+.closing .quote-attribution {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4rem;
+}
+
+/* Signup form — stacked layout with optional textarea */
+.signup-form {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 520px;
+}
+
+.signup-form input,
+.signup-form textarea {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid rgba(25, 28, 25, 0.18);
+  border-radius: 4px;
+  padding: 0.95rem 1.1rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.signup-form textarea {
+  min-height: 92px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.signup-form input:focus,
+.signup-form textarea:focus {
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sage) 18%, transparent);
+}
+
+.signup-form input::placeholder,
+.signup-form textarea::placeholder {
+  color: rgba(25, 28, 25, 0.4);
+}
+
+.signup-form .field-label {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  margin-bottom: 0.15rem;
+  margin-top: 0.85rem;
+}
+.signup-form .field-label:first-of-type { margin-top: 0; }
+
+.signup-form button {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  padding: 0.95rem 1.6rem;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  justify-self: start;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
+}
+.signup-form button:hover { background: var(--sage-deep); border-color: var(--sage-deep); }
+.signup-form button:active { transform: translateY(1px); }
+
+.form-success {
+  display: none;
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: color-mix(in srgb, var(--sage) 10%, transparent);
+  border-left: 3px solid var(--sage);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-style: normal;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.form-success.visible { display: block; }
+.form-success a {
+  color: var(--ink);
+  border-bottom: 1px solid rgba(25, 28, 25, 0.3);
+  text-decoration: none;
+  transition: border-color 0.2s ease;
+}
+.form-success a:hover { border-bottom-color: var(--ink); }
+
+/* Photo credit, bottom-right of a photo section */
+.photo-credit {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.5rem;
+  z-index: 3;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  color: var(--text-faint);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+.photo-credit a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  padding-bottom: 1px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.photo-credit a:hover {
+  color: var(--text-muted);
+  border-bottom-color: rgba(255, 255, 255, 0.4);
+}
+.hero .photo-credit { bottom: 5.5rem; }
+
+@media (max-width: 900px) {
+  .feature .content,
+  .feature.flip .content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    max-width: var(--content-max);
+  }
+  .feature.flip .feature-text { order: 2; }
+  .feature.flip .feature-media { order: 1; }
+  .feature .feature-text { order: 2; }
+  .feature .feature-media { order: 1; }
+  .phone-frame { max-width: 260px; }
+}
+
+@media (max-width: 768px) {
+  .section { padding: 5rem 1.5rem; }
+  .section::before { background: var(--overlay-mobile); }
+  .section.feature::before { background: rgba(0, 0, 0, 0.82); }
+  .brand { top: 1.25rem; left: 1.25rem; }
+  .headline { font-size: clamp(1.7rem, 7.5vw, 2.5rem); }
+  .body { font-size: 1rem; line-height: 1.7; }
+  .photo-credit { bottom: 1rem; right: 1rem; font-size: 0.55rem; }
+  .hero .photo-credit { bottom: 5rem; }
+  .metrics { grid-template-columns: 1fr; gap: 1.5rem; }
+  .founders { grid-template-columns: 1fr; gap: 2rem; }
+  .signup-form button { width: 100%; justify-self: stretch; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .content {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .scroll-indicator::after { animation: none; }
+}

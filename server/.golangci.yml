@@ -1,0 +1,665 @@
+# golangci-lint configuration for the Go server.
+#
+# HOW THIS IS RUN. Always via `npm run lint:go`, which passes `--config` and a
+# `./server/...` package pattern explicitly:
+#
+#     golangci-lint run --config server/.golangci.yml ./server/...
+#
+# Do NOT run `golangci-lint run ./...` from the repo root. golangci-lint derives
+# its config search directory from the first positional argument, so `./...`
+# resolves to the repo root, finds no config, and silently falls back to the
+# default linter set — everything below is skipped. That is exactly what
+# happened between #1605 and #1611: this file existed for months without ever
+# being applied. The explicit `--config` makes the failure mode impossible.
+#
+# ENFORCEMENT. `npm run lint:go` runs in `.github/workflows/test_go.yaml` inside
+# the `Go Tests` job, which is a required check. A lint failure blocks the PR.
+#
+# ADDING LINTERS. Enable one only when its findings are fixed, not suppressed.
+# Linters parked for a later phase of #1611 are listed at the bottom of the
+# `linters:` block with the phase that un-parks them.
+#
+# SCHEMA VERSION. This is the v2 schema (#3008). Do not hand-edit it back toward
+# v1 shapes: `linters-settings` is now `linters.settings`, `issues.exclude-dirs`
+# and `issues.exclude-rules` are now `linters.exclusions.paths` / `.rules`, and
+# the formatters have their own top-level block. The two majors refuse each
+# other's config outright, so a v1-shaped edit fails closed rather than being
+# silently ignored. `golangci-lint migrate` performs the conversion but STRIPS
+# EVERY COMMENT — if you ever rerun it, restore this commentary by hand from
+# git, because most of what is below is the reasoning, not the setting.
+
+version: "2"
+
+run:
+  modules-download-mode: readonly
+  # Treat warnings as errors to enforce strict quality standards
+  issues-exit-code: 1
+  # NOTE: `run.timeout` is deliberately absent. v2 disables the lint timeout by
+  # default, and the v1 value (10m, raised from 3m after cold caches tripped it)
+  # has no v2 equivalent. The backstop is now the `Go Tests` job's own
+  # `timeout-minutes: 30` in .github/workflows/test_go.yaml.
+
+linters:
+  enable:
+    # golangci-lint defaults, stated explicitly so the set is readable.
+    # (`gosimple` and `typecheck` are gone in v2: gosimple's S* checks were
+    # folded into staticcheck, and typecheck was never a real linter — it is the
+    # compiler, and it still fails the run.)
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    # Green as of #1611 Phase 1.
+    - bodyclose
+    - errorlint
+    - forbidigo
+    - goheader
+    - misspell
+    - revive
+    - unconvert
+    - whitespace
+    # Green as of #1611 Phase 2 (formatting). gofmt/gofumpt/goimports moved to
+    # the `formatters:` block at the bottom in v2; `stylecheck` merged into
+    # `staticcheck` (see its settings below).
+    - godot
+    - gocritic
+    # Green as of #1611 Phase 2 (security + suppression hygiene).
+    - gosec
+    - nolintlint
+    - unparam
+    # Green as of #1611 Phase 5 (cheap high-signal set).
+    - sqlclosecheck
+    - rowserrcheck
+    - noctx
+    - usestdlibvars
+    - predeclared
+    - containedctx
+    - inamedparam
+    - canonicalheader
+    - errname
+    - copyloopvar
+    - fatcontext
+    - testifylint
+    - gochecknoinits
+    # Green as of #2820.
+    - goconst
+    - interfacebloat
+    - makezero
+    - recvcheck
+    - wastedassign
+    - sloglint
+    # Ratcheted, not cleared — thresholds and ladders below (#2816).
+    - funlen
+    - cyclop
+    - dupl
+
+    # ---------------------------------------------------------------------
+    # Parked. Each is enabled by the #1611 phase named, once its findings are
+    # fixed. Do not enable one early without clearing its backlog — a red
+    # required check gets muted, not fixed.
+    #
+    #   Still parked. Each needs refactoring work, not a config change — the
+    #   threshold that would be green today is loose enough to catch nothing.
+    #   Measured with uniq-by-line: false and _test.go excluded (#2816):
+    #
+    #     funlen    worst function is 570 lines. >100 lines: 85, and by statements
+    #               >60: 87, >100: 27, >150: 8, >200: 2. A green threshold is ~571.
+    #     cyclop    worst is 127 (portfolio/fetch.go). >15: 248, >30: 53, >50: 18,
+    #               >100: 1. A green threshold is ~130.
+    #     dupl      108 at threshold 150; 35 at 200, 11 at 300, 4 at 400.
+    #
+    #
+    #   goconst is no longer parked — #2820 cleared it and it is enabled above.
+    #
+    #   Enabling any of them means doing the splits/extractions first. The
+    #   ladders to ratchet down are recorded per linter below; #2816 (which
+    #   tracked that work) is closed, so a further rung needs a fresh issue.
+    # ---------------------------------------------------------------------
+
+  settings:
+    forbidigo:
+      forbid:
+        # `p:` in the v1 schema; renamed to `pattern:` in v2.
+        - pattern: "^time\\.Sleep$"
+          msg: "time.Sleep causes flaky test synchronization; use channels, sync.WaitGroup, or clock injection instead (see #1364)"
+    funlen:
+      # RATCHET (#2816). Target is lines=100 / statements=60; 172 non-test functions
+      # violate that today, so these start where the codebase is and step down.
+      # Measured ladder (non-test violators), uniq-by-line: false, tests excluded:
+      #   statements  > 60: 87   > 80: 43   > 100: 27   > 120: 16   > 150: 8
+      #   lines       >100: 85   >150: 2
+      # NOTE: funlen emits at most ONE finding per function, and statements trips
+      # first for big functions — so measuring the two together hides the real
+      # spread of each. Probe with the other set to 100000 to see one at a time.
+      # These sit at the current worst (lines 428, statements 186) so the ratchet
+      # holds the line: any new function above today's worst fails.
+      # Next rung: statements 150 / lines 350, then 120 / 100 / 80 / 60.
+      lines: 430
+      statements: 190
+    cyclop:
+      # RATCHET (#2816). Target is 15; 248 non-test functions exceed it.
+      # Measured ladder: >50: 18   >40: 31   >30: 53   >25: 79   >20: 142   >15: 248
+      # 92 is the current worst (SaveExperience at 91), down from 127 before
+      # fetchAll and generateFeedItems were decomposed. The next rung is 65, which
+      # means splitting SaveExperience and then clears the gap all the way to
+      # GetUserCommunityRanking (65).
+      max-complexity: 92
+    dupl:
+      # RATCHET (#2816). Target is 150. Started at 500; nine extractions since
+      # (location/time poll Manage and Delete, the three conversation_id
+      # backfills, the nearby-users/nearby-gear preamble, known_for scope
+      # loading, the two transfer list RPCs, the Up Next / calendar gear
+      # obligation, the two AI per-method override tables, and the leaver
+      # unshare cascade) brought it to 250 green.
+      # Current ladder: 200: 8 pairs   180: 14 pairs   150: 46 pairs.
+      #
+      # The next rung is 200 and it is eight pairs:
+      #   portfolio/metric_detail.go 242-292 vs 296-346
+      #   portfolio/watch.go 54-96 vs 133-176
+      #   impact_metrics/metric_detail_rankings.go 100-155 vs 157-212
+      #   simulation/gear_catalog.go 53-62 vs 65-74
+      #   storage/community.go 458-503 vs 512-556
+      #   media/pexels_client.go 434-477 vs pixabay_provider.go 196-239
+      #   media/pexels_client.go 121-183 vs pixabay_provider.go 74-125
+      #   media/pexels_client.go 483-513 vs 517-547
+      # Judge each on whether the parameterisation costs less than the copy —
+      # the 25-line voter lookup in poll_manage.go is the counterexample where it
+      # does not.
+      threshold: 250
+    goconst:
+      # Enabled at the target threshold by #2820, which cleared the backlog by
+      # fixing what the findings were evidence of rather than by hoisting
+      # literals: the dead server-rendered inbox labels were deleted, and the
+      # stringly-typed RSVP values were centralized (and since #2832 replaced
+      # outright by the models enums).
+      #
+      # Do not reach for //nolint:goconst to make this green.
+      min-occurrences: 3
+      # Count occurrences in non-test files only. This is the setting that
+      # matters, not the _test.go exclude-rule below: goconst counts
+      # package-wide, so a finding reported on a production line can be driven
+      # entirely by repetitions in tests. "YES" was 30 occurrences in
+      # services/experience with tests counted and 19 without — a difference
+      # large enough to make "is this green?" unanswerable. Test bodies are
+      # deliberately DAMP anyway (docs/reviews/code_quality_review_prompt.md §1):
+      # a table-driven case spelling out "YES" twenty times is the fixture, not
+      # a magic value driving behaviour.
+      #
+      # COUNTING CHANGED WITH THE BUNDLED goconst (#3008). golangci-lint v1.64.8
+      # bundled goconst 1.7.1, which reported a repeated string ONCE, at a single
+      # occurrence; 2.13.2 bundles 1.11.0, which reports it once per FILE that
+      # contains it. One string across 35 files is now 35 findings. On adoption
+      # that turned 113 distinct strings into 356 findings. When you measure this
+      # linter, count DISTINCT STRINGS — the raw finding count is a file-fanout
+      # number and comparing it against a pre-2.x figure is meaningless.
+      ignore-tests: true
+      # VOCABULARY, NOT MAGIC VALUES (#3008).
+      #
+      # The 2.x goconst reported 356 findings over 113 distinct strings, and
+      # auditing them showed the great majority are not repeated *values* — they
+      # are tokens from vocabularies this codebase deliberately shares:
+      #
+      #   * SQL column names, which protosql derives from proto field names
+      #     ("community_id" appears in 35 files for that reason alone);
+      #   * SQL table names, likewise derived from proto message names
+      #     ("gear", "community_request");
+      #   * the structured-log field names that
+      #     docs/server/observability.md → "Standard Field Names" defines as a
+      #     repo-wide vocabulary precisely so log queries work across services.
+      #
+      # A constant does not help any of them. `columnCommunityID = "community_id"`
+      # adds a layer without removing a failure mode, and the log-field case is
+      # worse: observability.md documents the literals *as* the interface, and
+      # `logger.Info(msg, logging.FieldCommunityID, id)` reads worse than the
+      # string it wraps.
+      #
+      # Beware goconst's match-constant suggestions here. It matches by VALUE,
+      # so it proposes reusing `topicGear` (a conversation topic_type stored on
+      # the conversation row) for the SQL table name "gear" and for a log label
+      # that happen to spell the same. Taking that advice would couple three
+      # independent vocabularies through one constant — the #2820 lesson in
+      # reverse. Where the meaning genuinely matches, the constant is already
+      # used.
+      #
+      # So the vocabulary shapes are excluded by value and everything else still
+      # fails the build. Adding a pattern here needs the same justification as
+      # adding a linter: say which vocabulary it belongs to and where that
+      # vocabulary is documented.
+      # Map keys are structure, not behaviour. A large share of the findings are
+      # keys in a data literal — `QueryByFields(map[string]any{"withdrawn":
+      # false})` naming a protosql column, or the `map[string]any{"type":
+      # "object", "required": ...}` that the three AI providers build JSON Schema
+      # with. Those strings are dictated by the schema or the spec on the other
+      # side; a constant cannot make them more correct, only less greppable.
+      ignore-map-keys: true
+      ignore-string-values:
+        # Identifier-shaped lower_snake_case strings. In this codebase that
+        # shape is always a name in some vocabulary, never a value driving
+        # behaviour: protosql column names (which ARE the proto field names —
+        # "withdrawn", "archived", "description"), protosql table names
+        # ("gear", "community_request"), the structured-log field names in
+        # observability.md's table ("duration_ms", "path", "state"), notification
+        # template keys ("transfer_cancelled", "revive_experience"), and the
+        # registered JWT claim names from RFC 7519 ("iss", "sub", "exp").
+        #
+        # This is the broadest rule here and it is deliberate: the discriminator
+        # that survived auditing all 113 strings is SHAPE. Identifier-shaped
+        # strings were vocabulary essentially without exception; the ones worth
+        # a constant read as prose or camelCase. Those still fail the build.
+        - '^[a-z][a-z0-9]*(_[a-z0-9]+)*$'
+        # Entity names also appear capitalised as display/log labels.
+        - '^(Gear|Request|Experience|Transfer|Community|User)$'
+    gocritic:
+      disabled-checks:
+        # Fires on every `defer x.Close()` followed by log.Fatalf/os.Exit in a
+        # main(). All 6 sites are one-shot CLI tools and the server's bind-failure
+        # path, where terminating IS the intent: committed work is already durable
+        # and the OS reclaims the descriptors. The suggested remedy (a run() error
+        # wrapper) adds indirection for no behavioural change. Re-enable if we ever
+        # defer something with side effects that outlive the process.
+        - exitAfterDefer
+        # gocritic's own "style" tag, not "diagnostic": it rewrites a correct
+        # if/else-if chain into a switch. 14 sites, zero behaviour change, and
+        # every rewrite is a chance to invert a condition by hand. The diagnostic
+        # checks that find real defects stay on — appendAssign caught two genuine
+        # slice-aliasing hazards in this very pass (feed/service.go,
+        # user/stats.go). Style preference is not worth the regression surface.
+        - ifElseChain
+    staticcheck:
+      # v2 MERGED gosimple + stylecheck + staticcheck into this one linter
+      # (#3008). The `checks` value below therefore governs all four check
+      # families at once — SA (staticcheck), S (gosimple), ST (stylecheck) and
+      # QF (quickfix) — where in v1 it governed stylecheck alone.
+      #
+      # QF (quickfix) ran under no v1 linter here, so carrying `["all"]` across
+      # the merge would have silently widened the gate by 31 findings nobody had
+      # reviewed. #3042 reviewed them per check; the outcome is below.
+      #
+      # ENABLED, and their findings fixed: QF1012 (Fprintf over
+      # WriteString(Sprintf) — drops an intermediate allocation), QF1008
+      # (embedded field in selector), QF1011 (redundant type in declaration —
+      # verified at both sites that the right-hand side already has the
+      # interface type, so nothing is being widened by removing it).
+      #
+      # DISABLED below: the three "rewrite this control flow" checks. They are
+      # the same trade the config already refuses for gocritic's ifElseChain —
+      # zero behaviour change, and every rewrite is a chance to invert a
+      # condition by hand. Keeping the two consistent matters more than the
+      # five findings.
+      #
+      # ST1003 also polices package names, where it wants `impactmetrics` for
+      # `impact_metrics`. Snake_case package directories are a deliberate,
+      # pervasive convention here (server/impact_metrics, server/activity_digest,
+      # server/services/unified_create, ...) and are baked into CLAUDE.md and
+      # docs/server/architecture.md. Renaming ~30 packages to satisfy a style
+      # check is not a trade worth making; the identifier-casing half of ST1003
+      # (mediaId -> mediaID) is kept, via the exclude-rule below.
+      checks:
+        - all
+        # QF1001 De Morgan's law, QF1002/QF1003 untagged -> tagged switch.
+        # See the note above: same argument as gocritic's ifElseChain.
+        - -QF1001
+        - -QF1002
+        - -QF1003
+    nolintlint:
+      # Every suppression must name its linter and say why. The codebase already
+      # had 114 //nolint directives written against a config that never ran; this
+      # is what keeps the next 114 auditable.
+      require-explanation: true
+      require-specific: true
+      allow-unused: false
+    govet:
+      enable-all: true
+      disable:
+        # Reorders hand-written struct fields by size to shave padding bytes. That
+        # is a micro-optimization on a server with no memory-bound hot paths, and
+        # it costs the semantic grouping that makes request/response and config
+        # structs scannable. 419 findings, none of them defects.
+        - fieldalignment
+        # 746 findings, overwhelmingly idiomatic `err :=` re-declaration in nested
+        # scopes. The genuinely dangerous shadowing cases are already caught by
+        # ineffassign and staticcheck. If we want this back, scope it to non-test
+        # files rather than enabling it fleet-wide.
+        - shadow
+    godot:
+      # Check that all top-level comments end in a period
+      scope: toplevel
+      exclude:
+        # Exclude function names from godot checks
+        - "^func "
+      # NOTE: do NOT use `golangci-lint run --fix` to clear godot findings. Its
+      # embedded fixer replaces the whole comment group with the fixed final line,
+      # silently deleting the rest of a multi-line doc comment (verified on
+      # golangci-lint v1.64.8 — it ate 6 of 7 lines of ValidateIANA's doc). The
+      # standalone tool is correct; use it instead:
+      #   go install github.com/tetafro/godot/cmd/godot@latest
+      #   find server -name '*.go' -not -path '*/gen/*' -print0 \
+      #     | xargs -0 godot -w -c <config with `scope: toplevel`>
+    gosec:
+      # G201/G202 (SQL string formatting / concatenation) are ENABLED, but do not
+      # mistake that for coverage of the storage layer. They find nothing there,
+      # and cannot: measured on adoption (#2795), `gosec -include=G201,G202
+      # ./server/...` reports 0 issues across 705 files / 157k lines. Two blind
+      # spots in gosec's sqlStrFormat rule account for all of it:
+      #
+      #   1. It only fires when the receiver of Query*/Exec* resolves to a
+      #      concrete *sql.DB / *sql.Tx / *sql.Stmt. ProtoSQLStorage holds
+      #      `db SQLDB` and `exec SQLExecutor` — both interfaces, because
+      #      InstrumentedDB needs them for per-request query counting (#1613) and
+      #      WithTx needs them to route through an InstrumentedTx. Every query in
+      #      server/storage/ is therefore invisible to it, including a literal
+      #      fmt.Sprintf("... WHERE name = '%s'", userInput).
+      #   2. It misses db.Query(fmt.Sprintf(...)) when the Sprintf is inline; only
+      #      `q := fmt.Sprintf(...); db.Query(q)` is caught.
+      #
+      # An earlier `excludes: [G201]` here claimed the sites were all
+      # parameterized. They are — that was verified by hand over all ~81
+      # construction sites — but the exclude was a no-op either way, and a
+      # per-site //nolint:gosec would be rejected by nolintlint's
+      # allow-unused: false since gosec never flags those lines.
+      #
+      # The real gate is `go run ./server/cmd/check-sql` (npm run lint:go:sql),
+      # which enforces the bind-values/quote-identifiers invariant on interface
+      # and concrete executors alike. G201/G202 stay on to catch a future caller
+      # that reaches for a raw *sql.DB, which is the one shape they do see.
+      excludes:
+        # G115 (integer overflow conversion) — disabled after auditing all 95
+        # findings it produced on adoption (#1611).
+        #
+        # It earned its keep once: ClaimGearDays narrowed a caller-supplied day
+        # span to int32 BEFORE comparing it against maxBookingDays, so a span of
+        # 4,294,967,297 days truncated to int32(1) and walked past the guard.
+        # Fixed in bookings.go and locked by
+        # TestClaimGearDays_RejectsOverlongRange, which fails if the narrowing
+        # moves back before the check.
+        #
+        # The other 93 are all provably bounded in ways gosec cannot see: int32 of
+        # a SQL row count or a signal aggregate, uint8 of a value already masked
+        # `% 256`, or a value the enclosing function just range-checked. Carrying
+        # 93 //nolint:gosec directives forever would train everyone to add a 94th
+        # by reflex, which hides the next real one exactly as well as disabling
+        # the rule does — and costs more noise. If you want it back, scope it to
+        # the code that converts caller-supplied magnitudes rather than counts.
+        - G115
+    revive:
+      # NOTE: `min-confidence: 0` was removed here (#3008). v1.64.8 tolerated the
+      # key; v2 rejects it outright, and `golangci-lint migrate` refuses to run
+      # until it is gone. It was doing nothing — revive's per-rule config below
+      # is what governs, and 0 was already the effective floor.
+      rules:
+        - name: exported
+          severity: error
+          disabled: false
+          arguments:
+            - "checkPrivateReceivers"
+            - "sayRepetitiveInsteadOfStutters"
+        - name: package-comments
+          severity: error
+          disabled: false
+        - name: comment-spacings
+          severity: warning
+          disabled: false
+
+  exclusions:
+    # `lax` matches v1's treatment of generated files. Kept explicit because the
+    # v2 default is different and the difference is invisible until it bites.
+    generated: lax
+    # These four presets are v1's `exclude-use-default: true`, which this config
+    # relied on without ever naming it. They are NOT cosmetic: the `comments`
+    # preset is what suppresses ST1000/ST1020-22 ("package comment should be of
+    # the form ...") and the matching revive rules. Drop it and this config goes
+    # from green to hundreds of findings.
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      # Generated protobuf/connect code.
+      - gen
+      # Vendored third-party Go inside an npm package tree. Not reachable from
+      # ./server/... but excluded defensively.
+      - node_modules
+      # v1's `skip-dirs-use-default` set, named explicitly for the same reason as
+      # the presets above.
+      - third_party$
+      - builtin$
+      - examples$
+    rules:
+      # Exclude some linters from running on tests files
+      - path: _test\.go
+        linters:
+          - gosec
+          - errcheck
+      # noctx on test files. A test that http.Get's the local server it just
+      # started has no deadline to honour and nothing to cancel; noctx earns its
+      # keep on production callers, where a context-less request ignores the RPC
+      # deadline and the client hanging up. The production findings were fixed
+      # (see server/ai/provider_*_streaming.go).
+      - path: _test\.go
+        linters:
+          - noctx
+      # ...and on the two test-scaffolding files that are not NAMED _test.go
+      # (#3008). storage/testing.go spins test databases up and down;
+      # integration_tests/test_helpers.go starts and stops the server binary.
+      # Both are test infrastructure, so the reasoning directly above applies —
+      # it is about the role, not the filename. Their exec.Command/net.Listen/
+      # db.Exec calls are process and database setup with nothing to cancel, and
+      # the teardown half runs after the test context is already cancelled, so
+      # threading one in would break cleanup rather than improve it.
+      #
+      # Deliberately narrow: only noctx. storage/testing.go is otherwise linted
+      # as production code on purpose — see its own comment about quoteIdent —
+      # and that stays true.
+      - path: (server/)?(storage/testing|integration_tests/test_helpers)\.go
+        linters:
+          - noctx
+      # fatcontext and containedctx on test files only.
+      #
+      # fatcontext looks for a context repeatedly re-wrapped inside a loop, which
+      # grows an unbounded chain — a real leak in production. Every finding here is
+      # a test storing INDEPENDENT contexts (rsvpCtxs[j] = createAuthenticatedContext(...))
+      # or capturing one in a closure, which is not that pattern. Its --fix is also
+      # actively destructive: it rewrote those assignments as `:=` declarations,
+      # which in preferred_language_test.go would have silently stopped the outer
+      # variable from ever being set. Do NOT run --fix for it.
+      #
+      # containedctx flags a struct holding a context.Context. In production that is
+      # usually a design smell; in a table-driven test it is how a case carries its
+      # own authenticated context.
+      - path: _test\.go
+        linters:
+          - fatcontext
+          - containedctx
+      # funlen, cyclop and dupl on test files. Table-driven tests are legitimately
+      # long, branchy and repetitive, and docs/reviews/code_quality_review_prompt.md
+      # §1 exempts tests from DRY in favour of DAMP. Excluding them also means the
+      # ratchet measures production complexity, which is what we want to drive down.
+      - path: _test\.go
+        linters:
+          - funlen
+          - cyclop
+          - dupl
+      # Exclude unparam from test files. A helper that takes communityID reads
+      # better than one with "comm1" baked in, even when only one value is passed
+      # today — docs/reviews/code_quality_review_prompt.md §1 exempts tests from
+      # DRY in favour of DAMP for exactly this reason. 58 findings, all of them
+      # helper signatures written for readability.
+      - path: _test\.go
+        linters:
+          - unparam
+      # Exclude errorlint from test files; tests legitimately use
+      # strings.Contains(err.Error(), ...) for assertion shape.
+      - path: _test\.go
+        linters:
+          - errorlint
+      # Restrict forbidigo to test files only; production code may use time.Sleep
+      # legitimately for retry backoff, rate limiting, etc.
+      - path-except: _test\.go
+        linters:
+          - forbidigo
+      # unparam's unused-parameter and always-same-argument analyses are objective
+      # and stay on — they found 17 real cleanups on adoption (#1611). Its
+      # "result N (error) is always nil" analysis is a design opinion, not a
+      # defect: returning error for interface conformity, for symmetry across a
+      # family of sibling functions (server/simulation's execute*/set*), or for a
+      # failure mode the function is about to grow is legitimate, and unparam
+      # cannot tell those from genuine dead returns. 13 findings, none of them
+      # bugs. Excluded deliberately rather than churning 13 signatures plus their
+      # callers to satisfy a preference.
+      - linters:
+          - unparam
+        text: "result .* is always nil"
+
+      # See the staticcheck settings above: snake_case package directories are a
+      # deliberate convention, so only this one ST1003 message is excluded. The
+      # identifier-casing findings (mediaId -> mediaID, GetStockImageById ->
+      # GetStockImageByID) still fail the build. The linter name is `staticcheck`
+      # rather than `stylecheck` since the v2 merge.
+      - linters:
+          - staticcheck
+        text: "ST1003: should not use underscores in package names"
+
+      # SA1019 on the deprecated email/password login fields, in tests only.
+      #
+      # EmailLoginRequest.Password and EmailRegisterRequest.Password are marked
+      # deprecated in login_service.proto by the passwordless migration (#2571),
+      # but the fields and the code paths behind them still ship — #2864 tracks
+      # the removal. Until then the login tests have to keep calling them: a
+      # test that proves the deprecated path still works has no way to do that
+      # without touching the deprecated field, and 14 //nolint directives would
+      # say the same thing 14 times.
+      #
+      # Scoped to these two field names deliberately, not to SA1019 at large: a
+      # test that reaches for a deprecated *stdlib* API should still fail. This
+      # rule dies with the fields, in the same PR that closes #2864.
+      - path: _test\.go
+        linters:
+          - staticcheck
+        text: "SA1019: .*Email(Login|Register)Request\\).Password is deprecated"
+
+      # goconst on fixture-shaped code that is NOT named _test.go (#3008).
+      #
+      # server/ai/eval and server/simulation are data tables — eval assertion
+      # cases and simulation personas/catalogs — that exist to be read as
+      # fixtures. code_quality_review_prompt.md §1 exempts tests from DRY in
+      # favour of DAMP, and that exemption is about the ROLE, not the filename
+      # suffix; these files are tests that happen to be importable.
+      # auth/test_utils.go is the same thing at file granularity: a test helper
+      # whose name keeps it out of every _test.go rule. Its six findings are
+      # `iss`/`aud`/`sub`/`exp`/`iat` — registered JWT claim names from RFC 7519,
+      # where a constant would obscure rather than clarify.
+      #
+      # 110 of the 356 findings on adoption. Scoped, not silenced: goconst still
+      # runs over every other production file.
+      - path: (server/)?(ai/eval|simulation)/
+        linters:
+          - goconst
+      - path: (server/)?auth/test_utils\.go
+        linters:
+          - goconst
+      # Same argument, same shape: the mock and e2e AI providers are canned
+      # response tables, cmd/notification_examples renders sample notifications,
+      # and the seed tools build fixture rows. Their repeated strings ("Sam",
+      # "Power Drill", "Test Category", "purge-test-owner") are the fixture
+      # data, not values driving behaviour.
+      - path: (server/)?(ai/provider_(mock|e2e)|cmd/notification_examples/main|cmd/seed-[a-z-]+/main)\.go
+        linters:
+          - goconst
+      # goconst on the workshop momentum detectors, where the duplication is
+      # LOAD-BEARING (#3008).
+      #
+      # Every user-visible string a detector emits is spelled as a literal at
+      # the assignment site on purpose: TestCopyCorpus_IsAccountedFor walks the
+      # package's AST for string literals assigned to Detection fields and diffs
+      # them against a declared corpus, so new copy fails the build until a
+      # human lists it. That review checkpoint is the point of the package.
+      #
+      # Hoisting the repeated CTA labels into constants was tried and it breaks
+      # the gate: the walker finds no literals, the corpus goes stale, and the
+      # copy review silently stops happening. goconst's finding is real but its
+      # remedy is wrong here — the deeper issue is that the server is choosing
+      # this English at all, which is #3044.
+      - path: (server/)?services/workshop/momentum/
+        linters:
+          - goconst
+
+issues:
+  # Never truncate. The defaults (50 per linter, 3 per unique issue) hide the
+  # true size of a backlog and make "is this green?" unanswerable.
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  # Same reasoning, and a sharper trap: uniq-by-line defaults to TRUE, which
+  # reports only ONE issue per source line. Linters that anchor to a function's
+  # declaration line collide — with cyclop enabled alongside funlen, 340 of
+  # funlen's 414 findings simply vanished, and the remaining 74 looked like the
+  # whole backlog. Any "how many findings does X have?" measured with other
+  # linters active is wrong unless this is false.
+  uniq-by-line: false
+
+# Formatters are a separate top-level block in v2; in v1 these three were
+# ordinary linters. `golangci-lint run` still REPORTS their findings (so the
+# required check still gates on formatting) and `run --fix` still applies them —
+# the new `golangci-lint fmt` subcommand is an addition, not a replacement, so
+# `npm run lint:go:fix` is unaffected.
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+    gofumpt:
+      # `extra-rules: true` in v1. v2 deprecates it and the warning says to "use
+      # `extra.group-params` instead" — that advice is INCOMPLETE, and following
+      # it literally weakens this gate. `extra` has THREE sub-rules
+      # (group-params, clothe-returns, balance-calls) and the old boolean
+      # enabled all three; measured on this codebase, all three together are
+      # equivalent to `extra-rules: true` and group-params alone reports
+      # strictly fewer findings. All three are listed explicitly so the set is
+      # visible rather than hidden behind a boolean.
+      #
+      # MEASURING THIS IS CACHE-SENSITIVE. golangci-lint caches per package, and
+      # two runs whose configs differ only in a formatter setting can serve each
+      # other's results — a probe of these three options reported 3 findings
+      # where a clean run reported 30. Always `golangci-lint cache clean` before
+      # comparing formatter settings, and measure with the real linter set:
+      # `linters.default: none` loads fewer packages, so the formatters see
+      # fewer files and under-report.
+      #
+      # THERE ARE TWO GOFUMPTS AND THEY ARE NOT THE SAME GATE (#3008).
+      # `npm run lint:go:fmt` runs the STANDALONE gofumpt pinned by
+      # GOFUMPT_VERSION, with no `-extra`. This block runs golangci-lint's
+      # BUNDLED gofumpt, with the extra rules on. So this gate is a strict
+      # superset, and the standalone one can be green while this one is not.
+      #
+      # The bundled version is not pinned by anything — not versions.env, not
+      # check_versions.js. Today it happens to be exactly 0.11.0, matching
+      # GOFUMPT_VERSION, but that is a coincidence of this golangci-lint release,
+      # not an invariant: v1.64.8 bundled gofumpt 0.7.0 while the pin already
+      # said 0.11.0. That three-release gap is where the 30 findings on adoption
+      # came from — 0.11.0's extra rules, applied for the first time. Check it
+      # after a golangci-lint bump with:
+      #
+      #   go version -m "$(command -v golangci-lint)" | grep gofumpt
+      extra:
+        group-params: true
+        clothe-returns: true
+        balance-calls: true
+    goimports:
+      # Must match the module path in go.mod. This said `library` — the module
+      # name from the original `go mod init library`, long gone — which matched
+      # nothing, so import grouping went unchecked entirely (0 findings before
+      # the correction, 124 after). A list in v2; a bare string in v1.
+      local-prefixes:
+        - go.ripls.org/ripls
+  exclusions:
+    generated: lax
+    paths:
+      - gen
+      - node_modules
+      - third_party$
+      - builtin$
+      - examples$

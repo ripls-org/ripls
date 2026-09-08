@@ -1,0 +1,279 @@
+{
+  "description": "Golden eval cases for the unified-create classifier (see docs/design/unified-create.md). Tests the classifier returns one of {gear, event, request} for an input. Phase 1 ships with a starter corpus; P2.14 grows it to ≥20 per bucket before tightening the threshold.",
+  "version": 1,
+  "defaults": {
+    "region": "Boulder, CO"
+  },
+  "cases": [
+    {
+      "id": "event_hike_tomorrow",
+      "tags": ["text", "event"],
+      "prompt": "Going for a hike tomorrow morning at Mt Sanitas, easy pace",
+      "expected_type": "event"
+    },
+    {
+      "id": "event_potluck",
+      "tags": ["text", "event"],
+      "prompt": "Hosting a Saturday potluck at my place, 6pm. Bring something to share.",
+      "expected_type": "event"
+    },
+    {
+      "id": "event_game_night",
+      "tags": ["text", "event"],
+      "prompt": "Board game night this Friday at the community center, 7-10pm",
+      "expected_type": "event"
+    },
+    {
+      "id": "event_workshop",
+      "tags": ["text", "event"],
+      "prompt": "Knife sharpening workshop next Saturday morning at the maker space",
+      "expected_type": "event"
+    },
+    {
+      "id": "event_yoga",
+      "tags": ["text", "event"],
+      "prompt": "Sunday morning yoga in the park, 9am, all levels welcome",
+      "expected_type": "event"
+    },
+    {
+      "id": "request_hiking_buddy",
+      "tags": ["text", "request"],
+      "prompt": "Looking for someone to hit Mt Sanitas with me tomorrow morning",
+      "expected_type": "request"
+    },
+    {
+      "id": "request_drill_borrow",
+      "tags": ["text", "request"],
+      "prompt": "Anyone have a hammer drill I could borrow this weekend?",
+      "expected_type": "request"
+    },
+    {
+      "id": "request_dog_walking",
+      "tags": ["text", "request"],
+      "prompt": "Need someone to walk my dog Tuesday afternoon, will trade for cookies",
+      "expected_type": "request"
+    },
+    {
+      "id": "request_help_moving",
+      "tags": ["text", "request"],
+      "prompt": "Could really use a couple of strong arms to help me move a couch on Sunday",
+      "expected_type": "request"
+    },
+    {
+      "id": "request_recipe",
+      "tags": ["text", "request"],
+      "prompt": "Anyone have a good sourdough starter they can share?",
+      "expected_type": "request"
+    },
+    {
+      "id": "gear_climbing_rope",
+      "tags": ["text", "gear"],
+      "prompt": "Edelrid BOA climbing rope, 9.6mm, used a few times",
+      "expected_type": "gear"
+    },
+    {
+      "id": "gear_shoes_giveaway",
+      "tags": ["text", "gear"],
+      "prompt": "Hoka Speedgoats size 9, barely worn before I sized up. Free to a good home.",
+      "expected_type": "gear"
+    },
+    {
+      "id": "gear_power_drill",
+      "tags": ["text", "gear"],
+      "prompt": "DeWalt 20V hammer drill with 2 batteries and charger, like new",
+      "expected_type": "gear"
+    },
+    {
+      "id": "gear_tent",
+      "tags": ["text", "gear"],
+      "prompt": "REI Half Dome 2-person tent, used a few seasons, all parts present",
+      "expected_type": "gear"
+    },
+    {
+      "id": "gear_cookware",
+      "tags": ["text", "gear"],
+      "prompt": "Cast iron Dutch oven, Lodge brand, 6 quart",
+      "expected_type": "gear"
+    },
+    {
+      "id": "ambiguous_garage_sale",
+      "tags": ["text", "ambiguous"],
+      "prompt": "Garage sale Saturday 8am, tools, books, kid stuff",
+      "expected_type": "event",
+      "alt_types": ["gear"]
+    },
+    {
+      "id": "ambiguous_skill_share",
+      "tags": ["text", "ambiguous"],
+      "prompt": "Can teach basic bike maintenance if anyone wants to learn",
+      "expected_type": "event",
+      "alt_types": ["request"]
+    },
+
+    {
+      "id": "image_rocky_talkie",
+      "tags": ["image", "gear"],
+      "input_mode": "image",
+      "image_file": "rocky_talkie.jpg",
+      "mime_type": "image/jpeg",
+      "expected_type": "gear"
+    },
+    {
+      "id": "image_dewalt_drill",
+      "tags": ["image", "gear"],
+      "input_mode": "image",
+      "image_file": "manual/dewalt_dcd800b.webp",
+      "mime_type": "image/webp",
+      "expected_type": "gear"
+    },
+    {
+      "id": "image_coleman_tent",
+      "tags": ["image", "gear"],
+      "input_mode": "image",
+      "image_file": "manual/coleman_sundome_4.jpg",
+      "mime_type": "image/jpeg",
+      "expected_type": "gear"
+    },
+    {
+      "id": "image_lodge_dutch_oven",
+      "tags": ["image", "gear"],
+      "input_mode": "image",
+      "image_file": "manual/allclad_d3_fry_pan_10.jpg",
+      "mime_type": "image/jpeg",
+      "expected_type": "gear"
+    },
+    {
+      "id": "image_breville_espresso",
+      "tags": ["image", "gear"],
+      "input_mode": "image",
+      "image_file": "manual/breville_bes870.png",
+      "mime_type": "image/png",
+      "expected_type": "gear"
+    },
+    {
+      "id": "image_atomic_ski",
+      "tags": ["image", "gear"],
+      "input_mode": "image",
+      "image_file": "atomic_maverick_ski.webp",
+      "mime_type": "image/webp",
+      "expected_type": "gear"
+    },
+    {
+      "id": "image_outdoor_activity_scene",
+      "tags": ["image", "event", "activity_scene"],
+      "input_mode": "image",
+      "image_file": "experience.jpg",
+      "mime_type": "image/jpeg",
+      "expected_type": "event",
+      "alt_types": ["request"]
+    },
+    {
+      "id": "image_brewery_social_scene",
+      "tags": ["image", "event", "social_scene"],
+      "input_mode": "image",
+      "image_file": "community.jpg",
+      "mime_type": "image/jpeg",
+      "expected_type": "event",
+      "alt_types": ["gear"]
+    },
+    {
+      "id": "image_lost_dog_poster_flaco",
+      "tags": ["image", "request", "lost_pet"],
+      "input_mode": "image",
+      "image_file": "lost_dog_poster_flaco.webp",
+      "mime_type": "image/webp",
+      "expected_type": "request"
+    },
+    {
+      "id": "image_lost_dog_yard_signs",
+      "tags": ["image", "request", "lost_pet"],
+      "input_mode": "image",
+      "image_file": "lost_dog_yard_signs.jpg",
+      "mime_type": "image/jpeg",
+      "expected_type": "request"
+    },
+    {
+      "id": "image_lost_dog_take_a_photo",
+      "tags": ["image", "request", "lost_pet"],
+      "input_mode": "image",
+      "image_file": "lost_dog_take_a_photo.jpeg",
+      "mime_type": "image/jpeg",
+      "expected_type": "request"
+    },
+    {
+      "id": "image_art_show_flyer",
+      "tags": ["image", "event", "flyer"],
+      "input_mode": "image",
+      "image_file": "art_show_flyer.jpeg",
+      "mime_type": "image/jpeg",
+      "expected_type": "event"
+    },
+    {
+      "id": "image_babysitter_wanted_flyers",
+      "tags": ["image", "request", "wanted_notice"],
+      "input_mode": "image",
+      "image_file": "babysitter_wanted_flyers.webp",
+      "mime_type": "image/webp",
+      "expected_type": "request"
+    },
+    {
+      "id": "image_charity_donation_flyer",
+      "tags": ["image", "request", "donation_drive", "ambiguous"],
+      "input_mode": "image",
+      "image_file": "charity_donation_flyer.jpeg",
+      "mime_type": "image/jpeg",
+      "expected_type": "request",
+      "alt_types": ["event"]
+    },
+
+    {
+      "id": "url_dewalt_drill_product_page",
+      "tags": ["url", "gear", "product_page"],
+      "input_mode": "url",
+      "page_title": "DEWALT 20V MAX Cordless Drill/Driver Kit (DCD771C2)",
+      "page_description": "The DEWALT DCD771C2 20V MAX Cordless Drill/Driver Kit features a compact, lightweight design for working in tight spaces.",
+      "expected_type": "gear"
+    },
+    {
+      "id": "url_rei_tent_product_page",
+      "tags": ["url", "gear", "product_page"],
+      "input_mode": "url",
+      "page_title": "REI Co-op Half Dome SL 2+ Tent",
+      "page_description": "The REI Co-op Half Dome SL 2+ tent is a freestanding 3-season tent with ample room for 2 people and their gear.",
+      "expected_type": "gear"
+    },
+    {
+      "id": "url_outdoor_gear_review",
+      "tags": ["url", "gear", "review_article"],
+      "input_mode": "url",
+      "page_title": "Best Electric Chainsaws for Homeowners 2026 - Outdoor Gear Lab",
+      "page_description": "We tested 12 electric chainsaws head-to-head to find the best options for homeowners.",
+      "expected_type": "gear",
+      "alt_types": ["request"]
+    },
+    {
+      "id": "url_red_rocks_concert",
+      "tags": ["url", "event"],
+      "input_mode": "url",
+      "page_title": "Summer Sounds Concert Series - Red Rocks Amphitheatre",
+      "page_description": "Join us for a night of live music under the stars at Red Rocks Amphitheatre.",
+      "expected_type": "event"
+    },
+    {
+      "id": "url_trail_runners_meetup",
+      "tags": ["url", "event"],
+      "input_mode": "url",
+      "page_title": "Boulder Trail Runners - Monthly Group Run",
+      "page_description": "Monthly trail running meetup for all levels in the Boulder area.",
+      "expected_type": "event"
+    },
+    {
+      "id": "url_eventbrite_workshop",
+      "tags": ["url", "event"],
+      "input_mode": "url",
+      "page_title": "Introduction to Sourdough Baking — Boulder Community Kitchen",
+      "page_description": "Hands-on Saturday afternoon workshop. Take home your own starter and a fresh loaf.",
+      "expected_type": "event"
+    }
+  ]
+}

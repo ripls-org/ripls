@@ -1,0 +1,6 @@
+{
+  "id": "current",
+  "axis": "glass",
+  "label": "Current glass (shipped)",
+  "description": "The shipped material: 37% scrim, 15% sheet. Worst-case composite over bright media is grey 175, where even pure white reaches only 2.19:1. Control — overrides nothing."
+}

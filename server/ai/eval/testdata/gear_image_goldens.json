@@ -1,0 +1,1477 @@
+{
+  "description": "Golden eval cases for DetectGearInImage. Each case points at a real product photo under server/test_data/ and asserts that the AI recovers title / brand / model / material / weight / value from the image. Opt-in per field: fields omitted from 'expected' are not checked. Tolerances on numeric fields are wide because image-based weight and value estimation is inherently imprecise.",
+  "version": 1,
+  "defaults": {
+    "value_estimate_tolerance_pct": 60.0,
+    "weight_tolerance_pct": 50.0
+  },
+  "cases": [
+    {
+      "id": "rocky_talkie",
+      "tags": [
+        "electronics",
+        "radio"
+      ],
+      "image_file": "rocky_talkie.jpg",
+      "mime_type": "image/jpeg",
+      "expected": {
+        "title_contains": [
+          "rocky talkie",
+          "walkie",
+          "radio",
+          "two-way"
+        ],
+        "brand_contains": [
+          "rocky talkie"
+        ],
+        "material_category_any_of": [
+          "mixed_plastic_metal",
+          "electronics_small"
+        ],
+        "weight_grams_approx": 173,
+        "has_description": true,
+        "min_confidence": 0.5,
+        "model_contains": [
+          "mountain radio"
+        ],
+        "value_estimate_usd": 110
+      }
+    },
+    {
+      "id": "rei_half_dome",
+      "tags": [
+        "camping",
+        "tent"
+      ],
+      "image_file": "rei_half_dome.jpg",
+      "mime_type": "image/jpeg",
+      "expected": {
+        "title_contains": [
+          "tent",
+          "half dome",
+          "rei"
+        ],
+        "brand_contains": [
+          "rei"
+        ],
+        "model_contains": [
+          "half dome"
+        ],
+        "material_category_any_of": [
+          "fabric"
+        ],
+        "weight_grams_approx": 2191,
+        "value_estimate_usd": 329,
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "atomic_maverick_ski",
+      "tags": [
+        "sports",
+        "ski"
+      ],
+      "image_file": "atomic_maverick_ski.webp",
+      "mime_type": "image/webp",
+      "expected": {
+        "title_contains": [
+          "ski",
+          "atomic",
+          "maverick"
+        ],
+        "brand_contains": [
+          "atomic"
+        ],
+        "model_contains": [
+          "maverick",
+          "115"
+        ],
+        "material_category_any_of": [
+          "mixed_plastic_metal",
+          "mixed_wood_metal",
+          "mixed_wood_plastic"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 3600,
+        "value_estimate_usd": 700
+      }
+    },
+    {
+      "id": "dewalt_dcd800b",
+      "tags": [
+        "power-tools",
+        "vendor:dewalt"
+      ],
+      "image_file": "manual/dewalt_dcd800b.webp",
+      "mime_type": "image/webp",
+      "source_url": "https://www.dewalt.com/product/dcd800b/20v-max-xr-12-brushless-cordless-drilldriver-tool-only",
+      "expected": {
+        "title_contains": [
+          "drill",
+          "driver",
+          "cordless"
+        ],
+        "brand_contains": [
+          "dewalt"
+        ],
+        "material_category_any_of": [
+          "cordless_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 1451,
+        "model_contains": [
+          "dcd800"
+        ],
+        "value_estimate_usd": 100
+      }
+    },
+    {
+      "id": "milwaukee_2904_20",
+      "tags": [
+        "power-tools",
+        "vendor:milwaukeetool"
+      ],
+      "image_file": "manual/milwaukee_2904_20.webp",
+      "mime_type": "image/webp",
+      "source_url": "https://www.milwaukeetool.com/products/details/m18-fuel-1-2-hammer-drill-driver-cordless-power-tool/2904-20",
+      "expected": {
+        "title_contains": [
+          "hammer",
+          "drill",
+          "fuel"
+        ],
+        "brand_contains": [
+          "milwaukee"
+        ],
+        "material_category_any_of": [
+          "cordless_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 2227,
+        "model_contains": [
+          "m18",
+          "fuel"
+        ],
+        "value_estimate_usd": 150
+      }
+    },
+    {
+      "id": "makita_xdt131",
+      "tags": [
+        "power-tools",
+        "vendor:makitatools"
+      ],
+      "image_file": "manual/makita_xdt131.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.makitatools.com/products/details/XDT131",
+      "expected": {
+        "title_contains": [
+          "impact",
+          "driver",
+          "cordless"
+        ],
+        "brand_contains": [
+          "makita"
+        ],
+        "material_category_any_of": [
+          "cordless_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 1497,
+        "model_contains": [
+          "xdt131",
+          "lxt"
+        ],
+        "value_estimate_usd": 129
+      }
+    },
+    {
+      "id": "bosch_gsr18v_975cn",
+      "tags": [
+        "power-tools",
+        "vendor:boschtools"
+      ],
+      "image_file": "manual/bosch_gsr18v_975cn.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.boschtools.com/us/en/products/gsr18v-975cn-06019G011F",
+      "expected": {
+        "title_contains": [
+          "drill",
+          "driver",
+          "brushless"
+        ],
+        "brand_contains": [
+          "bosch"
+        ],
+        "weight_grams_approx": 1542,
+        "material_category_any_of": [
+          "cordless_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "model_contains": [
+          "gsr18v"
+        ],
+        "value_estimate_usd": 195
+      }
+    },
+    {
+      "id": "ryobi_pblcs302",
+      "tags": [
+        "power-tools",
+        "vendor:ryobitools"
+      ],
+      "image_file": "manual/ryobi_pblcs302.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.ryobitools.com/products/33287227709",
+      "expected": {
+        "title_contains": [
+          "circular",
+          "saw",
+          "brushless"
+        ],
+        "brand_contains": [
+          "ryobi"
+        ],
+        "value_estimate_usd": 139,
+        "material_category_any_of": [
+          "cordless_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 3620,
+        "model_contains": [
+          "one+",
+          "pblcs302"
+        ]
+      }
+    },
+    {
+      "id": "festool_tid18_basic",
+      "tags": [
+        "power-tools",
+        "vendor:festoolusa"
+      ],
+      "image_file": "manual/festool_tid18_basic.webp",
+      "mime_type": "image/webp",
+      "source_url": "https://www.festoolusa.com/products/cordless-products/cordless-impact-driver/577613---tid-18-basic-us",
+      "expected": {
+        "title_contains": [
+          "impact",
+          "cordless",
+          "tid"
+        ],
+        "brand_contains": [
+          "festool"
+        ],
+        "model_contains": [
+          "tid 18"
+        ],
+        "value_estimate_usd": 199,
+        "material_category_any_of": [
+          "cordless_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 898
+      }
+    },
+    {
+      "id": "skil_dl6290a",
+      "tags": [
+        "power-tools",
+        "vendor:skil"
+      ],
+      "image_file": "manual/skil_dl6290a.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.skil.com/pwrcore-12-brushless-drill-driver-dl6290a-11/",
+      "expected": {
+        "title_contains": [
+          "drill",
+          "driver",
+          "compact"
+        ],
+        "brand_contains": [
+          "skil"
+        ],
+        "weight_grams_approx": 862,
+        "value_estimate_usd": 70,
+        "material_category_any_of": [
+          "cordless_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "model_contains": [
+          "pwrcore"
+        ]
+      }
+    },
+    {
+      "id": "klein_j2000_9ne",
+      "tags": [
+        "hand-tools",
+        "vendor:kleintools"
+      ],
+      "image_file": "manual/klein_j2000_9ne.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.kleintools.com/catalog/high-leverage-side-cutting-pliers/linemans-pliers-9-inch-journeyman-handle",
+      "expected": {
+        "title_contains": [
+          "lineman",
+          "pliers",
+          "journeyman"
+        ],
+        "brand_contains": [
+          "klein"
+        ],
+        "material_category_any_of": [
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 499,
+        "model_contains": [
+          "j2000",
+          "journeyman"
+        ],
+        "value_estimate_usd": 35
+      }
+    },
+    {
+      "id": "crescent_ac28vs",
+      "tags": [
+        "hand-tools",
+        "vendor:crescenttool"
+      ],
+      "image_file": "manual/crescent_ac28vs.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.crescenttool.com/all-tools/construction-hand-tools/adjustable-wrenches/ac28vs-8-adjustable-wrench-carded",
+      "expected": {
+        "title_contains": [
+          "adjustable",
+          "wrench"
+        ],
+        "brand_contains": [
+          "crescent"
+        ],
+        "material_category_any_of": [
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 281,
+        "model_contains": [
+          "ac28"
+        ],
+        "value_estimate_usd": 17
+      }
+    },
+    {
+      "id": "channellock_440",
+      "tags": [
+        "hand-tools",
+        "vendor:channellock"
+      ],
+      "image_file": "manual/channellock_440.webp",
+      "mime_type": "image/webp",
+      "source_url": "https://www.channellock.com/product/440/",
+      "expected": {
+        "title_contains": [
+          "pliers",
+          "tongue",
+          "groove"
+        ],
+        "brand_contains": [
+          "channellock"
+        ],
+        "model_contains": [
+          "440"
+        ],
+        "material_category_any_of": [
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 744,
+        "value_estimate_usd": 20
+      }
+    },
+    {
+      "id": "estwing_builder_framing_hammer",
+      "tags": [
+        "hand-tools",
+        "vendor:estwing"
+      ],
+      "image_file": "manual/estwing_builder_framing_hammer.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.estwing.com/product/builder-series-framing-hammer/",
+      "expected": {
+        "title_contains": [
+          "hammer",
+          "framing"
+        ],
+        "brand_contains": [
+          "estwing"
+        ],
+        "material_category_any_of": [
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 700,
+        "model_contains": [
+          "builder series",
+          "framing hammer"
+        ],
+        "value_estimate_usd": 40
+      }
+    },
+    {
+      "id": "leevalley_veritas_jack_plane",
+      "tags": [
+        "hand-tools",
+        "vendor:leevalley"
+      ],
+      "image_file": "manual/leevalley_veritas_jack_plane.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.leevalley.com/en-us/shop/tools/hand-tools/planes/bevel-up/118457-veritas-low-angle-jack-plane",
+      "expected": {
+        "title_contains": [
+          "plane",
+          "jack",
+          "veritas"
+        ],
+        "brand_contains": [
+          "lee valley",
+          "veritas"
+        ],
+        "model_contains": [
+          "jack plane"
+        ],
+        "weight_grams_approx": 2722,
+        "material_category_any_of": [
+          "mixed_wood_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "value_estimate_usd": 299
+      }
+    },
+    {
+      "id": "bahco_9031_rc",
+      "tags": [
+        "hand-tools",
+        "vendor:bahco"
+      ],
+      "image_file": "manual/bahco_9031_rc.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.bahco.com/us_en/ergotm-central-nut-wide-opening-jaw-adjustable-wrenches-with-rubber-handle-and-chrome-finish-pb_9031-rc-us_.html",
+      "expected": {
+        "title_contains": [
+          "wrench",
+          "adjustable",
+          "ergo"
+        ],
+        "brand_contains": [
+          "bahco"
+        ],
+        "material_category_any_of": [
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 340,
+        "model_contains": [
+          "9031"
+        ],
+        "value_estimate_usd": 29
+      }
+    },
+    {
+      "id": "kitchenaid_ksm150ps",
+      "tags": [
+        "kitchen",
+        "vendor:kitchenaid"
+      ],
+      "image_file": "manual/kitchenaid_ksm150ps.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.kitchenaid.com/countertop-appliances/stand-mixers/tilt-head-stand-mixers/p.artisan-series-5-quart-tilt-head-stand-mixer.KSM150PSER.html",
+      "expected": {
+        "title_contains": [
+          "mixer",
+          "stand mixer",
+          "artisan"
+        ],
+        "brand_contains": [
+          "kitchenaid"
+        ],
+        "model_contains": [
+          "artisan"
+        ],
+        "value_estimate_usd": 380,
+        "material_category_any_of": [
+          "mixed_plastic_metal",
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 8664
+      }
+    },
+    {
+      "id": "vitamix_a3500",
+      "tags": [
+        "kitchen",
+        "vendor:vitamix"
+      ],
+      "image_file": "manual/vitamix_a3500.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.vitamix.com/us/en_us/shop/a3500",
+      "expected": {
+        "title_contains": [
+          "blender",
+          "ascent"
+        ],
+        "brand_contains": [
+          "vitamix"
+        ],
+        "model_contains": [
+          "ascent",
+          "a3500"
+        ],
+        "value_estimate_usd": 650,
+        "material_category_any_of": [
+          "mixed_plastic_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 6768
+      }
+    },
+    {
+      "id": "breville_bes870",
+      "tags": [
+        "kitchen",
+        "vendor:breville"
+      ],
+      "image_file": "manual/breville_bes870.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.breville.com/en-us/product/bes870",
+      "expected": {
+        "title_contains": [
+          "espresso",
+          "barista"
+        ],
+        "brand_contains": [
+          "breville"
+        ],
+        "model_contains": [
+          "bes870",
+          "barista express"
+        ],
+        "material_category_any_of": [
+          "mixed_plastic_metal",
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 10000,
+        "value_estimate_usd": 700
+      }
+    },
+    {
+      "id": "cuisinart_dfp_14bcny",
+      "tags": [
+        "kitchen",
+        "vendor:cuisinart"
+      ],
+      "image_file": "manual/cuisinart_dfp_14bcny.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.cuisinart.com/custom-14-cup-food-processor/DFP-14BCNY.html",
+      "expected": {
+        "title_contains": [
+          "food processor",
+          "custom"
+        ],
+        "brand_contains": [
+          "cuisinart"
+        ],
+        "value_estimate_usd": 250,
+        "material_category_any_of": [
+          "mixed_plastic_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "model_contains": [
+          "custom 14",
+          "dfp-14"
+        ],
+        "weight_grams_approx": 8200
+      }
+    },
+    {
+      "id": "instantpot_duo_6qt",
+      "tags": [
+        "kitchen",
+        "vendor:instantpot"
+      ],
+      "image_file": "manual/instantpot_duo_6qt.png",
+      "mime_type": "image/png",
+      "source_url": "https://instantpot.com/products/instant-pot-duo-6qt-multi-use-pressure-cooker",
+      "expected": {
+        "title_contains": [
+          "pressure cooker",
+          "duo"
+        ],
+        "brand_contains": [
+          "instant pot"
+        ],
+        "model_contains": [
+          "duo"
+        ],
+        "material_category_any_of": [
+          "mixed_plastic_metal",
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 6000,
+        "value_estimate_usd": 100
+      }
+    },
+    {
+      "id": "allclad_d3_fry_pan_10",
+      "tags": [
+        "kitchen",
+        "vendor:all-clad"
+      ],
+      "image_file": "manual/allclad_d3_fry_pan_10.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.all-clad.com/d3-stainless-3-ply-bonded-cookware-fry-pan-10-inch.html",
+      "expected": {
+        "title_contains": [
+          "fry pan",
+          "stainless",
+          "d3"
+        ],
+        "brand_contains": [
+          "all-clad"
+        ],
+        "value_estimate_usd": 130,
+        "material_category_any_of": [
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "model_contains": [
+          "d3"
+        ],
+        "weight_grams_approx": 1361
+      }
+    },
+    {
+      "id": "tnf_borealis_backpack",
+      "tags": [
+        "camping",
+        "vendor:thenorthface"
+      ],
+      "image_file": "manual/tnf_borealis_backpack.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.thenorthface.com/en-us/p/bags-and-gear/backpacks-224451/borealis-backpack-NF0A52SE",
+      "expected": {
+        "title_contains": [
+          "borealis",
+          "backpack"
+        ],
+        "brand_contains": [
+          "the north face"
+        ],
+        "model_contains": [
+          "borealis"
+        ],
+        "value_estimate_usd": 115,
+        "material_category_any_of": [
+          "fabric"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 1050
+      }
+    },
+    {
+      "id": "msr_pocketrocket_2",
+      "tags": [
+        "camping",
+        "vendor:msrgear"
+      ],
+      "image_file": "manual/msr_pocketrocket_2.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.msrgear.com/stoves/canister-stoves/pocketrocket-2-stove/09884.html",
+      "expected": {
+        "title_contains": [
+          "stove",
+          "pocketrocket"
+        ],
+        "brand_contains": [
+          "msr"
+        ],
+        "model_contains": [
+          "pocketrocket"
+        ],
+        "value_estimate_usd": 50,
+        "material_category_any_of": [
+          "solid_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 74
+      }
+    },
+    {
+      "id": "coleman_sundome_4",
+      "tags": [
+        "camping",
+        "vendor:coleman"
+      ],
+      "image_file": "manual/coleman_sundome_4.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.coleman.com/camp-sports/tents-by-size/4-person-tents/sundome-4-person-camping-tent/SP_271238.html",
+      "expected": {
+        "title_contains": [
+          "tent",
+          "sundome"
+        ],
+        "brand_contains": [
+          "coleman"
+        ],
+        "model_contains": [
+          "sundome"
+        ],
+        "value_estimate_usd": 118,
+        "material_category_any_of": [
+          "fabric"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 4717
+      }
+    },
+    {
+      "id": "yeti_tundra_45",
+      "tags": [
+        "camping",
+        "vendor:yeti"
+      ],
+      "image_file": "manual/yeti_tundra_45.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.yeti.com/coolers/hard-coolers/tundra/tundra-45.html",
+      "expected": {
+        "title_contains": [
+          "cooler",
+          "tundra"
+        ],
+        "brand_contains": [
+          "yeti"
+        ],
+        "model_contains": [
+          "tundra"
+        ],
+        "value_estimate_usd": 350,
+        "material_category_any_of": [
+          "solid_plastic"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 11158
+      }
+    },
+    {
+      "id": "blackdiamond_spot_400",
+      "tags": [
+        "camping",
+        "vendor:blackdiamondequipment"
+      ],
+      "image_file": "manual/blackdiamond_spot_400.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.blackdiamondequipment.com/products/spot-400-headlamp",
+      "expected": {
+        "title_contains": [
+          "headlamp",
+          "spot"
+        ],
+        "brand_contains": [
+          "black diamond"
+        ],
+        "model_contains": [
+          "spot 400"
+        ],
+        "value_estimate_usd": 60,
+        "material_category_any_of": [
+          "electronics_small"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 86
+      }
+    },
+    {
+      "id": "osprey_atmos_ag_65",
+      "tags": [
+        "camping",
+        "vendor:osprey"
+      ],
+      "image_file": "manual/osprey_atmos_ag_65.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.osprey.com/atmos-ag-65-atmos65s22-415",
+      "expected": {
+        "title_contains": [
+          "pack",
+          "atmos",
+          "backpack"
+        ],
+        "brand_contains": [
+          "osprey"
+        ],
+        "model_contains": [
+          "atmos"
+        ],
+        "value_estimate_usd": 370,
+        "material_category_any_of": [
+          "fabric"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 2050
+      }
+    },
+    {
+      "id": "specialized_rockhopper",
+      "tags": [
+        "sports",
+        "vendor:specialized"
+      ],
+      "image_file": "manual/specialized_rockhopper.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.specialized.com/us/en/rockhopper/p/4274938",
+      "expected": {
+        "title_contains": [
+          "mountain bike",
+          "rockhopper",
+          "bike"
+        ],
+        "brand_contains": [
+          "specialized"
+        ],
+        "model_contains": [
+          "rockhopper"
+        ],
+        "weight_grams_approx": 13870,
+        "value_estimate_usd": 675,
+        "material_category_any_of": [
+          "mixed_plastic_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "rossignol_experience_86_ti",
+      "tags": [
+        "sports",
+        "vendor:rossignol"
+      ],
+      "image_file": "manual/rossignol_experience_86_ti.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.rossignol.com/us-en/experience-86-ti-open-RAMFP01000.html",
+      "expected": {
+        "title_contains": [
+          "ski",
+          "experience"
+        ],
+        "brand_contains": [
+          "rossignol"
+        ],
+        "model_contains": [
+          "experience 86"
+        ],
+        "value_estimate_usd": 900,
+        "material_category_any_of": [
+          "mixed_wood_metal",
+          "mixed_plastic_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 3600
+      }
+    },
+    {
+      "id": "k2_mindbender_99ti",
+      "tags": [
+        "sports",
+        "vendor:k2snow"
+      ],
+      "image_file": "manual/k2_mindbender_99ti.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://k2snow.com/en-us/p/mindbender-99ti-womens-skis-2026",
+      "expected": {
+        "title_contains": [
+          "ski",
+          "mindbender"
+        ],
+        "brand_contains": [
+          "k2"
+        ],
+        "model_contains": [
+          "mindbender",
+          "99ti"
+        ],
+        "value_estimate_usd": 560,
+        "material_category_any_of": [
+          "mixed_wood_metal",
+          "mixed_plastic_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 1887
+      }
+    },
+    {
+      "id": "manduka_pro_yoga_mat",
+      "tags": [
+        "sports",
+        "vendor:manduka"
+      ],
+      "image_file": "manual/manduka_pro_yoga_mat.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.manduka.com/products/manduka-pro-yoga-mat",
+      "expected": {
+        "title_contains": [
+          "yoga mat",
+          "pro"
+        ],
+        "brand_contains": [
+          "manduka"
+        ],
+        "model_contains": [
+          "pro"
+        ],
+        "value_estimate_usd": 140,
+        "material_category_any_of": [
+          "solid_plastic"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 3402
+      }
+    },
+    {
+      "id": "werner_camano_2pc_straight",
+      "tags": [
+        "sports",
+        "vendor:wernerpaddles"
+      ],
+      "image_file": "manual/werner_camano_2pc_straight.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://wernerpaddles.com/products/werner-camano-2-piece-straight-shaft-kayak-paddle",
+      "expected": {
+        "title_contains": [
+          "paddle",
+          "camano",
+          "kayak"
+        ],
+        "brand_contains": [
+          "werner"
+        ],
+        "model_contains": [
+          "camano"
+        ],
+        "weight_grams_approx": 761,
+        "value_estimate_usd": 349,
+        "material_category_any_of": [
+          "mixed_plastic_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5
+      }
+    },
+    {
+      "id": "thule_force_xt_xxl",
+      "tags": [
+        "sports",
+        "vendor:thule"
+      ],
+      "image_file": "manual/thule_force_xt_xxl.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.thule.com/en-us/cargo-carrier/car-top-carrier/thule-force-xt-xxl-_-635901",
+      "expected": {
+        "title_contains": [
+          "cargo",
+          "roof",
+          "force"
+        ],
+        "brand_contains": [
+          "thule"
+        ],
+        "model_contains": [
+          "force 3",
+          "force"
+        ],
+        "value_estimate_usd": 1030,
+        "material_category_any_of": [
+          "solid_plastic"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 25855
+      }
+    },
+    {
+      "id": "husqvarna_460_rancher",
+      "tags": [
+        "lawn-garden",
+        "vendor:husqvarna"
+      ],
+      "image_file": "manual/husqvarna_460_rancher.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.husqvarna.com/us/chainsaws/460-rancher/",
+      "expected": {
+        "title_contains": [
+          "chainsaw",
+          "rancher"
+        ],
+        "brand_contains": [
+          "husqvarna"
+        ],
+        "model_contains": [
+          "460",
+          "rancher"
+        ],
+        "material_category_any_of": [
+          "petrol_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 5987,
+        "value_estimate_usd": 649
+      }
+    },
+    {
+      "id": "stihl_ms_250",
+      "tags": [
+        "lawn-garden",
+        "vendor:stihlusa"
+      ],
+      "image_file": "manual/stihl_ms_250.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.stihlusa.com/en/p/chainsaws-ms-250-gasoline-chainsaw-1027308",
+      "expected": {
+        "title_contains": [
+          "chainsaw",
+          "ms 250"
+        ],
+        "brand_contains": [
+          "stihl"
+        ],
+        "model_contains": [
+          "ms 250"
+        ],
+        "value_estimate_usd": 430,
+        "material_category_any_of": [
+          "petrol_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 4581
+      }
+    },
+    {
+      "id": "ego_lm2100sp",
+      "tags": [
+        "lawn-garden",
+        "vendor:egopowerplus"
+      ],
+      "image_file": "manual/ego_lm2100sp.png",
+      "mime_type": "image/png",
+      "source_url": "https://egopowerplus.com/21-inch-self-propelled-mower/",
+      "expected": {
+        "title_contains": [
+          "mower",
+          "self-propelled"
+        ],
+        "brand_contains": [
+          "ego"
+        ],
+        "material_category_any_of": [
+          "cordless_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "model_contains": [
+          "power+",
+          "lm2100"
+        ],
+        "weight_grams_approx": 28500,
+        "value_estimate_usd": 500
+      }
+    },
+    {
+      "id": "toro_smartstow_22_21445",
+      "tags": [
+        "lawn-garden",
+        "vendor:toro"
+      ],
+      "image_file": "manual/toro_smartstow_22_21445.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.toro.com/en/product/21445",
+      "expected": {
+        "title_contains": [
+          "recycler",
+          "lawn mower",
+          "self-propel"
+        ],
+        "brand_contains": [
+          "toro"
+        ],
+        "weight_grams_approx": 32200,
+        "value_estimate_usd": 479,
+        "material_category_any_of": [
+          "petrol_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "model_contains": [
+          "recycler"
+        ]
+      }
+    },
+    {
+      "id": "greenworks_80v_21_2501202",
+      "tags": [
+        "lawn-garden",
+        "vendor:greenworkstools"
+      ],
+      "image_file": "manual/greenworks_80v_21_2501202.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.greenworkstools.com/products/pro-80v-cordless-21-inch-lawn-mower-2501202",
+      "expected": {
+        "title_contains": [
+          "mower",
+          "lawn",
+          "brushless"
+        ],
+        "brand_contains": [
+          "greenworks"
+        ],
+        "weight_grams_approx": 27000,
+        "value_estimate_usd": 400,
+        "material_category_any_of": [
+          "cordless_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "model_contains": [
+          "pro 80v",
+          "80v"
+        ]
+      }
+    },
+    {
+      "id": "worx_wg509_trivac",
+      "tags": [
+        "lawn-garden",
+        "vendor:worx"
+      ],
+      "image_file": "manual/worx_wg509_trivac.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.worx.com/trivac-blower-mulcher-vacuum-wg509.html",
+      "expected": {
+        "title_contains": [
+          "leaf blower",
+          "trivac"
+        ],
+        "brand_contains": [
+          "worx"
+        ],
+        "model_contains": [
+          "trivac"
+        ],
+        "value_estimate_usd": 110,
+        "material_category_any_of": [
+          "corded_power_tool"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 4218
+      }
+    },
+    {
+      "id": "fiskars_powergear2_lopper_25",
+      "tags": [
+        "lawn-garden",
+        "vendor:fiskars"
+      ],
+      "image_file": "manual/fiskars_powergear2_lopper_25.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.fiskars.com/en-us/gardening-and-yard-care/products/loppers/powergear2-lopper-25-394771-1002",
+      "expected": {
+        "title_contains": [
+          "lopper",
+          "powergear"
+        ],
+        "brand_contains": [
+          "fiskars"
+        ],
+        "model_contains": [
+          "powergear"
+        ],
+        "material_category_any_of": [
+          "mixed_plastic_metal"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 1300,
+        "value_estimate_usd": 45
+      }
+    },
+    {
+      "id": "bose_qcuh2",
+      "tags": [
+        "electronics",
+        "vendor:bose"
+      ],
+      "image_file": "manual/bose_qcuh2.jpeg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.bose.com/p/headphones/bose-quietcomfort-ultra-headphones-2nd-gen/QCUH2-HEADPHONEARN.html",
+      "expected": {
+        "title_contains": [
+          "headphones",
+          "quietcomfort",
+          "ultra"
+        ],
+        "brand_contains": [
+          "bose"
+        ],
+        "model_contains": [
+          "quietcomfort"
+        ],
+        "value_estimate_usd": 399,
+        "material_category_any_of": [
+          "electronics_small"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 264
+      }
+    },
+    {
+      "id": "sonos_era_300",
+      "tags": [
+        "electronics",
+        "vendor:sonos"
+      ],
+      "image_file": "manual/sonos_era_300.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.sonos.com/en-us/shop/era-300",
+      "expected": {
+        "title_contains": [
+          "speaker",
+          "era"
+        ],
+        "brand_contains": [
+          "sonos"
+        ],
+        "model_contains": [
+          "era 300"
+        ],
+        "material_category_any_of": [
+          "electronics_small"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 4470,
+        "value_estimate_usd": 479
+      }
+    },
+    {
+      "id": "jbl_charge_5",
+      "tags": [
+        "electronics",
+        "vendor:jbl"
+      ],
+      "image_file": "manual/jbl_charge_5.png",
+      "mime_type": "image/png",
+      "source_url": "https://global.jbl.com/bluetooth-speakers/CHARGE5-.html",
+      "expected": {
+        "title_contains": [
+          "speaker",
+          "charge"
+        ],
+        "brand_contains": [
+          "jbl"
+        ],
+        "model_contains": [
+          "charge 5"
+        ],
+        "material_category_any_of": [
+          "electronics_small"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 957,
+        "value_estimate_usd": 180
+      }
+    },
+    {
+      "id": "soundcore_liberty_4_nc",
+      "tags": [
+        "electronics",
+        "vendor:soundcore"
+      ],
+      "image_file": "manual/soundcore_liberty_4_nc.png",
+      "mime_type": "image/png",
+      "source_url": "https://www.soundcore.com/products/liberty-4-nc-a3947z11",
+      "expected": {
+        "title_contains": [
+          "earbuds",
+          "liberty"
+        ],
+        "brand_contains": [
+          "soundcore"
+        ],
+        "model_contains": [
+          "liberty 4"
+        ],
+        "material_category_any_of": [
+          "electronics_small"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 10,
+        "value_estimate_usd": 80
+      }
+    },
+    {
+      "id": "sennheiser_momentum_4_wireless",
+      "tags": [
+        "electronics",
+        "vendor:sennheiser"
+      ],
+      "image_file": "manual/sennheiser_momentum_4_wireless.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://us.sennheiser-hearing.com/products/momentum-4-wireless",
+      "expected": {
+        "title_contains": [
+          "headphones",
+          "momentum",
+          "wireless"
+        ],
+        "brand_contains": [
+          "sennheiser"
+        ],
+        "model_contains": [
+          "momentum 4"
+        ],
+        "value_estimate_usd": 300,
+        "material_category_any_of": [
+          "electronics_small"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 293
+      }
+    },
+    {
+      "id": "epson_home_cinema_2350",
+      "tags": [
+        "electronics",
+        "vendor:epson"
+      ],
+      "image_file": "manual/epson_home_cinema_2350.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://epson.com/For-Home/Projectors/Streaming-Entertainment/Home-Cinema-2350-4K-PRO-UHD-3-Chip-3LCD-Smart-Streaming-Projector/p/V11HA73020",
+      "expected": {
+        "title_contains": [
+          "projector",
+          "home cinema"
+        ],
+        "brand_contains": [
+          "epson"
+        ],
+        "model_contains": [
+          "home cinema 2350"
+        ],
+        "value_estimate_usd": 1100,
+        "material_category_any_of": [
+          "electronics_small"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 4000
+      }
+    },
+    {
+      "id": "kobo_libra_colour",
+      "tags": [
+        "electronics",
+        "vendor:kobo"
+      ],
+      "image_file": "manual/kobo_libra_colour.png",
+      "mime_type": "image/png",
+      "source_url": "https://us.kobobooks.com/products/kobo-libra-colour",
+      "expected": {
+        "title_contains": [
+          "e-reader",
+          "libra"
+        ],
+        "brand_contains": [
+          "kobo"
+        ],
+        "model_contains": [
+          "libra colour"
+        ],
+        "value_estimate_usd": 230,
+        "material_category_any_of": [
+          "electronics_small"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 200
+      }
+    },
+    {
+      "id": "garmin_rino_750",
+      "tags": [
+        "electronics",
+        "vendor:garmin"
+      ],
+      "image_file": "manual/garmin_rino_750.jpg",
+      "mime_type": "image/jpeg",
+      "source_url": "https://www.garmin.com/en-US/p/533999/",
+      "expected": {
+        "title_contains": [
+          "radio",
+          "gps",
+          "rino"
+        ],
+        "brand_contains": [
+          "garmin"
+        ],
+        "model_contains": [
+          "rino"
+        ],
+        "value_estimate_usd": 550,
+        "material_category_any_of": [
+          "electronics_small"
+        ],
+        "has_description": true,
+        "min_confidence": 0.5,
+        "weight_grams_approx": 348
+      }
+    }
+  ]
+}

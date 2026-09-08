@@ -1,0 +1,208 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommitsDisabled"
+  ],
+  "timezone": "America/Los_Angeles",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 0,
+  "platformAutomerge": true,
+  "rebaseWhen": "behind-base-branch",
+  "postUpdateOptions": ["gomodUpdateImportPaths"],
+  "statusCheckNames": {
+    "artifactError": null
+  },
+  "lockFileMaintenance": {
+    "description": "Weekly refresh of every lockfile (pubspec.lock, Gemfile.lock, package-lock.json, .terraform.lock.hcl) so transitively-pinned versions that no manager PR touches don't silently rot. recreateWhen:always because this is recurring hygiene, not a one-off proposal: closing one week's PR must not disable it forever. It did exactly that once — the branch was left behind when PR #2356 was closed in June 2026, and because that commit was authored by the old hosted `renovate[bot]` identity (self-hosted Renovate now commits as `ripls-renovate[bot]`) Renovate also read the branch as human-edited and refused to touch it. Lockfile maintenance was dead for ~3 months and app/pubspec.lock drifted ~100 packages behind its own pubspec.yaml ranges.",
+    "enabled": true,
+    "recreateWhen": "always",
+    "schedule": ["before 6am on monday"]
+  },
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "description": "Library/infra deps (server Go, npm projects, GitHub Actions, Android Gradle, Terraform): auto-merge patch/minor on green CI; majors stay manual. Excludes pub (Flutter app), dockerfile/docker-compose (base images), and bundler (Fastlane gems), which get manual review. The 'automerge' label gates the auto-approve workflow so ONLY these PRs are auto-approved.",
+      "matchManagers": ["gomod", "npm", "github-actions", "gradle", "gradle-wrapper", "terraform"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "addLabels": ["automerge"]
+    },
+    {
+      "description": "Majors always wait for a human regardless of manager.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "Flutter app (pub) deps: manual review for all initially — package minors here have repeatedly needed code migration. Relax to automerge-patch once the green signal (flutter analyze + test) is trusted.",
+      "matchManagers": ["pub"],
+      "automerge": false
+    },
+    {
+      "description": "Generated Go code (server/gen/**) is not checked in, so Renovate's built-in go.sum refresh cannot resolve the in-module generated imports and fails, leaving go.mod-only PRs with a stale go.sum. This postUpgradeTask regenerates the Go proto packages (local buf plugins, no network) and runs `go mod tidy` so the branch carries a correct go.sum. Runs once per branch; only go.mod/go.sum are committed (server/gen is gitignored and discarded). Requires self-hosted Renovate — the command allowlist lives in renovate/config.js and the toolchain in renovate/Dockerfile.",
+      "matchManagers": ["gomod"],
+      "postUpgradeTasks": {
+        "commands": ["bash scripts/renovate_gomod_regen.sh"],
+        "fileFilters": ["go.mod", "go.sum"],
+        "executionMode": "branch"
+      }
+    },
+    {
+      "description": "Aggressive gomod grouping: collapse all non-major Go module updates into one 'go modules' PR. Per-package gomod PRs each rewrite the shared go.mod/go.sum, so once one merges it re-conflicts every other open one — they then drain only ~one per daily Renovate run (a backlog of N takes ~N days). Grouping lands them in a single go.sum change / single merge, killing the cascade. Placed BEFORE the image-decoders / onnx-runtime / go-toolchain rules so those more-specific groups still win (later packageRules override groupName), and it never swallows the go directive (the go-toolchain rule reclaims depName 'go'). Majors are excluded so a breaking bump stays an individual, human-reviewed PR; automerge is inherited from the base lib/infra rule (patch/minor gomod auto-merges on green).",
+      "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "go modules"
+    },
+    {
+      "description": "Image-decoder security set (#1953): grouped and labeled so the security-relevant decoders are reviewed together. Replaces the deleted dependabot.yml gomod block.",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": [
+        "golang.org/x/image",
+        "github.com/adrium/goheif",
+        "github.com/disintegration/imaging",
+        "github.com/rwcarlsen/goexif"
+      ],
+      "groupName": "image decoders",
+      "labels": ["dependencies", "security"]
+    },
+    {
+      "description": "ONNX Runtime native + Go binding are version-coupled (binding requests an ORT C-API the native lib must support). Group them and hold below the API ceiling the runner image can support. Baked tool: automerge:false here is the safe default (majors stay manual via the global major rule); the minor/patch sibling rule below enables auto-merge once validate_runner_candidate.yaml proves the rebuilt runner image (#2395).",
+      "matchPackageNames": ["github.com/yalue/onnxruntime_go", "microsoft/onnxruntime"],
+      "groupName": "onnx runtime",
+      "automerge": false,
+      "labels": ["dependencies", "needs runner rebuild"]
+    },
+    {
+      "description": "Capped at the tarball ceiling, not the API ceiling (#2416). Some ONNX Runtime patch releases are package-manager-only and publish no x64+aarch64 GitHub release tarball, so runners/Dockerfile's `onnxruntime-linux-x64-<v>.tgz` download 404s and the candidate runner image build fails (the PR sticks red on Validate Runner Candidate, caught live by #2370). 1.22.1/1.22.2 were two such releases, which is why this sat at <1.22.1 long after newer runtimes shipped. Raising it is gated on `npm run check:onnx-tarballs`, which asserts the pinned ONNXRUNTIME_VERSION publishes both tarballs — run it instead of reading this cap as a permanent ceiling. 1.29.0 publishes both.",
+      "matchDatasources": ["github-releases"],
+      "matchPackageNames": ["microsoft/onnxruntime"],
+      "allowedVersions": "<1.30.0"
+    },
+    {
+      "description": "Versions.env baked-tool bumps (Flutter/Go/Node/JDK/ONNX) are validated pre-merge against a candidate runner image (validate_runner_candidate.yaml, #2395), then build_runner_image + recreate_runners republish + roll the fleet. automerge:false here is the safe default (majors stay manual via the global major rule); the minor/patch sibling rule below enables auto-merge once that candidate check is green. Always labeled 'needs runner rebuild' (#2287).",
+      "matchFileNames": ["versions.env"],
+      "automerge": false,
+      "addLabels": ["needs runner rebuild"]
+    },
+    {
+      "description": "The Go version is mirrored across four files; scripts/check_versions.js requires the first three to be byte-identical: versions.env (GO_VERSION), the go.mod `go` directive, the prod Dockerfile `ARG GO_VERSION` default, and the setup-go pin in .github/actions/generate-proto-code. The custom managers below plus the gomod and github-actions managers all surface these with depName 'go' (the only dep named exactly 'go'; the golang base image is depName 'golang' and is disabled below), so matching on depName groups every surface — across managers and datasources — into one branch that moves them together. Without it each surface opens its own PR and the guarded mirrors fail Check Versions. Baked tool: automerge:false here is the safe default (majors stay manual via the global major rule); the minor/patch sibling rule below enables auto-merge once validate_runner_candidate.yaml proves the rebuilt runner image (#2395).",
+      "matchDepNames": ["go"],
+      "groupName": "go toolchain",
+      "automerge": false,
+      "addLabels": ["needs runner rebuild"]
+    },
+    {
+      "description": "Auto-merge minor/patch baked-tool bumps once the candidate runner image is proven green by the required 'Validate Runner Candidate' check (validate_runner_candidate.yaml, #2395). These three rules sit AFTER the matching base rules so later-wins flips automerge:false -> true for non-major movement only; majors never match (matchUpdateTypes) and stay manual via the global major rule. The 'automerge' label gates renovate_auto_approve.yaml's approve job; the invariant is automerge:true IFF the 'automerge' label, so it is added here in lockstep. This rule: versions.env bumps.",
+      "matchFileNames": ["versions.env"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "addLabels": ["automerge"]
+    },
+    {
+      "description": "Auto-merge minor/patch 'go toolchain' group bumps once the candidate runner image is proven green (#2395). See the versions.env sibling above for the ordering + label invariant.",
+      "matchDepNames": ["go"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "addLabels": ["automerge"]
+    },
+    {
+      "description": "Auto-merge minor/patch 'onnx runtime' group bumps once the candidate runner image is proven green (#2395), within the allowedVersions API ceiling above. See the versions.env sibling above for the ordering + label invariant.",
+      "matchPackageNames": ["github.com/yalue/onnxruntime_go", "microsoft/onnxruntime"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "addLabels": ["automerge"]
+    },
+    {
+      "description": "The prod Dockerfile's golang base image (`FROM golang:${GO_VERSION}`) is driven by the `ARG GO_VERSION` default, which the custom 'go' manager below mirrors from versions.env. Disable the dockerfile manager's independent view of `golang` so it cannot open a duplicate 'Update golang Docker tag' PR that bumps only the Dockerfile and fails Check Versions.",
+      "matchManagers": ["dockerfile"],
+      "matchPackageNames": ["golang"],
+      "enabled": false
+    },
+    {
+      "description": "Blocked: Dart protobuf is capped by connect-dart (protobuf <5).",
+      "matchManagers": ["pub"],
+      "matchPackageNames": ["protobuf"],
+      "enabled": false
+    },
+    {
+      "description": "analyzer is capped at <14 by freezed, not by us: freezed 4.0.0 (our codegen backbone) requires analyzer ^13.0.0, and analyzer is a single shared node in the graph — every build_runner generator must agree on one version. mockito 5.8.x wants analyzer >=13.3.0 <15.0.0, so 13.x is the one window that satisfies both. Lift to <15 when a freezed release widens past analyzer 13.",
+      "matchManagers": ["pub"],
+      "matchPackageNames": ["analyzer"],
+      "allowedVersions": "<14.0.0"
+    },
+    {
+      "description": "@types/node intentionally tracks the Node 22 runtime, not the latest 25.x. Group it across every package file (cloud_functions, e2e) so a single PR moves all @types/node entries together. Without a group, each project opens its own PR with an identical 'Update dependency @types/node' title, and a project whose package.json range already admits the new version (e.g. cloud_functions' caret range) gets split onto a separate `renovate/...-lockfile` branch — surfacing as two near-duplicate PRs for one bump (#2451 + #2452).",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@types/node"],
+      "groupName": "types-node",
+      "allowedVersions": "<23.0.0"
+    },
+    {
+      "description": "Blocked: firebase-admin held at <14 (cloud_functions). firebase-functions peer-requires firebase-admin '^11.10.0 || ^12.0.0 || ^13.0.0', and the latest firebase-functions (7.2.5) still caps at v13 — so admin v14 fails `npm install` with ERESOLVE and the PR can't go green. Lift when a firebase-functions release widens its peer range to include v14.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["firebase-admin"],
+      "allowedVersions": "<14.0.0"
+    },
+    {
+      "description": "The @connectrpc/* packages (connect, connect-web, connect-node) are published together from the connect-es monorepo and move in lockstep. Group them so one PR bumps all of them instead of three near-duplicate per-package PRs at the same version (#2448 connect merged while #2449 connect-node + #2450 connect-web lagged separately). separateMajorMinor (Renovate default) still splits a future major onto its own branch for manual review.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["/^@connectrpc\\//"],
+      "groupName": "connectrpc"
+    },
+    {
+      "description": "mapbox_maps_flutter is pinned exact and wants deliberate on-device map QA before any bump.",
+      "matchManagers": ["pub"],
+      "matchPackageNames": ["mapbox_maps_flutter"],
+      "enabled": false
+    },
+    {
+      "description": "AGP and the Gradle wrapper are interdependent majors (AGP 9 requires Gradle 9, and Gradle 9 drops APIs AGP 8 relies on), so they must migrate together. Group them into one branch across the gradle and gradle-wrapper managers so a future toolchain major arrives as a single PR — and so AGP/Gradle don't reopen as two separately-failing PRs (#2389, #2391). Sets only groupName: merge policy is still governed by the manager auto-merge rule above (minor/patch) and the global major rule (majors stay manual). Kotlin is intentionally excluded — AGP 9's KGP floor (2.2.10) is already cleared, so grouping it would only couple unrelated Kotlin bumps. See #2404.",
+      "matchPackageNames": ["com.android.application", "com.android.library", "gradle"],
+      "groupName": "android gradle toolchain"
+    },
+    {
+      "description": "Flutter-SDK Gradle plugins (dev.flutter.*) come from the local Flutter SDK via includeBuild in app/android/settings.gradle.kts, not a Maven repo, so Renovate can't resolve them — disable to silence the 'package lookup failure' dashboard warning.",
+      "matchManagers": ["gradle"],
+      "matchPackageNames": ["/^dev\\.flutter\\./"],
+      "enabled": false
+    }
+  ],
+  "customManagers": [
+    {
+      "description": "Open PRs against versions.env when a new upstream toolchain version drops. Each tracked line carries a `# renovate:` annotation naming its datasource.",
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)versions\\.env$/"],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+versioning=(?<versioning>\\S+))?(?:\\s+extractVersion=(?<extractVersion>\\S+))?\\s*\\n\\s*[A-Za-z0-9_]+=(?<currentValue>\\S+)"
+      ]
+    },
+    {
+      "description": "Go version mirrors that scripts/check_versions.js enforces against versions.env: the go.mod `go` directive and the prod Dockerfile `ARG GO_VERSION` default. Surfaced as depName 'go' (golang-version) so they share the 'go toolchain' branch and update in lockstep with versions.env GO_VERSION.",
+      "customType": "regex",
+      "managerFilePatterns": ["/^go\\.mod$/", "/^Dockerfile$/"],
+      "matchStrings": [
+        "(?m)^go (?<currentValue>\\d+\\.\\d+\\.\\d+)\\s*$",
+        "ARG GO_VERSION=(?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "go",
+      "datasourceTemplate": "golang-version"
+    },
+    {
+      "description": "ONNX Runtime version mirror that scripts/check_versions.js enforces against versions.env: the prod Dockerfile `ARG ONNXRUNTIME_VERSION` default. Surfaced as microsoft/onnxruntime so it joins the 'onnx runtime' branch and updates in lockstep with versions.env ONNXRUNTIME_VERSION (the dockerfile manager does not track ARGs used only in a download URL, so without this the Dockerfile default never moves and Check Versions fails).",
+      "customType": "regex",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": [
+        "ARG ONNXRUNTIME_VERSION=(?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "microsoft/onnxruntime",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+You're on the list
+
+Thanks for signing up. We're building something to make sharing with your friends actually work.
+
+The hard part of sharing isn't generosity -- it's coordination. Ripls handles the logistics so your friend group can:
+
+- Make stuff discoverable -- tools, gear, equipment sitting in garages
+- Help each other out -- moves, rides, repairs, covering group costs
+- Request what you need, offer what you can -- no awkward group texts
+
+We'll reach out when we're ready for you.
+In the meantime, think about which 5-10 friends you'd invite first.
+{{if .LegalEntityName}}
+{{.LegalEntityName}}{{end}}

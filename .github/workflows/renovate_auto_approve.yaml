@@ -1,0 +1,136 @@
+name: Renovate PR Automation
+
+# Two complementary, mutually-exclusive jobs route a Renovate PR to merge based
+# on its `automerge` label (added by the auto-merge packageRules in
+# renovate.json). Baked-tool `needs runner rebuild` PRs are routed like any
+# other now that the required `Validate Runner Candidate` check proves the new
+# toolchain pre-merge (#2395): minor/patch carry the `automerge` label and flow
+# through `approve`; majors have no label and flow through `request-human-review`.
+# Either way native auto-merge still waits for that required check before landing.
+#
+# 1. `approve` (label present — patch/minor lib updates): Renovate enabled
+#    GitHub native auto-merge on these, but the "main requires review" ruleset
+#    needs an approving review and Renovate can't approve its own PR. Native
+#    auto-merge does NOT honor the ruleset's bypass actors (verified: an
+#    org-admin "always" bypass still left an auto-merge PR BLOCKED on
+#    REVIEW_REQUIRED), so the Renovate review-bypass alone won't merge its PRs.
+#    This job supplies the approving review so auto-merge fires on green — no
+#    human in the loop.
+#
+# 2. `request-human-review` (label absent — majors, pub, base images, fastlane
+#    gems): these genuinely need a person's eyes. To make them hands-off AFTER
+#    that review lands, this job requests review from DEFAULT_RENOVATE_REVIEWER
+#    and enables native auto-merge. Because native auto-merge ignores the
+#    review-bypass, the PR still waits for a REAL human approval AND green
+#    required checks — then merges itself, so no one has to hunt for the merge
+#    button. It does NOT auto-approve, so the human gate is intact.
+#
+# Uses pull_request_target so the jobs run in the base-branch context with a
+# write token; they never check out or execute PR code, and are gated to PRs
+# authored by the Renovate bot, so there's no untrusted-code exposure.
+#
+# Two bot logins are accepted during the migration from the hosted Mend app
+# (renovate[bot]) to the self-hosted ripls-renovate GitHub App
+# (ripls-renovate[bot]). Once Mend is decommissioned, renovate[bot] can be
+# dropped.
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
+
+# Serialize per PR and cancel superseded runs. Renovate opens a PR and adds its
+# labels (`dependencies`, `automerge`, `needs runner rebuild`) in quick
+# succession, so `opened` + one `labeled` event PER label all fire near-
+# simultaneously. Without this, each spawns a concurrent `approve` job whose
+# hmarr/auto-approve-action races the others — none sees the others' pending
+# review, so a 3-label PR lands 3 separate approvals (#2454). Cancelling
+# in-progress runs leaves exactly the latest event's run, which approves once
+# (and is idempotent if an earlier run already approved).
+concurrency:
+  group: renovate-auto-approve-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  # Human assigned to review Renovate PRs that aren't auto-approved. Set as a
+  # repository variable (Settings → Secrets and variables → Actions → Variables)
+  # rather than inline: it names a person, and this workflow is open-source
+  # (#2953). Unset means "don't request anyone" — the step below no-ops.
+  # Could become CODEOWNERS-based or round-robin later.
+  DEFAULT_RENOVATE_REVIEWER: ${{ vars.DEFAULT_RENOVATE_REVIEWER }}
+
+jobs:
+  approve:
+    # Only auto-approve Renovate PRs that are auto-merge-eligible. Renovate adds
+    # the "automerge" label to those (renovate.json); majors, pub (Flutter app),
+    # base images, and Fastlane gems get no label, so they still need a human
+    # review. `labeled` is in the triggers in case the label lands after open.
+    #
+    # Baked-tool "needs runner rebuild" PRs are NO LONGER excluded (#2395):
+    # minor/patch bumps carry the "automerge" label and are safe to auto-approve
+    # because the required "Validate Runner Candidate" check proves the rebuilt
+    # runner image builds + tests before native auto-merge fires. Major
+    # baked-tool bumps get no "automerge" label, so they fall through to
+    # request-human-review below.
+    if: ${{ (github.event.pull_request.user.login == 'renovate[bot]' || github.event.pull_request.user.login == 'ripls-renovate[bot]') && contains(github.event.pull_request.labels.*.name, 'automerge') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Approve Renovate PR
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  request-human-review:
+    # The complement of `approve`: Renovate PRs WITHOUT the `automerge` label
+    # (majors — including major baked-tool bumps — pub, base images, fastlane
+    # gems) need a human review. Assign the default reviewer and enable native
+    # auto-merge so the PR merges itself once that human approves and required
+    # checks are green — without auto-approving, so the human gate stays. Major
+    # baked-tool bumps additionally wait on the required "Validate Runner
+    # Candidate" check (#2395), so an unproven toolchain can't merge even with a
+    # human approval.
+    if: ${{ (github.event.pull_request.user.login == 'renovate[bot]' || github.event.pull_request.user.login == 'ripls-renovate[bot]') && !contains(github.event.pull_request.labels.*.name, 'automerge') }}
+    runs-on: ubuntu-latest
+    permissions:
+      # Enabling native auto-merge needs write beyond pull-requests.
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Request review from the default reviewer
+        run: |
+          set -euo pipefail
+          # No configured reviewer is a valid setup, not an error: the PR still
+          # auto-merges once someone approves it.
+          if [ -z "${DEFAULT_RENOVATE_REVIEWER:-}" ]; then
+            echo "::notice::No DEFAULT_RENOVATE_REVIEWER variable set; not requesting a review."
+            exit 0
+          fi
+          # Don't re-request someone who already reviewed — that would dismiss
+          # their approval. Skip if they're already a requested reviewer too.
+          REVIEWED=$(gh pr view "$PR" --json reviews \
+            --jq "[.reviews[].author.login] | index(\"$DEFAULT_RENOVATE_REVIEWER\") // empty")
+          REQUESTED=$(gh pr view "$PR" --json reviewRequests \
+            --jq "[.reviewRequests[].login] | index(\"$DEFAULT_RENOVATE_REVIEWER\") // empty")
+          if [ -z "$REVIEWED" ] && [ -z "$REQUESTED" ]; then
+            gh pr edit "$PR" --add-reviewer "$DEFAULT_RENOVATE_REVIEWER" \
+              || echo "::notice::Could not request review from $DEFAULT_RENOVATE_REVIEWER on PR #$PR; continuing."
+          else
+            echo "$DEFAULT_RENOVATE_REVIEWER already requested or has reviewed PR #$PR; not re-requesting."
+          fi
+
+      - name: Enable native auto-merge (merges after approval + green checks)
+        run: |
+          set -euo pipefail
+          # squash is disabled on this repo (merge + rebase allowed); use a merge
+          # commit, matching Renovate's default. Idempotent once enabled.
+          # Best-effort: a transient failure must not block the PR — it retries
+          # on the next pull_request_target sync.
+          gh pr merge "$PR" --auto --merge \
+            || echo "::notice::Auto-merge not enabled on PR #$PR (may already be enabled, or not enableable yet); will retry on next sync."

@@ -1,0 +1,19 @@
+{{.Title}}
+{{if .Summary}}{{with .Summary.Name}}
+{{.}}{{end}}{{with .Summary.OwnerLine}}
+{{.}}{{end}}{{with .Summary.Date}}
+{{.}}{{end}}{{with .Summary.Going}}
+{{.}}{{end}}{{with .Summary.Description}}
+
+{{.}}{{end}}
+{{else}}
+{{.Body}}
+{{end}}{{if .ActionURL}}
+{{if .CTALabel}}{{.CTALabel}}{{else}}Open Ripls{{end}}: {{.ActionURL}}
+{{end}}
+--
+{{if .ColdInvite}}You're receiving this because a Ripls user invited you to join.{{else}}You're receiving by email because you have no active Ripls app or phone number.{{end}}
+{{if or .PlayStoreURL .AppStoreURL}}Get the app{{if .PlayStoreURL}} on Google Play ({{.PlayStoreURL}}){{end}}{{if and .PlayStoreURL .AppStoreURL}} or{{end}}{{if .AppStoreURL}} the App Store ({{.AppStoreURL}}){{end}}.
+{{end}}
+{{if .UnsubscribeURL}}Unsubscribe from these email notifications: {{.UnsubscribeURL}}
+{{end}}{{if .PostalAddress}}{{.PostalAddress}}{{end}}
