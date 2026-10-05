@@ -1,7 +1,7 @@
 name: ripls
 description: "Stop waiting for community. Start building it."
 publish_to: "none"
-version: 0.31.0
+version: 0.32.0
 
 environment:
   sdk: ^3.9.2
@@ -9,7 +9,7 @@ environment:
 dependencies:
   add_2_calendar: ^3.0.1
   app_badge_plus: ^1.1.6
-  cached_network_image: ^3.4.1
+  cached_network_image: ^4.0.0
   camera: ^0.12.0
   connectivity_plus: ^7.0.0
   connectrpc: ^1.0.0

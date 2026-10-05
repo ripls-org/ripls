@@ -15,16 +15,24 @@ const RuntimeStatsMessage = "go runtime stats"
 
 // PoolStatsAttrs converts a sql.DBStats snapshot into the structured log
 // attributes the db_pool_* log-based metrics extract. db_pool_utilization is
-// InUse/OpenConnections precomputed server-side so the pool-saturation alert
-// is a single-metric threshold rather than a cross-metric ratio; it is 0 when
-// no connections are open.
+// InUse/MaxOpenConnections precomputed server-side so the pool-saturation
+// alert is a single-metric threshold rather than a cross-metric ratio.
+//
+// The denominator is the pool's limit, not the connections open right now.
+// Go's pool opens connections on demand, so an idle server sits at one open
+// connection, and a single in-flight query against it reads as fully utilized
+// — which is how the saturation alert fired on a pool using one of its ten
+// connections. Against the limit, that is 0.1, and 0.9 means what the alert
+// says: the pool is nearly out of connections. It is 0 for an unlimited pool
+// (MaxOpenConnections <= 0), where there is no capacity to be short of.
 func PoolStatsAttrs(stats sql.DBStats) []any {
 	utilization := 0.0
-	if stats.OpenConnections > 0 {
-		utilization = float64(stats.InUse) / float64(stats.OpenConnections)
+	if stats.MaxOpenConnections > 0 {
+		utilization = float64(stats.InUse) / float64(stats.MaxOpenConnections)
 	}
 	return []any{
 		"db_pool_open", stats.OpenConnections,
+		"db_pool_max_open", stats.MaxOpenConnections,
 		"db_pool_in_use", stats.InUse,
 		"db_pool_idle", stats.Idle,
 		"db_pool_wait_count", stats.WaitCount,

@@ -178,16 +178,23 @@ func TestRequestToLoan_HandoffAutoFulfillsAndUndoUnwinds(t *testing.T) {
 
 	// June undoes the fulfillment — the loan cancels too (decision 10) and
 	// Theo's claim unwinds (decision 11), reopening the need.
-	eventsResp, err := juneCommunityClient.ListCommunityEvents(ctx, connect.NewRequest(&api.ListCommunityEventsRequest{
-		CommunityId: communityID,
-		EventTypes:  []api.CommunityEventType{api.CommunityEventType_COMMUNITY_EVENT_TYPE_REQUEST_FULFILLED},
-	}))
-	if err != nil {
-		t.Fatalf("ListCommunityEvents: %v", err)
-	}
-	if len(eventsResp.Msg.Events) == 0 {
-		t.Fatal("expected a REQUEST_FULFILLED event")
-	}
+	//
+	// Poll for the event rather than reading once. fulfillRequestCore writes
+	// the request's FULFILLED state and only then records the community event,
+	// so the state poll above can return between the two writes and find no
+	// event yet. Reaching FULFILLED is not a promise that its event has landed.
+	var eventsResp *connect.Response[api.ListCommunityEventsResponse]
+	pollUntil(t, 15*time.Second, "REQUEST_FULFILLED event recorded", func() bool {
+		resp, err := juneCommunityClient.ListCommunityEvents(ctx, connect.NewRequest(&api.ListCommunityEventsRequest{
+			CommunityId: communityID,
+			EventTypes:  []api.CommunityEventType{api.CommunityEventType_COMMUNITY_EVENT_TYPE_REQUEST_FULFILLED},
+		}))
+		if err != nil || len(resp.Msg.Events) == 0 {
+			return false
+		}
+		eventsResp = resp
+		return true
+	})
 	if _, err := juneRequestClient.UndoMarkRequestFulfilled(ctx, connect.NewRequest(&api.UndoMarkRequestFulfilledRequest{
 		CommunityEventId: eventsResp.Msg.Events[0].Id,
 	})); err != nil {

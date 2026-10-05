@@ -3,7 +3,7 @@
 # (build_and_deploy_container.yaml passes --build-arg). The default here is a
 # guarded mirror of versions.env (scripts/check_versions.js enforces it) so a
 # plain `docker build` (e.g. test_docker_build) still uses the pinned version.
-ARG GO_VERSION=1.26.6
+ARG GO_VERSION=1.27.1
 FROM golang:${GO_VERSION} AS builder
 
 # Install build dependencies including nodejs for buf, and curl for downloading buf
@@ -50,6 +50,9 @@ COPY server ./server
 # Build the server binary with CGO enabled (required for ONNX Runtime)
 RUN CGO_ENABLED=1 GOOS=linux go build -a -o server ./server
 
+# The entrypoint's Secret Manager reader (server/cmd/fetch-secrets). Pure Go.
+RUN CGO_ENABLED=0 GOOS=linux go build -o fetch-secrets ./server/cmd/fetch-secrets
+
 # Runtime stage - use Debian Trixie for glibc 2.38 compatibility (required by Go 1.25 and ONNX Runtime)
 FROM debian:trixie-slim
 
@@ -58,14 +61,11 @@ FROM debian:trixie-slim
 # support (1.22.x supports API <=22; binding v1.24.0 requests API 22).
 ARG ONNXRUNTIME_VERSION=1.29.0
 
-# Install runtime dependencies.
-# curl + jq are required by /app/entrypoint.sh to fetch secrets from
-# Google Cloud Secret Manager via the GCE metadata server at startup
-# (#1768/#1770). perl strips trailing whitespace from each decoded secret in
-# that same script; perl-base is a Debian Essential package, so listing it is a
-# no-op install that documents the dependency.
+# Install runtime dependencies. ca-certificates for every outbound TLS call
+# (including /app/fetch-secrets), wget for the HEALTHCHECK below, ffmpeg for
+# media processing.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates wget ffmpeg curl jq perl-base \
+    ca-certificates wget ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install ONNX Runtime
@@ -90,15 +90,21 @@ WORKDIR /app
 # Copy binary from builder stage
 COPY --from=builder /app/server .
 
-# Copy startup wrapper that fetches credentials from Secret Manager and
-# execs the server with --flag args (#1768/#1770). Keeps the server
-# binary itself cloud-agnostic.
+# Copy the startup wrapper and its Secret Manager reader. The wrapper collects
+# credentials and execs the server with -<name>-file flags, keeping the server
+# binary itself cloud-agnostic (docs/secrets.md).
+COPY --from=builder /app/fetch-secrets .
 COPY server/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 # Copy embedding model files
 COPY model_tuning/ripls_embedding.onnx /app/models/
 COPY model_tuning/ripls_embedding_tokenizer/vocab.txt /app/models/
+
+# /var/lib/ripls/media is where LOCAL_MEDIA_STORAGE points in
+# docker-compose.yaml. It exists in the image so a named volume mounted there
+# inherits appuser's ownership instead of root's.
+RUN mkdir -p /var/lib/ripls/media && chown -R appuser:appuser /var/lib/ripls
 
 # Set ownership
 RUN chown -R appuser:appuser /app
@@ -112,45 +118,45 @@ USER appuser
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --quiet --tries=1 http://localhost:${PORT:-8080}/readyz -O /dev/null || exit 1
 
-# Environment variables consumed by /app/entrypoint.sh (and forwarded to
-# the server as flags). Secrets are NOT in env vars — entrypoint.sh
-# fetches each one from Secret Manager at startup using the Cloud Run
-# runtime service account's metadata-server token.
+# Environment variables consumed by /app/entrypoint.sh (and forwarded to the
+# server as flags). Credentials are not env vars, with the one exception of
+# DB_PASSWORD; the entrypoint turns each into a file. server/entrypoint.sh is
+# the authoritative list.
 #
-# Required:
-#   PORT - Port to listen on (set automatically by Cloud Run)
-#   DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME - Database connection details
-#   GOOGLE_CLOUD_PROJECT - GCP project ID; entrypoint.sh fetches secrets
-#     from Secret Manager in this project. Also forwarded to the server
-#     as --vertex-ai-project.
+# Credential source — set exactly one:
+#   GOOGLE_CLOUD_PROJECT - fetch credentials from Secret Manager in this project
+#     with Application Default Credentials (the metadata server on Cloud Run;
+#     GOOGLE_APPLICATION_CREDENTIALS naming a service-account key elsewhere).
+#     Also forwarded to the server as --vertex-ai-project.
+#   SECRETS_FROM_DIR - read credentials from a directory of files, each named
+#     after its flag (jwt-signing-secret -> --jwt-signing-secret-file).
+#
+# Database:
+#   DB_HOST, DB_USER, DB_NAME - required
+#   DB_PORT - default 5432
+#   DB_PASSWORD - optional; wins over a db-password credential file
+#   DB_SSLMODE - libpq sslmode, default require
 #
 # Optional:
+#   PORT - port to listen on, default 8080 (set automatically by Cloud Run)
+#   NOTIFICATION_PROVIDER - --notification-provider, default fcm
 #   ENABLE_DEV_MODE - "true" enables --dev-mode
 #   GOOGLE_CLOUD_LOCATION - --vertex-ai-location (defaults to 'global')
 #   GCS_MEDIA_BUCKET - --gcs-bucket
-#   GITHUB_APP_ID - --github-app-id (non-secret; private key fetched from SM)
-#   GITHUB_INSTALLATION_ID - --github-installation-id
+#   LOCAL_MEDIA_STORAGE - --local-media-storage (instead of GCS_MEDIA_BUCKET)
+#   GITHUB_APP_ID, GITHUB_INSTALLATION_ID - feedback bot App (non-secret)
+#   GITHUB_REPO_OWNER, GITHUB_REPO_NAME - repo the feedback bot files into
 #   GOOGLE_CLIENT_ID - --google-client-id (OAuth client id, not a secret)
 #   LOG_SOURCE_LOCATION - "true" enables --log-source-location
 #   INVITE_LINK_HOSTNAME - --invite-link-hostname
 #   CORS_ALLOWED_ORIGINS - --cors-allowed-origins
-#   MAILGUN_DOMAIN, MAILGUN_FROM_ADDRESS - --mailgun-domain / --mailgun-from
-#   ACTIVITY_DIGEST_ENABLED ("true") - --activity-digest-enabled (daily)
-#   ACTIVITY_DIGEST_WEEKLY_ENABLED ("true") - --activity-digest-weekly-enabled
-#   ACTIVITY_DIGEST_NOTIFY_EMAIL - shared recipient for both digests
-#   ACTIVITY_DIGEST_TIMEZONE - IANA tz the window is computed in
-#   ACTIVITY_DIGEST_SEND_HOUR - 0-23, local-hour the daily fires
-#   ACTIVITY_DIGEST_WEEKLY_WEEKDAY - English day name ("Monday")
-#   ACTIVITY_DIGEST_WEEKLY_SEND_HOUR - 0-23, local-hour the weekly fires
+#   MAP_PROVIDER - --map-provider
+#   MAILGUN_DOMAIN, MAILGUN_FROM_ADDRESS, MAILGUN_POSTAL_ADDRESS
+#   OFF_APP_EMAIL_ENABLED, PLATFORM_SMS_ENABLED ("true")
+#   ACTIVITY_DIGEST_* - daily and weekly digest schedule and recipient
 #
-# Secret Manager secrets fetched by entrypoint.sh (require the runtime SA
-# to hold roles/secretmanager.secretAccessor on each in
-# $GOOGLE_CLOUD_PROJECT):
-#   openai-api-key, anthropic-api-key, mailgun-api-key,
-#   unsplash-access-key, pexels-api-key, pixabay-api-key,
-#   mapbox-access-token, jwt-signing-secret,
-#   github-app-private-key-base64.
+# Arguments given to the container are passed to the server after all of the
+# above, so any server flag can be set or overridden that way.
 #
-# Note: Uses FCM with Application Default Credentials (from Cloud Run service account)
 # Note: Embedding model is bundled in the image at /app/models/
-CMD ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]

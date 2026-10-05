@@ -54,6 +54,13 @@ func Logging(logger *logging.Logger) func(http.Handler) http.Handler {
 				attrs = append(attrs, "request_id", requestID)
 			}
 
+			// remote_addr above is the TCP peer, which behind a reverse proxy
+			// is the proxy. client_ip is the client as RemoteAddr resolved it,
+			// the address the rate limiter keys on.
+			if clientIP := logging.RemoteAddrFromContext(r.Context()); clientIP != "" {
+				attrs = append(attrs, "client_ip", clientIP)
+			}
+
 			// Add user ID if authenticated
 			if authInfo, ok := auth.GetAuthInfo(r.Context()); ok {
 				attrs = append(attrs, "user_id", authInfo.UserID)

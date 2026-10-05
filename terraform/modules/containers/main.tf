@@ -13,6 +13,7 @@ resource "google_cloud_run_v2_service" "server" {
   name     = var.service_name
   location = var.region
   project  = var.project_id
+  ingress  = var.ingress
 
   template {
     # Request timeout - increased from default 300s for streaming RPCs
@@ -20,7 +21,8 @@ resource "google_cloud_run_v2_service" "server" {
 
     # Maximum concurrent requests per instance. Go handles concurrency via
     # goroutines, so idle streaming connections should not trigger autoscaling.
-    # Invariant: max_instances * DB_MAX_OPEN_CONNS must be < database max_connections.
+    # Invariant: max_instances * the server's DB pool limit (storage.maxOpenConns)
+    # must be < the database's max_connections.
     max_instance_request_concurrency = var.max_instance_request_concurrency
 
     containers {
@@ -151,6 +153,16 @@ resource "google_cloud_run_v2_service" "server" {
       env {
         name  = "WAITLIST_NOTIFY_EMAIL"
         value = var.waitlist_notify_email
+      }
+
+      # The deployment's identity (server/branding): store listings, legal
+      # entity, policy URLs. entrypoint.sh maps each to its flag.
+      dynamic "env" {
+        for_each = var.branding
+        content {
+          name  = env.key
+          value = env.value
+        }
       }
 
       # Google OAuth Client ID for OIDC authentication.

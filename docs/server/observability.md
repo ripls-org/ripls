@@ -922,7 +922,7 @@ Alert policies with email notifications (plus a Pub/Sub channel in prod):
 | RPC P95 Latency High | WARNING | Interactive RPC P95 > 2s, or slow-class RPC P95 > 8s, sustained 15 min | Per-rpc_method; `Stream*` excluded (duration = stream lifetime); slow class = GenGear, AddMedia, AddMediaFromURL, SubmitFeedback (#2622, `rpc_p95_slow_class_regex`) |
 | Availability SLO Burn Rate | WARNING | Error-budget burn > 14.4× (1h window) or > 6× (6h window) | Multi-window burn rate on the availability SLO (#2624, `slos.tf`) |
 | Latency SLO Burn Rate | WARNING | Error-budget burn > 14.4× (1h window) or > 6× (6h window) | Multi-window burn rate on the latency SLO (#2624, `slos.tf`) |
-| Database Pool Saturation | ERROR | Pool in_use/open > 90%, sustained 10 min | P99 across instances ≈ worst instance |
+| Database Pool Saturation | ERROR | Pool in_use/max_open > 90%, sustained 10 min | P99 across instances ≈ worst instance |
 | Health Check Unhealthy | ERROR | 2 consecutive dependency health check failures | State-change only (per backend) |
 | Server Error Logged | ERROR | Any ERROR-level log (excluding health checks) | Rate-limited to 1 per 5 min |
 | SMS Delivery Failures High | WARNING | >10% of terminal SMS outcomes are `failed`/`undelivered` over 30 min, sustained 15 min (min ~2 failures/30 min) | Fraction from `sms_delivery_outcomes_{env}` (#2569, `alerts.tf`); triage by the `twilio_code` label |
@@ -1021,6 +1021,36 @@ match the request-scoped `panic recovered` log from `middleware.PanicRecovery`
 **Source:** `google_logging_metric.container_crashes` / `serving_failures` and
 `google_monitoring_alert_policy.container_crash` / `serving_failure` in
 `terraform/modules/monitoring/main.tf`.
+
+### Self-Hosted Servers (`log_source`)
+
+Everything above assumes Cloud Run supplies the logs. The monitoring module also
+serves a server running anywhere else: set its `log_source` variable to
+`"self_hosted"` (the default is `"cloud_run"`) and every log-based metric, alert,
+SLO and dashboard reads a different stream. Nothing else in the module changes,
+and switching is an in-place update: no metric is recreated, so its history
+carries over.
+
+What `self_hosted` expects of the host:
+
+- **The server's logs in Cloud Logging as `generic_task` entries** with
+  `resource.labels.job` equal to the module's `service_name`. Each JSON line the
+  server writes must land in `jsonPayload` with its `severity` field as the
+  entry's severity — which is what Cloud Run's own agent does, so every filter
+  keeps its `jsonPayload.*` clauses. A log shipper does this; `LOG_SOURCE=self_hosted`
+  points `scripts/analyze_cloud_logs.sh` at the same entries.
+- **Crashes reported into that stream.** There is no platform system log, so
+  something on the host must write a `"server container exited"` entry whenever
+  the server's container exits non-zero (a graceful SIGTERM shutdown exits 0).
+  `Server Process Crash` matches that message instead of Cloud Run's system
+  strings. Reporting it by a second path too, such as mail, covers a crash that
+  takes the shipper with it.
+
+One alert exists only in this mode: **`Server Logs Absent`** (CRITICAL) fires
+when the server has written nothing for `log_absence_minutes` (default 15). It
+logs `db pool stats` every 15 seconds while running, so silence means either the
+server or the shipper is down — and a dead shipper otherwise looks, to every
+other alert here, exactly like a healthy, quiet server.
 
 ### Notification Channels
 

@@ -265,4 +265,9 @@ var Registry = map[models.CommunityEventType]Entry{
 	// roster" signal to clients (see its proto comment); counting it
 	// would inflate every experience's apparent activity.
 	models.CommunityEventType_COMMUNITY_EVENT_TYPE_EXPERIENCE_ROSTER_CHANGED: {Disposition: DispositionExcludedInternal},
+	// ITEM_SHARED_WITH_USER is the same share, addressed to one recipient so
+	// the notification reaches them (#3106). The share itself is already
+	// counted as GEAR_SHARED; counting this too would multiply one host's
+	// action by however many people they shared with.
+	models.CommunityEventType_COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER: {Disposition: DispositionExcludedInternal},
 }

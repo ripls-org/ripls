@@ -1,0 +1,7 @@
+# Override for the root docker-compose.yaml when test_docker_build.yaml boots
+# it. The self-hosted runners share one Docker host, where port 8080 is already
+# taken and parallel runs would collide, so CI publishes no host ports: the
+# healthcheck probes /readyz from inside the container instead.
+services:
+  server:
+    ports: !reset []

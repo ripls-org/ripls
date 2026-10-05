@@ -190,7 +190,7 @@ func TestAppendTerminator_NoInterleavedNudges(t *testing.T) {
 	}
 
 	logger := logging.LoggerWithContext(context.Background())
-	result := svc.appendTerminator(context.Background(), userID, content, logger)
+	result := svc.appendTerminator(context.Background(), content, logger)
 
 	nudgeCount := 0
 	for _, item := range result {
@@ -212,10 +212,8 @@ func TestAppendTerminator_EmptyContent(t *testing.T) {
 	sqlStorage := setupTestStorage(t)
 	svc := setupTestService(sqlStorage)
 
-	userID := setupTestUser(t, sqlStorage, "empty@test.com", "Empty User")
-
 	logger := logging.LoggerWithContext(context.Background())
-	result := svc.appendTerminator(context.Background(), userID, nil, logger)
+	result := svc.appendTerminator(context.Background(), nil, logger)
 
 	// With no content only the terminator is appended.
 	if len(result) > 1 {
@@ -347,13 +345,11 @@ func TestBuildTerminator_CreatesGlobalPool(t *testing.T) {
 	sqlStorage := setupTestStorage(t)
 	svc := setupTestService(sqlStorage)
 
-	userID := setupTestUser(t, sqlStorage, "term@test.com", "Term User")
-
 	ctx := context.Background()
 	logger := logging.LoggerWithContext(ctx)
 
 	// First call creates TerminatorsPerDay global records.
-	item := svc.buildTerminator(ctx, userID, logger)
+	item := svc.buildTerminator(ctx, logger)
 	if item == nil {
 		t.Fatal("expected non-nil terminator item")
 	}
@@ -367,9 +363,8 @@ func TestBuildTerminator_CreatesGlobalPool(t *testing.T) {
 		t.Errorf("expected %d global terminator records, got %d", TerminatorsPerDay, len(all))
 	}
 
-	// Second call (different user) should not create additional records.
-	userID2 := setupTestUser(t, sqlStorage, "term2@test.com", "Term User 2")
-	svc.buildTerminator(ctx, userID2, logger)
+	// A second call the same day should not create additional records.
+	svc.buildTerminator(ctx, logger)
 	all2, err := getGlobalTerminatorsForToday(ctx, sqlStorage, today)
 	if err != nil {
 		t.Fatalf("getGlobalTerminatorsForToday second call: %v", err)
@@ -383,12 +378,10 @@ func TestBuildTerminator_AllHeadlinesDiffer(t *testing.T) {
 	sqlStorage := setupTestStorage(t)
 	svc := setupTestService(sqlStorage)
 
-	userID := setupTestUser(t, sqlStorage, "term3@test.com", "Term User 3")
-
 	ctx := context.Background()
 	logger := logging.LoggerWithContext(ctx)
 
-	svc.buildTerminator(ctx, userID, logger)
+	svc.buildTerminator(ctx, logger)
 
 	today := time.Now().UTC().YearDay()
 	all, err := getGlobalTerminatorsForToday(ctx, sqlStorage, today)
@@ -424,7 +417,7 @@ func TestFetchNudgeImagery_ConcurrencyBound(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			svc.fetchNudgeImagery(context.Background(), "user-1", fmt.Sprintf("nudge-%d", i), fmt.Sprintf("query %d", i))
+			svc.fetchNudgeImagery(context.Background(), fmt.Sprintf("nudge-%d", i), fmt.Sprintf("query %d", i))
 		}()
 	}
 	wg.Wait()
@@ -564,7 +557,7 @@ func TestAppendTerminator_ExcludesPooledNudges(t *testing.T) {
 	}
 
 	logger := logging.LoggerWithContext(ctx)
-	result := svc.appendTerminator(ctx, userID, nil, logger)
+	result := svc.appendTerminator(ctx, nil, logger)
 
 	// The pooled nudge payload (non-terminator) must not appear in the result.
 	for _, item := range result {

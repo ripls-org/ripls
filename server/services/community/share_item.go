@@ -237,9 +237,18 @@ func (s *Service) attachInvitedAudience(
 	shareURL string,
 ) error {
 	// Seed any real-user invitees as members (idempotent).
-	if err := s.addMembersToCommunity(ctx, communityID, hostUserID, classified.memberUserIDs); err != nil {
+	added, err := s.addMembersToCommunity(ctx, communityID, hostUserID, classified.memberUserIDs)
+	if err != nil {
 		return err
 	}
+	// Tell each of them. Being handed something is the most notification-worthy
+	// moment there is, and until #3106 this branch said nothing: off-app
+	// invitees got an email or a relayed text, link joiners raised
+	// INVITATION_LINK_USED, and people already on the platform were added in
+	// silence. The item's GEAR_SHARED cannot cover it — it fires when the item
+	// is shared into the community, before these members exist, and its
+	// audience is the publish-time snapshot (#2657).
+	s.publishSharedWithUser(ctx, communityID, hostUserID, origin, added)
 
 	// Attach a provisional member per off-app contact handle.
 	provisionals := make([]*models.ProvisionalUser, 0, len(classified.contacts))
@@ -273,7 +282,13 @@ func (s *Service) attachInvitedAudience(
 // soft-deleted membership (e.g. the person was removed from the item's event
 // earlier) is restored rather than re-inserted, which would otherwise collide
 // on the (community_id, user_id) uniqueness and fail the whole share.
-func (s *Service) addMembersToCommunity(ctx context.Context, communityID, inviterID string, memberUserIDs []string) error {
+//
+// It returns the users whose membership this call created or restored, so the
+// caller can tell them it happened. Someone who was already a member is not in
+// that list: they have had the item all along, and re-sharing to widen the
+// audience must not re-notify them (#3106).
+func (s *Service) addMembersToCommunity(ctx context.Context, communityID, inviterID string, memberUserIDs []string) ([]string, error) {
+	var added []string
 	now := clock.UnixSec(ctx)
 	for _, uid := range memberUserIDs {
 		if uid == "" || uid == inviterID {
@@ -286,7 +301,7 @@ func (s *Service) addMembersToCommunity(ctx context.Context, communityID, invite
 			"user_id":      uid,
 		}, &models.CommunityUser{}, storage.QueryOptions{IncludeDeleted: true})
 		if err != nil {
-			return connecterr.Internal(ctx, "addMembersToCommunity", err)
+			return nil, connecterr.Internal(ctx, "addMembersToCommunity", err)
 		}
 		if len(rows) > 0 {
 			cu := rows[0].(*models.CommunityUser)
@@ -301,8 +316,9 @@ func (s *Service) addMembersToCommunity(ctx context.Context, communityID, invite
 			cu.InviterId = inviterID
 			cu.CreatedAtUnixSec = now
 			if err := s.storage.Update(ctx, cu); err != nil {
-				return connecterr.Internal(ctx, "addMembersToCommunity", err)
+				return nil, connecterr.Internal(ctx, "addMembersToCommunity", err)
 			}
+			added = append(added, uid)
 			continue
 		}
 		if _, err := s.storage.Insert(ctx, &models.CommunityUser{
@@ -311,10 +327,61 @@ func (s *Service) addMembersToCommunity(ctx context.Context, communityID, invite
 			InviterId:        inviterID,
 			CreatedAtUnixSec: now,
 		}); err != nil {
-			return connecterr.Internal(ctx, "addMembersToCommunity", err)
+			return nil, connecterr.Internal(ctx, "addMembersToCommunity", err)
 		}
+		added = append(added, uid)
 	}
-	return nil
+	return added, nil
+}
+
+// publishSharedWithUser raises one ITEM_SHARED_WITH_USER per person the share
+// just added, naming them in object_user_id: the notification subscriber sends
+// to that person alone, so widening an item's audience never re-notifies the
+// members who already had it.
+//
+// The existing member-broadcast GEAR_SHARED cannot serve here. It is published
+// before the invitee is a member, and its audience is the publish-time member
+// snapshot (#2657) — so the one person the share is for is precisely the one
+// person it misses.
+//
+// Best-effort. A share that succeeded must not fail because its notification
+// did not publish, so failures are logged and the next recipient still gets
+// theirs.
+func (s *Service) publishSharedWithUser(ctx context.Context, communityID, hostUserID string, origin AdHocOrigin, added []string) {
+	if len(added) == 0 {
+		return
+	}
+	logger := logging.LoggerWithContext(ctx).With(
+		"operation", "publishSharedWithUser",
+		"community_id", communityID,
+		"actor_id", hostUserID,
+	)
+	for _, uid := range added {
+		event := &models.CommunityEvent{
+			CommunityId:  communityID,
+			EventType:    models.CommunityEventType_COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER,
+			ActorId:      hostUserID,
+			ObjectUserId: uid,
+			GearId:       origin.GearID,
+		}
+		// What was shared decides the sentence the recipient reads; the topic
+		// oneof holds one id, and gear rides its own field.
+		switch {
+		case origin.ExperienceID != "":
+			event.Topic = &models.CommunityEvent_ExperienceId{ExperienceId: origin.ExperienceID}
+		case origin.RequestID != "":
+			event.Topic = &models.CommunityEvent_RequestId{RequestId: origin.RequestID}
+		}
+		// user_id is the recipient, actor_id above the sharer: this is the
+		// only place the two differ, so both are named.
+		if _, err := s.bus.Publish(ctx, event); err != nil {
+			logger.WarnContext(ctx, "failed to publish shared-with-user event",
+				"user_id", uid, "outcome", "publish_failed", "error", err)
+			continue
+		}
+		logger.InfoContext(ctx, "published shared-with-user event",
+			"user_id", uid, "outcome", "published")
+	}
 }
 
 // contactInvitee is one normalized off-app invitee (exactly one of phone/email).

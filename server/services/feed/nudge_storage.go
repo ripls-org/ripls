@@ -148,17 +148,17 @@ func softDeleteNudge(ctx context.Context, store *storage.ProtoSQLStorage, nudgeI
 	return nil
 }
 
-// globalTerminatorUserID is the sentinel stored in user_id for the shared daily
+// GlobalTerminatorUserID is the sentinel stored in user_id for the shared daily
 // terminator pool. These records are not owned by any real user — they are
 // generated once per day and served to everyone.
-const globalTerminatorUserID = "_terminator_pool_"
+const GlobalTerminatorUserID = "_terminator_pool_"
 
 // getGlobalTerminatorsForToday returns all non-deleted global terminator nudges
 // created today. The pool is shared across all users and communities.
 func getGlobalTerminatorsForToday(ctx context.Context, store *storage.ProtoSQLStorage, dayOfYear int) ([]*models.StoredNudge, error) {
 	all, err := storage.QueryByFields[*models.StoredNudge](store, ctx,
 		map[string]any{
-			"user_id":       globalTerminatorUserID,
+			"user_id":       GlobalTerminatorUserID,
 			"is_terminator": true,
 		},
 	)
@@ -183,7 +183,7 @@ func getGlobalTerminatorsForToday(ctx context.Context, store *storage.ProtoSQLSt
 func getPreviousGlobalTerminators(ctx context.Context, store *storage.ProtoSQLStorage, todayDayOfYear int) ([]*models.StoredNudge, error) {
 	all, err := storage.QueryByFields[*models.StoredNudge](store, ctx,
 		map[string]any{
-			"user_id":       globalTerminatorUserID,
+			"user_id":       GlobalTerminatorUserID,
 			"is_terminator": true,
 		},
 	)

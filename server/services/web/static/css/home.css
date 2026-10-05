@@ -1,0 +1,308 @@
+/*
+ * home.css — the Ripls Foundation home page (#2895).
+ *
+ * Light only. Consumes the fixed --light-* tokens from css/gen/tokens.gen.css
+ * (generated from design/tokens.json), which never follow the OS preference —
+ * the same pattern /walkthroughs/ uses. Tints are derived with color-mix() off
+ * those tokens so there is no raw hex anywhere.
+ *
+ * The page is a centered broadside: one narrow measure, real serif headings,
+ * and sage-tinted full-bleed bands for rhythm. Deliberately absent: boxes,
+ * card borders, drop shadows, scroll animation, photography, and small-caps
+ * label "eyebrows" above headings.
+ *
+ * Type rule: Libre Baskerville for anything meant to be read (tagline,
+ * headings, mission, running prose); Public Sans for structural chrome (menu,
+ * form labels, footer).
+ */
+
+:root {
+  color-scheme: light;
+
+  --paper: var(--light-background);
+  --hair: var(--light-border);
+  --ink: var(--light-text-primary);
+  --ink-2: var(--light-text-secondary);
+  --ink-faint: var(--light-text-faint);
+  --sage: var(--light-primary);
+  --sage-deep: var(--light-primary-hover);
+
+  /* Sage tints derived from the token, not hand-picked hex. Below ~8% the mix
+     reads as plain grey rather than sage, which defeats the point. */
+  --tint: color-mix(in srgb, var(--sage) 18%, var(--paper));
+  --tint-strong: color-mix(in srgb, var(--sage) 28%, var(--paper));
+
+  --serif: var(--font-serif);
+  --sans: var(--font-sans);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img, video { max-width: 100%; display: block; }
+
+a { color: var(--sage); text-underline-offset: 0.15em; }
+a:hover { color: var(--sage-deep); }
+a:focus-visible { outline: 2px solid var(--sage); outline-offset: 3px; border-radius: 2px; }
+
+.inner {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding-inline: clamp(1.25rem, 5vw, 2.5rem);
+  text-align: center;
+}
+
+/* Running prose sits at a comfortable reading measure and goes left-aligned;
+   only the headings stay centered. */
+.prose {
+  max-width: 34rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.prose p {
+  margin: 0 0 1.4rem;
+  font-family: var(--serif);
+  line-height: 1.85;
+  color: var(--ink-2);
+}
+.prose p:last-child { margin-bottom: 0; }
+
+/* -------------------------------------------------------------- masthead */
+
+.masthead {
+  padding-block: 1.75rem;
+}
+
+.masthead .inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  flex-wrap: wrap;
+  max-width: 72rem;
+  text-align: left;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.brand .mark {
+  width: 1.75rem;
+  height: 1.9rem;
+  fill: none;
+  stroke: var(--sage);
+  stroke-width: 14;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 2rem;
+  margin-left: auto;
+}
+.menu a {
+  color: var(--ink-2);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+}
+.menu a:hover {
+  color: var(--sage-deep);
+  border-bottom-color: var(--sage);
+}
+
+/* --------------------------------------------------------------- opening */
+
+/* The mission opens the page, so it gets extra room above and the full-colour
+   emblem for a bit of weight at the top. */
+.opening { padding-block: clamp(3rem, 9vh, 5rem) clamp(3rem, 8vh, 4.75rem); }
+
+.emblem {
+  width: clamp(84px, 11vw, 120px);
+  height: auto;
+  margin: 0 auto 2rem;
+}
+
+/* -------------------------------------------------------------- sections */
+
+section { padding-block: clamp(3rem, 8vh, 4.75rem); }
+
+/* Sage-tinted full-bleed bands carry the page's rhythm — no rules, no boxes. */
+.band { background: var(--tint); }
+
+/* Section titles are big and unmissable — they carry the page's structure now
+   that there are no small-caps labels above them. Deep sage at this size is
+   also where most of the page's color lives. */
+h2 {
+  margin: 0 0 2.5rem;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 4.2vw, 2.9rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--sage-deep);
+  text-wrap: balance;
+}
+
+.mission-statement {
+  margin: 0 auto;
+  max-width: 26ch;
+  font-family: var(--serif);
+  font-size: clamp(1.25rem, 2.8vw, 1.75rem);
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------ principles */
+
+.principle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem 2.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+/* Material Icons glyphs, inlined as paths from the MaterialIcons-Regular.otf
+   Flutter already bundles — no CDN request, nothing to self-host. */
+.principle .icon {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.9rem;
+  fill: var(--sage);
+}
+
+.principle h3 {
+  margin: 0 0 0.8rem;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.principle p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ------------------------------------------------------------------ reel */
+
+.reel { display: flex; justify-content: center; margin: 2.5rem 0 3rem; }
+
+/* aspect-ratio reserves the frame before the clip's metadata arrives — without
+   it the <video> falls back to its intrinsic 300x150 and the page jumps when
+   the real portrait dimensions land. Ratio matches the walkthrough captures. */
+.phone {
+  width: min(268px, 68vw);
+  aspect-ratio: 780 / 1688;
+  border-radius: 26px;
+  overflow: hidden;
+  background: var(--light-accent);
+}
+.phone video { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------------------------------------------------------- invite form */
+
+.signup {
+  max-width: 34rem;
+  margin: 2rem auto 0;
+  text-align: left;
+}
+
+.signup label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+
+.signup input,
+.signup textarea {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 0;
+  border-bottom: 1px solid var(--hair);
+  padding: 0.5rem 0.1rem;
+  margin-bottom: 1.6rem;
+}
+.signup textarea { resize: vertical; min-height: 4.5rem; line-height: 1.6; }
+.signup input:focus,
+.signup textarea:focus { outline: none; border-bottom-color: var(--sage); }
+
+.signup button {
+  font: inherit;
+  font-weight: 600;
+  color: var(--light-on-primary);
+  background: var(--sage);
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+}
+.signup button:hover { background: var(--sage-deep); }
+.signup button:disabled { opacity: 0.6; cursor: default; }
+
+.form-success {
+  max-width: 34rem;
+  margin: 1rem auto 0;
+  text-align: left;
+  color: var(--ink-2);
+  display: none;
+}
+.form-success.visible { display: block; }
+
+/* ---------------------------------------------------------------- footer */
+
+.site-footer {
+  background: var(--tint-strong);
+  padding-block: 2.5rem 3rem;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.site-footer .inner { display: grid; gap: 0.6rem; }
+.site-footer nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; justify-content: center; }
+.site-footer a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--hair); }
+.site-footer a:hover { color: var(--sage-deep); border-bottom-color: var(--sage); }
+.site-footer p { margin: 0; color: var(--ink-faint); }
+
+/* ------------------------------------------------------------ responsive */
+
+@media (max-width: 54rem) {
+  .principle-grid { grid-template-columns: 1fr; gap: 2.25rem; }
+}
+
+@media (max-width: 40rem) {
+  .masthead .inner { justify-content: center; text-align: center; }
+  .menu { margin-left: 0; justify-content: center; gap: 0.5rem 1.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

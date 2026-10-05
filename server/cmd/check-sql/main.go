@@ -91,6 +91,8 @@ var fragmentProducers = map[string]bool{
 	"generateCreateTableSQL":         true,
 	"generateAlterTableAddColumnSQL": true,
 	"generateGeospatialIndexSQL":     true,
+	// The fixed index list in protosql_schema.go: string literals, no inputs.
+	"schemaIndexStatements": true,
 	// Placeholder(n) renders $1, $2, … — the value-binding half of the rule.
 	"Placeholder": true,
 }

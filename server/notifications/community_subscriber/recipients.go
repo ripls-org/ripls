@@ -59,6 +59,9 @@ func ShouldNotify(eventType models.CommunityEventType) bool {
 	// Membership events: broadcast to all members minus the new joiner.
 	case models.CommunityEventType_COMMUNITY_EVENT_TYPE_INVITATION_LINK_USED:
 		return true
+	// A direct share: the one person it was shared with.
+	case models.CommunityEventType_COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER:
+		return true
 	// Community lifecycle: broadcast to the deleted_snapshot members.
 	// Fires AFTER the soft-delete write — see community.FiresForDeletedCommunity.
 	case models.CommunityEventType_COMMUNITY_EVENT_TYPE_COMMUNITY_DELETED:
@@ -121,6 +124,8 @@ func RecipientAudienceLabel(eventType models.CommunityEventType) string {
 		models.CommunityEventType_COMMUNITY_EVENT_TYPE_REQUEST_CREATED,
 		models.CommunityEventType_COMMUNITY_EVENT_TYPE_INVITATION_LINK_USED:
 		return "All community members (except the actor)"
+	case models.CommunityEventType_COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER:
+		return "The person it was shared with"
 	case models.CommunityEventType_COMMUNITY_EVENT_TYPE_COMMUNITY_DELETED:
 		return "Members at delete time (except the deleter)"
 	case models.CommunityEventType_COMMUNITY_EVENT_TYPE_COMMUNITY_RESTORED:
@@ -346,6 +351,15 @@ func getNotificationRecipients(ctx context.Context, s *storage.ProtoSQLStorage, 
 			recipients = append(recipients, rsvp.UserId)
 		}
 		return recipients
+
+	case models.CommunityEventType_COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER:
+		// One recipient, named on the event: the person the item was handed
+		// to. Not the member set — this fires as they are added, and the point
+		// is to tell them, not everyone already there.
+		if event.ObjectUserId == "" || event.ObjectUserId == event.ActorId {
+			return nil
+		}
+		return []string{event.ObjectUserId}
 
 	case models.CommunityEventType_COMMUNITY_EVENT_TYPE_EXPERIENCE_CREATED,
 		models.CommunityEventType_COMMUNITY_EVENT_TYPE_GEAR_SHARED,

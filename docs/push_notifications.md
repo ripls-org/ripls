@@ -8,8 +8,8 @@ context:
   lens: [domain, client, server]
   domain: notifications
 freshness:
-  verified_commit: "581b94a14"
-  verified_on: "2026-09-08"
+  verified_commit: "5f4eaab27"
+  verified_on: "2026-09-20"
 ---
 # Push Notifications for Real-Time Community Updates
 
@@ -315,11 +315,15 @@ via the per-community Manage Notifications screen.
 **Request Events** (gated by `notify_request_updates`, except CREATED):
 - `REQUEST_OFFER_MADE` — request creator
 - `REQUEST_OFFER_WITHDRAWN` — request creator
+- `REQUEST_OFFER_SELECTED` — the chosen helper, named in `object_user_id` at emit
+  time ("your offer was picked"). It gained its first emitter with gear-backed
+  offers (#2702); before that it was documented here as never notifying.
 - `REQUEST_CANCELLED` — all other offerers
 - `REQUEST_CREATED` — broadcast to community minus actor (gated by `notify_new_requests`)
 
-`REQUEST_OFFER_SELECTED` and `REQUEST_FULFILLED` intentionally do **not** notify
-(product decision — see `ShouldNotify` in `recipients.go`).
+`REQUEST_FULFILLED` intentionally does **not** notify here (product decision —
+its pushes flow through the publish-time member snapshot; see `ShouldNotify` in
+`recipients.go`).
 
 **Experience Events:**
 - `EXPERIENCE_RSVP_YES` / `EXPERIENCE_RSVP_MAYBE` — host (gated by `notify_experience_rsvps`)
@@ -328,6 +332,20 @@ via the per-community Manage Notifications screen.
 
 **Gear Events:**
 - `GEAR_SHARED` — community minus actor (gated by `notify_gear_shared`)
+
+**Direct Share:**
+- `ITEM_SHARED_WITH_USER` — the one person named in `object_user_id`, **ungated**
+  (no `NotificationCategory`, so `CategoryFor` returns UNSPECIFIED and it passes
+  through unfiltered). One event per person the share *newly* added; re-sharing to
+  widen the audience does not re-notify existing members, and sharing with yourself
+  notifies nobody. Applies to gear, experiences and requests alike — the copy kind
+  splits three ways on what was handed over (`item_shared_with_user_{gear,experience,request}`),
+  gear being the default because gear travels in its own payload field rather than
+  the topic oneof. The categories gate community broadcasts (volume); a direct share
+  is one person handing something to one named person, so it is not toggleable (#3106).
+  `GEAR_SHARED` cannot serve this: it is published before the invitee is a member and
+  its audience is the publish-time member snapshot, so it misses exactly the person
+  the share was for.
 
 **Membership Events:**
 - `INVITATION_LINK_USED` — community minus the joiner (gated by
@@ -398,9 +416,7 @@ gcloud auth application-default login
 ```
 
 The `--firebase-project` flag is required locally — the SDK can't infer
-the project ID under user ADC. In Cloud Run / GKE the SDK reads
-`GOOGLE_CLOUD_PROJECT` from the environment (set by Terraform) and the
-flag can be omitted.
+the project ID under user ADC.
 
 ```bash
 # Alternative for local dev: point ADC at a key file outside the repo.
@@ -409,9 +425,14 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/firebase-credentials.json
 ./server --notification-provider=fcm
 ```
 
-In Cloud Run / GKE, the runtime service account is picked up automatically
-— no environment variable or flag needed. The runtime SA must have the
-appropriate Firebase Admin / Cloud Messaging IAM roles.
+**That key-file path is the one dev and prod use** (#3078): the deployment
+sets `GOOGLE_APPLICATION_CREDENTIALS` to a bind-mounted service-account key
+and `NOTIFICATION_PROVIDER=fcm`, and sets no `--firebase-project` — the Admin
+SDK reads `project_id` from the key file itself. That service account must
+hold the Firebase Admin / Cloud Messaging IAM roles.
+
+Off GCP there is no metadata server, so the project is not inferred from the
+environment; it comes from the key file or the flag.
 
 ### Firebase Project Setup
 

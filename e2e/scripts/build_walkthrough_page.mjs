@@ -180,11 +180,14 @@ const PAGE_STYLE = `
 // absolute site paths always work; the extra relative link styles the
 // standalone artifact next to its tokens.gen.css copy (404s harmlessly
 // on the site).
-function pageHead(title) {
+// canonicalPath: the page's own site path (e.g. "/walkthroughs/brunch/"). These
+// pages are public and indexable — the home page links the gallery — so each
+// self-canonicals to the non-www host, matching every other marketing page.
+function pageHead(title, canonicalPath) {
   return `<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(title)}</title>
-<meta name="robots" content="noindex">
+<link rel="canonical" href="https://ripls.org${canonicalPath}">
 <link rel="stylesheet" href="/css/fonts.css">
 <link rel="stylesheet" href="/css/gen/tokens.gen.css">
 <link rel="stylesheet" href="tokens.gen.css">
@@ -197,7 +200,7 @@ function pageHead(title) {
  * Render the walkthrough page HTML from parsed copy + the scene clip
  * filenames present in the output directory.
  */
-export function renderWalkthroughHtml({ frontmatter, sections }, clips) {
+export function renderWalkthroughHtml({ frontmatter, sections }, clips, slug = frontmatter.slug) {
   const clipByNum = new Map(clips.map((f) => [f.match(/^scene-(\d{2})/)?.[1], f]));
   const title = frontmatter.title ?? 'Ripls walkthrough';
 
@@ -228,7 +231,7 @@ export function renderWalkthroughHtml({ frontmatter, sections }, clips) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-${pageHead(title.replace(/<[^>]+>/g, ''))}
+${pageHead(title.replace(/<[^>]+>/g, ''), `/walkthroughs/${slug}/`)}
 </head>
 <body>
 <header class="hero">
@@ -275,7 +278,7 @@ export function renderIndexHtml(entries) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-${pageHead('Ripls — Walkthroughs')}
+${pageHead('Ripls — Walkthroughs', '/walkthroughs/')}
 </head>
 <body>
 <header class="hero">
@@ -390,11 +393,13 @@ function main() {
   const parsed = parseWalkthrough(readFileSync(mdPath, 'utf-8'));
   const { frontmatter } = parsed;
   const clips = readdirSync(outDir).filter((f) => /^scene-\d{2}.*\.mp4$/.test(f));
-  const html = renderWalkthroughHtml(parsed, clips);
+  // Slug first: the page self-canonicals to /walkthroughs/<slug>/, so the
+  // render needs it.
+  const slug = frontmatter.slug ?? reel;
+  const html = renderWalkthroughHtml(parsed, clips, slug);
   writeFileSync(join(outDir, 'walkthrough.html'), html);
 
   // Deploy onto the marketing site so staging/review is part of the render.
-  const slug = frontmatter.slug ?? reel;
   const title = (frontmatter.title ?? `Ripls — ${reel}`).replace(/<[^>]+>/g, '');
   const siteWalkthroughsDir = resolve(
     dirname(fileURLToPath(import.meta.url)),

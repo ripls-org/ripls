@@ -138,6 +138,10 @@ var Registry = map[models.CommunityEventType]Entry{
 		Class:     ClassificationClientOnly,
 		Rationale: "Inverse is UnshareGear (already an RPC).",
 	},
+	models.CommunityEventType_COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER: {
+		Class:     ClassificationClientOnly,
+		Rationale: "Inverse is removing the member from the item's community (already an RPC). The notification has been sent by then, so an undo could not unsay it.",
+	},
 	models.CommunityEventType_COMMUNITY_EVENT_TYPE_GEAR_UNSHARED: {
 		Class:     ClassificationClientOnly,
 		Rationale: "Inverse is ShareGear (already an RPC).",

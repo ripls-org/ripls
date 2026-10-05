@@ -11,9 +11,11 @@ on:
     branches: [main]
     paths:
       - 'Dockerfile'
+      - 'docker-compose.yaml'
       - 'go.mod'
       - 'go.sum'
       - 'server/**'
+      - '.github/compose/**'
       - '.github/workflows/test_docker_build.yaml'
   # No path filter on PRs: this is a required check, so it must report on every
   # PR. The `changes` job gates the real work — a PR that doesn't touch the
@@ -40,9 +42,11 @@ jobs:
           filters: |
             relevant:
               - 'Dockerfile'
+              - 'docker-compose.yaml'
               - 'go.mod'
               - 'go.sum'
               - 'server/**'
+              - '.github/compose/**'
               - '.github/workflows/test_docker_build.yaml'
 
   test-build:
@@ -51,6 +55,13 @@ jobs:
     # otherwise the job skips and reports success, satisfying the required check.
     if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.relevant == 'true') }}
     runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    env:
+      # The boot check runs the root docker-compose.yaml against the image built
+      # below. A per-run project name keeps concurrent runs on the shared
+      # self-hosted Docker host from touching each other's containers.
+      SERVER_IMAGE: ripls-server:test
+      COMPOSE_FILE: docker-compose.yaml:.github/compose/docker-compose.ci.yaml
+      COMPOSE_PROJECT_NAME: ripls-compose-ci-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Checkout code
@@ -72,6 +83,22 @@ jobs:
         with:
           context: .
           push: false
+          # Into the local daemon, so the compose boot below can run it.
+          load: true
           tags: ripls-server:test
           cache-from: type=local,src=/tmp/docker-cache
           cache-to: type=local,dest=/tmp/docker-cache,mode=min
+
+      # Proves the image boots with no cloud account: docker-compose.yaml reads
+      # credentials from files and stores media locally. --wait returns once the
+      # server's /readyz healthcheck passes, and fails if it never does.
+      - name: Boot the image with docker compose
+        run: docker compose up --no-build --wait --wait-timeout 180
+
+      - name: Show container logs
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose down --volumes --remove-orphans

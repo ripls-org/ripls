@@ -164,7 +164,7 @@ jobs:
       - name: Install Node 22
         # Pin the job's Node explicitly so it does not drift with the
         # runner image. Playwright and Connect-ES v2 run on Node 22 (LTS).
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
 

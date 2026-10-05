@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"image"
 	_ "image/jpeg" // Register JPEG decoder
@@ -507,6 +508,17 @@ func CopyStockImageForUser(
 	media.StorageUrl = storageURL
 	media.SizeBytes = size
 	if err := sqlStorage.Update(ctx, media); err != nil {
+		if errors.Is(err, ErrRecordNotFound) {
+			// Deleted during the copy, e.g. with its owner or community.
+			// Remove the object the copy just made, which nothing references.
+			logger.InfoContext(ctx, "media record deleted during stock image copy; removing the copied object",
+				"copied_media_id", mediaID)
+			if deleteErr := bucketStorage.Delete(ctx, dstKey); deleteErr != nil {
+				logger.WarnContext(ctx, "failed to remove copied object after its media record was deleted",
+					"dst_key", dstKey, "error", deleteErr)
+			}
+			return "", fmt.Errorf("%w: %w", ErrMediaDeletedDuringCopy, err)
+		}
 		logger.ErrorContext(ctx, "failed to update media record after copy", "error", err)
 		return "", fmt.Errorf("failed to update media record: %w", err)
 	}

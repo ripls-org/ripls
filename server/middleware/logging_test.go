@@ -75,6 +75,71 @@ func TestLogging_IncludesRequestID(t *testing.T) {
 	}
 }
 
+func TestLogging_IncludesClientIP(t *testing.T) {
+	tests := []struct {
+		name   string
+		xff    string
+		wantIP string
+	}{
+		{name: "behind a proxy", xff: "203.0.113.7, 10.0.0.2", wantIP: "203.0.113.7"},
+		{name: "direct", xff: "", wantIP: "192.0.2.1"}, // httptest's RemoteAddr
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			logger := logging.NewLogger(logging.Options{
+				Level:  "info",
+				Format: "json",
+				Output: &buf,
+			})
+
+			// Chained as in routes.go: RemoteAddr resolves, Logging records.
+			handler := RemoteAddr(Logging(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			})))
+
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			if tt.xff != "" {
+				req.Header.Set("X-Forwarded-For", tt.xff)
+			}
+			handler.ServeHTTP(httptest.NewRecorder(), req)
+
+			var logEntry map[string]any
+			if err := json.Unmarshal(buf.Bytes(), &logEntry); err != nil {
+				t.Fatalf("Failed to parse JSON log: %v", err)
+			}
+			if logEntry["client_ip"] != tt.wantIP {
+				t.Errorf("client_ip = %v, want %q", logEntry["client_ip"], tt.wantIP)
+			}
+			if logEntry["remote_addr"] != req.RemoteAddr {
+				t.Errorf("remote_addr = %v, want the TCP peer %q", logEntry["remote_addr"], req.RemoteAddr)
+			}
+		})
+	}
+}
+
+func TestLogging_OmitsClientIPWithoutRemoteAddr(t *testing.T) {
+	var buf bytes.Buffer
+	logger := logging.NewLogger(logging.Options{
+		Level:  "info",
+		Format: "json",
+		Output: &buf,
+	})
+
+	handler := Logging(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	handler.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/test", nil))
+
+	var logEntry map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &logEntry); err != nil {
+		t.Fatalf("Failed to parse JSON log: %v", err)
+	}
+	if _, ok := logEntry["client_ip"]; ok {
+		t.Errorf("client_ip present without RemoteAddr middleware: %v", logEntry["client_ip"])
+	}
+}
+
 func TestLogging_StatusCodes(t *testing.T) {
 	tests := []struct {
 		name             string

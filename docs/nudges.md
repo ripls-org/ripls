@@ -8,8 +8,8 @@ context:
   lens: [domain, client, server]
   domain: feed
 freshness:
-  verified_commit: "82c3518d0"
-  verified_on: "2026-08-17"
+  verified_commit: "e52dda434"
+  verified_on: "2026-09-20"
 ---
 # Nudge Cards
 
@@ -82,7 +82,7 @@ When `buildTerminator` is called, it:
 
 The slot index for each entry is derived from `((day-1) * TerminatorsPerDay + slot) % len(pool)`, ensuring slots within a day are distinct and the full set rotates across days.
 
-Global records are stored with `user_id = "_terminator_pool_"` and no community ID. The ID of the user who first triggers creation is used only for media ownership when uploading the stock image. When a new day begins, the previous day's global records are soft-deleted and a fresh set is created.
+Global records are stored with `user_id = "_terminator_pool_"` and no community ID. Their stock imagery is owned by `media.SystemUserID`, not by whoever's feed load created it: the card is served to everyone, and media owned by an individual is readable only by that person — every other viewer got `PermissionDenied` from GetMedia and a card with a broken image (#3105). System-owned stock is public to any authenticated caller by design. When a new day begins, the previous day's global records are soft-deleted and a fresh set is created, so a day's pool is the only imagery in play at a time.
 
 **Configuration:** Change `TerminatorsPerDay` in [terminator_pool.go](../server/services/feed/terminator_pool.go) to control how many options are generated per day.
 

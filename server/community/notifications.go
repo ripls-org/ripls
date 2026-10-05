@@ -67,6 +67,11 @@ func CategoryFor(eventType models.CommunityEventType) models.NotificationCategor
 		return models.NotificationCategory_NOTIFICATION_CATEGORY_PLANNING_UPDATES
 	case models.CommunityEventType_COMMUNITY_EVENT_TYPE_INVITATION_LINK_USED:
 		return models.NotificationCategory_NOTIFICATION_CATEGORY_NEW_MEMBERS
+	// ITEM_SHARED_WITH_USER deliberately has no category, so it is not
+	// toggleable. The categories gate community broadcasts — volume someone
+	// may not want. A direct share is one person handing something to one
+	// named person, closer to a message than to a feed item, and silently
+	// dropping it would leave the sharer believing it landed (#3106).
 	default:
 		return models.NotificationCategory_NOTIFICATION_CATEGORY_UNSPECIFIED
 	}

@@ -242,7 +242,7 @@ func main() {
 
 	// Start background jobs (jobs.go) and assemble the HTTP surface (routes.go).
 	startBackgroundJobs(ctx, cfg, logger, sqlStorage, svcs.notificationService, svcs.emailService)
-	handler := buildHandler(cfg, logger, sqlStorage, bucketStorage, authMiddleware, svcs)
+	handler := buildHandler(ctx, cfg, logger, sqlStorage, bucketStorage, authMiddleware, svcs)
 
 	addr := fmt.Sprintf("0.0.0.0:%s", cfg.Port)
 	logger.Info("starting server", "address", addr)

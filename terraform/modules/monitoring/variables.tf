@@ -145,7 +145,7 @@ variable "slo_latency_target" {
 }
 
 variable "db_pool_saturation_threshold" {
-  description = "DB pool utilization (in_use/open, 0..1) that triggers the pool-saturation alert"
+  description = "DB pool utilization (in_use/max_open, 0..1) that triggers the pool-saturation alert"
   type        = number
   default     = 0.9
 }
@@ -226,4 +226,28 @@ variable "email_code_delivered_min_count" {
   description = "Minimum delivered sign-in-code emails within the 10-minute alignment window before the P95 latency condition can alert; at current single-digit-per-week volume a lone slow delivery would otherwise be 100% of a quiet window (#2923)"
   type        = number
   default     = 5 # COMPARISON_GT, so ≥6 deliveries per 10 min required; above current peak volume
+}
+
+variable "log_source" {
+  description = <<-EOT
+    Where the server's logs come from, which every log-based metric, alert, SLO
+    and dashboard in this module reads:
+      cloud_run    Cloud Run revision logs (resource.type cloud_run_revision,
+                   matched on service_name)
+      self_hosted  entries a log shipper writes as resource.type generic_task
+                   with job = service_name, from a server running anywhere else
+  EOT
+  type        = string
+  default     = "cloud_run"
+
+  validation {
+    condition     = contains(["cloud_run", "self_hosted"], var.log_source)
+    error_message = "log_source must be \"cloud_run\" or \"self_hosted\"."
+  }
+}
+
+variable "log_absence_minutes" {
+  description = "With log_source = self_hosted, alert when the server has logged nothing for this long. It logs pool stats every 15s, so silence means the server or the log shipper is down."
+  type        = number
+  default     = 15
 }

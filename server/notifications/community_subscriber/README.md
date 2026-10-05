@@ -13,8 +13,12 @@ Push-notification subscriber for the `community_event_bus`. The single
   joins between publish and this async dispatch is not pushed an event
   that predates their membership (#2657); an absent snapshot (failed
   capture or a non-`InProcessBus` publisher) falls back to a live
-  membership lookup with a WARN. All other types resolve live from
-  storage at dispatch time.
+  membership lookup with a WARN. **Directly addressed types** name their
+  one recipient in the event itself: `ITEM_SHARED_WITH_USER` resolves to
+  `object_user_id` with no storage read at all, which is what lets a
+  direct share reach someone the publish-time snapshot could not — they
+  were not a member yet when it was published (#3106). All other types
+  resolve live from storage at dispatch time.
 - **Soft-delete gate** — `community.IsActive` is checked before any
   dispatch except for `firesForDeletedCommunity` event types
   (`COMMUNITY_DELETED`, plus future at-or-after-delete reminders).
@@ -22,7 +26,10 @@ Push-notification subscriber for the `community_event_bus`. The single
   affects only push delivery.
 - **Per-user preference gating** — `community.CategoryEnabled` against
   the user's `CommunityNotificationPreferences` row, batched via
-  `community.FetchPreferencesForUsers`.
+  `community.FetchPreferencesForUsers`. Event types `community.CategoryFor`
+  maps to UNSPECIFIED are not toggleable and pass through unfiltered; the
+  categories exist to cap broadcast volume, so a directly addressed event
+  like `ITEM_SHARED_WITH_USER` has none.
 - **Active-stream suppression** — users with an active
   `StreamUserEvents` connection skip push (the event reaches them
   via the stream subscriber instead). The check takes only a user id:
@@ -50,7 +57,7 @@ Push-notification subscriber for the `community_event_bus`. The single
 
 ## Construction
 
-The subscriber struct, constructor, and `HandleEvent` entry point live in
+The subscriber struct, constructor, and `Handle` entry point live in
 [`subscriber.go`](subscriber.go). Wire-up in `main.go`:
 
 1. Construct the subscriber with `New(storage, notificationService)`.
@@ -72,7 +79,7 @@ adding an `event_id`-keyed dedup table** (see G6 in the plan).
 ## Soft-delete behavior
 
 The gate is implemented in [`subscriber.go`](subscriber.go) as part of
-`HandleEvent`. The decision is:
+`Handle`. The decision is:
 
 - If `community.FiresForDeletedCommunity(event.EventType)` returns
   true, dispatch proceeds even for soft-deleted communities. Today

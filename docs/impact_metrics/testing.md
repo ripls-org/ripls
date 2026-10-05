@@ -608,13 +608,13 @@ The automated suite **does not** assess whether the LLM's drafts are *good*. It 
 checks that prompts are well-formed and responses plumb through correctly. Drift in
 LLM quality is a different problem:
 
-- **Calibration chart** (Phase 4 of the plan): Metabase dashboard tracking override
-  rate per attribute. High override rate on one attribute → prompt refinement task.
+- **Calibration check** (Phase 4 of the plan): track override rate per attribute
+  with a periodic query run as the read-only database role
+  (`scripts/readonly-db-user.sql`). There is no dashboard tool — Metabase was
+  removed (#3075). High override rate on one attribute → prompt refinement task.
 - **Golden-set eval** (recommended follow-up): curate ~20 sample experiences + ideal
-  impact values; run the draft RPC against them in an off-CI nightly job; chart
-  drift. Not a CI gate — a signal. See the [ripls-analytics skill](../../.claude/skills/ripls-analytics/)
-  for the dashboard pattern and [docs/issues/1072-metabase-analytics.md](../issues/1072-metabase-analytics.md)
-  for the prior-art.
+  impact values; run the draft RPC against them in an off-CI nightly job; track
+  drift. Not a CI gate — a signal.
 - **Do not** write unit tests that pin specific LLM outputs. The model changes; the
   test breaks; people start disabling it. Test the shape, not the content.
 

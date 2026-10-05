@@ -5,6 +5,7 @@ package storage
 import (
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -370,6 +371,31 @@ func DefaultStorageTypes() []TypeConfig {
 	}
 }
 
+// Pool limits, shared by every pool this package opens.
+//
+// maxOpenConns bounds the queries a server runs at once; past it, callers
+// queue (visible as db_pool_wait_count). It used to be 10, sized so two Cloud
+// Run instances stayed under Cloud SQL's 50 connections. The database is now
+// the server stack's own Postgres — 100 connections, one server — so the
+// binding constraint is gone. 25 leaves room for the second pool, the
+// read-only role, the nightly dump and a superuser session, and still lets
+// request concurrency exceed anything this deployment has needed: the pool has
+// peaked at 2 in use.
+const (
+	maxOpenConns = 25
+	maxIdleConns = 10
+)
+
+// configurePool applies those limits. Connections are recycled well inside any
+// proxy or server idle timeout, so a pool handle never carries a dead
+// connection into a request.
+func configurePool(db *sql.DB) {
+	db.SetMaxOpenConns(maxOpenConns)
+	db.SetMaxIdleConns(maxIdleConns)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetConnMaxIdleTime(2 * time.Minute)
+}
+
 // initializeDatabase returns a general SQL storage object wrapping the specific database implementation.
 func initializeDatabase(ctx context.Context, dbSpec DatabaseSpecifics, connectionString string, typeConfigs []TypeConfig) (*ProtoSQLStorage, error) {
 	// Validate that type configs are provided
@@ -396,13 +422,7 @@ func initializeDatabase(ctx context.Context, dbSpec DatabaseSpecifics, connectio
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	// Configure connection pool to prevent exhausting database connections.
-	// Cloud SQL instances have limited connections (e.g., 25-100 depending on instance size).
-	// These settings ensure we stay well under those limits while maintaining good performance.
-	db.SetMaxOpenConns(10)                 // Maximum connections to avoid exhausting Cloud SQL limits
-	db.SetMaxIdleConns(5)                  // Keep some connections ready for reuse
-	db.SetConnMaxLifetime(5 * time.Minute) // Recycle connections before Cloud SQL idle timeout (10 min)
-	db.SetConnMaxIdleTime(2 * time.Minute) // Close idle connections to free up resources
+	configurePool(db)
 
 	// Finish the #2832 RSVP flat-column rename before the generic schema
 	// pass — see migrateRSVPEnumColumnRename for why the ordering matters.
@@ -525,9 +545,145 @@ func initializeDatabase(ctx context.Context, dbSpec DatabaseSpecifics, connectio
 	}
 
 	// Create indexes for frequently filtered columns.
-	indexStatements := []string{
-		// Story table: community_id is the primary list filter.
-		`CREATE INDEX IF NOT EXISTS idx_story_community ON "story" (community_id)`,
+	indexStatements := schemaIndexStatements()
+
+	// Singleton state table for the daily activity digest claim
+	// primitive (#1924). One row keyed by a fixed sentinel; the
+	// ClaimActivityDigestSend conditional UPDATE moves last_sent_date
+	// forward so only one Cloud Run instance sends per local day.
+	activityDigestStateTable := `CREATE TABLE IF NOT EXISTS activity_digest_state (
+		id TEXT PRIMARY KEY,
+		last_sent_date TEXT NOT NULL DEFAULT ''
+	)`
+	if _, err := db.ExecContext(ctx, activityDigestStateTable); err != nil {
+		return nil, fmt.Errorf("failed to create activity_digest_state table: %w", err)
+	}
+	if _, err := db.ExecContext(ctx,
+		`INSERT INTO activity_digest_state (id, last_sent_date) VALUES ('daily', '') ON CONFLICT (id) DO NOTHING`,
+	); err != nil {
+		return nil, fmt.Errorf("failed to seed activity_digest_state daily row: %w", err)
+	}
+	if _, err := db.ExecContext(ctx,
+		`INSERT INTO activity_digest_state (id, last_sent_date) VALUES ('weekly', '') ON CONFLICT (id) DO NOTHING`,
+	); err != nil {
+		return nil, fmt.Errorf("failed to seed activity_digest_state weekly row: %w", err)
+	}
+	// Migration: an earlier revision wrote id='singleton' for the daily
+	// claim. If that row exists and 'daily' is still empty, copy its
+	// last_sent_date forward so a deploy doesn't double-send today.
+	if _, err := db.ExecContext(ctx,
+		`UPDATE activity_digest_state SET last_sent_date = (SELECT last_sent_date FROM activity_digest_state WHERE id = 'singleton')
+		 WHERE id = 'daily' AND last_sent_date = ''
+		   AND EXISTS (SELECT 1 FROM activity_digest_state WHERE id = 'singleton' AND last_sent_date <> '')`,
+	); err != nil {
+		return nil, fmt.Errorf("failed to migrate activity_digest_state singleton -> daily: %w", err)
+	}
+
+	// Per-user daily activity stamps (#2665): one row per (user, UTC day)
+	// upserted by the activitystamp middleware, giving the ops digest a
+	// true active-users count. Plain telemetry table, not a domain model
+	// — day_utc is only the upsert dedup key; window queries range over
+	// the first/last-seen timestamps.
+	userActiveDayTable := `CREATE TABLE IF NOT EXISTS user_active_day (
+		user_id TEXT NOT NULL,
+		day_utc TEXT NOT NULL,
+		first_seen_unix_sec BIGINT NOT NULL,
+		last_seen_unix_sec BIGINT NOT NULL,
+		PRIMARY KEY (user_id, day_utc)
+	)`
+	if _, err := db.ExecContext(ctx, userActiveDayTable); err != nil {
+		return nil, fmt.Errorf("failed to create user_active_day table: %w", err)
+	}
+	if _, err := db.ExecContext(ctx,
+		`CREATE INDEX IF NOT EXISTS idx_user_active_day_last_seen ON user_active_day (last_seen_unix_sec)`,
+	); err != nil {
+		return nil, fmt.Errorf("failed to create user_active_day index: %w", err)
+	}
+	for _, indexSQL := range indexStatements {
+		if _, err := db.ExecContext(ctx, indexSQL); err != nil {
+			// Non-fatal — a missing index costs latency, not correctness, and is
+			// no reason to refuse to boot. But it is unexpected: every statement
+			// here is asserted against the canonical schema by
+			// TestSchemaIndexesAreCreated, so a failure at runtime means
+			// something this environment has that CI does not — duplicate rows
+			// blocking a UNIQUE index, most likely. At Warn that is invisible:
+			// idx_story_community was wrong for seven months because the only
+			// signal was one warning per boot and the alerts fire on ERROR
+			// (#3088).
+			logging.Default().Error("failed to create index", "sql", indexSQL, "error", err)
+		}
+	}
+
+	instrumented := NewInstrumentedDB(db)
+	return &ProtoSQLStorage{
+		db:               instrumented,
+		exec:             instrumented,
+		dbSpec:           dbSpec,
+		allowedTypes:     allowedTypes,
+		embeddingConfigs: embeddingConfigs,
+		arrayColumns:     make(map[string][]arrayColumnReg),
+	}, nil
+}
+
+// openDatabaseNoDDL constructs a ProtoSQLStorage over an EXISTING schema
+// without executing a single DDL or migration statement. For least-privilege
+// (e.g. SELECT-only) connections: the initializeDatabase path runs
+// CREATE/ALTER/backfill statements that such a role cannot execute —
+// PostgreSQL checks table ownership on ALTER TABLE before deciding the
+// sub-command is a no-op. Reads (GetByID / Query*) decode the binary_proto
+// column, so skipping schema evolution and array-column registration loses
+// nothing for read-only consumers; writes through this handle fail at the
+// database when the role lacks privileges.
+func openDatabaseNoDDL(ctx context.Context, dbSpec DatabaseSpecifics, connectionString string, typeConfigs []TypeConfig) (*ProtoSQLStorage, error) {
+	if typeConfigs == nil {
+		return nil, fmt.Errorf("typeConfigs cannot be nil; use DefaultStorageTypes() or provide custom configuration")
+	}
+
+	db, err := dbSpec.OpenDatabase(connectionString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %w", err)
+	}
+	if err = db.PingContext(ctx); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	configurePool(db)
+
+	allowedTypes := make(map[string]string)
+	embeddingConfigs := make(map[string][]*EmbeddingFieldConfig)
+	for _, config := range typeConfigs {
+		descriptor := config.MessageType.ProtoReflect().Descriptor()
+		allowedTypes[string(descriptor.FullName())] = config.TableName
+		if len(config.Embeddings) > 0 {
+			embeddingConfigs[config.TableName] = config.Embeddings
+		}
+	}
+
+	instrumented := NewInstrumentedDB(db)
+	return &ProtoSQLStorage{
+		db:               instrumented,
+		exec:             instrumented,
+		dbSpec:           dbSpec,
+		allowedTypes:     allowedTypes,
+		embeddingConfigs: embeddingConfigs,
+		arrayColumns:     make(map[string][]arrayColumnReg),
+	}, nil
+}
+
+// schemaIndexStatements is every index the schema creates beyond the ones
+// generated per table. Each runs with IF NOT EXISTS and a failure is
+// non-fatal, so a statement naming a table or column that does not exist is
+// silent apart from one warning per boot — which is how idx_story_community
+// went missing for months (#3088). TestSchemaIndexesAreCreated asserts every
+// index here exists after initialization, so a slip fails the build instead.
+func schemaIndexStatements() []string {
+	return []string{
+		// Story table: community_id is the primary list filter, and
+		// ListByCommunity orders by created_at_unix_sec DESC under a LIMIT, so
+		// the sort column rides along — as it does for community_event below.
+		// The table is "Story" — the proto message name, not snake_case (#3088).
+		`CREATE INDEX IF NOT EXISTS idx_story_community ON "Story" (community_id, created_at_unix_sec DESC)`,
 		// Daily purge job (#1620) WHERE clauses. Partial indexes
 		// keyed on the flattened deleted-metadata column so the
 		// daily candidate scan reads only soft-deleted rows.
@@ -607,124 +763,4 @@ func initializeDatabase(ctx context.Context, dbSpec DatabaseSpecifics, connectio
 		// before every platform text send and on each STOP/START webhook.
 		`CREATE UNIQUE INDEX IF NOT EXISTS idx_sms_opt_out_phone ON "sms_opt_out" (phone_number)`,
 	}
-
-	// Singleton state table for the daily activity digest claim
-	// primitive (#1924). One row keyed by a fixed sentinel; the
-	// ClaimActivityDigestSend conditional UPDATE moves last_sent_date
-	// forward so only one Cloud Run instance sends per local day.
-	activityDigestStateTable := `CREATE TABLE IF NOT EXISTS activity_digest_state (
-		id TEXT PRIMARY KEY,
-		last_sent_date TEXT NOT NULL DEFAULT ''
-	)`
-	if _, err := db.ExecContext(ctx, activityDigestStateTable); err != nil {
-		return nil, fmt.Errorf("failed to create activity_digest_state table: %w", err)
-	}
-	if _, err := db.ExecContext(ctx,
-		`INSERT INTO activity_digest_state (id, last_sent_date) VALUES ('daily', '') ON CONFLICT (id) DO NOTHING`,
-	); err != nil {
-		return nil, fmt.Errorf("failed to seed activity_digest_state daily row: %w", err)
-	}
-	if _, err := db.ExecContext(ctx,
-		`INSERT INTO activity_digest_state (id, last_sent_date) VALUES ('weekly', '') ON CONFLICT (id) DO NOTHING`,
-	); err != nil {
-		return nil, fmt.Errorf("failed to seed activity_digest_state weekly row: %w", err)
-	}
-	// Migration: an earlier revision wrote id='singleton' for the daily
-	// claim. If that row exists and 'daily' is still empty, copy its
-	// last_sent_date forward so a deploy doesn't double-send today.
-	if _, err := db.ExecContext(ctx,
-		`UPDATE activity_digest_state SET last_sent_date = (SELECT last_sent_date FROM activity_digest_state WHERE id = 'singleton')
-		 WHERE id = 'daily' AND last_sent_date = ''
-		   AND EXISTS (SELECT 1 FROM activity_digest_state WHERE id = 'singleton' AND last_sent_date <> '')`,
-	); err != nil {
-		return nil, fmt.Errorf("failed to migrate activity_digest_state singleton -> daily: %w", err)
-	}
-
-	// Per-user daily activity stamps (#2665): one row per (user, UTC day)
-	// upserted by the activitystamp middleware, giving the ops digest a
-	// true active-users count. Plain telemetry table, not a domain model
-	// — day_utc is only the upsert dedup key; window queries range over
-	// the first/last-seen timestamps.
-	userActiveDayTable := `CREATE TABLE IF NOT EXISTS user_active_day (
-		user_id TEXT NOT NULL,
-		day_utc TEXT NOT NULL,
-		first_seen_unix_sec BIGINT NOT NULL,
-		last_seen_unix_sec BIGINT NOT NULL,
-		PRIMARY KEY (user_id, day_utc)
-	)`
-	if _, err := db.ExecContext(ctx, userActiveDayTable); err != nil {
-		return nil, fmt.Errorf("failed to create user_active_day table: %w", err)
-	}
-	if _, err := db.ExecContext(ctx,
-		`CREATE INDEX IF NOT EXISTS idx_user_active_day_last_seen ON user_active_day (last_seen_unix_sec)`,
-	); err != nil {
-		return nil, fmt.Errorf("failed to create user_active_day index: %w", err)
-	}
-	for _, indexSQL := range indexStatements {
-		if _, err := db.ExecContext(ctx, indexSQL); err != nil {
-			// Non-fatal: table may not exist yet or column may be named differently.
-			// Log and continue rather than failing startup.
-			logging.Default().Warn("failed to create index (non-fatal)", "sql", indexSQL, "error", err)
-		}
-	}
-
-	instrumented := NewInstrumentedDB(db)
-	return &ProtoSQLStorage{
-		db:               instrumented,
-		exec:             instrumented,
-		dbSpec:           dbSpec,
-		allowedTypes:     allowedTypes,
-		embeddingConfigs: embeddingConfigs,
-		arrayColumns:     make(map[string][]arrayColumnReg),
-	}, nil
-}
-
-// openDatabaseNoDDL constructs a ProtoSQLStorage over an EXISTING schema
-// without executing a single DDL or migration statement. For least-privilege
-// (e.g. SELECT-only) connections: the initializeDatabase path runs
-// CREATE/ALTER/backfill statements that such a role cannot execute —
-// PostgreSQL checks table ownership on ALTER TABLE before deciding the
-// sub-command is a no-op. Reads (GetByID / Query*) decode the binary_proto
-// column, so skipping schema evolution and array-column registration loses
-// nothing for read-only consumers; writes through this handle fail at the
-// database when the role lacks privileges.
-func openDatabaseNoDDL(ctx context.Context, dbSpec DatabaseSpecifics, connectionString string, typeConfigs []TypeConfig) (*ProtoSQLStorage, error) {
-	if typeConfigs == nil {
-		return nil, fmt.Errorf("typeConfigs cannot be nil; use DefaultStorageTypes() or provide custom configuration")
-	}
-
-	db, err := dbSpec.OpenDatabase(connectionString)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
-	}
-	if err = db.PingContext(ctx); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
-
-	// Same pool discipline as initializeDatabase (Cloud SQL connection limits).
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(5)
-	db.SetConnMaxLifetime(5 * time.Minute)
-	db.SetConnMaxIdleTime(2 * time.Minute)
-
-	allowedTypes := make(map[string]string)
-	embeddingConfigs := make(map[string][]*EmbeddingFieldConfig)
-	for _, config := range typeConfigs {
-		descriptor := config.MessageType.ProtoReflect().Descriptor()
-		allowedTypes[string(descriptor.FullName())] = config.TableName
-		if len(config.Embeddings) > 0 {
-			embeddingConfigs[config.TableName] = config.Embeddings
-		}
-	}
-
-	instrumented := NewInstrumentedDB(db)
-	return &ProtoSQLStorage{
-		db:               instrumented,
-		exec:             instrumented,
-		dbSpec:           dbSpec,
-		allowedTypes:     allowedTypes,
-		embeddingConfigs: embeddingConfigs,
-		arrayColumns:     make(map[string][]arrayColumnReg),
-	}, nil
 }

@@ -2,6 +2,7 @@ package request
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -68,6 +69,12 @@ func (s *Service) fetchAndAttachStockImage(ctx context.Context, requestID, commu
 		fmt.Sprintf("request-%s.jpg", requestID),
 		fmt.Sprintf("Stock image for request: %s", description),
 	)
+	if errors.Is(err, storage.ErrMediaDeletedDuringCopy) {
+		logger.InfoContext(ctx, "skipping stock-image attach — media deleted during copy",
+			"reason", "media_deleted_during_job",
+			"duration_ms", time.Since(startTime).Milliseconds())
+		return
+	}
 	if err != nil {
 		logger.ErrorContext(ctx, "failed to copy stock image",
 			"error", err,

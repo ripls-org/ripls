@@ -173,9 +173,16 @@ Key properties:
   `doc.context`, so a `freshness:` block is invisible to the routing gate —
   stamping a doc never changes `docs/llms.txt` or trips `lint:context-map`. (A
   `node --test` cross-check in `scripts/doc_freshness.test.js` locks this in.)
-- **Written only by the skill, never by hand.** The skill advances the stamp on
-  every verification run (whether it edits the doc or confirms it fresh). A
-  hand-edited stamp would rubber-stamp unverified prose.
+- **Earned by verification, not by authorship.** Anyone may advance the stamp —
+  the skill on every verification run (whether it edits the doc or confirms it
+  fresh), the nightly ratchet, or you, by hand, when you have checked the prose
+  against the code. The rule is verify *then* stamp; what the stamp must never
+  record is a claim nobody checked. So: update a doc and re-read it against the
+  code it describes → stamp it. Fix one paragraph without reading the rest →
+  leave the stamp where it is, and let the next verification run move it. A
+  stale stamp on a doc you improved costs nothing; the ratchet will come back
+  to it. A stamp on unread prose is the one thing that breaks the mechanism,
+  because every later reader takes it as a guarantee.
 - **Drives the ratchet.** The stamp lets any check ask the precise question *"has
   this doc's globbed code changed since it was last verified?"* — powering the
   nightly auto-refresh without a sidecar manifest.

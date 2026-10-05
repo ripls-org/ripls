@@ -6,6 +6,7 @@ package main
 // the per-stream middleware chain wrapped around the mux.
 
 import (
+	"context"
 	"net/http"
 	"net/http/pprof"
 
@@ -39,7 +40,9 @@ func route(path string, handler http.Handler) connectRoute {
 
 // buildHandler assembles the full HTTP handler: mux with every public and
 // authenticated route mounted, wrapped in the per-stream middleware chain.
-func buildHandler(cfg *config.Config, logger *logging.Logger, sqlStorage *storage.ProtoSQLStorage, bucketStorage storage.BucketStorage, authMiddleware *authn.Middleware, s *serverServices) http.Handler {
+// shutdown is cancelled when the server begins shutting down; streaming RPCs
+// end then, so the drain is not held open by them.
+func buildHandler(shutdown context.Context, cfg *config.Config, logger *logging.Logger, sqlStorage *storage.ProtoSQLStorage, bucketStorage storage.BucketStorage, authMiddleware *authn.Middleware, s *serverServices) http.Handler {
 	mux := http.NewServeMux()
 
 	// Serve media files from local bucket storage if using local mode
@@ -139,6 +142,7 @@ func buildHandler(cfg *config.Config, logger *logging.Logger, sqlStorage *storag
 	commonOpts := []connect.HandlerOption{
 		connect.WithInterceptors(ratelimit.Interceptor(rateLimitRules...)),
 		connect.WithInterceptors(middleware.PreferredLanguageInterceptor(sqlStorage)),
+		connect.WithInterceptors(middleware.StreamShutdownInterceptor(shutdown)),
 	}
 
 	// Per-user daily activity stamps for the ops digest (#2665). Sits

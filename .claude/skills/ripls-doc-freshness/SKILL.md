@@ -118,8 +118,10 @@ node scripts/doc_freshness.js stamp <doc> --commit "$(git rev-parse --short HEAD
 
 The stamp lives in a top-level `freshness:` frontmatter block, **separate from
 `context:`** — `gen_context_map.js` ignores it, so stamping never makes
-`docs/llms.txt` stale or trips `lint:context-map`. Only this skill writes it;
-never hand-edit a stamp (that would rubber-stamp unverified prose).
+`docs/llms.txt` stale or trips `lint:context-map`. This skill is not its only
+writer: anyone who verifies a doc against the code may stamp it, by hand or
+with the command above. What the stamp must never record is prose nobody
+checked — verify first, then stamp.
 
 ### 6. Report
 Per doc, summarize: findings by severity, what you edited, what you left as a

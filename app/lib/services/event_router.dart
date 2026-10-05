@@ -90,6 +90,19 @@ class EventRouter {
     }
   }
 
+  /// Whether a direct share was addressed to the viewer.
+  ///
+  /// Refreshing the community list is a network round trip, not a notifier
+  /// bump, so every member must not pay for one person's share. A push carries
+  /// no `object_user` — it is delivered only to the recipient — so an event
+  /// without one is for whoever received it.
+  bool _sharedWithThisViewer(CommunityEventItem event) {
+    if (!event.hasObjectUser()) return true;
+    final viewerId = _ref.read(authStateProvider).user?.id;
+    if (viewerId == null || viewerId.isEmpty) return true;
+    return event.objectUser.id == viewerId;
+  }
+
   /// Process a single event: dedup, determine targets. Returns null if
   /// the event was already processed or has no ID.
   Set<_InvalidationTarget>? _processEvent(CommunityEventItem event) {
@@ -192,6 +205,21 @@ class EventRouter {
       CommunityEventType.COMMUNITY_EVENT_TYPE_COMMUNITY_CREATED => {
         _InvalidationTarget.portfolio,
       },
+
+      // Someone handed you an item directly (#3106). The share adds you to the
+      // item's community, so both the item and that community are new to every
+      // list that shows them — this arrives as you are added, not as something
+      // changing in a community you were already browsing. For anyone else it
+      // is nothing at all, and the per-user stream delivers it to every member.
+      CommunityEventType.COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER =>
+        _sharedWithThisViewer(event)
+            ? {
+                _InvalidationTarget.communityList,
+                _InvalidationTarget.portfolio,
+                _InvalidationTarget.content,
+                _InvalidationTarget.feedListing,
+              }
+            : <_InvalidationTarget>{},
 
       // A member rejoining within the 30-day window re-enters the community's
       // roster, so the viewer's community list changes. The rejoiner's own

@@ -8,8 +8,8 @@ context:
   lens: [workflow, domain, client, server]
   domain: client
 freshness:
-  verified_commit: "11503e4ea"
-  verified_on: "2026-07-03"
+  verified_commit: "8ebbeb5d2"
+  verified_on: "2026-09-20"
 ---
 # Item Authoring → Sharing → "Shared with" Workflow (Gear & Requests)
 
@@ -51,7 +51,13 @@ gear/request read shell is the per-type sharing surface, reusing the same generi
 0. The host **creates a gear/request** through unified-create (text prompt → Generate →
    Save). The item's per-item community is provisioned and the share sheet auto-opens.
 1. From the share sheet, the host taps **Invite people**, picks members, and confirms —
-   each is added to the item's ad-hoc community as an invited individual.
+   each is added to the item's ad-hoc community as an invited individual, and each is
+   told it happened: the share raises one `ITEM_SHARED_WITH_USER` per person it *newly*
+   added, naming them in `object_user_id`, and the notification subscriber sends to that
+   person alone (#3106). Re-sharing to widen the audience does not re-notify the people
+   who already had the item. Until #3106 this step was silent for people already on
+   Ripls — off-app invitees got an email and link joiners raised
+   `INVITATION_LINK_USED`, but a member added by name got nothing.
 2. The host opens the item (`/gear/{id}` or `/request/{id}`); the **"Shared with" card**
    shows the count + the invited faces.
 3. Tapping the card opens the **access sheet** ("Shared with") — the communities the item
@@ -81,5 +87,7 @@ confirmed via RPC so the card's counts are anchored to server truth.
 
 - `GetGear` / `GetRequest` returns the two as `invited_individuals`, and
   `total_distinct_member_count` is 3 (host + two invitees, deduped).
+- Each invitee has one `ITEM_SHARED_WITH_USER` event addressed to them; the host has
+  none (sharing with yourself is not a notification).
 - Community-level sharing from the share sheet is covered separately by
   `event-whos-in-counts.spec.ts` / `share-sheet-community-picker.spec.ts`.

@@ -58,23 +58,7 @@ with round-trip semantics.
 
 ### Optional: Reset the production database
 
-If you need to start fresh with an empty database, delete and recreate the `ripls` database on Cloud SQL. The server will automatically initialize the schema on startup.
-
-```bash
-PROD="$(scripts/gcp_project.sh prod)"
-
-# Delete the existing database
-gcloud sql databases delete ripls \
-  --instance="$PROD" \
-  --project="$PROD"
-
-# Recreate the empty database
-gcloud sql databases create ripls \
-  --instance="$PROD" \
-  --project="$PROD"
-```
-
-You may encounter errors that you can't delete the database. If you do, you need to go into Google Cloud Console and restart the Cloud SQL instance. Then you should be able to delete it.
+If you need to start fresh with an empty database, stop the server, drop and recreate the `ripls` database, and start the server again; it initializes the schema on startup. The production database is a Postgres container in the deployment's own server stack, not a managed service, so this runs on the host that stack runs on. The exact command is in the deployment's private infrastructure notes.
 
 ### Deploy a new server binary to prod
 

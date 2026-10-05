@@ -30,11 +30,11 @@ func nudgeForTest(userID, communityID string, isTerminator bool, createdAt int64
 func insertGlobalTerminatorPair(t *testing.T, sqlStorage *storage.ProtoSQLStorage, ctx context.Context) (*models.StoredNudge, *models.StoredNudge, int) {
 	t.Helper()
 	now := time.Now().Unix()
-	todayNudge := nudgeForTest(globalTerminatorUserID, "", true, now)
+	todayNudge := nudgeForTest(GlobalTerminatorUserID, "", true, now)
 	if err := insertNudge(ctx, sqlStorage, todayNudge); err != nil {
 		t.Fatalf("insertNudge today: %v", err)
 	}
-	yesterdayNudge := nudgeForTest(globalTerminatorUserID, "", true, now-25*3600)
+	yesterdayNudge := nudgeForTest(GlobalTerminatorUserID, "", true, now-25*3600)
 	if err := insertNudge(ctx, sqlStorage, yesterdayNudge); err != nil {
 		t.Fatalf("insertNudge yesterday: %v", err)
 	}
@@ -108,7 +108,7 @@ func TestGetGlobalTerminatorsForToday_ExcludesSoftDeleted(t *testing.T) {
 	ctx := context.Background()
 
 	now := time.Now().Unix()
-	nudge := nudgeForTest(globalTerminatorUserID, "", true, now)
+	nudge := nudgeForTest(GlobalTerminatorUserID, "", true, now)
 	if err := insertNudge(ctx, sqlStorage, nudge); err != nil {
 		t.Fatalf("insertNudge: %v", err)
 	}
@@ -153,7 +153,7 @@ func TestGetPreviousGlobalTerminators_ExcludesSoftDeleted(t *testing.T) {
 	ctx := context.Background()
 
 	now := time.Now().Unix()
-	yesterdayNudge := nudgeForTest(globalTerminatorUserID, "", true, now-25*3600)
+	yesterdayNudge := nudgeForTest(GlobalTerminatorUserID, "", true, now-25*3600)
 	if err := insertNudge(ctx, sqlStorage, yesterdayNudge); err != nil {
 		t.Fatalf("insertNudge yesterday: %v", err)
 	}

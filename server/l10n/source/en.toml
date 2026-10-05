@@ -109,6 +109,15 @@ other = "New contribution"
 [notif.community_event.invitation_link_used.title]
 other = "New member"
 
+[notif.community_event.item_shared_with_user_gear.title]
+other = "Shared with you"
+
+[notif.community_event.item_shared_with_user_experience.title]
+other = "You're invited"
+
+[notif.community_event.item_shared_with_user_request.title]
+other = "Someone needs a hand"
+
 [notif.community_event.community_deleted.title]
 other = "Community deleted"
 
@@ -639,6 +648,21 @@ other = "Respond at"
 other = "{{.ActorFirstName}} joined {{.CommunityName}}"
 [notif.offapp.invitation_link_used.cta]
 other = "Say hi at"
+
+[notif.offapp.item_shared_with_user_gear.message]
+other = "{{.ActorName}} shared {{.GearWithArticle}} with you"
+[notif.offapp.item_shared_with_user_gear.cta]
+other = "Take a look at"
+
+[notif.offapp.item_shared_with_user_experience.message]
+other = "{{.ActorName}} invited you to {{.ExperienceName}}"
+[notif.offapp.item_shared_with_user_experience.cta]
+other = "RSVP at"
+
+[notif.offapp.item_shared_with_user_request.message]
+other = "{{.ActorName}} asked if you can help with {{.RequestTitle}}"
+[notif.offapp.item_shared_with_user_request.cta]
+other = "Offer at"
 
 [notif.offapp.experience_rsvp_no.message]
 other = "{{.ActorName}} can't make it to {{.ExperienceName}}"

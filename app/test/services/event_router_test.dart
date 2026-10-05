@@ -3,11 +3,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:ripls/data/gen/ripls/api/community_service.pb.dart';
+import 'package:ripls/data/gen/ripls/api/user.pb.dart' show User;
 import 'package:ripls/data/repositories/community_repository.dart';
+import 'package:ripls/services/auth_state.dart';
 import 'package:ripls/services/event_router.dart';
 import 'package:ripls/services/providers.dart';
 
 import 'event_router_test.mocks.dart';
+
+/// The viewer, so a direct-share event addressed to someone else can be told
+/// apart from one addressed to them.
+class _FakeAuthStateNotifier extends AuthStateNotifier {
+  @override
+  AuthStateData build() => AuthStateData(
+        isLoading: false,
+        user: User(id: 'viewer-1', name: 'Viewer'),
+      );
+}
 
 @GenerateMocks([CommunityRepository])
 void main() {
@@ -24,6 +36,7 @@ void main() {
 
     container = ProviderContainer(overrides: [
       communityRepositoryProvider.overrideWithValue(mockCommunityRepository),
+      authStateProvider.overrideWith(_FakeAuthStateNotifier.new),
     ]);
     router = container.read(eventRouterProvider);
   });
@@ -237,6 +250,63 @@ void main() {
       expect(container.read(portfolioCacheInvalidationProvider),
           portfolioBefore + 1);
       expect(container.read(feedListingCacheInvalidationProvider), feedListingBefore);
+    });
+
+    // Being handed an item arrives as you are added to its community, so the
+    // item and the community are both new to the lists that show them. Before
+    // #3106 this event did not exist and the share told the recipient nothing.
+    // A push carries no object_user and reaches only the recipient, which is
+    // the shape makeEvent produces here.
+    test('shared-with-you event refreshes the lists the item appears in', () {
+      final portfolioBefore =
+          container.read(portfolioCacheInvalidationProvider);
+      final contentBefore = container.read(contentCacheInvalidationProvider);
+      final feedListingBefore =
+          container.read(feedListingCacheInvalidationProvider);
+      final transferBefore =
+          container.read(transferCacheInvalidationProvider);
+
+      router.routeCommunityEvent(makeEvent(
+        'e-shared-with-user',
+        CommunityEventType.COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER,
+      ));
+
+      expect(container.read(portfolioCacheInvalidationProvider),
+          portfolioBefore + 1);
+      expect(
+          container.read(contentCacheInvalidationProvider), contentBefore + 1);
+      expect(container.read(feedListingCacheInvalidationProvider),
+          feedListingBefore + 1);
+      expect(
+          container.read(transferCacheInvalidationProvider), transferBefore);
+      // The share added the viewer to the item's community, so the community
+      // list is stale until it is refetched — the one target here that costs a
+      // round trip, and the one the negative case below must not pay.
+      verify(mockCommunityRepository.refreshUserCommunities()).called(1);
+    });
+
+    // The per-user stream hands every community event to every member, and
+    // refreshing the community list is a network round trip. One person's
+    // share must not cost everyone else one.
+    test('a share addressed to someone else does nothing for this viewer', () {
+      final portfolioBefore =
+          container.read(portfolioCacheInvalidationProvider);
+      final contentBefore = container.read(contentCacheInvalidationProvider);
+      final feedListingBefore =
+          container.read(feedListingCacheInvalidationProvider);
+
+      final event = makeEvent(
+        'e-shared-with-someone-else',
+        CommunityEventType.COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER,
+      )..objectUser = User(id: 'not-the-viewer');
+      router.routeCommunityEvent(event);
+
+      expect(container.read(portfolioCacheInvalidationProvider),
+          portfolioBefore);
+      expect(container.read(contentCacheInvalidationProvider), contentBefore);
+      expect(container.read(feedListingCacheInvalidationProvider),
+          feedListingBefore);
+      verifyNever(mockCommunityRepository.refreshUserCommunities());
     });
 
     test('membership event notifies portfolio provider only', () {

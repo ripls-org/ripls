@@ -1,21 +1,21 @@
 module go.ripls.org/ripls
 
-go 1.26.6
+go 1.27.1
 
 require (
-	cloud.google.com/go/storage v1.66.0
+	cloud.google.com/go/storage v1.68.0
 	connectrpc.com/authn v0.2.0
-	connectrpc.com/connect v1.20.0
+	connectrpc.com/connect v1.21.0
 	firebase.google.com/go/v4 v4.21.0
 	github.com/BurntSushi/toml v1.6.0
 	github.com/PuerkitoBio/goquery v1.13.0
 	github.com/adrium/goheif v0.0.0-20230113233934-ca402e77a786
-	github.com/anthropics/anthropic-sdk-go v1.68.0
+	github.com/anthropics/anthropic-sdk-go v1.74.0
 	github.com/bradleyfalzon/ghinstallation/v2 v2.19.0
-	github.com/coreos/go-oidc/v3 v3.20.0
+	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/docker/docker v28.5.2+incompatible
-	github.com/firebase/genkit/go v1.12.0
+	github.com/firebase/genkit/go v1.13.1
 	github.com/fsouza/fake-gcs-server v1.56.1
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-github/v90 v90.0.0
@@ -25,21 +25,20 @@ require (
 	github.com/lib/pq v1.12.3
 	github.com/mailgun/mailgun-go/v5 v5.19.3
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
-	github.com/nyaruka/phonenumbers/v2 v2.0.8
-	github.com/openai/openai-go/v3 v3.54.0
+	github.com/nyaruka/phonenumbers/v2 v2.0.12
+	github.com/openai/openai-go/v3 v3.64.0
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/stretchr/testify v1.12.1
 	github.com/testcontainers/testcontainers-go v0.44.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.44.0
 	github.com/yalue/onnxruntime_go v1.35.0
-	golang.org/x/crypto v0.55.0
-	golang.org/x/image v0.45.0
-	golang.org/x/net v0.58.0
-	golang.org/x/oauth2 v0.36.0
-	golang.org/x/sync v0.22.0
-	golang.org/x/text v0.41.0
-	golang.org/x/time v0.15.0
-	google.golang.org/genai v1.70.0
+	golang.org/x/crypto v0.57.0
+	golang.org/x/image v0.46.0
+	golang.org/x/oauth2 v0.37.0
+	golang.org/x/sync v0.23.0
+	golang.org/x/text v0.42.0
+	golang.org/x/time v0.16.0
+	google.golang.org/genai v1.71.0
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -67,7 +66,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20260202195803-dba9d589def2 // indirect
-	github.com/coder/websocket v1.8.14 // indirect
+	github.com/coder/websocket v1.8.15 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
@@ -148,7 +147,8 @@ require (
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/net v0.59.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
 	google.golang.org/api v0.293.0 // indirect
 	google.golang.org/appengine/v2 v2.0.6 // indirect
 	google.golang.org/genproto v0.0.0-20260526163538-3dc84a4a5aaa // indirect

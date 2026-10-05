@@ -80,6 +80,40 @@ func TestFromCommunityEvent_GearShareSplit(t *testing.T) {
 	}
 }
 
+// TestFromCommunityEvent_DirectShareSplit asserts a direct share resolves to the
+// kind matching what was handed over. Gear is the default rather than a checked
+// id: gear travels in its own payload field, so the topic oneof being empty
+// means gear, and getting this wrong renders a sentence naming nothing (#3106).
+func TestFromCommunityEvent_DirectShareSplit(t *testing.T) {
+	tests := []struct {
+		name         string
+		experienceID string
+		requestID    string
+		wantKind     string
+	}{
+		{"experience", "exp-1", "", "item_shared_with_user_experience"},
+		{"request", "", "req-1", "item_shared_with_user_request"},
+		{"gear", "", "", "item_shared_with_user_gear"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			payload := &models.CommunityEventPayload{
+				EventType: "COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER",
+			}
+			if tt.experienceID != "" {
+				payload.ExperienceId = &tt.experienceID
+			}
+			if tt.requestID != "" {
+				payload.RequestId = &tt.requestID
+			}
+			c := FromCommunityEvent(context.Background(), payload)
+			if c.Kind != tt.wantKind {
+				t.Errorf("Kind = %q, want %q", c.Kind, tt.wantKind)
+			}
+		})
+	}
+}
+
 // TestFromCommunityEvent_ExperienceUpdatedSplit asserts EXPERIENCE_UPDATED picks
 // the variant matching which fields changed.
 func TestFromCommunityEvent_ExperienceUpdatedSplit(t *testing.T) {

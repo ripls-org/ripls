@@ -39,18 +39,18 @@ locals {
   # Monitoring filter for a log-based user metric (dashboards use space-
   # separated conjunction).
   lbm_filter = {
-    rpc_requests           = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_requests.name}\" resource.type=\"cloud_run_revision\""
-    rpc_request_duration   = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_request_duration.name}\" resource.type=\"cloud_run_revision\""
-    db_request_duration    = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_request_duration.name}\" resource.type=\"cloud_run_revision\""
-    db_slow_queries        = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_slow_queries.name}\" resource.type=\"cloud_run_revision\""
-    db_slow_query_duration = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_slow_query_duration.name}\" resource.type=\"cloud_run_revision\""
-    db_pool_open           = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool["open"].name}\" resource.type=\"cloud_run_revision\""
-    db_pool_in_use         = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool["in_use"].name}\" resource.type=\"cloud_run_revision\""
-    db_pool_idle           = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool["idle"].name}\" resource.type=\"cloud_run_revision\""
-    db_pool_utilization    = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool_utilization.name}\" resource.type=\"cloud_run_revision\""
-    go_goroutines          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.go_goroutines.name}\" resource.type=\"cloud_run_revision\""
-    go_heap_inuse_bytes    = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.go_heap_inuse_bytes.name}\" resource.type=\"cloud_run_revision\""
-    go_gc_pause_ms         = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.go_gc_pause_ms.name}\" resource.type=\"cloud_run_revision\""
+    rpc_requests           = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_requests.name}\" resource.type=\"${local.log_resource_type}\""
+    rpc_request_duration   = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_request_duration.name}\" resource.type=\"${local.log_resource_type}\""
+    db_request_duration    = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_request_duration.name}\" resource.type=\"${local.log_resource_type}\""
+    db_slow_queries        = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_slow_queries.name}\" resource.type=\"${local.log_resource_type}\""
+    db_slow_query_duration = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_slow_query_duration.name}\" resource.type=\"${local.log_resource_type}\""
+    db_pool_open           = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool["open"].name}\" resource.type=\"${local.log_resource_type}\""
+    db_pool_in_use         = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool["in_use"].name}\" resource.type=\"${local.log_resource_type}\""
+    db_pool_idle           = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool["idle"].name}\" resource.type=\"${local.log_resource_type}\""
+    db_pool_utilization    = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool_utilization.name}\" resource.type=\"${local.log_resource_type}\""
+    go_goroutines          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.go_goroutines.name}\" resource.type=\"${local.log_resource_type}\""
+    go_heap_inuse_bytes    = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.go_heap_inuse_bytes.name}\" resource.type=\"${local.log_resource_type}\""
+    go_gc_pause_ms         = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.go_gc_pause_ms.name}\" resource.type=\"${local.log_resource_type}\""
   }
 
   # Reusable aggregation shapes.
@@ -390,7 +390,7 @@ resource "google_monitoring_dashboard" "db_health" {
                 plotType   = "LINE"
                 targetAxis = "Y1"
               }]
-              yAxis = { scale = "LINEAR", label = "in_use / open" }
+              yAxis = { scale = "LINEAR", label = "in_use / max_open" }
             }
           }
         },
@@ -488,7 +488,7 @@ resource "google_monitoring_dashboard" "go_runtime" {
           width  = 6
           height = 4
           widget = {
-            title = "Heap in-use (worst instance) — watch vs Cloud Run memory limit"
+            title = local.self_hosted ? "Heap in-use (worst instance) — watch vs the container memory limit" : "Heap in-use (worst instance) — watch vs Cloud Run memory limit"
             xyChart = {
               dataSets = [{
                 timeSeriesQuery = {

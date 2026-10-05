@@ -788,6 +788,11 @@ enum CommunityEventType {
     // models.CommunityEventType so the direct numeric cast in events.go /
     // streaming.go stays meaningful.
     COMMUNITY_EVENT_TYPE_COMMUNITY_NAMED = 46;
+
+    // An item was handed directly to one person, by name, rather than reaching
+    // them through a community they were already in. Actor is the sharer; the
+    // person it was shared with is named by object_user.
+    COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER = 48;
 }
 
 // Request to list events for a community.

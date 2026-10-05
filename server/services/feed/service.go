@@ -141,7 +141,7 @@ func (s *Service) GetFeed(
 	// as the very last element.
 	var terminator *api.FeedItem
 	if req.Msg.PageToken == "" && s.stockImageryProvider != nil && len(activeCommunityIDs) > 0 {
-		feedItems = s.appendTerminator(ctx, authInfo.UserID, feedItems, logger)
+		feedItems = s.appendTerminator(ctx, feedItems, logger)
 		if len(feedItems) > 0 {
 			last := feedItems[len(feedItems)-1]
 			if last.ItemType == api.FeedItemType_FEED_ITEM_TYPE_NUDGE {

@@ -187,6 +187,19 @@ variable "waitlist_notify_email" {
   default     = ""
 }
 
+variable "branding" {
+  description = <<-EOT
+    The deployment's identity, as env vars entrypoint.sh maps to the server's
+    branding flags: LEGAL_ENTITY_NAME, SUPPORT_EMAIL, PRIVACY_POLICY_URL,
+    TERMS_URL, APP_STORE_URL, PLAY_STORE_URL, ANDROID_PACKAGE_ID,
+    BOT_USER_AGENT, and optionally BRAND_NAME and DEEP_LINK_SCHEME. No
+    defaults: a missing value renders nothing (no store badge, no legal
+    footer) rather than another deployment's.
+  EOT
+  type        = map(string)
+  default     = {}
+}
+
 variable "google_client_id" {
   description = "Google OAuth Web Client ID for OIDC authentication"
   type        = string
@@ -227,7 +240,7 @@ variable "request_timeout" {
 }
 
 variable "max_instance_request_concurrency" {
-  description = "Maximum concurrent requests per instance. Set high for Go servers with streaming RPCs where idle connections (goroutines) should not trigger autoscaling. Invariant: max_instances * DB_MAX_OPEN_CONNS must be < database max_connections."
+  description = "Maximum concurrent requests per instance. Set high for Go servers with streaming RPCs where idle connections (goroutines) should not trigger autoscaling. Invariant: max_instances * the server's DB pool limit (storage.maxOpenConns) must be < the database's max_connections."
   type        = number
   default     = 250
 }
@@ -285,4 +298,10 @@ variable "activity_digest_weekly_send_hour" {
   description = "Local hour (0-23) the weekly activity digest fires."
   type        = number
   default     = 8
+}
+
+variable "ingress" {
+  description = "Who can reach the service: INGRESS_TRAFFIC_ALL, or INGRESS_TRAFFIC_INTERNAL_ONLY to hold a service that has moved elsewhere without deleting it"
+  type        = string
+  default     = "INGRESS_TRAFFIC_ALL"
 }

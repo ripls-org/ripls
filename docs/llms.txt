@@ -60,7 +60,7 @@
 
 ## infra
 
-- [secrets.md](secrets.md): How secrets reach the server and the app — the Secret Manager fetch-at-startup design, the entrypoint/fetch-secret wrappers, dart-define for client builds, and the gitleaks detection stack that keeps credentials out of the repo. — lens: infra, security · globs: server/entrypoint.sh, scripts/fetch_secret.sh, scripts/run_server_with_sm_secrets.sh, .gitleaks.toml, .gitleaksignore, .github/workflows/gitleaks-pr.yaml, .github/workflows/gitleaks-push.yaml · triggers: secrets, api-keys, secret-manager, gitleaks, credentials, tokens, dart-define · skills: issue, audit, triage
+- [secrets.md](secrets.md): How secrets reach the server and the app — the Secret Manager fetch-at-startup design, the entrypoint/fetch-secret wrappers, dart-define for client builds, and the gitleaks detection stack that keeps credentials out of the repo. — lens: infra, security · globs: server/entrypoint.sh, server/cmd/fetch-secrets/**, docker-compose.yaml, scripts/fetch_secret.sh, scripts/run_server_with_sm_secrets.sh, .gitleaks.toml, .gitleaksignore, .github/workflows/gitleaks-pr.yaml, .github/workflows/gitleaks-push.yaml · triggers: secrets, api-keys, secret-manager, gitleaks, credentials, tokens, dart-define · skills: issue, audit, triage
 - [simulation.md](simulation.md): Simulation harness — a CLI that drives a dev-mode server with persona-driven, deterministic timelines of loans/giveaways/requests/experiences for demo seeding, load testing, and end-to-end workflow validation. — lens: server, testing · globs: server/simulation/**, server/cmd/simulate/** · triggers: simulation, simulate, load-test, persona, scenario, deterministic-timeline, dev-mode, simulation-clock · skills: issue, audit, triage
 
 ## testing

@@ -46,7 +46,13 @@ func unixSecToDayOfYear(unixSec int64) int {
 // Called asynchronously; failures leave the nudge invisible (no media_id).
 // Concurrency is bounded by nudgeImagerySem to prevent overlapping feed loads
 // from exhausting memory or external-API connections.
-func (s *Service) fetchNudgeImagery(ctx context.Context, userID, nudgeID, query string) {
+//
+// The copy is owned by media.SystemUserID, not by whoever's feed load triggered
+// it. Terminator nudges are global — the same card is served to everyone — so a
+// copy owned by one user is unreadable to every other viewer, who gets
+// PermissionDenied from GetMedia and a card with a broken image (#3105).
+// System-owned stock is public by design, which is what a shared card needs.
+func (s *Service) fetchNudgeImagery(ctx context.Context, nudgeID, query string) {
 	if s.stockImageryProvider == nil {
 		return
 	}
@@ -71,7 +77,7 @@ func (s *Service) fetchNudgeImagery(ctx context.Context, userID, nudgeID, query 
 		s.sqlStorage,
 		s.bucketStorage,
 		stockImage,
-		userID,
+		mediapkg.SystemUserID,
 		fmt.Sprintf("nudge-%s.jpg", nudgeID),
 		fmt.Sprintf("Stock image for nudge: %s", query),
 	)

@@ -35,8 +35,7 @@ resource "google_logging_metric" "rpc_requests" {
   description = "Count of Connect RPC requests by method and HTTP status, from the request-logging middleware"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="http request"
     jsonPayload.rpc_method!=""
   EOT
@@ -74,8 +73,7 @@ resource "google_logging_metric" "rpc_request_duration" {
   description = "Distribution of RPC request duration in milliseconds by method"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="http request"
     jsonPayload.rpc_method!=""
   EOT
@@ -119,8 +117,7 @@ resource "google_logging_metric" "db_request_duration" {
   description = "Distribution of total database time per request in milliseconds by RPC method"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="request db stats"
     jsonPayload.rpc_method!=""
   EOT
@@ -160,8 +157,7 @@ resource "google_logging_metric" "db_slow_queries" {
   description = "Count of SQL queries exceeding the slow-query threshold (100ms) by query kind"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="slow query"
   EOT
 
@@ -191,8 +187,7 @@ resource "google_logging_metric" "db_slow_query_duration" {
   description = "Distribution of slow-query (>=100ms) duration in milliseconds by query kind; censored below the slow-query log threshold"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="slow query"
   EOT
 
@@ -251,8 +246,7 @@ resource "google_logging_metric" "db_pool" {
   description = each.value
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="db pool stats"
   EOT
 
@@ -273,16 +267,17 @@ resource "google_logging_metric" "db_pool" {
   }
 }
 
-# Pool utilization (in_use / open), precomputed server-side so the saturation
-# alert is a single-metric threshold.
+# Pool utilization (in_use / max_open), precomputed server-side so the
+# saturation alert is a single-metric threshold. Against the pool's limit, not
+# the connections open right now: an idle server holds one open connection, and
+# one query against it is not a saturated pool.
 resource "google_logging_metric" "db_pool_utilization" {
   project     = var.project_id
   name        = "db_pool_utilization_${var.environment}"
-  description = "DB pool utilization (in_use / open, 0..1), precomputed by the server every 15s"
+  description = "DB pool utilization (in_use / max_open, 0..1), precomputed by the server every 15s"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="db pool stats"
   EOT
 
@@ -313,8 +308,7 @@ resource "google_logging_metric" "go_goroutines" {
   description = "Goroutine count (sampled); a sustained climb indicates a goroutine leak"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="go runtime stats"
   EOT
 
@@ -341,8 +335,7 @@ resource "google_logging_metric" "go_heap_inuse_bytes" {
   description = "Heap in-use bytes (sampled); watch against the Cloud Run memory limit"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="go runtime stats"
   EOT
 
@@ -369,8 +362,7 @@ resource "google_logging_metric" "go_gc_pause_ms" {
   description = "Mean GC pause in milliseconds between runtime-stats samples"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="go runtime stats"
   EOT
 
@@ -414,8 +406,7 @@ resource "google_logging_metric" "email_code_age" {
   description = "Distribution of seconds between issuing an email sign-in code and it being verified (delivery + human entry)"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="email code verified"
   EOT
 
@@ -451,8 +442,7 @@ resource "google_logging_metric" "email_code_failures" {
   description = "Count of failed email sign-in code verifications by reason"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="email code verification failed"
   EOT
 
@@ -483,8 +473,7 @@ resource "google_logging_metric" "email_signins_by_credential" {
   description = "Count of successful email sign-ins by credential (email_code vs the legacy email_password)"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="user logged in"
     (jsonPayload.login_method="email_code" OR jsonPayload.login_method="email_password")
   EOT
@@ -528,8 +517,7 @@ resource "google_logging_metric" "email_delivery_latency" {
   description = "Distribution of milliseconds between accepting an email for delivery and it being delivered, by email type"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="email delivered"
     jsonPayload.delivery_latency_ms>0
   EOT
@@ -583,8 +571,7 @@ resource "google_logging_metric" "email_deliveries" {
   description = "Count of delivered emails by email type, matching the population sampled by email_delivery_latency"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="email delivered"
     jsonPayload.delivery_latency_ms>0
   EOT
@@ -617,8 +604,7 @@ resource "google_logging_metric" "email_delivery_failures" {
   description = "Count of email delivery failures and spam complaints by email type and severity"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     (jsonPayload.message="email delivery failed" OR jsonPayload.message="email marked as spam by recipient")
   EOT
 
@@ -671,8 +657,7 @@ resource "google_logging_metric" "sms_delivery_outcomes" {
   description = "Count of terminal outbound SMS delivery outcomes by status and Twilio error code"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     (jsonPayload.message="sms delivered" OR jsonPayload.message="sms delivery failed")
   EOT
 

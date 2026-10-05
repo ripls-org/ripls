@@ -8,8 +8,8 @@ context:
   lens: [domain, client, server]
   domain: cross-cutting
 freshness:
-  verified_commit: "a31149bf3"
-  verified_on: "2026-08-09"
+  verified_commit: "02b90ef9b"
+  verified_on: "2026-09-21"
 ---
 # Real-Time Updates
 
@@ -184,6 +184,7 @@ Every `CommunityEventType` flows through streams and polls. Push notifications a
 - **Dispatches to invalidation providers** based on event type, with two levels of granularity:
   - **Listing-level events** (gear shared, request created, transfer state changes) fire broader providers including feed, search, and portfolio.
   - **Detail-level events** (offers, interest expressed) fire only the content provider, avoiding unnecessary feed and search reloads. RSVP and host roster changes additionally fire the portfolio provider so Home's "Up next" subtitle reflects the new going/maybe/invited state.
+  - **Recipient-scoped events** dispatch only for the member the event was addressed to, and nothing for anyone else on the same per-user stream. `ITEM_SHARED_WITH_USER` (#3106) is the first of these: the item's community only just gained the recipient as a member, so it fires the full listing-level set for them alone rather than the whole community.
 
 ### Community Event Stream Service
 

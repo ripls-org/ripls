@@ -99,6 +99,28 @@ test('parseWalkthrough: an unbalanced quote is left alone', () => {
   assert.equal(frontmatter.blurb, 'She said "yes"');
 });
 
+/*
+  These pages are public and linked from the home page's "walkthroughs gallery"
+  (#2895). They carried `robots: noindex` from when the gallery was internal;
+  losing the canonical or regaining the noindex would quietly de-list them.
+*/
+test('renderWalkthroughHtml: indexable and self-canonical to its slug', () => {
+  const html = renderWalkthroughHtml(parseWalkthrough(SAMPLE_MD), []);
+  assert.doesNotMatch(html, /noindex/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/ripls\.org\/walkthroughs\/brunch\/">/);
+});
+
+test('renderWalkthroughHtml: an explicit slug overrides the frontmatter', () => {
+  const html = renderWalkthroughHtml(parseWalkthrough(SAMPLE_MD), [], 'other-slug');
+  assert.match(html, /href="https:\/\/ripls\.org\/walkthroughs\/other-slug\/"/);
+});
+
+test('renderIndexHtml: indexable and self-canonical to the gallery', () => {
+  const html = renderIndexHtml([{ slug: 'brunch', title: 'Brunch', blurb: '' }]);
+  assert.doesNotMatch(html, /noindex/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/ripls\.org\/walkthroughs\/">/);
+});
+
 test('renderIndexHtml: sorted entries with slug links', () => {
   const html = renderIndexHtml([
     { slug: 'zebra', title: 'Zebra reel', blurb: '' },

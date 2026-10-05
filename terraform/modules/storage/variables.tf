@@ -110,3 +110,9 @@ variable "media_cors_origins" {
   type        = list(string)
   default     = ["*"]
 }
+
+variable "activation_policy" {
+  description = "ALWAYS to run the database instance, or NEVER to stop it (storage is kept and billed; compute is not)"
+  type        = string
+  default     = "ALWAYS"
+}

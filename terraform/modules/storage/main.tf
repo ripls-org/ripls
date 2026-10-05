@@ -54,7 +54,8 @@ resource "google_sql_database_instance" "gear_db" {
   depends_on = [google_service_networking_connection.private_vpc_connection]
 
   settings {
-    tier = var.tier
+    tier              = var.tier
+    activation_policy = var.activation_policy
 
     # Instance deletion protection (Cloud SQL API setting)
     deletion_protection_enabled = var.deletion_protection

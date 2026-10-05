@@ -27,15 +27,19 @@ func attrsToMap(t *testing.T, attrs []any) map[string]any {
 
 func TestPoolStatsAttrs(t *testing.T) {
 	attrs := attrsToMap(t, PoolStatsAttrs(sql.DBStats{
-		OpenConnections: 10,
-		InUse:           9,
-		Idle:            1,
-		WaitCount:       42,
-		WaitDuration:    1500 * time.Millisecond,
+		MaxOpenConnections: 10,
+		OpenConnections:    10,
+		InUse:              9,
+		Idle:               1,
+		WaitCount:          42,
+		WaitDuration:       1500 * time.Millisecond,
 	}))
 
 	if got := attrs["db_pool_open"]; got != 10 {
 		t.Errorf("db_pool_open = %v, want 10", got)
+	}
+	if got := attrs["db_pool_max_open"]; got != 10 {
+		t.Errorf("db_pool_max_open = %v, want 10", got)
 	}
 	if got := attrs["db_pool_in_use"]; got != 9 {
 		t.Errorf("db_pool_in_use = %v, want 9", got)
@@ -54,10 +58,35 @@ func TestPoolStatsAttrs(t *testing.T) {
 	}
 }
 
-func TestPoolStatsAttrs_ZeroOpenConnections(t *testing.T) {
-	attrs := attrsToMap(t, PoolStatsAttrs(sql.DBStats{}))
+func TestPoolStatsAttrs_UnlimitedPool(t *testing.T) {
+	attrs := attrsToMap(t, PoolStatsAttrs(sql.DBStats{OpenConnections: 3, InUse: 3}))
 	if got := attrs["db_pool_utilization"]; got != 0.0 {
-		t.Errorf("db_pool_utilization = %v, want 0 when no connections are open", got)
+		t.Errorf("db_pool_utilization = %v, want 0 for an unlimited pool", got)
+	}
+}
+
+// The shape that fired the saturation alert on an idle server: the pool's one
+// open connection busy, nine of its ten still available.
+func TestPoolStatsAttrs_BusyLoneConnectionIsNotSaturated(t *testing.T) {
+	attrs := attrsToMap(t, PoolStatsAttrs(sql.DBStats{
+		MaxOpenConnections: 10,
+		OpenConnections:    1,
+		InUse:              1,
+	}))
+	if got := attrs["db_pool_utilization"]; got != 0.1 {
+		t.Errorf("db_pool_utilization = %v, want 0.1 (1 of 10), not 1.0 (1 of 1)", got)
+	}
+}
+
+func TestPoolStatsAttrs_Saturated(t *testing.T) {
+	attrs := attrsToMap(t, PoolStatsAttrs(sql.DBStats{
+		MaxOpenConnections: 10,
+		OpenConnections:    10,
+		InUse:              10,
+		WaitCount:          7,
+	}))
+	if got := attrs["db_pool_utilization"]; got != 1.0 {
+		t.Errorf("db_pool_utilization = %v, want 1.0 when every connection is in use", got)
 	}
 }
 

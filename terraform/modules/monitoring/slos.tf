@@ -40,8 +40,8 @@ resource "google_monitoring_slo" "availability" {
 
   request_based_sli {
     good_total_ratio {
-      bad_service_filter   = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_requests.name}\" resource.type=\"cloud_run_revision\" metric.label.status=monitoring.regex.full_match(\"5..\")"
-      total_service_filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_requests.name}\" resource.type=\"cloud_run_revision\""
+      bad_service_filter   = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_requests.name}\" resource.type=\"${local.log_resource_type}\" metric.label.status=monitoring.regex.full_match(\"5..\")"
+      total_service_filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_requests.name}\" resource.type=\"${local.log_resource_type}\""
     }
   }
 }
@@ -61,7 +61,7 @@ resource "google_monitoring_slo" "latency" {
 
   request_based_sli {
     distribution_cut {
-      distribution_filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_request_duration.name}\" resource.type=\"cloud_run_revision\" NOT metric.label.rpc_method=monitoring.regex.full_match(\".*/Stream.*\") NOT metric.label.rpc_method=monitoring.regex.full_match(\"${var.rpc_p95_slow_class_regex}\")"
+      distribution_filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_request_duration.name}\" resource.type=\"${local.log_resource_type}\" NOT metric.label.rpc_method=monitoring.regex.full_match(\".*/Stream.*\") NOT metric.label.rpc_method=monitoring.regex.full_match(\"${var.rpc_p95_slow_class_regex}\")"
 
       range {
         max = var.rpc_p95_latency_threshold_ms

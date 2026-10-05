@@ -15,16 +15,11 @@ package integration_tests
 // connectrpc/connect-dart uses on iOS/Android.
 
 import (
-	"context"
-	"crypto/tls"
 	"io"
-	"net"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
-
-	"golang.org/x/net/http2"
 
 	"go.ripls.org/ripls/server/middleware"
 	"go.ripls.org/ripls/server/storage"
@@ -34,15 +29,14 @@ import (
 // cleartext. It uses a single underlying transport so successive requests
 // share a TCP connection (which is what triggered the shared-context bug).
 func h2cClient() *http.Client {
+	// Omitting HTTP1 forces unencrypted HTTP/2 (prior-knowledge, no upgrade
+	// dance) for http:// requests, matching net/http.Server's h2c support
+	// on the server side (see server/main.go).
+	protocols := new(http.Protocols)
+	protocols.SetUnencryptedHTTP2(true)
 	return &http.Client{
-		Transport: &http2.Transport{
-			AllowHTTP: true,
-			// DialTLSContext is invoked even for plain http:// when AllowHTTP is set;
-			// we ignore the TLS config and dial cleartext TCP.
-			DialTLSContext: func(ctx context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
-				var d net.Dialer
-				return d.DialContext(ctx, network, addr)
-			},
+		Transport: &http.Transport{
+			Protocols: protocols,
 		},
 	}
 }

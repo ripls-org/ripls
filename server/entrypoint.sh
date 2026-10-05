@@ -1,238 +1,123 @@
 #!/bin/sh
 # entrypoint.sh — Container startup wrapper for the Ripls server.
 #
-# Fetches credentials from Google Cloud Secret Manager using the Cloud Run
-# runtime service account's identity (via the GCE metadata server) and
-# execs the server with the values as plain --flag arguments. This keeps
-# the server binary hermetic: it never speaks to Secret Manager, and any
-# operator can supply the same flags by any means (k8s secret mount,
-# systemd EnvironmentFile, local shell wrapper, …).
+# Collects the server's credentials into a private directory, one file per
+# credential, and execs the server with a -<name>-file flag for each. This
+# keeps the server binary hermetic: it never talks to a secret store, and any
+# operator can supply the same files by any means (see docs/secrets.md).
 #
-# Fail-fast: any HTTP failure on metadata-server token issuance or on a
-# secret fetch causes `set -e` to abort and the container to crash. No
-# retries — if SM is unreachable the right move is for Cloud Run to mark
-# the revision unhealthy and roll back.
+# Credentials come from one of two places:
 #
-# Cloud Run / GKE auth: the metadata server provides a short-lived OAuth
-# access token bound to the runtime SA. That SA must have
-# roles/secretmanager.secretAccessor on each named secret in $GOOGLE_CLOUD_PROJECT
-# (see terraform/environments/{dev,prod}/main.tf).
+#   Secret Manager (default). /app/fetch-secrets reads each secret in
+#   $GOOGLE_CLOUD_PROJECT with Application Default Credentials: the metadata
+#   server on Cloud Run, or a service-account key named by
+#   $GOOGLE_APPLICATION_CREDENTIALS on any other host.
 #
-# Local dev does NOT use this script — see scripts/run_server_with_sm_secrets.sh.
+#   A directory ($SECRETS_FROM_DIR). Each regular file in it is one credential,
+#   named after its flag — a file called jwt-signing-secret becomes
+#   -jwt-signing-secret-file. Nothing is fetched and no cloud account is needed;
+#   a credential with no file leaves its feature unconfigured.
+#
+# Fail-fast: any failure aborts under `set -e`, with no retries. On Cloud Run
+# the revision is marked unhealthy and rolled back; under Docker the restart
+# policy tries again.
+#
+# Arguments given to the container (docker `command:`, Cloud Run `args`) are
+# passed to the server after everything derived here, so they win: Go's flag
+# package keeps the last value of a repeated flag.
 
 set -eu
 
-if [ -z "${GOOGLE_CLOUD_PROJECT:-}" ]; then
-  cat >&2 <<EOF
-entrypoint: GOOGLE_CLOUD_PROJECT must be set.
-
-This is set by Terraform on every Cloud Run revision
-(terraform/modules/containers/main.tf). If you are running this image
-outside of Cloud Run / GKE you must either set GOOGLE_CLOUD_PROJECT
-yourself OR use scripts/run_server_with_sm_secrets.sh on the host
-instead (it fetches via gcloud ADC and execs the server binary with
-the same flags).
-EOF
-  exit 1
-fi
-
-META="http://metadata.google.internal/computeMetadata/v1"
-
-# Probe the metadata server. The metadata service is only reachable from
-# inside Google's compute fabric (Cloud Run, GKE, GCE) and is the source
-# of the runtime service account's OAuth token. A failed probe almost
-# always means we are running outside Cloud Run.
-if ! curl -sf --max-time 3 -o /dev/null -H "Metadata-Flavor: Google" "$META/instance/id"; then
-  cat >&2 <<EOF
-entrypoint: cannot reach the GCE metadata server at $META.
-
-This script is designed to run inside Google Cloud Run (or another
-GCE-hosted environment) where the metadata server is reachable and
-serves short-lived OAuth tokens for the runtime service account.
-
-Likely causes:
-  1. You are running the image outside of Cloud Run (e.g. \`docker run\`
-     on your laptop, or in another cloud). For local dev, use
-     scripts/run_server_with_sm_secrets.sh instead — it fetches the
-     same Secret Manager values via your gcloud ADC and execs the
-     server binary with the same flags.
-  2. Egress from the container to 169.254.169.254 is blocked by a VPC
-     egress rule (rare for Cloud Run; possible for GKE with private
-     networking misconfigured).
-  3. DNS resolution for metadata.google.internal is broken (very rare
-     inside Cloud Run).
-EOF
-  exit 1
-fi
-
-# Now fetch the actual access token. A failure here is unusual — it
-# means the metadata server is reachable but the runtime SA can't be
-# resolved or is missing.
-TOKEN_RESPONSE=$(
-  curl -sf -H "Metadata-Flavor: Google" \
-    "$META/instance/service-accounts/default/token"
-) || {
-  cat >&2 <<EOF
-entrypoint: metadata server is reachable but the access-token endpoint
-failed at $META/instance/service-accounts/default/token.
-
-Likely causes:
-  1. The Cloud Run service has no runtime service account configured
-     (very rare — Cloud Run falls back to the project's default Compute
-     SA when none is set in Terraform).
-  2. The runtime SA was deleted or disabled.
-  3. The metadata server is rate-limiting us (extremely rare).
-
-Inspect the service spec:
-  gcloud run services describe \$SERVICE_NAME --project=\$GOOGLE_CLOUD_PROJECT \\
-    --format='value(spec.template.spec.serviceAccountName)'
-EOF
-  exit 1
-}
-
-TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r .access_token)
-if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
-  echo "entrypoint: metadata server returned a response but no access_token field" >&2
-  echo "entrypoint: raw response (first 200 chars): $(echo "$TOKEN_RESPONSE" | head -c 200)" >&2
-  exit 1
-fi
-
-# Secret tmpfs. /tmp is an in-memory tmpfs in Cloud Run by contract; the
-# 0700 dir + 0400 files keep the secrets readable only by the runtime user.
-# umask 077 guarantees the file creates restrictively before chmod.
+# Rebuilt on every start. Cloud Run gives each instance a fresh /tmp, but a
+# restarted Docker container keeps its filesystem, and the 0400 files left by
+# the previous start could not be rewritten in place. On Cloud Run /tmp is an
+# in-memory tmpfs; elsewhere, mount a tmpfs at /tmp to keep these off disk.
 SECRETS_DIR=/tmp/secrets
-mkdir -p "$SECRETS_DIR"
-chmod 0700 "$SECRETS_DIR"
+rm -rf "$SECRETS_DIR"
 umask 077
+mkdir -m 0700 "$SECRETS_DIR"
 
-# fetch_secret_to_file <secret-name> <out-path> writes the decoded secret
-# bytes directly to <out-path> at mode 0400. The value never lives in a
-# shell variable in this script, so it never reaches the parent process's
-# environment or `argv`.
-#
-# Returns non-zero on any fetch/decode failure; under `set -e` that aborts
-# the script and the container exits unhealthy — Cloud Run rolls back.
-fetch_secret_to_file() {
-  fetch_secret_to_file_impl required "$1" "$2"
-}
-
-# fetch_secret_to_file_optional behaves like fetch_secret_to_file but
-# writes an empty file (not an error) when the secret doesn't exist or
-# the runtime SA can't access it. Use for credentials whose absence is
-# tolerated by the server — the cfg field stays empty, and the
-# corresponding feature is disabled.
-fetch_secret_to_file_optional() {
-  fetch_secret_to_file_impl optional "$1" "$2"
-}
-
-fetch_secret_to_file_impl() {
-  REQUIRED="$1"
-  SECRET_NAME="$2"
-  OUT_PATH="$3"
-  RESPONSE=$(
-    curl -sf -H "Authorization: Bearer $TOKEN" \
-      "https://secretmanager.googleapis.com/v1/projects/$GOOGLE_CLOUD_PROJECT/secrets/$SECRET_NAME/versions/latest:access"
-  ) || {
-    if [ "$REQUIRED" = "optional" ]; then
-      : > "$OUT_PATH"
-      chmod 0400 "$OUT_PATH"
-      echo "entrypoint: optional secret '$SECRET_NAME' not available; feature disabled" >&2
-      return 0
-    fi
-    cat >&2 <<EOF
-entrypoint: failed to fetch secret '$SECRET_NAME' from project
-'$GOOGLE_CLOUD_PROJECT' via Secret Manager.
-
-Likely causes:
-  1. The runtime SA does not have roles/secretmanager.secretAccessor
-     on this specific secret. The for_each grant in
-     terraform/environments/\$ENV/main.tf must include '$SECRET_NAME'
-     in local.server_runtime_secrets — verify with:
-       gcloud secrets get-iam-policy $SECRET_NAME \\
-         --project=$GOOGLE_CLOUD_PROJECT
-  2. The secret does not exist in $GOOGLE_CLOUD_PROJECT — verify with:
-       gcloud secrets describe $SECRET_NAME --project=$GOOGLE_CLOUD_PROJECT
-  3. The secret exists but has no enabled versions — verify with:
-       gcloud secrets versions list $SECRET_NAME --project=$GOOGLE_CLOUD_PROJECT
-EOF
-    return 1
-  }
-  # Decode, then strip trailing whitespace before writing. Secret Manager
-  # uploads frequently include an unintended trailing newline (or CRLF / stray
-  # spaces) that silently corrupts exact-match credentials. The strip runs as a
-  # pipe stage so the decoded value never lands in a shell variable. perl's
-  # -0 slurps the whole payload as one record; s/\s+\z// removes only the
-  # trailing whitespace run, so embedded newlines (multi-line PEM payloads) and
-  # leading whitespace survive. Mirrors server/secretsflag.Resolve on the read
-  # side. perl-base is a Debian Essential package (see Dockerfile).
-  echo "$RESPONSE" | jq -r .payload.data | base64 -d | perl -0pe 's/\s+\z//' > "$OUT_PATH"
-  chmod 0400 "$OUT_PATH"
-  if [ ! -s "$OUT_PATH" ]; then
-    if [ "$REQUIRED" = "optional" ]; then
-      echo "entrypoint: optional secret '$SECRET_NAME' decoded to empty; feature disabled" >&2
-      return 0
-    fi
-    echo "entrypoint: secret '$SECRET_NAME' decoded to an empty value (unexpected — check SM payload)." >&2
-    return 1
+if [ -n "${SECRETS_FROM_DIR:-}" ]; then
+  if [ ! -d "$SECRETS_FROM_DIR" ]; then
+    echo "entrypoint: SECRETS_FROM_DIR=$SECRETS_FROM_DIR is not a directory" >&2
+    exit 1
   fi
-}
-
-fetch_secret_to_file openai-api-key                  "$SECRETS_DIR/openai-api-key"
-fetch_secret_to_file anthropic-api-key               "$SECRETS_DIR/anthropic-api-key"
-fetch_secret_to_file mailgun-api-key                 "$SECRETS_DIR/mailgun-api-key"
-# Optional: verifies delivery-event webhooks (#2862). Absent secret → empty
-# file → the server logs a startup warning and /email/status rejects every
-# webhook, which loses delivery metrics but breaks nothing else. Optional so a
-# deploy that lands before the secret exists still boots.
-fetch_secret_to_file_optional mailgun-webhook-signing-key "$SECRETS_DIR/mailgun-webhook-signing-key"
-fetch_secret_to_file unsplash-access-key             "$SECRETS_DIR/unsplash-access-key"
-fetch_secret_to_file pexels-api-key                  "$SECRETS_DIR/pexels-api-key"
-fetch_secret_to_file pixabay-api-key                 "$SECRETS_DIR/pixabay-api-key"
-fetch_secret_to_file mapbox-access-token             "$SECRETS_DIR/mapbox-access-token"
-# google-maps-api-key-server is optional until Phase 3 ships
-# server/location/google.go (#2188). Absent secret → empty value → cfg
-# sees empty string → Google client is not constructed. Matches the
-# nil-handling pattern that mapbox-access-token follows on the dev path.
-fetch_secret_to_file_optional google-maps-api-key-server "$SECRETS_DIR/google-maps-api-key-server"
-# Twilio platform SMS (#2492). Optional: absent secrets → empty values → the
-# SMS channel is never constructed and inbound webhook signatures are not
-# verified. Create the secrets and uncomment the Terraform grant to enable.
-fetch_secret_to_file_optional twilio-account-sid           "$SECRETS_DIR/twilio-account-sid"
-fetch_secret_to_file_optional twilio-auth-token            "$SECRETS_DIR/twilio-auth-token"
-fetch_secret_to_file_optional twilio-messaging-service-sid "$SECRETS_DIR/twilio-messaging-service-sid"
-fetch_secret_to_file jwt-signing-secret              "$SECRETS_DIR/jwt-signing-secret"
-fetch_secret_to_file github-app-private-key-base64   "$SECRETS_DIR/github-app-private-key"
-# feedback-signer-key is optional: a GCP service-account JSON key used to sign
-# durable feedback-screenshot URLs (#2549). Absent ⇒ empty file ⇒ server leaves
-# the signer unset and feedback URLs fall back to short-lived signBlob signing.
-fetch_secret_to_file_optional feedback-signer-key    "$SECRETS_DIR/feedback-signer-key"
-
-# Serialize the DB password (provided as a Cloud Run secret env var) to a
-# tmpfs file so it can be passed via -db-password-file instead of being
-# embedded in the -db URL on the command line. The env var stays set —
-# /proc/<pid>/environ is a separate surface tracked outside #1885.
-if [ -n "${DB_PASSWORD:-}" ]; then
-  # Strip trailing whitespace for the same reason as the SM fetches above —
-  # the backing secret may carry an unintended trailing newline.
-  printf '%s' "$DB_PASSWORD" | perl -0pe 's/\s+\z//' > "$SECRETS_DIR/db-password"
-  chmod 0400 "$SECRETS_DIR/db-password"
+  # Dotfiles are skipped by the glob, which also skips the ..data bookkeeping
+  # of a Kubernetes secret mount; cp follows its symlinks to the real files.
+  for f in "$SECRETS_FROM_DIR"/*; do
+    [ -f "$f" ] || continue
+    cp "$f" "$SECRETS_DIR/$(basename "$f")"
+  done
+else
+  if [ -z "${GOOGLE_CLOUD_PROJECT:-}" ]; then
+    cat >&2 <<EOF
+entrypoint: no credential source configured. Set either
+  GOOGLE_CLOUD_PROJECT  to fetch credentials from Secret Manager in that project
+                        (with GOOGLE_APPLICATION_CREDENTIALS outside Google Cloud), or
+  SECRETS_FROM_DIR      to read them from a directory of files named after their
+                        flags, e.g. jwt-signing-secret.
+See docs/secrets.md.
+EOF
+    exit 1
+  fi
+  # Optional secrets degrade instead of failing startup; absent, each leaves
+  # one feature unwired:
+  #   mailgun-webhook-signing-key  /email/status rejects every delivery webhook,
+  #                                losing delivery metrics (#2862)
+  #   google-maps-api-key-server   the Google Maps client is not constructed
+  #   twilio-*                     the SMS channel is never constructed (#2492)
+  #   feedback-signer-key          feedback screenshot URLs fall back to
+  #                                short-lived signing (#2549)
+  /app/fetch-secrets -project "$GOOGLE_CLOUD_PROJECT" -dir "$SECRETS_DIR" \
+    -optional mailgun-webhook-signing-key \
+    -optional google-maps-api-key-server \
+    -optional twilio-account-sid \
+    -optional twilio-auth-token \
+    -optional twilio-messaging-service-sid \
+    -optional feedback-signer-key \
+    openai-api-key \
+    anthropic-api-key \
+    mailgun-api-key \
+    unsplash-access-key \
+    pexels-api-key \
+    pixabay-api-key \
+    mapbox-access-token \
+    jwt-signing-secret \
+    github-app-private-key=github-app-private-key-base64
 fi
 
-# Build the non-credential flag list in positional parameters (set --). We
-# can't store them as a single string and splat with $FLAGS because env-var
-# values may contain spaces (e.g. MAILGUN_FROM_ADDRESS="Ripls <noreply@...>").
-# Word-splitting a quoted-looking string at exec time would break the value
-# into two argv tokens; the second token wouldn't start with "-", which
-# terminates Go's flag.Parse() and silently drops every flag after it
-# (including the credential flags).
-set -- -notification-provider=fcm \
-       -embedding-model-path=/app/models/ripls_embedding.onnx \
-       -embedding-vocab-path=/app/models/vocab.txt
+# The database password may arrive as an environment variable (Cloud Run's
+# secret_key_ref, a compose env_file); it takes precedence over a db-password
+# file. It is written to the directory and dropped from the environment, so it
+# reaches the server as a file and not through /proc/<pid>/environ.
+if [ -n "${DB_PASSWORD:-}" ]; then
+  printf '%s' "$DB_PASSWORD" > "$SECRETS_DIR/db-password"
+fi
+unset DB_PASSWORD
+
+: "${DB_HOST:?entrypoint: DB_HOST must be set}"
+: "${DB_USER:?entrypoint: DB_USER must be set}"
+: "${DB_NAME:?entrypoint: DB_NAME must be set}"
+
+# The container's own arguments are at the front of "$@". Everything below is
+# appended after them, and the loop at the end moves them back to the end. The
+# list is built in positional parameters rather than a string because values
+# may contain spaces (MAILGUN_FROM_ADDRESS="Ripls <noreply@...>"); splitting
+# one into two tokens would end Go's flag parsing and drop every later flag.
+container_args=$#
+
+set -- "$@" \
+  "-db=postgres://$DB_USER@$DB_HOST:${DB_PORT:-5432}/$DB_NAME?sslmode=${DB_SSLMODE:-require}" \
+  "-port=${PORT:-8080}" \
+  "-notification-provider=${NOTIFICATION_PROVIDER:-fcm}" \
+  -embedding-model-path=/app/models/ripls_embedding.onnx \
+  -embedding-vocab-path=/app/models/vocab.txt
 
 [ "${ENABLE_DEV_MODE:-}" = "true" ]      && set -- "$@" -dev-mode
 [ -n "${GOOGLE_CLOUD_PROJECT:-}" ]       && set -- "$@" "-vertex-ai-project=$GOOGLE_CLOUD_PROJECT"
 [ -n "${GOOGLE_CLOUD_LOCATION:-}" ]      && set -- "$@" "-vertex-ai-location=$GOOGLE_CLOUD_LOCATION"
 [ -n "${GCS_MEDIA_BUCKET:-}" ]           && set -- "$@" "-gcs-bucket=$GCS_MEDIA_BUCKET"
+[ -n "${LOCAL_MEDIA_STORAGE:-}" ]        && set -- "$@" "-local-media-storage=$LOCAL_MEDIA_STORAGE"
 [ -n "${GITHUB_APP_ID:-}" ]              && set -- "$@" "-github-app-id=$GITHUB_APP_ID"
 [ -n "${GITHUB_INSTALLATION_ID:-}" ]     && set -- "$@" "-github-installation-id=$GITHUB_INSTALLATION_ID"
 # Repo the feedback bot files issues against. Required alongside the App
@@ -248,10 +133,25 @@ set -- -notification-provider=fcm \
 [ -n "${MAP_PROVIDER:-}" ]               && set -- "$@" "-map-provider=$MAP_PROVIDER"
 
 # Mailgun routing config (domain + from) stays in env vars — they are not
-# secrets. Only the API key comes from Secret Manager.
+# secrets. Only the API key is a credential.
 [ -n "${MAILGUN_DOMAIN:-}" ]             && set -- "$@" "-mailgun-domain=$MAILGUN_DOMAIN"
 [ -n "${MAILGUN_FROM_ADDRESS:-}" ]       && set -- "$@" "-mailgun-from=$MAILGUN_FROM_ADDRESS"
 [ -n "${MAILGUN_POSTAL_ADDRESS:-}" ]     && set -- "$@" "-mailgun-postal-address=$MAILGUN_POSTAL_ADDRESS"
+
+# Branding (server/branding). The deployment's identity (legal entity, support
+# address, policy and store URLs, Android package) defaults to empty, and
+# consumers then render nothing: no store badge, no legal footer. Unset here
+# means the flag's default.
+[ -n "${BRAND_NAME:-}" ]                 && set -- "$@" "-brand-name=$BRAND_NAME"
+[ -n "${LEGAL_ENTITY_NAME:-}" ]          && set -- "$@" "-legal-entity-name=$LEGAL_ENTITY_NAME"
+[ -n "${SUPPORT_EMAIL:-}" ]              && set -- "$@" "-support-email=$SUPPORT_EMAIL"
+[ -n "${PRIVACY_POLICY_URL:-}" ]         && set -- "$@" "-privacy-policy-url=$PRIVACY_POLICY_URL"
+[ -n "${TERMS_URL:-}" ]                  && set -- "$@" "-terms-url=$TERMS_URL"
+[ -n "${APP_STORE_URL:-}" ]              && set -- "$@" "-app-store-url=$APP_STORE_URL"
+[ -n "${PLAY_STORE_URL:-}" ]             && set -- "$@" "-play-store-url=$PLAY_STORE_URL"
+[ -n "${ANDROID_PACKAGE_ID:-}" ]         && set -- "$@" "-android-package-id=$ANDROID_PACKAGE_ID"
+[ -n "${DEEP_LINK_SCHEME:-}" ]           && set -- "$@" "-deep-link-scheme=$DEEP_LINK_SCHEME"
+[ -n "${BOT_USER_AGENT:-}" ]             && set -- "$@" "-bot-user-agent=$BOT_USER_AGENT"
 
 # Off-app email channel (#2492) is gated by an env flag like the digest
 # toggles. Stays false until the CAN-SPAM postal address + deliverability are
@@ -273,23 +173,27 @@ set -- -notification-provider=fcm \
 [ -n "${ACTIVITY_DIGEST_WEEKLY_WEEKDAY:-}" ]        && set -- "$@" "-activity-digest-weekly-weekday=$ACTIVITY_DIGEST_WEEKLY_WEEKDAY"
 [ -n "${ACTIVITY_DIGEST_WEEKLY_SEND_HOUR:-}" ]      && set -- "$@" "-activity-digest-weekly-send-hour=$ACTIVITY_DIGEST_WEEKLY_SEND_HOUR"
 
-exec ./server \
-  "-db=postgres://$DB_USER@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=require" \
-  "-db-password-file=$SECRETS_DIR/db-password" \
-  "-port=$PORT" \
-  "$@" \
-  "-openai-api-key-file=$SECRETS_DIR/openai-api-key" \
-  "-anthropic-api-key-file=$SECRETS_DIR/anthropic-api-key" \
-  "-mailgun-api-key-file=$SECRETS_DIR/mailgun-api-key" \
-  "-mailgun-webhook-signing-key-file=$SECRETS_DIR/mailgun-webhook-signing-key" \
-  "-unsplash-access-key-file=$SECRETS_DIR/unsplash-access-key" \
-  "-pexels-api-key-file=$SECRETS_DIR/pexels-api-key" \
-  "-pixabay-api-key-file=$SECRETS_DIR/pixabay-api-key" \
-  "-mapbox-access-token-file=$SECRETS_DIR/mapbox-access-token" \
-  "-google-maps-api-key-server-file=$SECRETS_DIR/google-maps-api-key-server" \
-  "-jwt-signing-secret-file=$SECRETS_DIR/jwt-signing-secret" \
-  "-github-app-private-key-file=$SECRETS_DIR/github-app-private-key" \
-  "-twilio-account-sid-file=$SECRETS_DIR/twilio-account-sid" \
-  "-twilio-auth-token-file=$SECRETS_DIR/twilio-auth-token" \
-  "-twilio-messaging-service-sid-file=$SECRETS_DIR/twilio-messaging-service-sid" \
-  "-feedback-signer-key-file=$SECRETS_DIR/feedback-signer-key"
+# One -<name>-file flag per credential file. A name that is not a flag stem is
+# refused here rather than left for the server's "flag provided but not
+# defined", which would not say where the stray file came from.
+for f in "$SECRETS_DIR"/*; do
+  [ -f "$f" ] || continue
+  name=$(basename "$f")
+  case "$name" in
+    -*|*[!a-z0-9-]*)
+      echo "entrypoint: $name is not a credential name (lowercase letters, digits and dashes, named after its flag)" >&2
+      exit 1
+      ;;
+  esac
+  chmod 0400 "$f"
+  set -- "$@" "-$name-file=$f"
+done
+
+# Move the container's own arguments from the front to the end.
+while [ "$container_args" -gt 0 ]; do
+  set -- "$@" "$1"
+  shift
+  container_args=$((container_args - 1))
+done
+
+exec ./server "$@"

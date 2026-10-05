@@ -15,15 +15,15 @@
     "env:status": "tsx scripts/investigate_env.ts status"
   },
   "devDependencies": {
-    "@playwright/test": "1.62.1",
-    "@bufbuild/protobuf": "2.14.1",
-    "@connectrpc/connect": "2.1.2",
-    "@connectrpc/connect-web": "2.1.2",
-    "@connectrpc/connect-node": "2.1.2",
-    "firebase-tools": "15.29.0",
-    "tsx": "4.23.12",
+    "@playwright/test": "1.63.0",
+    "@bufbuild/protobuf": "2.15.0",
+    "@connectrpc/connect": "2.2.0",
+    "@connectrpc/connect-web": "2.2.0",
+    "@connectrpc/connect-node": "2.2.0",
+    "firebase-tools": "15.30.2",
+    "tsx": "4.23.15",
     "typescript": "6.0.3",
-    "@types/node": "22.20.1"
+    "@types/node": "22.20.4"
   },
   "engines": {
     "node": ">=22"

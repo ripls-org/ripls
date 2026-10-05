@@ -126,7 +126,7 @@ func Parse() (*Config, error) {
 	localMediaStorage := flag.String("local-media-storage", "", "Local filesystem path for media bucket storage (development mode - mutually exclusive with --gcs-bucket)")
 	gcsBucket := flag.String("gcs-bucket", "", "GCS bucket name for media storage (production mode, mutually exclusive with --local-media-storage)")
 	notificationProvider := flag.String("notification-provider", "test", "Notification provider to use: 'fcm' or 'test' (default: test)")
-	firebaseProject := flag.String("firebase-project", "", "Firebase / GCP project ID for FCM and phone auth (required locally; in Cloud Run the metadata server provides it)")
+	firebaseProject := flag.String("firebase-project", "", "Firebase / GCP project ID for FCM and phone auth (required locally under user ADC; when GOOGLE_APPLICATION_CREDENTIALS points at a service-account key, the SDK reads project_id from the key instead)")
 	mailgunAPIKey := flag.String("mailgun-api-key", "", "Mailgun API key for sending emails (if empty, email service is disabled)")
 	mailgunAPIKeyFile := flag.String("mailgun-api-key-file", "", "Path to a file containing the Mailgun API key (mutually exclusive with -mailgun-api-key)")
 	mailgunWebhookSigningKey := flag.String("mailgun-webhook-signing-key", "", "Mailgun webhook signing key (distinct from the API key) used to verify delivery-event webhooks on POST /email/status. Empty rejects every webhook, so delivery metrics go dark rather than accepting unsigned payloads.")

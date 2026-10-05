@@ -24,7 +24,6 @@ import (
 // more to see.
 func (s *Service) appendTerminator(
 	ctx context.Context,
-	userID string,
 	contentItems []*api.FeedItem,
 	logger *logging.Logger,
 ) []*api.FeedItem {
@@ -32,7 +31,7 @@ func (s *Service) appendTerminator(
 	result = append(result, contentItems...)
 
 	// Append terminator.
-	terminator := s.buildTerminator(ctx, userID, logger)
+	terminator := s.buildTerminator(ctx, logger)
 	if terminator != nil {
 		result = append(result, terminator)
 	}
@@ -117,10 +116,10 @@ func (s *Service) InboxNudge(ctx context.Context, userID string, communityIDs []
 // images are served to everyone. On each call, one is chosen at random from
 // today's global pool, preferring records that already have imagery.
 //
-// The triggering user's ID is used only for media ownership when fetching stock
-// imagery for the first time; the terminator records themselves are stored under
-// the globalTerminatorUserID sentinel.
-func (s *Service) buildTerminator(ctx context.Context, userID string, logger *logging.Logger) *api.FeedItem {
+// The terminator records are stored under the GlobalTerminatorUserID sentinel,
+// and their imagery is owned by media.SystemUserID so every viewer can read it
+// (#3105).
+func (s *Service) buildTerminator(ctx context.Context, logger *logging.Logger) *api.FeedItem {
 	today := time.Now().UTC().YearDay()
 
 	// Soft-delete global terminators from previous days.
@@ -143,12 +142,11 @@ func (s *Service) buildTerminator(ctx context.Context, userID string, logger *lo
 	}
 
 	// Fill up to TerminatorsPerDay. Each slot uses a distinct pool entry.
-	// The triggering user's ID is used for media ownership only.
 	for slot := len(existing); slot < TerminatorsPerDay; slot++ {
 		entry := GetTerminatorForSlot(today, slot)
 		nudge := &models.StoredNudge{
 			Id:               uuid.NewString(),
-			UserId:           globalTerminatorUserID,
+			UserId:           GlobalTerminatorUserID,
 			NudgeVariant:     3, // Headline Card variant
 			Headline:         entry.Headline,
 			Description:      entry.Description,
@@ -165,7 +163,7 @@ func (s *Service) buildTerminator(ctx context.Context, userID string, logger *lo
 		nudgeID := nudge.Id
 		stockQuery := nudge.StockQuery
 		logging.GoSafe(ctx, "fetch-nudge-imagery", func() {
-			s.fetchNudgeImagery(context.WithoutCancel(ctx), userID, nudgeID, stockQuery)
+			s.fetchNudgeImagery(context.WithoutCancel(ctx), nudgeID, stockQuery)
 		})
 		existing = append(existing, nudge)
 	}

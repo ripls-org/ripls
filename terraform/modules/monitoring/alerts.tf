@@ -93,7 +93,7 @@ resource "google_monitoring_alert_policy" "rpc_p95_latency" {
     display_name = "P95 latency above ${var.rpc_p95_latency_threshold_ms}ms for a non-streaming RPC"
 
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_request_duration.name}\" AND resource.type=\"cloud_run_revision\" AND NOT metric.label.rpc_method = monitoring.regex.full_match(\".*/Stream.*\") AND NOT metric.label.rpc_method = monitoring.regex.full_match(\"${var.rpc_p95_slow_class_regex}\")"
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_request_duration.name}\" AND resource.type=\"${local.log_resource_type}\" AND NOT metric.label.rpc_method = monitoring.regex.full_match(\".*/Stream.*\") AND NOT metric.label.rpc_method = monitoring.regex.full_match(\"${var.rpc_p95_slow_class_regex}\")"
       comparison      = "COMPARISON_GT"
       threshold_value = var.rpc_p95_latency_threshold_ms
       duration        = "900s"
@@ -121,7 +121,7 @@ resource "google_monitoring_alert_policy" "rpc_p95_latency" {
     display_name = "P95 latency above ${var.rpc_p95_slow_latency_threshold_ms}ms for a slow-class RPC"
 
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_request_duration.name}\" AND resource.type=\"cloud_run_revision\" AND metric.label.rpc_method = monitoring.regex.full_match(\"${var.rpc_p95_slow_class_regex}\")"
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.rpc_request_duration.name}\" AND resource.type=\"${local.log_resource_type}\" AND metric.label.rpc_method = monitoring.regex.full_match(\"${var.rpc_p95_slow_class_regex}\")"
       comparison      = "COMPARISON_GT"
       threshold_value = var.rpc_p95_slow_latency_threshold_ms
       duration        = "900s"
@@ -171,9 +171,10 @@ resource "google_monitoring_alert_policy" "rpc_p95_latency" {
   }
 }
 
-# DB pool saturation. Utilization is precomputed server-side (in_use/open on
-# the pool-stats log line). ALIGN_PERCENTILE_99 approximates the worst
-# instance when Cloud Run runs several.
+# DB pool saturation. Utilization is precomputed server-side (in_use/max_open
+# on the pool-stats log line), so this fires on a pool running out of
+# connections, not on a busy connection in an idle pool.
+# ALIGN_PERCENTILE_99 approximates the worst instance when several run.
 resource "google_monitoring_alert_policy" "db_pool_saturation" {
   project      = var.project_id
   display_name = "Database Pool Saturation - ${var.service_name}"
@@ -184,7 +185,7 @@ resource "google_monitoring_alert_policy" "db_pool_saturation" {
     display_name = "Database connection pool utilization above ${var.db_pool_saturation_threshold * 100}%"
 
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool_utilization.name}\" AND resource.type=\"cloud_run_revision\""
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool_utilization.name}\" AND resource.type=\"${local.log_resource_type}\""
       comparison      = "COMPARISON_GT"
       threshold_value = var.db_pool_saturation_threshold
       duration        = "600s"
@@ -224,6 +225,67 @@ resource "google_monitoring_alert_policy" "db_pool_saturation" {
       3. Cross-check the Cloud SQL "Database Connections High" alert — if the
          instance is also near max_connections, raising the app pool limit
          will make things worse.
+    EOT
+    mime_type = "text/markdown"
+  }
+
+  alert_strategy {
+    auto_close = "3600s"
+  }
+}
+
+# Self-hosted only: the server has stopped logging. It writes "db pool stats"
+# every 15 seconds for as long as it runs, so silence means the server is down
+# or the log shipper is — and a dead shipper otherwise looks exactly like a
+# healthy, quiet server, since every other alert here reads the same logs. On
+# Cloud Run the platform ships the logs and dev scales to zero, so it is not
+# created there.
+resource "google_monitoring_alert_policy" "server_logs_absent" {
+  count = local.self_hosted ? 1 : 0
+
+  project      = var.project_id
+  display_name = "Server Logs Absent - ${var.service_name}"
+  combiner     = "OR"
+  severity     = "CRITICAL"
+
+  conditions {
+    display_name = "No server log entries for ${var.log_absence_minutes} minutes"
+
+    condition_absent {
+      filter   = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.db_pool["open"].name}\" AND resource.type=\"${local.log_resource_type}\""
+      duration = "${var.log_absence_minutes * 60}s"
+
+      # db_pool_* are DELTA distributions, which take a percentile aligner
+      # (as db_pool_saturation does) but not ALIGN_COUNT. Absence is judged on
+      # whether any point arrives, so which percentile does not matter.
+      aggregations {
+        alignment_period     = "300s"
+        per_series_aligner   = "ALIGN_PERCENTILE_50"
+        cross_series_reducer = "REDUCE_MAX"
+      }
+
+      trigger {
+        count = 1
+      }
+    }
+  }
+
+  notification_channels = local.notification_channel_ids
+
+  documentation {
+    content   = <<-EOT
+      ${var.service_name} has written no logs to Cloud Logging for
+      ${var.log_absence_minutes} minutes. Either the server is down or the log
+      shipper beside it is; until this clears, every other alert in this
+      module is blind.
+
+      **Service:** ${var.service_name}
+      **Environment:** ${var.environment}
+
+      **Triage:**
+      1. Is the server up? curl ${var.service_url}/readyz
+      2. Up but silent: the log shipper is down or cannot authenticate. Check
+         its container and logs on the host (the deployment's runbook names them).
     EOT
     mime_type = "text/markdown"
   }
@@ -290,8 +352,8 @@ resource "google_monitoring_alert_policy" "sms_delivery_failure_rate" {
     display_name = "SMS delivery failures exceed ${var.sms_delivery_failure_rate_threshold * 100}% of messages"
 
     condition_threshold {
-      filter             = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sms_delivery_outcomes.name}\" AND resource.type=\"cloud_run_revision\" AND metric.labels.message_status=monitoring.regex.full_match(\"failed|undelivered\")"
-      denominator_filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sms_delivery_outcomes.name}\" AND resource.type=\"cloud_run_revision\""
+      filter             = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sms_delivery_outcomes.name}\" AND resource.type=\"${local.log_resource_type}\" AND metric.labels.message_status=monitoring.regex.full_match(\"failed|undelivered\")"
+      denominator_filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sms_delivery_outcomes.name}\" AND resource.type=\"${local.log_resource_type}\""
       comparison         = "COMPARISON_GT"
       threshold_value    = var.sms_delivery_failure_rate_threshold
       duration           = "900s"
@@ -314,7 +376,7 @@ resource "google_monitoring_alert_policy" "sms_delivery_failure_rate" {
     display_name = "SMS delivery failures above the minimum volume floor"
 
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sms_delivery_outcomes.name}\" AND resource.type=\"cloud_run_revision\" AND metric.labels.message_status=monitoring.regex.full_match(\"failed|undelivered\")"
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sms_delivery_outcomes.name}\" AND resource.type=\"${local.log_resource_type}\" AND metric.labels.message_status=monitoring.regex.full_match(\"failed|undelivered\")"
       comparison      = "COMPARISON_GT"
       threshold_value = var.sms_delivery_failure_min_count
       duration        = "900s"
@@ -414,7 +476,7 @@ resource "google_monitoring_alert_policy" "email_code_delivery_latency" {
     display_name = "P95 delivery latency above ${var.email_code_p95_latency_threshold_ms}ms for sign-in codes"
 
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.email_delivery_latency.name}\" AND resource.type=\"cloud_run_revision\" AND metric.labels.email_type=\"email_code\""
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.email_delivery_latency.name}\" AND resource.type=\"${local.log_resource_type}\" AND metric.labels.email_type=\"email_code\""
       comparison      = "COMPARISON_GT"
       threshold_value = var.email_code_p95_latency_threshold_ms
       duration        = "300s"
@@ -431,7 +493,7 @@ resource "google_monitoring_alert_policy" "email_code_delivery_latency" {
     display_name = "Sign-in code delivery latency: minimum sample floor of ${var.email_code_delivered_min_count} per 10 min"
 
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.email_deliveries.name}\" AND resource.type=\"cloud_run_revision\" AND metric.labels.email_type=\"email_code\""
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.email_deliveries.name}\" AND resource.type=\"${local.log_resource_type}\" AND metric.labels.email_type=\"email_code\""
       comparison      = "COMPARISON_GT"
       threshold_value = var.email_code_delivered_min_count
       duration        = "300s"

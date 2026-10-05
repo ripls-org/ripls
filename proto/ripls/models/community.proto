@@ -357,6 +357,13 @@ enum CommunityEventType {
   // by gaining a name (#2492). Actor is the member who named it. Emitted
   // by UpdateCommunity on the first unnamed→named transition.
   COMMUNITY_EVENT_TYPE_COMMUNITY_NAMED = 46;
+
+  // Someone already on the platform was handed an item directly, by name,
+  // rather than reaching it through a community they were already in
+  // (#3106). Actor is the sharer, object_user_id the person it was shared
+  // with, and the topic oneof carries what was shared. One event names one
+  // recipient; sharing with several people emits one event each.
+  COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER = 48;
 }
 
 // An event that occurred within a community.

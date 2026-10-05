@@ -85,6 +85,7 @@ var offAppKinds = map[string]string{
 	"COMMUNITY_EVENT_TYPE_PLANNING_NEED_CLAIMED":       "planning_need_claimed",
 	"COMMUNITY_EVENT_TYPE_PLANNING_CONTRIBUTION_ADDED": "planning_contribution_added",
 	"COMMUNITY_EVENT_TYPE_INVITATION_LINK_USED":        "invitation_link_used",
+	"COMMUNITY_EVENT_TYPE_ITEM_SHARED_WITH_USER":       "item_shared_with_user",
 	"COMMUNITY_EVENT_TYPE_COMMUNITY_DELETED":           "community_deleted",
 	"COMMUNITY_EVENT_TYPE_COMMUNITY_RESTORED":          "community_restored",
 	"COMMUNITY_EVENT_TYPE_OWNERSHIP_TRANSFERRED":       "ownership_transferred",

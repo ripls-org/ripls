@@ -122,7 +122,10 @@ fixes. The `ripls-doc-freshness` skill
 (`.claude/skills/ripls-doc-freshness/`) is the per-doc verifier; the stamp schema
 and the rest are in [`docs/context_map.md`](docs/context_map.md) → *Prose
 freshness*. If you change code a doc describes, expect the nightly ratchet to
-refresh that doc; if you change a doc, keep its claims true to the code.
+refresh that doc; if you change a doc, keep its claims true to the code — and
+when you have read it against that code, advance its stamp yourself rather than
+waiting for the ratchet. The stamp records verification, not authorship: anyone
+may write it, having verified.
 
 ## Development Commands
 

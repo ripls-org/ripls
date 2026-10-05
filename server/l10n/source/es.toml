@@ -90,6 +90,15 @@ other = "Nueva contribución"
 [notif.community_event.invitation_link_used.title]
 other = "Nuevo miembro"
 
+[notif.community_event.item_shared_with_user_gear.title]
+other = "Compartido contigo"
+
+[notif.community_event.item_shared_with_user_experience.title]
+other = "Estás invitado"
+
+[notif.community_event.item_shared_with_user_request.title]
+other = "Alguien necesita ayuda"
+
 [notif.community_event.community_deleted.title]
 other = "Comunidad eliminada"
 
@@ -613,6 +622,21 @@ other = "Responde en"
 other = "{{.ActorFirstName}} se unió a {{.CommunityName}}"
 [notif.offapp.invitation_link_used.cta]
 other = "Saluda en"
+
+[notif.offapp.item_shared_with_user_gear.message]
+other = "{{.ActorName}} compartió {{.GearName}} contigo"
+[notif.offapp.item_shared_with_user_gear.cta]
+other = "Míralo en"
+
+[notif.offapp.item_shared_with_user_experience.message]
+other = "{{.ActorName}} te invitó a {{.ExperienceName}}"
+[notif.offapp.item_shared_with_user_experience.cta]
+other = "Confirma tu asistencia en"
+
+[notif.offapp.item_shared_with_user_request.message]
+other = "{{.ActorName}} te preguntó si puedes ayudar con {{.RequestTitle}}"
+[notif.offapp.item_shared_with_user_request.cta]
+other = "Ofrece ayuda en"
 
 [notif.offapp.experience_rsvp_no.message]
 other = "{{.ActorName}} no podrá ir a {{.ExperienceName}}"

@@ -2,6 +2,7 @@ package gear
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -53,7 +54,11 @@ func (s *Service) findAndStoreStockImage(ctx context.Context, query, userID stri
 		fmt.Sprintf("Stock image for gear: %s", query),
 	)
 	if err != nil {
-		logger.Error("failed to copy stock image", "error", err, "duration_ms", time.Since(startTime).Milliseconds())
+		// A copy whose media was deleted meanwhile is an outcome, not a fault;
+		// storage has logged it.
+		if !errors.Is(err, storage.ErrMediaDeletedDuringCopy) {
+			logger.Error("failed to copy stock image", "error", err, "duration_ms", time.Since(startTime).Milliseconds())
+		}
 		return "", err
 	}
 

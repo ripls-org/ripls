@@ -1,10 +1,23 @@
-version: '3.8'
+# The server and its database, built from the repo's Dockerfile, with no cloud
+# account: credentials come from files (SECRETS_FROM_DIR), media is stored on a
+# local volume, and push notifications and AI are left unconfigured.
+#
+#   docker compose up --build          # then http://localhost:8080
+#   docker compose exec postgres psql -U ripls
+#
+# This is a development template. The JWT signing secret below is a fixed,
+# published value, so anything other people can reach needs its own: mount a
+# directory of real credential files at /run/ripls-secrets instead (file names
+# are the server's credential flags, e.g. jwt-signing-secret, openai-api-key;
+# see docs/secrets.md). Container arguments are passed to the server last, so
+# `command:` can set or override any server flag.
+#
+# This is not the local development database — that is docker-local-postgres.yaml,
+# which publishes port 5432. This database is reachable only from the server.
 
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_USER: ripls
       POSTGRES_PASSWORD: ripls_dev
@@ -26,25 +39,42 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "${SERVER_PORT:-8080}:8080"
     environment:
-      - DB_USER=ripls
-      - DB_PASSWORD=ripls_dev
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=ripls
-      - PORT=8080
+      SECRETS_FROM_DIR: /run/ripls-secrets
+      DB_HOST: postgres
+      DB_USER: ripls
+      DB_PASSWORD: ripls_dev
+      DB_NAME: ripls
+      DB_SSLMODE: disable
+      ENABLE_DEV_MODE: "true"
+      NOTIFICATION_PROVIDER: test
+      LOCAL_MEDIA_STORAGE: /var/lib/ripls/media
+      INVITE_LINK_HOSTNAME: localhost:${SERVER_PORT:-8080}
+    configs:
+      - source: dev_jwt_signing_secret
+        target: /run/ripls-secrets/jwt-signing-secret
+    # The entrypoint decodes credentials into /tmp; a tmpfs keeps them off disk.
+    tmpfs:
+      - /tmp
+    volumes:
+      - media:/var/lib/ripls/media
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "-O", "/dev/null", "http://localhost:8080/readyz"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 40s
+      start_period: 60s
+      start_interval: 2s
+
+configs:
+  dev_jwt_signing_secret:
+    content: ripls-docker-compose-development-only-jwt-signing-value
 
 volumes:
   postgres_data:
-    driver: local
+  media:

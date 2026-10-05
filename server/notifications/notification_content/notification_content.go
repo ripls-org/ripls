@@ -97,6 +97,18 @@ func FromCommunityEvent(ctx context.Context, p *models.CommunityEventPayload) Co
 			kind = "gear_shared_loan"
 		}
 	}
+	// A direct share reads by what was handed over: an event to come to, a
+	// request for help, or an item to borrow or claim.
+	if kind == "item_shared_with_user" {
+		switch {
+		case p.GetExperienceId() != "":
+			kind = "item_shared_with_user_experience"
+		case p.GetRequestId() != "":
+			kind = "item_shared_with_user_request"
+		default:
+			kind = "item_shared_with_user_gear"
+		}
+	}
 	// A transfer reads differently as a loan vs a giveaway ("your loan is now
 	// active" vs "it's on its way to its new owner"), and a cancellation reads
 	// differently again when the offer was simply no longer needed rather than

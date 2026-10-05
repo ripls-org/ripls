@@ -6,6 +6,28 @@
 # - Log-based metrics for per-RPC errors and health check failures
 # - Alert policies for uptime failures and elevated error rates
 # - Email notification channels
+#
+# Everything reads the server's own logs. var.log_source says where those come
+# from — Cloud Run, or a self-hosted server whose log shipper writes them as
+# generic_task entries — and the two locals below carry that into every filter.
+
+locals {
+  self_hosted = var.log_source == "self_hosted"
+
+  # Monitored-resource type of the server's log entries, and so of every
+  # log-based metric's time series: a log-based metric inherits the resource
+  # of the entries it counts. Metric filters in alerts, SLOs and dashboards
+  # select on it.
+  log_resource_type = local.self_hosted ? "generic_task" : "cloud_run_revision"
+
+  # Selects this service's application log entries, for log-based metric
+  # filters. Two lines: Logging ANDs them.
+  log_source_filter = (
+    local.self_hosted
+    ? "resource.type=\"generic_task\"\nresource.labels.job=\"${var.service_name}\""
+    : "resource.type=\"cloud_run_revision\"\nresource.labels.service_name=\"${var.service_name}\""
+  )
+}
 
 # =============================================================================
 # REQUIRED APIS
@@ -77,6 +99,13 @@ resource "google_monitoring_uptime_check_config" "health_check" {
 
   selected_regions = var.uptime_check_regions
 
+  # A new host forces a replacement, and the API refuses to delete a check an
+  # alert policy still references. Creating the new check first lets the
+  # policy move to it before the old one goes.
+  lifecycle {
+    create_before_destroy = true
+  }
+
   depends_on = [google_project_service.monitoring]
 }
 
@@ -91,8 +120,7 @@ resource "google_logging_metric" "health_check_failures" {
   description = "Count of health check completions where the server reported unhealthy"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="health_check_complete"
     jsonPayload.healthy=false
   EOT
@@ -112,8 +140,7 @@ resource "google_logging_metric" "dependency_health_failures" {
   description = "Count of dependency health check failures by dependency name and backend"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     jsonPayload.message="dependency_health_check_failed"
   EOT
 
@@ -151,8 +178,7 @@ resource "google_logging_metric" "all_errors" {
   description = "Count of all error-level and higher log entries"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     severity>="ERROR"
   EOT
 
@@ -183,14 +209,14 @@ resource "google_logging_metric" "all_errors" {
 # NOTE: these Cloud Run system-message strings are the documented/known forms.
 # We have no captured crash sample to template against, so on the first real
 # crash confirm they match the alert and tighten if needed (#2490).
-resource "google_logging_metric" "container_crashes" {
-  project     = var.project_id
-  name        = "container_crashes_${var.environment}"
-  description = "Count of Cloud Run container crashes — non-zero exit, OOM kill, or signal termination (excludes graceful exit(0) shutdowns)"
-
-  filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+#
+# Self-hosted, there is no platform system log. The host runs a container-exit
+# watcher instead, which writes "server container exited" into the server's own
+# log stream for a non-zero exit or an OOM kill; graceful stops exit 0 and are
+# not reported.
+locals {
+  crash_filter_cloud_run = <<-EOT
+    ${local.log_source_filter}
     logName="projects/${var.project_id}/logs/run.googleapis.com%2Fvarlog%2Fsystem"
     (
       textPayload=~"Container called exit\([1-9][0-9]*\)"
@@ -198,6 +224,23 @@ resource "google_logging_metric" "container_crashes" {
       OR textPayload:"Container terminated on signal"
     )
   EOT
+
+  crash_filter_self_hosted = <<-EOT
+    ${local.log_source_filter}
+    jsonPayload.message="server container exited"
+  EOT
+}
+
+resource "google_logging_metric" "container_crashes" {
+  project = var.project_id
+  name    = "container_crashes_${var.environment}"
+  description = (
+    local.self_hosted
+    ? "Count of server container crashes — non-zero exit or OOM kill, reported by the host's container-exit watcher (excludes graceful exit(0) shutdowns)"
+    : "Count of Cloud Run container crashes — non-zero exit, OOM kill, or signal termination (excludes graceful exit(0) shutdowns)"
+  )
+
+  filter = local.self_hosted ? local.crash_filter_self_hosted : local.crash_filter_cloud_run
 
   metric_descriptor {
     metric_kind = "DELTA"
@@ -219,8 +262,7 @@ resource "google_logging_metric" "serving_failures" {
   description = "Count of server serving-loop failures — HTTP goroutine panic, fatal serve error, or listener bind failure (excludes recovered request panics)"
 
   filter = <<-EOT
-    resource.type="cloud_run_revision"
-    resource.labels.service_name="${var.service_name}"
+    ${local.log_source_filter}
     severity>="ERROR"
     (
       jsonPayload.message="panic in HTTP server goroutine"
@@ -386,7 +428,7 @@ resource "google_monitoring_alert_policy" "health_check_unhealthy" {
     display_name = "Dependency health check failed ${var.dependency_failure_threshold} consecutive times"
 
     condition_threshold {
-      filter     = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.dependency_health_failures.name}\" AND resource.type=\"cloud_run_revision\""
+      filter     = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.dependency_health_failures.name}\" AND resource.type=\"${local.log_resource_type}\""
       comparison = "COMPARISON_GT"
       # Alert when failures exceed threshold - 1 (i.e., at least N failures)
       threshold_value = var.dependency_failure_threshold - 1
@@ -460,8 +502,7 @@ resource "google_monitoring_alert_policy" "all_errors" {
 
     condition_matched_log {
       filter = <<-EOT
-        resource.type="cloud_run_revision"
-        resource.labels.service_name="${var.service_name}"
+        ${local.log_source_filter}
         severity>="ERROR"
         jsonPayload:*
         NOT jsonPayload.message="dependency_health_check_failed"
@@ -526,16 +567,7 @@ resource "google_monitoring_alert_policy" "container_crash" {
     display_name = "Container exited non-zero, was OOM-killed, or terminated on a signal"
 
     condition_matched_log {
-      filter = <<-EOT
-        resource.type="cloud_run_revision"
-        resource.labels.service_name="${var.service_name}"
-        logName="projects/${var.project_id}/logs/run.googleapis.com%2Fvarlog%2Fsystem"
-        (
-          textPayload=~"Container called exit\([1-9][0-9]*\)"
-          OR textPayload:"Memory limit of"
-          OR textPayload:"Container terminated on signal"
-        )
-      EOT
+      filter = local.self_hosted ? local.crash_filter_self_hosted : local.crash_filter_cloud_run
     }
   }
 
@@ -591,8 +623,7 @@ resource "google_monitoring_alert_policy" "serving_failure" {
 
     condition_matched_log {
       filter = <<-EOT
-        resource.type="cloud_run_revision"
-        resource.labels.service_name="${var.service_name}"
+        ${local.log_source_filter}
         severity>="ERROR"
         (
           jsonPayload.message="panic in HTTP server goroutine"

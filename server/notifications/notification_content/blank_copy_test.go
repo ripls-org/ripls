@@ -14,10 +14,11 @@ import (
 // always resolves to a more specific kind before any render. They keep their
 // off-app catalog entries but are unreachable, so they are not asserted.
 var splitKinds = map[string]bool{
-	"gear_shared":        true, // → gear_shared_giveaway | gear_shared_loan
-	"experience_updated": true, // → experience_updated_{time,location,both,other}
-	"transfer_active":    true, // → transfer_active_{loan,giveaway}
-	"transfer_cancelled": true, // → transfer_cancelled_{loan,giveaway,covered}
+	"gear_shared":           true, // → gear_shared_giveaway | gear_shared_loan
+	"item_shared_with_user": true, // → item_shared_with_user_{gear,experience,request}
+	"experience_updated":    true, // → experience_updated_{time,location,both,other}
+	"transfer_active":       true, // → transfer_active_{loan,giveaway}
+	"transfer_cancelled":    true, // → transfer_cancelled_{loan,giveaway,covered}
 }
 
 // pushExempt are kinds that never become a push, so they have no
@@ -48,6 +49,8 @@ func renderKinds() []string {
 		add(k)
 	}
 	add("gear_shared_giveaway", "gear_shared_loan")
+	add("item_shared_with_user_gear", "item_shared_with_user_experience",
+		"item_shared_with_user_request")
 	add("transfer_active_loan", "transfer_active_giveaway")
 	add("transfer_cancelled_loan", "transfer_cancelled_giveaway", "transfer_cancelled_covered")
 	add("experience_updated_time", "experience_updated_location",
