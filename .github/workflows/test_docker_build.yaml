@@ -66,6 +66,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          # The Dockerfile COPYs model_tuning/ripls_embedding.onnx into the
+          # image. Without LFS the build ships the pointer file and the server
+          # dies at boot ("Protobuf parsing failed"). Self-hosted runners hid
+          # this by reusing a workspace that already held the real model.
+          lfs: true
 
       - name: Fix git ownership (self-hosted runner)
         run: git config --global --add safe.directory '*'

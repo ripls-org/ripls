@@ -59,7 +59,7 @@ FROM debian:trixie-slim
 # ONNX Runtime version. Must stay in lockstep with github.com/yalue/onnxruntime_go
 # in go.mod: that binding requests an ORT C-API version the native library must
 # support (1.22.x supports API <=22; binding v1.24.0 requests API 22).
-ARG ONNXRUNTIME_VERSION=1.29.0
+ARG ONNXRUNTIME_VERSION=1.29.1
 
 # Install runtime dependencies. ca-certificates for every outbound TLS call
 # (including /app/fetch-secrets), wget for the HEALTHCHECK below, ffmpeg for
