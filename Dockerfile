@@ -3,7 +3,7 @@
 # (build_and_deploy_container.yaml passes --build-arg). The default here is a
 # guarded mirror of versions.env (scripts/check_versions.js enforces it) so a
 # plain `docker build` (e.g. test_docker_build) still uses the pinned version.
-ARG GO_VERSION=1.27.1
+ARG GO_VERSION=1.27.2
 FROM golang:${GO_VERSION} AS builder
 
 # Install build dependencies including nodejs for buf, and curl for downloading buf

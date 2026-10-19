@@ -1,16 +1,16 @@
 module go.ripls.org/ripls
 
-go 1.27.1
+go 1.27.2
 
 require (
 	cloud.google.com/go/storage v1.69.0
 	connectrpc.com/authn v0.2.0
-	connectrpc.com/connect v1.21.0
+	connectrpc.com/connect v1.21.1
 	firebase.google.com/go/v4 v4.22.0
 	github.com/BurntSushi/toml v1.6.0
 	github.com/PuerkitoBio/goquery v1.13.0
 	github.com/adrium/goheif v0.0.0-20230113233934-ca402e77a786
-	github.com/anthropics/anthropic-sdk-go v1.78.0
+	github.com/anthropics/anthropic-sdk-go v1.82.0
 	github.com/bradleyfalzon/ghinstallation/v2 v2.19.0
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/disintegration/imaging v1.6.2
@@ -23,22 +23,22 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/invopop/jsonschema v0.14.0
 	github.com/lib/pq v1.12.3
-	github.com/mailgun/mailgun-go/v5 v5.19.3
+	github.com/mailgun/mailgun-go/v5 v5.19.4
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/nyaruka/phonenumbers/v2 v2.0.14
-	github.com/openai/openai-go/v3 v3.71.1
+	github.com/openai/openai-go/v3 v3.82.0
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/stretchr/testify v1.12.1
 	github.com/testcontainers/testcontainers-go v0.44.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.44.0
 	github.com/yalue/onnxruntime_go v1.36.0
-	golang.org/x/crypto v0.57.0
+	golang.org/x/crypto v0.58.0
 	golang.org/x/image v0.46.0
 	golang.org/x/oauth2 v0.37.0
-	golang.org/x/sync v0.23.0
-	golang.org/x/text v0.42.0
+	golang.org/x/sync v0.24.0
+	golang.org/x/text v0.43.0
 	golang.org/x/time v0.16.0
-	google.golang.org/genai v1.72.0
+	google.golang.org/genai v1.75.0
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -147,8 +147,8 @@ require (
 	go.opentelemetry.io/otel/trace v1.45.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
-	golang.org/x/net v0.59.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 	google.golang.org/api v0.293.0 // indirect
 	google.golang.org/appengine/v2 v2.0.6 // indirect
 	google.golang.org/genproto v0.0.0-20260715232425-e75dac1f907d // indirect
