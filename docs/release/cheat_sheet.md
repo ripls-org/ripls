@@ -17,11 +17,13 @@ freshness:
 ## Primary path: the `Cut Release` workflow
 
 For most releases, trigger the **Cut Release** GitHub Action and pick a
-bump size (`fix`, `minor`, `major`). It bumps `app/pubspec.yaml`, generates
-release notes, regenerates the website HTML, and opens a PR for review.
+bump size (`fix`, `minor`, `major`). It hands off to the coding agent's
+`release-cut` mode, which bumps `app/pubspec.yaml`, generates release notes,
+regenerates the website HTML, and opens a PR for review as the agent's bot.
+The run and its log are in the agent repo's Actions tab, not this one.
 Merging the PR fires **Release Finalize**, which deploys the resulting
 `main` HEAD to prod and (gated on prod-deploy success) tags the merge
-commit, which in turn triggers **Release App** for iOS + Android.
+commit and starts **Release App** on the tag for iOS + Android.
 
 You only review and merge the version-bump PR — everything else is
 automated. The sections below describe the manual fallback if you need to

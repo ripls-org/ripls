@@ -75,7 +75,9 @@ jobs:
     # runner image builds + tests before native auto-merge fires. Major
     # baked-tool bumps get no "automerge" label, so they fall through to
     # request-human-review below.
-    if: ${{ (github.event.pull_request.user.login == 'renovate[bot]' || github.event.pull_request.user.login == 'ripls-renovate[bot]') && contains(github.event.pull_request.labels.*.name, 'automerge') }}
+    # Same-repo only: pull_request_target runs with base-repo permissions, and
+    # an author login is not proof of where the head branch lives.
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && (github.event.pull_request.user.login == 'renovate[bot]' || github.event.pull_request.user.login == 'ripls-renovate[bot]') && contains(github.event.pull_request.labels.*.name, 'automerge') }}
     runs-on: ubuntu-latest
     steps:
       - name: Approve Renovate PR
@@ -92,7 +94,7 @@ jobs:
     # baked-tool bumps additionally wait on the required "Validate Runner
     # Candidate" check (#2395), so an unproven toolchain can't merge even with a
     # human approval.
-    if: ${{ (github.event.pull_request.user.login == 'renovate[bot]' || github.event.pull_request.user.login == 'ripls-renovate[bot]') && !contains(github.event.pull_request.labels.*.name, 'automerge') }}
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && (github.event.pull_request.user.login == 'renovate[bot]' || github.event.pull_request.user.login == 'ripls-renovate[bot]') && !contains(github.event.pull_request.labels.*.name, 'automerge') }}
     runs-on: ubuntu-latest
     permissions:
       # Enabling native auto-merge needs write beyond pull-requests.

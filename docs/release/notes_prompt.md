@@ -15,7 +15,8 @@ freshness:
 # Release notes generation prompt
 
 Canonical prompt for generating `docs/release/notes/X.Y.Z.md`. Referenced by
-`.github/workflows/release_cut.yaml`, `.claude/skills/ripls-release/SKILL.md`
+the coding agent's `release-cut` prompt (started by
+`.github/workflows/release_cut.yaml`), `.claude/skills/ripls-release/SKILL.md`
 step 6, and `docs/release/cheat_sheet.md` so all three stay in sync.
 
 ---

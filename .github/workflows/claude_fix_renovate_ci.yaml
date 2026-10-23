@@ -19,14 +19,24 @@ name: Claude Fix Renovate CI Failure
 #      re-enable a disabled dep, edit
 #      renovate.json, or downgrade the bump. If CI can only go green by crossing
 #      a documented hold, it comments and stops.
-#   3. Post-fix guard (fix): the run FAILS if Claude's commits modified
+#   3. Post-fix guard: the run FAILS if Claude's commits modified
 #      renovate.json — the mechanical backstop behind the prompt rule.
+#
+# The migration itself runs in the private agent repo (vars.AGENT_REPO, #2970),
+# which also holds layer 3; layer 1 stays here as the dispatch gate. The agent
+# re-checks the PR (renovate/* branch, Renovate author, not a baked-tool bump,
+# failed run at the PR head) and repeats the rate cap and marker check, so a
+# request that skips this gate still can't loop the migration.
 #
 # Merge policy is unchanged and deliberately untouched here: this workflow adds
 # NO `automerge` label and runs NO `gh pr merge` command. An already-eligible
 # patch/minor (label + native auto-merge already set by Renovate) merges via the
 # existing wiring once Claude's fix turns it green; majors stay manual. Claude's
 # push fires renovate_auto_approve's `synchronize` trigger to re-apply approval.
+
+# The run-name is part of the agent contract: "agent-dispatch fix-renovate
+# <failed run id>" for CI failures, "<pr>" for manual runs.
+run-name: agent-dispatch fix-renovate ${{ github.event.workflow_run.id || inputs.pr_number }}
 
 on:
   workflow_run:
@@ -59,16 +69,14 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
+  # The hold gate comments on held PRs.
   pull-requests: write
-  actions: read
-  checks: read
-  id-token: write
 
-# Serialize per branch so the burst of workflow_run events from several failed
-# required checks (Go Tests + Flutter Tests + ...) on one PR can't spawn parallel
-# migration runs against the same branch. The second run waits, then its discover
-# step sees the first run's marker comment and skips.
+# Several failed required checks (Go Tests + Flutter Tests + ...) on one PR
+# each fire this workflow. Dispatching takes seconds, so this group no longer
+# serializes the migrations themselves: the agent runs one job per PR at a time
+# and, once its turn comes, skips a commit that already carries a marker.
 concurrency:
   group: claude-fix-renovate-${{ github.event.workflow_run.head_branch || format('pr-{0}', github.event.inputs.pr_number) }}
   cancel-in-progress: false
@@ -79,11 +87,13 @@ jobs:
     # always allowed; the discover step still validates the PR is a renovate/*
     # branch authored by the Renovate bot before invoking Claude.
     if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'failure' &&
-       startsWith(github.event.workflow_run.head_branch, 'renovate/') &&
-       github.event.workflow_run.head_repository.full_name == github.repository)
+      vars.AGENT_DISPATCH_APP_ID != '' && vars.AGENT_REPO != '' && (
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'workflow_run' &&
+         github.event.workflow_run.conclusion == 'failure' &&
+         startsWith(github.event.workflow_run.head_branch, 'renovate/') &&
+         github.event.workflow_run.head_repository.full_name == github.repository)
+      )
     runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
     outputs:
       should_run: ${{ steps.ctx.outputs.should_run }}
@@ -138,7 +148,7 @@ jobs:
           fi
 
           gh pr view "$PR_NUMBER" \
-            --json number,title,body,headRefName,headRefOid,state,author,labels \
+            --json number,title,body,headRefName,headRefOid,state,author,labels,isCrossRepository \
             > /tmp/pr-meta.json
 
           STATE=$(jq -r '.state' /tmp/pr-meta.json)
@@ -148,6 +158,15 @@ jobs:
 
           if [ "$STATE" != "OPEN" ]; then
             echo "::notice::PR #$PR_NUMBER is $STATE; skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # SAME-REPO ONLY. The trigger gate checks head_repository, but manual
+          # dispatch skips it, and `gh pr list --head <branch>` matches by
+          # branch name alone, so a fork PR with the same name could be picked.
+          if [ "$(jq -r '.isCrossRepository' /tmp/pr-meta.json)" != "false" ]; then
+            echo "::notice::PR #$PR_NUMBER comes from a fork; skipping."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -267,319 +286,25 @@ jobs:
           echo "failed_run_id=$FAILED_RUN_ID" >> "$GITHUB_OUTPUT"
           echo "failed_workflow_name=$FAILED_WORKFLOW_NAME" >> "$GITHUB_OUTPUT"
 
-  fix:
+  dispatch:
     needs: discover
     if: needs.discover.outputs.should_run == 'true'
-    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
-    timeout-minutes: 60
-    env:
-      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
-      PR_NUMBER: ${{ needs.discover.outputs.pr_number }}
-      HEAD_REF: ${{ needs.discover.outputs.head_ref }}
-      HEAD_SHA: ${{ needs.discover.outputs.head_sha }}
-      FAILED_RUN_ID: ${{ needs.discover.outputs.failed_run_id }}
-      FAILED_WORKFLOW_NAME: ${{ needs.discover.outputs.failed_workflow_name }}
-
+    # GitHub-hosted on purpose: the sparse checkout below would leave its sparse
+    # config in a reused self-hosted workspace (see the NOTE in discover).
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR head
+      - name: Checkout dispatch action
         uses: actions/checkout@v7
         with:
-          ref: ${{ env.HEAD_SHA }}
-          fetch-depth: 0
-          lfs: true
-          token: ${{ secrets.CLAUDE_WORKFLOW_PAT }}
+          sparse-checkout: .github/actions/agent-dispatch
+          persist-credentials: false
 
-      - name: Fix git ownership (self-hosted runner)
-        run: git config --global --add safe.directory '*'
-
-      - name: Ensure Git LFS files are pulled
-        run: |
-          git lfs install --local
-          git lfs pull
-
-      - name: Setup git identity
-        run: |
-          git config --global user.email "claude[bot]@users.noreply.github.com"
-          git config --global user.name "claude[bot]"
-
-      - name: Move to PR branch
-        run: git checkout -B "$HEAD_REF"
-
-      - name: Skip if branch advanced past the failed run
-        id: stale
-        run: |
-          set -euo pipefail
-          REMOTE_SHA=$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')
-          if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" != "$HEAD_SHA" ]; then
-            echo "::notice::Branch $HEAD_REF advanced from $HEAD_SHA to $REMOTE_SHA since the failed run; skipping."
-            echo "stale=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "stale=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Authenticate to Google Cloud
-        if: steps.stale.outputs.stale != 'true'
-        uses: google-github-actions/auth@v3
+      - name: Dispatch to the agent
+        uses: ./.github/actions/agent-dispatch
         with:
-          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
-
-      - name: Install npm dependencies
-        if: steps.stale.outputs.stale != 'true'
-        run: npm install
-
-      - name: Generate code from protos
-        if: steps.stale.outputs.stale != 'true'
-        run: npm run generate:proto
-
-      - name: Install Flutter dependencies
-        if: steps.stale.outputs.stale != 'true'
-        run: cd app && flutter pub get
-
-      - name: Generate Dart freezed/mockito code
-        if: steps.stale.outputs.stale != 'true'
-        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
-
-      - name: Capture failed run logs
-        if: steps.stale.outputs.stale != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          rm -rf /tmp/ci-failure
-          mkdir -p /tmp/ci-failure
-          if [ -n "${FAILED_RUN_ID:-}" ]; then
-            gh run view "$FAILED_RUN_ID" --log-failed > /tmp/ci-failure/failed.log 2>&1 || true
-            gh run view "$FAILED_RUN_ID" \
-              --json name,displayTitle,conclusion,headSha,jobs,url \
-              > /tmp/ci-failure/run.json || true
-          else
-            echo "(no failed_run_id supplied)" > /tmp/ci-failure/failed.log
-            echo "{}" > /tmp/ci-failure/run.json
-          fi
-          gh pr view "$PR_NUMBER" \
-            --json number,title,body,url,headRefName,baseRefName,comments,files,statusCheckRollup \
-            > /tmp/ci-failure/pr.json
-          gh pr diff "$PR_NUMBER" > /tmp/ci-failure/pr.diff || true
-
-      - name: Capture pre-run state
-        id: pre
-        if: steps.stale.outputs.stale != 'true'
-        run: echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Run Claude Code to migrate for the dependency bump
-        if: steps.stale.outputs.stale != 'true'
-        id: claude
-        uses: anthropics/claude-code-action@v1
-        env:
-          # Deliberately no ANTHROPIC_API_KEY: Claude Code prefers it over
-          # claude_code_oauth_token, silently billing runs per-token instead
-          # of to the subscription. AI integration tests skip without it.
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          VERTEX_AI_PROJECT: ${{ vars.GCP_PROJECT_DEV }}
-          CI: "true"
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Required, or the action aborts before doing anything: every run here
-          # is triggered by a Renovate PR, so the initiating actor is always a
-          # bot and claude-code-action refuses non-human actors by default
-          # ("Workflow initiated by non-human actor: ripls-renovate (type: Bot)").
-          # Without this the fix job burned a runner on every red Renovate PR and
-          # migrated nothing — PR #2943 sat red for 10 days that way.
-          #
-          # Allowlisted to the one Renovate identity, never '*'. The discover job
-          # above independently re-checks that the PR author is the Renovate bot
-          # and that the head branch is renovate/*, so a different bot opening a
-          # PR cannot reach this step even if it could trigger the workflow.
-          allowed_bots: ripls-renovate
-          prompt: |
-            A Renovate dependency PR is red on PR #${{ env.PR_NUMBER }} in
-            ${{ github.repository }}. The failing workflow is
-            "${{ env.FAILED_WORKFLOW_NAME }}" (run id ${{ env.FAILED_RUN_ID }}).
-            Renovate bumped one or more dependencies; the most likely cause is
-            that the new version has breaking API changes the codebase must
-            migrate to.
-
-            PR JSON:        /tmp/ci-failure/pr.json (title, body, comments,
-                            files, statusCheckRollup)
-            PR diff:        /tmp/ci-failure/pr.diff (what Renovate changed —
-                            the manifest/lockfile bump)
-            Failed logs:    /tmp/ci-failure/failed.log (`gh run view --log-failed`)
-            Failed run:     /tmp/ci-failure/run.json (job names + conclusions)
-            Holds config:   renovate.json (allowedVersions caps + enabled:false
-                            blocks; each packageRules entry's `description`
-                            states why that hold exists)
-            PR branch:      ${{ env.HEAD_REF }} (already checked out)
-
-            ## Mission
-
-            Read the failing logs, find the root cause, migrate the codebase to
-            the bumped dependency version, and push the migration as one or more
-            new commits to ${{ env.HEAD_REF }}. The run is **only complete** when
-            one of:
-
-              (a) you pushed at least one new commit on ${{ env.HEAD_REF }} that
-                  migrates the code to the new version AND posted
-                  `gh pr comment ${{ env.PR_NUMBER }}` describing the migration
-                  and which check it should make pass, or
-              (b) you posted `gh pr comment ${{ env.PR_NUMBER }}` explaining why
-                  you can't fix it (documented hold, real product bug, infra
-                  issue, ambiguous failure) and what a human should do.
-
-            Your PR comment MUST begin with this exact marker line so repeat
-            triggers for this branch state don't re-run:
-
-                <!-- claude-renovate-fix:${{ env.HEAD_SHA }} -->
-
-            Don't stop after analysis. Don't write a wrap-up message — push
-            commits or comment (with the marker).
-
-            ## Process
-
-            Use TodoWrite to track these steps.
-
-            1. Read /tmp/ci-failure/failed.log and /tmp/ci-failure/run.json. Find
-               the actual failure message — skip past setup noise. If multiple
-               jobs failed, address each.
-            2. Read /tmp/ci-failure/pr.diff to see which dependency/version
-               Renovate bumped, and /tmp/ci-failure/pr.json for context.
-            3. **Hold check (do this before any edit).** Read renovate.json,
-               including every packageRules `description` — that is where the
-               rationale for each hold lives. If making CI pass would require
-               crossing a documented hold — raising or removing an
-               `allowedVersions` cap, re-enabling an `enabled:false` dependency,
-               or anything a description calls out as blocked (e.g. the
-               connect-dart protobuf cap, the freezed/analyzer/mockito stack,
-               the onnxruntime native coupling, the firebase-admin peer cap,
-               the eslint flat-config blocker) — STOP and go to step 7. Do not
-               loosen the hold.
-            4. Read the relevant source files. Diagnose: is the failure a code
-               migration the new version requires (most likely), stale generated
-               code, a flake, or an infra issue?
-                 - Flake (timeout, transient network, container start): note it
-                   in the PR comment but still attempt a deflake if there's a
-                   plausible one.
-                 - Infra issue (missing secret, runner offline): go to step 7.
-                 - Otherwise: migrate the code to the new dependency version.
-            5. Apply the migration. Stay narrow — only the changes the version
-               bump requires; no unrelated refactors. CLAUDE.md is authoritative
-               for conventions.
-            6. Re-run the relevant checks locally to confirm green:
-                 - Proto changes: `npm run generate:proto` first
-                 - Go changes: `npm run build` and `go test -tags=integration -timeout 20m ./...`
-                 - Flutter changes: `cd app && flutter test --reporter github`
-                 - Terraform changes: `terraform validate` / `terraform fmt` in the relevant dir
-               Iterate until green. If still red after several honest attempts,
-               go to step 7.
-
-               Commit and push:
-
-                   git add -A
-                   git commit -m "<concise: what you migrated and why CI will pass>"
-                   git push origin ${{ env.HEAD_REF }}
-                   gh pr comment ${{ env.PR_NUMBER }} --body "<!-- claude-renovate-fix:${{ env.HEAD_SHA }} -->
-            Migrated for the dependency bump in <SHA>: <one-line root cause + migration>. Re-running ${{ env.FAILED_WORKFLOW_NAME }}."
-
-               Then exit. Do not merge the PR.
-
-            7. **Blocked exit (only if step 3, 4, or 6 told you to skip here).**
-
-                   gh pr comment ${{ env.PR_NUMBER }} --body "<!-- claude-renovate-fix:${{ env.HEAD_SHA }} -->
-            <what failed, what I tried, why I can't fix it (name the documented hold if that's the reason), what a human should do>"
-
-            ## Hard rules
-
-            - NEVER edit renovate.json. Never remove, raise, or loosen an
-              `allowedVersions` cap; never re-enable an `enabled:false`
-              dependency. The CI for that is enforced — a renovate.json change
-              fails the run.
-            - NEVER downgrade the dependency or revert Renovate's version bump —
-              that defeats the PR. Migrate the code forward to the new version.
-            - Do not modify the PR title or body.
-            - Do not push commits unrelated to the migration.
-            - Do not add the `automerge` label and do not merge the PR. Merge is
-              handled by the existing auto-merge wiring on green required checks.
-            - No "Co-Authored-By" / "Generated with Claude" branding in commits.
-            - Do not stop with a summary message before doing step 6 or 7.
-          claude_args: >-
-            --max-turns 120
-            --verbose
-            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash(git:*),Bash(gh:*),Bash(go:*),Bash(flutter:*),Bash(npm:*),Bash(npx:*),Bash(cd app*),Bash(jq:*),Bash(golangci-lint:*),Bash(gofumpt:*),Bash(terraform:*),Bash(cat:*),Bash(ls:*)"
-
-      - name: Guard — revert any Claude change to renovate.json
-        if: success() && steps.stale.outputs.stale != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRE_SHA: ${{ steps.pre.outputs.head_sha }}
-        run: |
-          set -euo pipefail
-          # Teeth behind the prompt rule (layer 3). A migration must never touch
-          # renovate.json — that's how a documented hold would get loosened.
-          # Failing this side-workflow alone would NOT stop a merge (Claude's
-          # commit is already pushed, and if it turned the required checks green
-          # native auto-merge would land it). So actively REVERT renovate.json on
-          # the branch, keeping the rest of the migration: the true state re-runs
-          # through CI (likely red if the migration leaned on the loosened hold),
-          # so it can't merge unvalidated. This runs immediately after Claude's
-          # push — minutes before CI could go green — so it wins the race.
-          if git diff --quiet "${PRE_SHA}" HEAD -- renovate.json; then
-            echo "renovate.json unchanged by the migration — guard passed."
-            exit 0
-          fi
-          echo "::error::Claude modified renovate.json on PR #$PR_NUMBER — reverting it (a migration must not alter dependency holds) and failing the run."
-          git checkout "${PRE_SHA}" -- renovate.json
-          git commit -m "revert: restore renovate.json (automated migration must not alter dependency holds)"
-          git push origin "$HEAD_REF"
-          BODY=$(printf '%s\n%s' "<!-- claude-renovate-fix:${HEAD_SHA} -->" "Automated migration touched \`renovate.json\` (a held/capped dependency rule), which is not an acceptable fix — I reverted that file and left the rest of the migration. CI now reflects the true state; a human should review whether the documented hold can be lifted — see that rule's \`description\` in \`renovate.json\`.")
-          gh pr comment "$PR_NUMBER" --body "$BODY"
-          exit 1
-
-      - name: Stage execution log for artifact
-        if: always()
-        run: |
-          DEBUG_DIR="${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}"
-          rm -rf "$DEBUG_DIR"
-          mkdir -p "$DEBUG_DIR"
-          if [ -f "${{ runner.temp }}/claude-execution-output.json" ]; then
-            cp "${{ runner.temp }}/claude-execution-output.json" "$DEBUG_DIR/"
-          fi
-          if [ -f "${{ runner.temp }}/claude-prompts/claude-prompt.txt" ]; then
-            cp "${{ runner.temp }}/claude-prompts/claude-prompt.txt" "$DEBUG_DIR/"
-          fi
-          cp -r /tmp/ci-failure "$DEBUG_DIR/" 2>/dev/null || true
-          ls -la "$DEBUG_DIR/" || true
-
-      - name: Upload Claude execution log
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: claude-fix-renovate-log-pr${{ env.PR_NUMBER }}-${{ github.run_id }}
-          path: ${{ runner.temp }}/claude-debug-${{ github.run_id }}-${{ github.run_attempt }}/
-          if-no-files-found: warn
-          retention-days: 7
-
-      - name: Clean up test postgres container
-        if: always()
-        uses: ./.github/actions/cleanup-test-postgres
-
-      - name: Assert Claude produced a deliverable
-        if: success() && steps.stale.outputs.stale != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRE_SHA: ${{ steps.pre.outputs.head_sha }}
-        run: |
-          set -euo pipefail
-          REMOTE_SHA=$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')
-          if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" != "$PRE_SHA" ]; then
-            echo "PR branch advanced from ${PRE_SHA} to ${REMOTE_SHA}; deliverable (a) satisfied."
-            exit 0
-          fi
-          THIRTY_MIN_AGO=$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
-            || date -u -v-30M +%Y-%m-%dT%H:%M:%SZ)
-          RECENT_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
-            --jq "[.comments[] | select(.createdAt > \"$THIRTY_MIN_AGO\")] | length")
-          if [ "$RECENT_COMMENT" -gt 0 ]; then
-            echo "Recent comment posted on PR #$PR_NUMBER; deliverable (b) satisfied."
-            exit 0
-          fi
-          echo "::error::Claude finished without deliverable on PR #$PR_NUMBER. See claude-fix-renovate-log artifact."
-          exit 1
+          app-id: ${{ vars.AGENT_DISPATCH_APP_ID }}
+          private-key: ${{ secrets.AGENT_DISPATCH_PRIVATE_KEY }}
+          agent-repo: ${{ vars.AGENT_REPO }}
+          mode: fix-renovate
+          number: ${{ needs.discover.outputs.pr_number }}
+          failed-run-id: ${{ needs.discover.outputs.failed_run_id }}

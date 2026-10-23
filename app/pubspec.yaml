@@ -1,7 +1,7 @@
 name: ripls
 description: "Stop waiting for community. Start building it."
 publish_to: "none"
-version: 0.32.0
+version: 0.33.0
 
 environment:
   sdk: ^3.9.2
@@ -17,7 +17,7 @@ dependencies:
   # and camera. We depend on it directly so MediaService (service
   # layer) can accept XFile without importing a UI picker.
   cross_file: ^0.3.4
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^2.0.0
   device_info_plus: ^13.1.0
   dotted_border: ^3.1.0
   emoji_picker_flutter: ^4.4.0

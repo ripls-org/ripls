@@ -115,7 +115,7 @@ programmatically; this section is the same protocol for everyone else.
 
 **Prose freshness.** Beyond routing, durable docs are kept *semantically* in sync
 with the code they describe. Each carries a `freshness:` frontmatter stamp
-(verified commit), and the `claude_refresh_docs` nightly ratchet (~2am US
+(verified commit), and the nightly doc-freshness ratchet (~2am US
 Central) auto-refreshes the docs whose governed code changed in the day's merges
 to main — verifying prose against code and opening a docs-only PR with the
 fixes. The `ripls-doc-freshness` skill

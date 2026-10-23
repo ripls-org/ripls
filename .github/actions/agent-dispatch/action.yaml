@@ -1,0 +1,85 @@
+name: Dispatch to the agent
+description: >-
+  Starts one coding-agent run in the private agent repo (#2970). Mints a token
+  from the ripls-dispatch GitHub App, which can only start workflows there, and
+  passes identifiers only. The agent re-validates everything, including that
+  this run's run-name is "agent-dispatch <mode> <key>"; see the agent repo's
+  scripts/validate_request.sh.
+
+inputs:
+  app-id:
+    description: vars.AGENT_DISPATCH_APP_ID
+    required: true
+  private-key:
+    description: secrets.AGENT_DISPATCH_PRIVATE_KEY
+    required: true
+  agent-repo:
+    description: vars.AGENT_REPO (owner/name)
+    required: true
+  mode:
+    required: true
+  number:
+    description: Issue or PR number in this repo; empty for release-cut
+    default: ""
+  trigger-kind:
+    default: ""
+  trigger-id:
+    default: ""
+  instruction:
+    description: Manual instruction (workflow_dispatch only)
+    default: ""
+  failed-run-id:
+    default: ""
+  head-sha:
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Split agent repo name
+      id: repo
+      shell: bash
+      env:
+        AGENT_REPO: ${{ inputs.agent-repo }}
+      run: |
+        echo "owner=${AGENT_REPO%%/*}" >> "$GITHUB_OUTPUT"
+        echo "name=${AGENT_REPO#*/}" >> "$GITHUB_OUTPUT"
+
+    - name: Mint dispatch token
+      id: token
+      uses: actions/create-github-app-token@v3
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+        owner: ${{ steps.repo.outputs.owner }}
+        repositories: ${{ steps.repo.outputs.name }}
+
+    - name: Dispatch
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.token.outputs.token }}
+        AGENT_REPO: ${{ inputs.agent-repo }}
+        MODE: ${{ inputs.mode }}
+        NUMBER: ${{ inputs.number }}
+        # triggering_actor, not actor: on a re-run they differ, and the agent
+        # checks this against the run's triggering actor.
+        ACTOR: ${{ github.triggering_actor }}
+        TRIGGER_KIND: ${{ inputs.trigger-kind }}
+        TRIGGER_ID: ${{ inputs.trigger-id }}
+        INSTRUCTION: ${{ inputs.instruction }}
+        FAILED_RUN_ID: ${{ inputs.failed-run-id }}
+        HEAD_SHA: ${{ inputs.head-sha }}
+      run: |
+        set -euo pipefail
+        ARGS=(-f mode="$MODE" -f target_repo="$GITHUB_REPOSITORY"
+              -f actor="$ACTOR" -f caller_run_id="$GITHUB_RUN_ID")
+        [ -z "$NUMBER" ] || ARGS+=(-f number="$NUMBER")
+        [ -z "$TRIGGER_KIND" ] || ARGS+=(-f trigger_kind="$TRIGGER_KIND")
+        [ -z "$TRIGGER_ID" ] || ARGS+=(-f trigger_id="$TRIGGER_ID")
+        [ -z "$INSTRUCTION" ] || ARGS+=(-f instruction="$INSTRUCTION")
+        [ -z "$FAILED_RUN_ID" ] || ARGS+=(-f failed_run_id="$FAILED_RUN_ID")
+        [ -z "$HEAD_SHA" ] || ARGS+=(-f head_sha="$HEAD_SHA")
+        # --ref is required: without it gh looks up the default branch, which
+        # needs Contents read, and the dispatch App holds only Actions write.
+        gh workflow run agent.yaml -R "$AGENT_REPO" --ref main "${ARGS[@]}"
+        echo "::notice::Dispatched $MODE ${NUMBER:+for #$NUMBER }to $AGENT_REPO."

@@ -46,7 +46,7 @@ its body — that union is the **code surface** to read when judging the doc.
   one agent per doc; see "Sweep" below.
 - **Ratchet (`--base <ref>`):** the docs whose governed code changed since `<ref>`
   (`node scripts/doc_freshness.js affected --base <ref>`). This is what the
-  nightly `claude_refresh_docs.yaml` workflow runs; `<ref>` is the
+  nightly doc-freshness workflow (in the private agent repo) runs; `<ref>` is the
   `doc-freshness-verified` tag (the main SHA of the last verified run).
 
 ## Per-doc workflow

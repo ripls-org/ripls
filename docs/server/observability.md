@@ -1325,12 +1325,14 @@ they just stay quiet (no Claude, no severity-specific labels).
 
 #### Bot identity vs `claude_plan_issue.yaml` self-trigger guard
 
-The existing Claude planning workflow skips events where
-`github.actor == 'claude[bot]'` so it doesn't re-fire on its own follow-up
-comments. The auto-filer's GitHub identity is the existing GitHub App's
-bot user (whatever that App is named) — distinct from `claude[bot]` — so
-the guard correctly lets the auto-filer through. Do not rename the App
-such that its actor string collides.
+The Claude planning workflow skips events where
+`github.actor == 'ripls-agent[bot]'` (the coding agent's identity) so it
+doesn't re-fire on its own follow-up comments. The auto-filer's GitHub
+identity is the existing GitHub App's bot user (whatever that App is named),
+distinct from `ripls-agent[bot]`, so the guard lets the auto-filer through.
+Do not rename the App such that its actor string collides. Bots are refused
+by the agent unless listed as trusted for planning, so the auto-filer's
+`<app>[bot]` login must be in the agent's trusted-bot list.
 
 ---
 
