@@ -55,9 +55,9 @@ val googleMapsApiKey: String =
 // The 1.1.x versions use native JNI code that fails to load on some devices
 configurations.all {
     resolutionStrategy {
-        force("androidx.datastore:datastore-core:1.2.1")
-        force("androidx.datastore:datastore-preferences:1.2.1")
-        force("androidx.datastore:datastore-preferences-core:1.2.1")
+        force("androidx.datastore:datastore-core:1.3.0")
+        force("androidx.datastore:datastore-preferences:1.3.0")
+        force("androidx.datastore:datastore-preferences-core:1.3.0")
     }
 }
 

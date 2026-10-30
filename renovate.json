@@ -131,6 +131,12 @@
       "enabled": false
     },
     {
+      "description": "cross_file is capped at <0.4 by share_plus, not by us: share_plus 13.x (latest 13.3.1) requires cross_file ^0.3.5+2, so 0.4 fails pub resolution (#3132). Lift when a share_plus release accepts cross_file 0.4.",
+      "matchManagers": ["pub"],
+      "matchPackageNames": ["cross_file"],
+      "allowedVersions": "<0.4.0"
+    },
+    {
       "description": "analyzer is capped at <14 by freezed, not by us: freezed 4.0.0 (our codegen backbone) requires analyzer ^13.0.0, and analyzer is a single shared node in the graph — every build_runner generator must agree on one version. mockito 5.8.x wants analyzer >=13.3.0 <15.0.0, so 13.x is the one window that satisfies both. Lift to <15 when a freezed release widens past analyzer 13.",
       "matchManagers": ["pub"],
       "matchPackageNames": ["analyzer"],

@@ -66,6 +66,9 @@ jobs:
       - name: Checkout dispatch action
         uses: actions/checkout@v7
         with:
+          # Review events check out the PR's merge commit by default. Pin the
+          # action to the default branch so PR code never runs with the key.
+          ref: ${{ github.event.repository.default_branch }}
           sparse-checkout: .github/actions/agent-dispatch
           persist-credentials: false
 
