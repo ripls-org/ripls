@@ -10,8 +10,8 @@ name: Claude Plan Issue
 # caller run isn't named "agent-dispatch plan <issue>".
 #
 # Configuration: AGENT_REPO and AGENT_DISPATCH_APP_ID (variables),
-# AGENT_DISPATCH_PRIVATE_KEY (secret). Without both variables (e.g. on the
-# public mirror before OSS-17) the job is skipped.
+# AGENT_DISPATCH_PRIVATE_KEY (secret). Without both variables (e.g. on a fork,
+# or a copy of the repo with no agent configured) the job is skipped.
 
 run-name: agent-dispatch plan ${{ github.event.issue.number || inputs.issue_number }}
 

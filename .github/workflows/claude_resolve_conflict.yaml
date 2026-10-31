@@ -11,8 +11,9 @@ name: Claude Resolve PR Conflicts
 # for scans (the agent then requires the PR to be CONFLICTING), "<pr>" for a
 # manual run (the agent then requires a write-access actor).
 #
-# Without AGENT_REPO / AGENT_DISPATCH_APP_ID (e.g. on the public mirror before
-# OSS-17) nothing runs, so there is no permanently red check.
+# Without AGENT_REPO / AGENT_DISPATCH_APP_ID (e.g. on a fork, or a copy of the
+# repo with no agent configured) nothing runs, so there is no permanently red
+# check.
 
 run-name: agent-dispatch resolve ${{ inputs.pr_number || 'scan' }}
 
