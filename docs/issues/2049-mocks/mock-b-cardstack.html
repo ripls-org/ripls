@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mock B — Floating card</title>
+<link rel="stylesheet" href="../../../website/content/css/tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    color: var(--color-text-primary);
+    background: var(--color-background);
+    padding: var(--space-5) var(--space-3);
+    min-height: 100vh;
+  }
+  .label { font-size: var(--font-size-meta); color: var(--color-text-tertiary);
+           text-align: center; padding: var(--space-3); font-style: italic; }
+
+  .card {
+    max-width: 480px; margin: 0 auto;
+    background: var(--color-card-background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .hero {
+    position: relative;
+    height: 220px; overflow: hidden;
+  }
+  .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-badge {
+    position: absolute; top: var(--space-3); left: var(--space-3);
+    background: rgba(253,250,247,0.92); color: var(--color-text-primary);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-micro); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    backdrop-filter: blur(4px);
+  }
+
+  .body { padding: var(--space-5); }
+
+  .host-row {
+    display: flex; align-items: center; gap: var(--space-3);
+    margin-top: -40px; margin-bottom: var(--space-4);
+  }
+  .avatar {
+    width: 72px; height: 72px; border-radius: var(--radius-pill);
+    overflow: hidden;
+    border: 3px solid var(--color-card-background);
+    box-shadow: var(--shadow-sm); flex-shrink: 0;
+    background: var(--color-surface);
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .host-name { font-weight: 600; }
+  .host-sub { font-size: var(--font-size-meta); color: var(--color-text-secondary); }
+
+  h1 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-hero); line-height: 1.15;
+    font-weight: 400; margin-bottom: var(--space-4);
+  }
+
+  .meta { display: grid; gap: var(--space-3); margin-bottom: var(--space-5); }
+  .meta-row { display: flex; align-items: center; gap: var(--space-3);
+              font-size: var(--font-size-body); }
+  .icon {
+    width: 32px; height: 32px; border-radius: var(--radius-sm);
+    background: var(--color-surface); display: grid; place-items: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+
+  .att-section { margin-bottom: var(--space-5); }
+  .att-title {
+    font-size: var(--font-size-meta); text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--color-text-tertiary);
+    margin-bottom: var(--space-3);
+  }
+  .att-row { display: flex; gap: var(--space-3); overflow-x: auto; }
+  .att { display: flex; flex-direction: column; align-items: center;
+         gap: var(--space-1); min-width: 60px; }
+  .att .avatar { width: 48px; height: 48px; border: none; box-shadow: none; }
+  .att .name { font-size: var(--font-size-micro); }
+
+  .ctas { display: grid; gap: var(--space-2); }
+  .cta {
+    width: 100%; padding: var(--space-4);
+    font-size: var(--font-size-body-large); font-weight: 600;
+    font-family: var(--font-body);
+    border-radius: var(--radius-md); border: none;
+    cursor: pointer;
+  }
+  .cta.yes {
+    background: var(--color-primary); color: #FDFAF7;
+  }
+  .cta.maybe {
+    background: var(--color-surface); color: var(--color-text-primary);
+  }
+  .cta.no {
+    background: transparent; color: var(--color-text-secondary);
+  }
+  .cta[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+  .full-message {
+    text-align: center;
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-body);
+    line-height: 1.5;
+  }
+  .full-message strong { color: var(--color-text-primary); display: block;
+                         margin-bottom: var(--space-1);
+                         font-family: var(--font-heading);
+                         font-size: var(--font-size-card); }
+
+  .variant {
+    max-width: 480px; margin: var(--space-5) auto;
+    border: 1px dashed var(--color-divider);
+    border-radius: var(--radius-md); padding: var(--space-4);
+    background: var(--color-card-background);
+  }
+  .variant h3 { font-family: var(--font-heading); font-size: var(--font-size-card);
+                margin-bottom: var(--space-3); color: var(--color-text-secondary); }
+</style>
+</head>
+<body>
+  <div class="label">Mock B — “Floating card” · centered card on cream · stacked CTAs · soft hero</div>
+
+  <article class="card">
+    <header class="hero">
+      <img src="../../../server/simulation/assets/experiences/exp_004.jpg" alt="">
+      <span class="hero-badge">Saturday · May 24</span>
+    </header>
+    <div class="body">
+      <div class="host-row">
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_010.jpg" alt=""></div>
+        <div>
+          <div class="host-name">Emma R. invites you</div>
+          <div class="host-sub">to Two Oaks Block</div>
+        </div>
+      </div>
+      <h1>Community Potluck Dinner</h1>
+
+      <div class="meta">
+        <div class="meta-row"><div class="icon">⏰</div><div>6:00 PM — about 2½ hours</div></div>
+        <div class="meta-row"><div class="icon">📍</div><div>Two Oaks Community Center</div></div>
+        <div class="meta-row"><div class="icon">👥</div><div>18 of 32 members in this community</div></div>
+      </div>
+
+      <div class="att-section">
+        <div class="att-title">6 going</div>
+        <div class="att-row">
+          <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_001.jpg" alt=""></div><div class="name">Marcus</div></div>
+          <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_005.jpg" alt=""></div><div class="name">Henry</div></div>
+          <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_012.jpg" alt=""></div><div class="name">Ian</div></div>
+          <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_018.jpg" alt=""></div><div class="name">Betty</div></div>
+          <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_025.jpg" alt=""></div><div class="name">Tom</div></div>
+          <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_030.jpg" alt=""></div><div class="name">Sarah</div></div>
+        </div>
+      </div>
+
+      <div class="ctas">
+        <button class="cta yes" disabled aria-label="Coming soon — RSVP available shortly">Yes, I'll be there</button>
+        <button class="cta maybe" disabled aria-label="Coming soon">Maybe</button>
+        <button class="cta no" disabled aria-label="Coming soon">Can't make it</button>
+      </div>
+    </div>
+  </article>
+
+  <div class="variant">
+    <h3>At-capacity variant</h3>
+    <p style="color:var(--color-text-secondary); font-size:var(--font-size-meta); margin-bottom: var(--space-3);">
+      RSVP buttons hidden. In their place:
+    </p>
+    <div class="full-message" role="status">
+      <strong>This community is full</strong>
+      Can't RSVP because the hosting community is full
+      (32 of 32 members). Ask your inviter for options.
+    </div>
+  </div>
+
+  <div class="variant">
+    <h3>Empty-attendee variant</h3>
+    <p style="color:var(--color-text-secondary); font-size:var(--font-size-meta);">
+      No one's RSVPed yet — the “6 going” section is hidden; the host row remains.
+    </p>
+  </div>
+</body>
+</html>

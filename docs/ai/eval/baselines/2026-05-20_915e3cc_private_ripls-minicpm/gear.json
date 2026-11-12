@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "suite": "TestGearPrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T03:28:29Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-minicpm"
+  },
+  "goldens_file": "gear_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-minicpm",
+      "pass_rate": 0.6933333333333334,
+      "threshold": 0.85,
+      "passed": false,
+      "median_latency_ms": 3681,
+      "p95_latency_ms": 3914,
+      "field_pass_rates": {
+        "brand": 1,
+        "brand_contains": 1,
+        "brand_empty": 0.5714285714285714,
+        "category_contains_any_of": 1,
+        "location_query_contains": 0,
+        "material_category_any_of": 0.45454545454545453,
+        "min_confidence": 0.9230769230769231,
+        "title_contains": 0.7692307692307693,
+        "value_estimate_usd": 0.4166666666666667,
+        "weight_grams_approx": 0.6
+      }
+    }
+  ]
+}

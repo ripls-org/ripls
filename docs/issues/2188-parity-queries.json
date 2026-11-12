@@ -1,0 +1,290 @@
+[
+  {
+    "kind": "search",
+    "q": "The Cup Boulder",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Real POI from server/services/experience/location_test.go fixtures — common Ripls Boulder community query"
+  },
+  {
+    "kind": "search",
+    "q": "Pearl Street Mall",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Well-known landmark, no ambiguity expected"
+  },
+  {
+    "kind": "search",
+    "q": "Central Park",
+    "_note": "Famous POI, no proximity — both should resolve to NYC by default"
+  },
+  {
+    "kind": "search",
+    "q": "Boulder Airport, 3393 Airport Rd, Boulder, CO 80302",
+    "proximity": { "lat": 40.016722, "lng": -105.281713 },
+    "_note": "Address-shaped query from JSON-LD fixture in experience/location_test.go"
+  },
+  {
+    "kind": "search",
+    "q": "tea house pearl",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Fuzzy autocomplete-style query — partial words"
+  },
+  {
+    "kind": "search",
+    "q": "1600 Amphitheatre Parkway",
+    "_note": "Classic example address, no proximity"
+  },
+  {
+    "kind": "search",
+    "q": "REI Denver",
+    "proximity": { "lat": 39.7392, "lng": -104.9903 },
+    "_note": "Chain retail location — both providers should know it"
+  },
+  {
+    "kind": "search",
+    "q": "rec center boulder",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Casual / partial query for a community facility"
+  },
+  {
+    "kind": "search",
+    "q": "Coors Field",
+    "_note": "Stadium / venue"
+  },
+  {
+    "kind": "search",
+    "q": "Whole Foods",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Ambiguous chain query — proximity should pick a specific location"
+  },
+
+  {
+    "kind": "search",
+    "q": "Stinson Beach",
+    "proximity": { "lat": 37.7749, "lng": -122.4194 },
+    "_note": "California POI — different city than the proximity bias"
+  },
+  {
+    "kind": "search",
+    "q": "Mission Dolores Park",
+    "proximity": { "lat": 37.7749, "lng": -122.4194 },
+    "_note": "SF park"
+  },
+  {
+    "kind": "search",
+    "q": "El Farolito Mission",
+    "proximity": { "lat": 37.7749, "lng": -122.4194 },
+    "_note": "Small business, neighborhood-scoped query"
+  },
+  {
+    "kind": "search",
+    "q": "Tartine Bakery",
+    "proximity": { "lat": 37.7749, "lng": -122.4194 },
+    "_note": "Multiple locations of same brand — proximity should disambiguate"
+  },
+  {
+    "kind": "search",
+    "q": "Cafe La Boheme",
+    "proximity": { "lat": 37.7749, "lng": -122.4194 },
+    "_note": "Accent character in name — does either provider handle it?"
+  },
+
+  {
+    "kind": "search",
+    "q": "1 Infinite Loop, Cupertino, CA",
+    "_note": "Full address, no proximity — both providers should geocode crisply"
+  },
+  {
+    "kind": "search",
+    "q": "Times Square NYC",
+    "_note": "Colloquial venue name"
+  },
+  {
+    "kind": "search",
+    "q": "Golden Gate Bridge",
+    "_note": "Landmark"
+  },
+  {
+    "kind": "search",
+    "q": "Berkeley Marina",
+    "_note": "Recreational area"
+  },
+  {
+    "kind": "search",
+    "q": "JFK Airport",
+    "_note": "Airport common name"
+  },
+
+  {
+    "kind": "search",
+    "q": "café",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Single-word fuzzy query — what happens when the query is barely informative?"
+  },
+  {
+    "kind": "search",
+    "q": "near me",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Pathological query — neither should return useful results, but how do they fail?"
+  },
+  {
+    "kind": "search",
+    "q": "park",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Single-noun query"
+  },
+  {
+    "kind": "search",
+    "q": "boulder",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Ambiguous: city name vs. a rock?"
+  },
+  {
+    "kind": "search",
+    "q": "the",
+    "proximity": { "lat": 40.015, "lng": -105.2705 },
+    "_note": "Sub-threshold query — both providers should return ~nothing or refuse"
+  },
+
+  {
+    "kind": "geographic",
+    "q": "Boulder",
+    "_note": "Geographic-areas-only mode — should return the city, not POIs"
+  },
+  {
+    "kind": "geographic",
+    "q": "Colorado",
+    "_note": "State"
+  },
+  {
+    "kind": "geographic",
+    "q": "Capitol Hill",
+    "proximity": { "lat": 39.7392, "lng": -104.9903 },
+    "_note": "Neighborhood name, ambiguous across cities — proximity should pick Denver's"
+  },
+  {
+    "kind": "geographic",
+    "q": "Marin County",
+    "_note": "County-level query"
+  },
+  {
+    "kind": "geographic",
+    "q": "Bay Area",
+    "_note": "Vernacular region name (not an official boundary)"
+  },
+
+  {
+    "kind": "search",
+    "q": "Camden Town",
+    "_note": "London neighborhood — international, no proximity"
+  },
+  {
+    "kind": "search",
+    "q": "Trafalgar Square",
+    "_note": "London landmark"
+  },
+  {
+    "kind": "search",
+    "q": "Shibuya Crossing",
+    "_note": "Tokyo landmark, non-Latin native name"
+  },
+  {
+    "kind": "search",
+    "q": "Champs-Élysées",
+    "_note": "Paris, accent characters in canonical name"
+  },
+  {
+    "kind": "search",
+    "q": "Plaza de Mayo",
+    "_note": "Buenos Aires plaza — Spanish-language POI"
+  },
+  {
+    "kind": "search",
+    "q": "Bondi Beach",
+    "_note": "Sydney beach"
+  },
+  {
+    "kind": "search",
+    "q": "Kensington Market",
+    "proximity": { "lat": 43.6532, "lng": -79.3832 },
+    "_note": "Toronto neighborhood with proximity"
+  },
+  {
+    "kind": "search",
+    "q": "10 Downing St, London",
+    "_note": "International formal address"
+  },
+
+  {
+    "kind": "reverse",
+    "lat": 40.015,
+    "lng": -105.2705,
+    "_note": "Boulder, CO center — should resolve to Boulder city"
+  },
+  {
+    "kind": "reverse",
+    "lat": 37.7749,
+    "lng": -122.4194,
+    "_note": "SF — should resolve to a specific neighborhood"
+  },
+  {
+    "kind": "reverse",
+    "lat": 40.748817,
+    "lng": -73.985428,
+    "_note": "Empire State Building coords — POI vs. address discrimination"
+  },
+  {
+    "kind": "reverse",
+    "lat": 51.5007,
+    "lng": -0.1246,
+    "_note": "Big Ben, London"
+  },
+  {
+    "kind": "reverse",
+    "lat": 48.8566,
+    "lng": 2.3522,
+    "_note": "Paris center"
+  },
+  {
+    "kind": "reverse",
+    "lat": 35.6586,
+    "lng": 139.7454,
+    "_note": "Tokyo Tower — non-Latin script in returned address"
+  },
+  {
+    "kind": "reverse",
+    "lat": -33.8688,
+    "lng": 151.2093,
+    "_note": "Sydney center — southern hemisphere"
+  },
+  {
+    "kind": "reverse",
+    "lat": -34.6037,
+    "lng": -58.3816,
+    "_note": "Buenos Aires"
+  },
+  {
+    "kind": "reverse",
+    "lat": 47.6062,
+    "lng": -122.3321,
+    "_note": "Seattle — US PNW for regional diversity"
+  },
+  {
+    "kind": "reverse",
+    "lat": 30.2672,
+    "lng": -97.7431,
+    "_note": "Austin, TX — the fallback location hardcoded in LocationPickerNotifier"
+  },
+
+  {
+    "kind": "reverse",
+    "lat": 39.5501,
+    "lng": -105.7821,
+    "_note": "Random rural mountain coordinate in CO — sparse-coverage test"
+  },
+  {
+    "kind": "reverse",
+    "lat": 64.2008,
+    "lng": -149.4937,
+    "_note": "Interior Alaska — extreme sparse-coverage test"
+  }
+]

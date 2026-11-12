@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "suite": "TestCommunityPrompt",
+  "run": {
+    "timestamp_utc": "2026-05-19T23:20:47Z",
+    "git_commit": "5b40c2e30b",
+    "git_branch": "private_llm",
+    "label": "cloud"
+  },
+  "goldens_file": "community_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "pass_rate": 1,
+      "threshold": 0.78,
+      "passed": true,
+      "median_latency_ms": 2723,
+      "p95_latency_ms": 2965,
+      "field_pass_rates": {
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "title_contains": 1
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "pass_rate": 0.9259259259259259,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 14806,
+      "p95_latency_ms": 19854,
+      "field_pass_rates": {
+        "min_confidence": 1,
+        "search_keywords_general_matches": 0.875,
+        "search_keywords_must_contain": 1,
+        "title_contains": 0.875
+      }
+    },
+    {
+      "provider": "gemini",
+      "model": "vertexai/gemini-3.1-flash-lite",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 1436,
+      "p95_latency_ms": 1629,
+      "field_pass_rates": {
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "title_contains": 1
+      }
+    }
+  ]
+}

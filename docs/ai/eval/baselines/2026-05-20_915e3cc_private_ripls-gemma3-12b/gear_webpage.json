@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "suite": "TestGearWebpagePrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T03:07:30Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-gemma3-12b"
+  },
+  "goldens_file": "gear_webpage_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-gemma3-12b",
+      "pass_rate": 0.9523809523809523,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 6263,
+      "p95_latency_ms": 6528,
+      "field_pass_rates": {
+        "brand_contains": 1,
+        "has_description": 1,
+        "material_category_any_of": 1,
+        "min_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 1,
+        "weight_grams_approx": 0.6666666666666666
+      }
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.5.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="ripls-0.5.0-release-notes">Ripls 0.5.0 Release Notes</h1>
+            <p class="release-date">February 28, 2026</p>
+<h2 id="new-features">New Features</h2>
+<h3 id="daily-screen">Daily Screen</h3>
+<p>The inbox has been replaced with a new Daily screen that gives you a
+snapshot of your community activity at a glance. At the top, weekly
+metrics show your personal sharing impact – items shared, people helped,
+and time contributed. Below that, today’s activity is organized into
+what you’ve done, what needs your attention, and what’s coming up in the
+next few days. Other community members’ recent activity appears in a
+browsable magazine-style carousel. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/769">#769</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/770">#770</a>)</p>
+<h3 id="chat-based-workflows">Chat-Based Workflows</h3>
+<p>Experiences and requests now center around chat instead of separate
+workflow modals. Actions like voting on times, confirming attendance, or
+offering to help happen directly in the conversation. A status indicator
+in the chat input area shows the current state and lets you take the
+next action without leaving the conversation. Offering gear to lend in
+response to a request slides the item in for easy one-tap borrowing. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/761">#761</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/767">#767</a>)</p>
+<h3 id="social-impact-metrics">Social Impact Metrics</h3>
+<p>A new “rich minutes” metric captures the social value of sharing –
+the quality time spent helping others and participating in community
+events. This appears as a fourth hero metric on the community impact
+screen and on individual item metrics. Values are estimated from actual
+activity data (event duration, group size, number of helpers) and
+refined by AI. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/759">#759</a>)</p>
+<h3 id="community-activity-simulator">Community Activity Simulator</h3>
+<p>A new simulation framework can populate communities with realistic
+activity for demos and load testing. Simulations include personas with
+distinct behavior patterns, realistic locations and venue data, chat
+conversations, media uploads, and multi-week activity timelines. Results
+are captured in an HTML report. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/760">#760</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/762">#762</a>)</p>
+<h2 id="improvements">Improvements</h2>
+<ul>
+<li><p><strong>Redesigned content views</strong>: Gear, experience, and
+request screens now feature a unified action bar at the bottom grouping
+people, chat, and actions. Location, time, and URL are displayed as
+formal chips for clarity. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/758">#758</a>)</p></li>
+<li><p><strong>Updated item metrics</strong>: The item impact screen now
+matches the community metrics design with hero metrics at the top and
+tappable drill-down into per-action savings. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/756">#756</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/753">#753</a>)</p></li>
+<li><p><strong>Feedback moved</strong>: The feedback link is now in the
+add modal, making it more discoverable. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/766">#766</a>)</p></li>
+<li><p><strong>Unread message badge</strong>: Content views now show an
+unread message indicator so you know when there are new messages without
+navigating away. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/770">#770</a>)</p></li>
+<li><p><strong>Localized time display</strong>: Times are now displayed
+in your local timezone throughout the app. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/770">#770</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>iOS keyboard no longer covers buttons</strong>: A “Done”
+toolbar now appears above the iOS keyboard, and tapping outside a text
+field dismisses it. Applied consistently across all input screens. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/754">#754</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/751">#751</a>)</p></li>
+<li><p><strong>Screen transition flash fixed</strong>: Eliminated the
+brief black flash that appeared when navigating back from some screens.
+All slide-in screens now use a consistent overlay approach. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/755">#755</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/752">#752</a>)</p></li>
+</ul>
+<h2 id="performance">Performance</h2>
+<ul>
+<li><p><strong>68% fewer database queries</strong>: Profiling identified
+and eliminated N+1 query patterns across the top API endpoints.
+<code>ListCommunityGear</code> dropped from 217 to 8 queries per call,
+<code>GetFeed</code> from 96 to 17, and
+<code>GetCommunityImpactMetrics</code> from 139 to 18. Overall server
+response times improved significantly. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/765">#765</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/768">#768</a>)</p></li>
+<li><p><strong>Storage layer modernized</strong>: New batch APIs
+(<code>GetByIDs</code>, <code>QueryByFieldIn</code>,
+<code>InsertBatch</code>) and generic type-safe wrappers replace
+per-item query loops throughout the codebase. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/765">#765</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/768">#768</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.4.0.html">0.4.0</a> &mdash; February 20,
+2026</li>
+                <li><a href="0.3.0.html">0.3.0</a> &mdash; February 13,
+2026</li>
+                <li><a href="0.2.0.html">0.2.0</a> &mdash; February 5,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

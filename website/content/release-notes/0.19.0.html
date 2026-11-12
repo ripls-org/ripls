@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.19.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.19.0">Release 0.19.0</h1>
+            <p class="release-date">May 1, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Community-wide chat</strong>: Each community now has a
+single perpetual chat conversation that every member can see in their
+inbox. Community chats appear alongside DMs and gear-scoped chats in the
+multi-community inbox, and the conversation supports media attachments
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1637">#1637</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1646">#1646</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1660">#1660</a>)</p></li>
+<li><p><strong>New-member notifications</strong>: When a new person
+joins a community, existing members get a push notification (“Alex
+joined Bay Area Tools”) so they can welcome them in. Controlled by a new
+per-community “New members” toggle on the notification preferences
+screen (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1639">#1639</a>)</p></li>
+<li><p><strong>Auth screens lead with phone and Google</strong>: Sign-up
+and login now surface phone and Google as the primary options, with
+email/password demoted behind an expander. The invitation landing screen
+has been merged into the register screen so invited users see their hero
+context inline rather than going through a separate welcome step (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1640">#1640</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1649">#1649</a>)</p></li>
+<li><p><strong>Single-select community sidebar</strong>: The sidebar’s
+multi-select model has been replaced with single-select, simplifying the
+navigation state and matching how the rest of the app scopes by active
+community (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1629">#1629</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1631">#1631</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Transfer list 500 when a referenced gear was
+deleted</strong>: A user with even one transfer pointing to a
+soft-deleted gear couldn’t load any transfer list — every page hit a
+500. <code>buildTransfers</code> now includes soft-deleted gear so
+transfer history stays viewable after the gear is deleted (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1641">#1641</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1642">#1642</a>)</p></li>
+<li><p><strong>Duplicate-email registrations created shadow
+accounts</strong>: Registering with an email that already existed (with
+different casing or whitespace) created a duplicate user row that
+fragmented the user’s data. Registration now normalizes emails and
+rejects duplicates (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1636">#1636</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1638">#1638</a>)</p></li>
+<li><p><strong>Removed the unary AI generation path</strong>: The legacy
+non-streaming <code>Gen*</code> RPCs and the
+<code>ENABLE_GEN_STREAMING</code> flag are gone — every generation flow
+streams now. Cleans up the dual-path branching that was left behind from
+the streaming rollout (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1260">#1260</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1634">#1634</a>)</p></li>
+<li><p><strong>Cloud Run image attribute fight</strong>: Terraform and
+the deploy workflow were each rewriting the Cloud Run service’s
+container image, causing intermittent prod deploy failures. Terraform
+now ignores the image attribute so the deploy workflow owns it (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1628">#1628</a>)</p></li>
+</ul>
+<h2 id="reliability-safety">Reliability &amp; Safety</h2>
+<ul>
+<li><strong>Community soft-delete scaffolding (Phase 1)</strong>:
+Server-side groundwork for the upcoming community delete + 30-day
+restore feature. Adds <code>Community.owner_user_id</code>, the
+deleted-member snapshot, and <code>CommunityUser.deleted</code>;
+backfills <code>owner_user_id = creator_id</code> and adds a
+<code>UNIQUE (community_id, user_id)</code> constraint on
+<code>community_user</code>; and gates read paths, notification
+dispatchers, and background-job writes on whether the community is
+active. None of this is user-visible yet — clients can’t produce a
+deleted community in this release — but it lets Phase 2 land safely (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1619">#1619</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1621">#1621</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1622">#1622</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1623">#1623</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1630">#1630</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1632">#1632</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1633">#1633</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1643">#1643</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1644">#1644</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1645">#1645</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1652">#1652</a>)</li>
+</ul>
+<h2 id="developer-experience">Developer Experience</h2>
+<ul>
+<li><p><strong>Auto-assign PR author on open</strong>: PRs are now
+automatically assigned to their author so they show up in the right
+“your PRs” filters without manual triage (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1617">#1617</a>)</p></li>
+<li><p><strong>Community delete &amp; leave design doc</strong>: Full
+design for the community soft-delete feature — owner-leave with handoff,
+sole-member-leave-as-delete, 30-day rejoin window, restore by any
+snapshot member — lives in
+<code>docs/community_delete_and_leave.md</code> (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1616">#1616</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.18.0.html">0.18.0</a> &mdash; April 30,
+2026</li>
+                <li><a href="0.17.0.html">0.17.0</a> &mdash; April 24,
+2026</li>
+                <li><a href="0.16.0.html">0.16.0</a> &mdash; April 20,
+2026</li>
+                <li><a href="0.15.0.html">0.15.0</a> &mdash; April 16,
+2026</li>
+                <li><a href="0.14.0.html">0.14.0</a> &mdash; April 15,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

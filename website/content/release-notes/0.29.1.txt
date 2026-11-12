@@ -1,0 +1,20 @@
+Release 0.29.1
+
+
+Connection-starvation fix for the home screen and a web-based community invite flow.
+
+Bug Fixes
+
+- Home Screen Stall Fixed: The home screen could spin indefinitely because the client opened one realtime stream per community — on HTTP/1.1 (local dev and e2e), those streams consumed every connection slot before GetHomeView could be sent. On production the stall didn’t manifest, but each user was still sustaining a poll timer and a blocked goroutine per community, reaching 1.6 req/s per user against a design that assumed ~0.1. The fix collapses the per-community fan-out to a single StreamUserEvents / ListUserEvents pair; membership is resolved server-side per event, so joining or leaving takes effect with no reconnect (#2867)
+
+- Community Invites Now Work in a Browser: Tapping a /go/{code} community invite on desktop — or any device without the app — previously showed only “To accept this invitation, download the Ripls app.” There was no way to continue in a browser at all. The invite link now opens a phone-first landing page with the group name, member count, and a Join the group button that routes through the existing phone-auth flow. An already-authenticated visitor joins directly without re-verifying (#2875)
+
+Internal
+
+- Deprecated Share RPCs Removed: The six per-type ShareGear, ShareExperience, ShareRequest, UnshareGear, UnshareExperience, and UnshareRequest RPCs and their twelve message types are deleted. All clients have used ShareItem / UnshareItem since v0.28.0 (#2526)
+
+- SMS Delivery Monitoring: sms_delivery_outcomes_{env} counters and a failure-rate alert are now live. The alert uses condition_threshold (not PromQL) so it can be in place before the SMS channel goes live in production (#2569)
+
+- Email Delivery Latency Alert: A P95 accepted→delivered latency alert fires when sign-in code delivery exceeds 10 s — roughly 12× the typical 700–900 ms observed delivery time. Also fixed four Cloud Monitoring dashboard resources that were generating noisy no-op plan diffs on every terraform plan (#2862)
+
+- Dev Deploy Race Fixed: Concurrent merges no longer cause a red-X dev deploy failure. A workflow concurrency group cancels the older in-flight run rather than letting it race and lose (#2879)

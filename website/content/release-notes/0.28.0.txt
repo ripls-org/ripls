@@ -1,0 +1,32 @@
+Release 0.28.0
+
+
+Four-tab navigation, smarter multi-need AI extraction, lend↔giveaway toggling, and a comprehensive contrast overhaul that clears WCAG AA across the app’s glass surfaces.
+
+Features
+
+- Four-Tab Navigation: The main navigation is reorganized into four dedicated tabs — Home, Plans, Library, and People. Library replaces the old portfolio inbox and surfaces your gear collection clearly; People brings contacts and community discovery into a single tab alongside search (#2723)
+
+- Multi-Need Request Extraction: When a request plainly names several things (“a ladder, a drill, and some help moving boxes”), the AI now extracts all of them into separate needs rather than collapsing to one. The extraction runs at request-create time on both client and server, with a precision/recall eval gate backing the model (#2731)
+
+- Lend ↔ Giveaway Toggle: Owners can now switch an item between lending and permanent giveaway from the gear edit screen at any time — not just at creation. The new SetGearAvailability RPC makes this item-wide and enforces it consistently (#1152)
+
+- Notification Deep-Link Recovery: Tapping a push notification now reliably routes to the relevant event, request, or loan — even when the app was cold-started or the deep link was dropped during startup. A route holder replays the saved route after the app is ready, and unrecoverable drops are reported to Crashlytics (#2636)
+
+Bug Fixes
+
+- Contrast on Glass and Photo Surfaces: A measured sweep across all production renders found 160 failing contrast instances on glass sheets, hero photos, date pickers, and toasts. All are now fixed and gated: date-picker Cancel/OK went from 1.75:1 to 4.74:1; status colours in light theme from 1.86–2.76:1 to 4.73–5.73:1; the bottom tab dock, hero text over bright photos, and dark-theme toasts all reach WCAG AA. The glass token set (previously ~40 hand-tuned alpha constants outside every gate) is now part of the canonical design/tokens.json with a CI harness that measures composited pixel contrast (#2770, #2764, #2445, #2788)
+
+- Share Link Community Scope: Item share links no longer include the sharing user’s private community name in the preview description — the link is scoped to the ad-hoc open-link community it was actually minted for (#2767)
+
+- Server-Side i18n for Invite Pages: The invite.html and event.html SSR landing pages are now fully localized — error/fallback strings, plurals, composed copy, and date/time labels all respect the Accept-Language header (#2090)
+
+Internal
+
+- Dead Flutter Code Removal: ~75 K lines of Flutter code unreachable from main.dart or their own tests were removed. A new dead-code detector (app/tool/dead_code.dart) runs in CI to gate against new accumulation, and 833 orphaned ARB localization keys were pruned alongside the removed screens (#2774)
+
+- Sharing API Convergence: All client-side sharing is now routed through the unified ShareItem / UnshareItem RPCs. The six per-type Share* / Unshare* RPCs are deprecated and no longer called by new client code (#2526)
+
+- AI Provider Reliability: Composite health status now aggregates across fallback and load-balanced AI providers so a leaf-provider outage no longer pages as a global failure. Transient API-call-failed log entries are demoted from ERROR to WARN (#2757, #2762)
+
+- CI: Web e2e tests now record video only on failure (saves ~2 GB of Actions storage per run); the port guard works without lsof and no longer hangs CI (#2738)

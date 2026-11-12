@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.12.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.12.0">Release 0.12.0</h1>
+            <p class="release-date">April 11, 2026</p>
+<p>Real-time updates, multi-image upload, and analytics infrastructure
+for closed beta.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Real-Time Updates</strong>: The app now updates
+automatically when other users take actions — no more pull-to-refresh
+needed. Uses a three-layer hybrid of gRPC streaming (sub-second
+delivery), FCM push notifications (background/terminated state), and
+polling (correctness backstop). Includes push suppression for users with
+active streams and narrowed event routing to avoid unnecessary refreshes
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/999">#999</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1085">#1085</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1089">#1089</a>)</li>
+<li><strong>Multi-Image Upload</strong>: Upload multiple photos at once
+from the media screen (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1086">#1086</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1083">#1083</a>)</li>
+<li><strong>Media Carousel Access</strong>: Tapping on images in chat
+and tapping on the empty part of the media bar now opens the media
+carousel screen (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1086">#1086</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1084">#1084</a>)</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>RSVP to Active Events</strong>: Users can now RSVP to events
+that are already active, not just upcoming ones (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1088">#1088</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1080">#1080</a>)</li>
+<li><strong>iOS Dev App Name</strong>: Dev builds now correctly display
+“Ripls Dev” instead of “Ripls” on iOS (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1082">#1082</a>)</li>
+</ul>
+<h2 id="infrastructure">Infrastructure</h2>
+<ul>
+<li><strong>Metabase Analytics</strong>: Added local Metabase setup for
+analytics dashboards with read-only database access, plus Terraform
+module for dev Cloud Run deployment (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1072">#1072</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1078">#1078</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1079">#1079</a>)</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.11.0.html">0.11.0</a> &mdash; April 9,
+2026</li>
+                <li><a href="0.10.0.html">0.10.0</a> &mdash; April 6,
+2026</li>
+                <li><a href="0.9.3.html">0.9.3</a> &mdash; April 4,
+2026</li>
+                <li><a href="0.9.2.html">0.9.2</a> &mdash; April 3,
+2026</li>
+                <li><a href="0.9.1.html">0.9.1</a> &mdash; April 2,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

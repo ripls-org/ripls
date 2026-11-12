@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "suite": "TestUnifiedClassifierPrompt",
+  "run": {
+    "timestamp_utc": "2026-05-19T23:49:13Z",
+    "git_commit": "5b40c2e30b",
+    "git_branch": "private_llm",
+    "label": "cloud"
+  },
+  "goldens_file": "unified_create_classifier_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "pass_rate": 1,
+      "threshold": 0.78,
+      "passed": true,
+      "median_latency_ms": 708,
+      "p95_latency_ms": 1057,
+      "field_pass_rates": {
+        "classified_type": 1
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 1808,
+      "p95_latency_ms": 2776,
+      "field_pass_rates": {
+        "classified_type": 1
+      }
+    },
+    {
+      "provider": "gemini",
+      "model": "vertexai/gemini-3.1-flash-lite",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 936,
+      "p95_latency_ms": 3470,
+      "field_pass_rates": {
+        "classified_type": 1
+      }
+    }
+  ]
+}

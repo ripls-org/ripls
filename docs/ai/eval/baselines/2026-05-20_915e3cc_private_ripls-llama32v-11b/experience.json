@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "suite": "TestExperiencePrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T03:10:59Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-llama32v-11b"
+  },
+  "goldens_file": "experience_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-llama32v-11b",
+      "pass_rate": 0.8220338983050848,
+      "threshold": 0.85,
+      "passed": false,
+      "median_latency_ms": 2461,
+      "p95_latency_ms": 2766,
+      "field_pass_rates": {
+        "date": 0.3076923076923077,
+        "location_query": 1,
+        "location_query_contains": 0.6363636363636364,
+        "mentioned_names_set": 0.75,
+        "min_confidence": 1,
+        "search_keywords_general_matches": 0.42857142857142855,
+        "search_keywords_must_contain": 1,
+        "time": 1,
+        "time_confidence": 0.8666666666666667,
+        "title_contains": 1,
+        "value_estimate_usd": 0.6666666666666666
+      }
+    }
+  ]
+}

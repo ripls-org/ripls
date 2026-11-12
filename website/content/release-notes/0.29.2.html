@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.29.2 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.29.2">Release 0.29.2</h1>
+            <p class="release-date">August 11, 2026</p>
+<p>Two bug fixes: a nonsense sharing nudge is gone, and the “say hi”
+notification link now lands in the community discussion.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Nonsense Sharing Nudge Removed</strong>: The Home screen
+could show a card saying “Share your [item] with the circle — create a
+sharing event so everyone can borrow it at once.” Four things were
+wrong: the gear was already shared (that’s why the card existed), the
+product name was clipped to three words, “sharing event” is not a real
+concept in Ripls, and tapping the button hit a guaranteed
+<code>NotFound</code> error every time with no visible feedback. The
+detector behind it (IdleOfferDetector) also emitted fabricated
+statistics attributed to real sources. All of this has been removed (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2892">#2892</a>)</p></li>
+<li><p><strong>“Say Hi” Notification Links to Community
+Discussion</strong>: When a new member joins a group, the welcome
+notification’s “say hi” link now opens the community discussion thread
+directly. Previously the link led somewhere that didn’t surface the
+discussion at all (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2876">#2876</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.29.1.html">0.29.1</a> &mdash; August 9,
+2026</li>
+                <li><a href="0.29.0.html">0.29.0</a> &mdash; August 8,
+2026</li>
+                <li><a href="0.28.3.html">0.28.3</a> &mdash; August 2,
+2026</li>
+                <li><a href="0.28.2.html">0.28.2</a> &mdash; July 31,
+2026</li>
+                <li><a href="0.28.1.html">0.28.1</a> &mdash; July 30,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

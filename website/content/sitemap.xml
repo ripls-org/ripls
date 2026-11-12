@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Indexable pages of the Ripls marketing site, all on the canonical host
+  https://ripls.org (alias hosts 301 here — see website/config/default.conf).
+  Add a <url> entry when you add a public, indexable page; transactional and
+  deep-link pages (invite, reset-password, account-deletion) are intentionally
+  left out.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://ripls.org/</loc></url>
+  <url><loc>https://ripls.org/walkthroughs/</loc></url>
+  <url><loc>https://ripls.org/walkthroughs/brunch/</loc></url>
+  <url><loc>https://ripls.org/walkthroughs/classroom/</loc></url>
+  <url><loc>https://ripls.org/walkthroughs/kitchen/</loc></url>
+  <url><loc>https://ripls.org/walkthroughs/mower/</loc></url>
+  <url><loc>https://ripls.org/walkthroughs/runclub/</loc></url>
+  <url><loc>https://ripls.org/crew/</loc></url>
+  <url><loc>https://ripls.org/moms/</loc></url>
+  <url><loc>https://ripls.org/sms-opt-in.html</loc></url>
+  <url><loc>https://ripls.org/sms-terms.html</loc></url>
+  <url><loc>https://ripls.org/privacy-policy.html</loc></url>
+</urlset>

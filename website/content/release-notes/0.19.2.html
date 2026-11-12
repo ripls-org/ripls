@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.19.2 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.19.2">Release 0.19.2</h1>
+            <p class="release-date">May 6, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Leave or delete your community</strong>: Community owners
+can now choose between transferring ownership and leaving, or deleting
+the community outright, via a new Danger Zone modal in Settings.
+Non-owners get a straightforward Leave action with an ownership-handoff
+picker when they are the last admin (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1718">#1718</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1719">#1719</a>)</p></li>
+<li><p><strong>Restore a deleted community</strong>: Members listed in a
+community’s deleted snapshot can now restore it from Settings →
+Communities. A countdown badge shows how many days are left in the
+30-day restore window (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1717">#1717</a>)</p></li>
+<li><p><strong>Rejoin a community you recently left</strong>: Settings →
+Communities now shows a “recently left” section. Each entry displays the
+time elapsed since you left, how many days remain in the rejoin window,
+and a single tap to rejoin (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1721">#1721</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1723">#1723</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Close Request modal lacked Cancel and Unshare
+options</strong>: Tapping the close button on a request only showed
+“Delete Permanently” — the Cancel and Unshare actions were present in
+the UI but their callbacks weren’t wired up. All three options now work
+correctly (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1726">#1726</a>)</p></li>
+<li><p><strong>Info and Watch icons blocked the Save button during
+editing</strong>: The info and watch icons stayed visible in gear,
+event, and request app bars while in edit mode, overlapping the Save
+button and making it hard to tap. Both icons are now hidden during edits
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1727">#1727</a>)</p></li>
+<li><p><strong>Community creation camera mode had no shutter
+button</strong>: In community creation, switching to camera mode showed
+the live preview but provided no way to take a photo — tapping
+“Generate” silently did nothing. The shutter-on-generate logic now
+matches the gear, event, and request creation flows (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1662">#1662</a>)</p></li>
+<li><p><strong>Create Request failed for users in All Circles or a
+single community</strong>: The request creation flow required an
+explicitly selected community, so users who had All Circles active (or
+belonged to only one community) hit a dead-end snackbar. The flow now
+auto-selects the single community when there is only one, and opens the
+community picker in the multi-community case (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1735">#1735</a>)</p></li>
+<li><p><strong>Spurious HTTP/2 error logged on normal stream
+close</strong>: The community event stream logged a WARNING-level
+“http/2 stream closed with error code INTERNAL_ERROR (0x2)” on every
+120-second lifetime cap close — a normal server-side timeout, not a real
+error. The log level is now Info (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1734">#1734</a>)</p></li>
+<li><p><strong>Six Spanish strings were untranslated</strong>: Several
+strings added since the last translation pass were missing their Spanish
+translations and fell back to English for Spanish-locale users. All six
+are now translated</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.19.1.html">0.19.1</a> &mdash; May 4,
+2026</li>
+                <li><a href="0.19.0.html">0.19.0</a> &mdash; May 1,
+2026</li>
+                <li><a href="0.18.0.html">0.18.0</a> &mdash; April 30,
+2026</li>
+                <li><a href="0.17.0.html">0.17.0</a> &mdash; April 24,
+2026</li>
+                <li><a href="0.16.0.html">0.16.0</a> &mdash; April 20,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ripls — Less stuff. More life. · 10 design languages</title>
+<meta name="description" content="Borrow instead of buy. Do instead of own. Lean on the people nearby. Ripls makes the simpler life the easy one.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,500;8..60,600&family=Public+Sans:wght@300;400;500;600&family=Lora:wght@400;500;600&family=Karla:wght@300;400;500;600&family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@300;400;500;600&family=Hanken+Grotesk:wght@300;400;500;600&family=Spectral:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@300;400;500;600&family=Archivo:wght@300;400;500;600&family=EB+Garamond:wght@400;500;600&family=Figtree:wght@300;400;500;600&family=Frank+Ruhl+Libre:wght@300;400;500;700&family=Inter:wght@300;400;500;600&family=DM+Serif+Display&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Themed test build of the /simple page — 10 design languages
+     anchored in Heritage Sage #5B8268. All former warm-cream,
+     rust/terracotta, and italic-accent styling is replaced by
+     theme tokens; word-accents now use weight + sage color.
+     Background and screen assets are still referenced relatively.
+     ============================================================ */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    /* theme 01 — Heritage */
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Public Sans', -apple-system, sans-serif;
+
+    --overlay: rgba(6, 12, 9, 0.62);
+    --overlay-mobile: rgba(6, 12, 9, 0.68);
+    --overlay-feature: rgba(6, 12, 9, 0.78);
+    --overlay-soft: rgba(6, 12, 9, 0.55);
+    --text: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.94);
+    --text-faint: rgba(255, 255, 255, 0.7);
+    --fallback: #0F1411;
+    --fallback-2: #151D17;
+
+    --light-bg: #FAFBF8;
+    --light-bg-2: #F1F4EF;
+    --ink: #222B25;
+    --ink-muted: #4A554E;
+    --ink-faint: #87908A;
+    --accent-strong: #41604C;      /* deep heritage sage — AA on light */
+    --em-dark: #A9C8B2;            /* pale sage word-accent on photo sections */
+
+    --input-bg: #ffffff;
+    --input-ink: #222B25;
+    --input-border: rgba(34, 43, 37, 0.18);
+    --btn-bg: #222B25; --btn-bg-hover: #18211B; --btn-ink: #ffffff;
+
+    --r-btn: 8px;
+    --hw: 300;                     /* headline weight */
+    --kls: 0.28em;                 /* kicker letter-spacing */
+
+    --content-max: 760px;
+    --feature-max: 1080px;
+  }
+  body[data-theme="fieldguide"] {
+    --serif: 'Lora', serif; --sans: 'Karla', sans-serif;
+    --fallback: #141811; --fallback-2: #1B2018;
+    --light-bg: #F3F5EF; --light-bg-2: #EBEFE4;
+    --ink: #2A322B; --ink-muted: #4F594F; --ink-faint: #86908A;
+    --accent-strong: #44614D; --em-dark: #AECBB4;
+    --input-border: rgba(42, 50, 43, 0.30);
+    --btn-bg: #44614D; --btn-bg-hover: #3A5342; --btn-ink: #fff;
+    --r-btn: 4px; --hw: 400; --kls: 0.24em;
+  }
+  body[data-theme="apothecary"] {
+    --serif: 'Cormorant Garamond', serif; --sans: 'Jost', sans-serif;
+    --fallback: #121412; --fallback-2: #181B18;
+    --light-bg: #FFFFFF; --light-bg-2: #F6F8F5;
+    --ink: #1F241F; --ink-muted: #565B55; --ink-faint: #8E938C;
+    --accent-strong: #4A6B56; --em-dark: #B5CDBD;
+    --input-border: rgba(31, 36, 31, 0.22);
+    --btn-bg: #1F241F; --btn-bg-hover: #141814; --btn-ink: #fff;
+    --r-btn: 0px; --hw: 400; --kls: 0.34em;
+  }
+  body[data-theme="forest"] {
+    --serif: 'Bitter', serif; --sans: 'Hanken Grotesk', sans-serif;
+    --fallback: #0B100C; --fallback-2: #121A14;
+    --light-bg: #16211A; --light-bg-2: #1C2A20;
+    --ink: #E9F0EA; --ink-muted: #B7C5BB; --ink-faint: #7C8B80;
+    --accent-strong: #8FB89B; --em-dark: #A9D2B6;
+    --input-bg: #1F2D23; --input-ink: #E9F0EA; --input-border: rgba(233, 240, 234, 0.22);
+    --btn-bg: #8FB89B; --btn-bg-hover: #A1C6AC; --btn-ink: #14201A;
+    --r-btn: 999px; --hw: 300; --kls: 0.28em;
+  }
+  body[data-theme="printmaker"] {
+    --serif: 'Spectral', serif; --sans: 'IBM Plex Sans', sans-serif;
+    --fallback: #101211; --fallback-2: #171918;
+    --light-bg: #F8F8F5; --light-bg-2: #EFEFEA;
+    --ink: #191C1A; --ink-muted: #454B45; --ink-faint: #82877F;
+    --accent-strong: #3D5C49; --em-dark: #ACC9B4;
+    --input-border: rgba(25, 28, 26, 0.34);
+    --btn-bg: #191C1A; --btn-bg-hover: #000; --btn-ink: #fff;
+    --r-btn: 2px; --hw: 300; --kls: 0.3em;
+  }
+  body[data-theme="scandi"] {
+    --serif: 'Literata', serif; --sans: 'Work Sans', sans-serif;
+    --fallback: #11150F; --fallback-2: #181D16;
+    --light-bg: #EFF2EE; --light-bg-2: #E6EBE4;
+    --ink: #2C3530; --ink-muted: #5A655E; --ink-faint: #929B94;
+    --accent-strong: #4C6E59; --em-dark: #ADCBB6;
+    --input-border: rgba(44, 53, 48, 0.18);
+    --btn-bg: #4C6E59; --btn-bg-hover: #41604D; --btn-ink: #fff;
+    --r-btn: 14px; --hw: 400; --kls: 0.22em;
+  }
+  body[data-theme="trailhead"] {
+    --serif: 'Zilla Slab', serif; --sans: 'Archivo', sans-serif;
+    --fallback: #12150F; --fallback-2: #191D15;
+    --light-bg: #F1F2ED; --light-bg-2: #E8EAE0;
+    --ink: #20261F; --ink-muted: #4B544A; --ink-faint: #848C82;
+    --accent-strong: #3F6147; --em-dark: #A8C8AE;
+    --input-border: rgba(32, 38, 31, 0.40);
+    --btn-bg: #3F6147; --btn-bg-hover: #34523B; --btn-ink: #fff;
+    --r-btn: 8px; --hw: 400; --kls: 0.3em;
+  }
+  body[data-theme="conservatory"] {
+    --serif: 'EB Garamond', serif; --sans: 'Figtree', sans-serif;
+    --fallback: #0E1510; --fallback-2: #152019;
+    --light-bg: #EDF3EE; --light-bg-2: #E2EBE3;
+    --ink: #1F3428; --ink-muted: #46604F; --ink-faint: #7E948A;
+    --accent-strong: #3F6650; --em-dark: #B0D1BA;
+    --input-border: rgba(31, 52, 40, 0.20);
+    --btn-bg: #3F6650; --btn-bg-hover: #355745; --btn-ink: #fff;
+    --r-btn: 10px; --hw: 400; --kls: 0.32em;
+  }
+  body[data-theme="civic"] {
+    --serif: 'Frank Ruhl Libre', serif; --sans: 'Inter', sans-serif;
+    --fallback: #101412; --fallback-2: #171C19;
+    --light-bg: #FBFCFA; --light-bg-2: #F0F3EF;
+    --ink: #18211C; --ink-muted: #485149; --ink-faint: #828B84;
+    --accent-strong: #3C5A49; --em-dark: #A9C8B2;
+    --input-border: rgba(24, 33, 28, 0.20);
+    --btn-bg: #3C5A49; --btn-bg-hover: #324C3D; --btn-ink: #fff;
+    --r-btn: 6px; --hw: 300; --kls: 0.24em;
+  }
+  body[data-theme="gallery"] {
+    --serif: 'DM Serif Display', serif; --sans: 'Manrope', sans-serif;
+    --fallback: #121312; --fallback-2: #191A19;
+    --light-bg: #F4F4F2; --light-bg-2: #EBEBE8;
+    --ink: #181A18; --ink-muted: #50534F; --ink-faint: #8B8E8A;
+    --accent-strong: #43654F; --em-dark: #A9C8B2;
+    --input-border: rgba(24, 26, 24, 0.18);
+    --btn-bg: #181A18; --btn-bg-hover: #000; --btn-ink: #fff;
+    --r-btn: 999px; --hw: 400; --kls: 0.36em;
+  }
+
+  html { scroll-behavior: smooth; background: var(--fallback); }
+
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    background: var(--fallback);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ===== theme switcher ===== */
+  .themer { position: fixed; top: 18px; right: 18px; z-index: 40; width: 212px; background: rgba(12,16,13,0.88); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.16); border-radius: 14px; padding: 12px 12px 10px; color: #fff; font-family: 'Inter', system-ui, sans-serif; }
+  .themer .tt { font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em; color: rgba(255,255,255,0.55); margin-bottom: 8px; }
+  .themer button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.78); font-family: inherit; font-size: 12px; padding: 5px 7px; border-radius: 7px; cursor: pointer; }
+  .themer button:hover { background: rgba(255,255,255,0.08); }
+  .themer button.on { background: rgba(143,184,155,0.2); color: #fff; font-weight: 600; }
+  .themer .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; border: 1px solid rgba(255,255,255,0.25); }
+  .themer .no { font-size: 9.5px; color: rgba(255,255,255,0.4); width: 14px; flex: none; font-variant-numeric: tabular-nums; }
+  .themer .cap { margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 10.5px; line-height: 1.5; color: rgba(255,255,255,0.6); }
+  .themer .cap b { color: #fff; font-weight: 600; }
+  @media (max-width: 768px) { .themer { top: auto; bottom: 14px; right: 14px; width: 196px; } }
+
+  .section {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    background-color: var(--fallback-2);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7rem 2rem 7rem;
+    overflow: hidden;
+  }
+
+  .section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--overlay);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .section.feature::before { background: var(--overlay-feature); }
+  .section.soft::before { background: var(--overlay-soft); }
+
+  .section.light { background-color: var(--light-bg); color: var(--ink); }
+  .section.light::before { display: none; }
+  .section.light .brand { color: var(--ink-faint); }
+  .section.light .kicker { color: var(--accent-strong); }
+  .section.light .headline { color: var(--ink); }
+  .section.light .body { color: var(--ink-muted); }
+  .section.light .body strong { color: var(--ink); }
+  .section.light .body em { color: var(--accent-strong); }
+  .section.light .headline em { color: var(--accent-strong); }
+
+  .content {
+    position: relative;
+    z-index: 2;
+    max-width: var(--content-max);
+    width: 100%;
+    margin: 0 auto;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 1.4s cubic-bezier(0.2, 0.6, 0.2, 1),
+                transform 1.4s cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+
+  .section.visible .content { opacity: 1; transform: translateY(0); }
+
+  .brand {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    z-index: 3;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    text-decoration: none;
+    line-height: 1;
+  }
+  .brand .dot {
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    margin-right: 8px;
+    vertical-align: -0.35em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 14;
+  }
+
+  .kicker {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    letter-spacing: var(--kls);
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 1.75rem;
+  }
+
+  .headline {
+    font-family: var(--serif);
+    font-weight: var(--hw);
+    font-size: clamp(2rem, 4.6vw, 3.75rem);
+    line-height: 1.15;
+    letter-spacing: -0.012em;
+    margin-bottom: 1.75rem;
+  }
+
+  /* word-accents: weight + sage color — never italics */
+  .headline em { font-style: normal; font-weight: 500; color: var(--em-dark); }
+
+  .subhead {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-style: normal;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    line-height: 1.4;
+    color: var(--text-muted);
+    margin-bottom: 0;
+  }
+
+  .body {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: clamp(1rem, 1.25vw, 1.18rem);
+    line-height: 1.75;
+    color: var(--text-muted);
+  }
+
+  .body p + p { margin-top: 1.1rem; }
+  .body strong { font-weight: 500; color: var(--text); }
+  .body em { font-style: normal; font-weight: 500; color: var(--em-dark); }
+
+  .hero { text-align: left; }
+  .hero .headline {
+    font-size: clamp(2.4rem, 5.6vw, 4.6rem);
+    line-height: 1.08;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-cta {
+    display: block;
+    width: fit-content;
+    margin: 0.5rem 0 1.75rem;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.36);
+    border-radius: var(--r-btn);
+    padding: 0.9rem 1.5rem;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
+  }
+  .hero-cta:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.56); }
+  .hero-cta:active { transform: translateY(1px); }
+  .hero-cta .arrow { display: inline-block; margin-left: 0.4rem; transition: transform 0.2s ease; }
+  .hero-cta:hover .arrow { transform: translateX(3px); }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    font-family: var(--sans);
+    font-size: 0.65rem;
+    letter-spacing: 0.4em;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .scroll-indicator::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 36px;
+    background: var(--text-faint);
+    margin: 0.75rem auto 0;
+    animation: pulse 2.6s ease-in-out infinite;
+    transform-origin: top;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.3; }
+    50% { transform: scaleY(1); opacity: 0.7; }
+  }
+
+  .feature .content {
+    max-width: var(--feature-max);
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 300px);
+    gap: 5rem;
+    align-items: center;
+  }
+  .feature.flip .content { grid-template-columns: minmax(0, 300px) 1fr; }
+  .feature.flip .feature-text { order: 2; }
+  .feature.flip .feature-media { order: 1; }
+  .feature .headline { font-size: clamp(1.7rem, 3.2vw, 2.6rem); margin-bottom: 1.25rem; }
+  .feature .body { font-size: clamp(1rem, 1.15vw, 1.1rem); }
+
+  .phone-frame {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.55),
+      0 8px 24px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    background: #0a0a0a;
+  }
+  .phone-frame video, .phone-frame img { display: block; width: 100%; height: auto; }
+  .section.light .phone-frame {
+    box-shadow:
+      0 24px 60px rgba(20, 30, 24, 0.22),
+      0 6px 18px rgba(20, 30, 24, 0.12),
+      0 0 0 1px rgba(20, 30, 24, 0.05) inset;
+  }
+
+  .closing { text-align: left; }
+  .closing .content { max-width: 640px; }
+  .closing .headline { color: var(--ink); font-size: clamp(1.9rem, 3.6vw, 2.8rem); margin-bottom: 1rem; }
+
+  .signup-form input, .signup-form textarea {
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--input-ink);
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--r-btn);
+    padding: 0.95rem 1.1rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .signup-form input:focus, .signup-form textarea:focus {
+    border-color: var(--accent-strong);
+    box-shadow: 0 0 0 3px rgba(91, 130, 104, 0.20);
+  }
+  .signup-form input::placeholder, .signup-form textarea::placeholder { color: var(--ink-faint); }
+
+  .signup-form button {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--btn-ink);
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-bg);
+    border-radius: var(--r-btn);
+    padding: 0.95rem 1.6rem;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.05s ease;
+  }
+  .signup-form button:hover { background: var(--btn-bg-hover); border-color: var(--btn-bg-hover); }
+  .signup-form button:active { transform: translateY(1px); }
+
+  .form-success {
+    display: none;
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: rgba(91, 130, 104, 0.12);
+    border-left: 3px solid var(--accent-strong);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-style: normal;
+    font-size: 1.05rem;
+    line-height: 1.5;
+  }
+  .form-success.visible { display: block; }
+  .form-success a {
+    color: var(--ink);
+    border-bottom: 1px solid var(--input-border);
+    text-decoration: none;
+    transition: border-color 0.2s ease;
+  }
+  .form-success a:hover { border-bottom-color: var(--ink); }
+
+  .photo-credit {
+    position: absolute;
+    bottom: 1.25rem;
+    right: 1.5rem;
+    z-index: 3;
+    font-family: var(--sans);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    color: var(--text-faint);
+    font-weight: 300;
+    text-transform: uppercase;
+  }
+  .photo-credit a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .photo-credit a:hover { color: var(--text-muted); border-bottom-color: rgba(255, 255, 255, 0.4); }
+  .hero .photo-credit { bottom: 5.5rem; }
+
+  @media (max-width: 900px) {
+    .feature .content, .feature.flip .content {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      max-width: var(--content-max);
+    }
+    .feature.flip .feature-text { order: 2; }
+    .feature.flip .feature-media { order: 1; }
+    .feature .feature-text { order: 2; }
+    .feature .feature-media { order: 1; }
+    .phone-frame { max-width: 260px; }
+  }
+
+  @media (max-width: 768px) {
+    .section { padding: 5rem 1.5rem; }
+    .section::before { background: var(--overlay-mobile); }
+    .section.feature::before { background: rgba(0, 0, 0, 0.82); }
+    .brand { top: 1.25rem; left: 1.25rem; }
+    .headline { font-size: clamp(1.7rem, 7.5vw, 2.5rem); }
+    .body { font-size: 1rem; line-height: 1.7; }
+    .photo-credit { bottom: 1rem; right: 1rem; font-size: 0.55rem; }
+    .hero .photo-credit { bottom: 5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .content { opacity: 1; transform: none; transition: none; }
+    .scroll-indicator::after { animation: none; }
+  }
+
+  /* ---- page-specific (simple) ---- */
+  .hero .subhead {
+    font-family: var(--sans);
+    font-style: normal;
+    font-weight: 400;
+    font-size: clamp(1.2rem, 2.2vw, 1.65rem);
+    margin-bottom: 1.5rem;
+  }
+  .hero .category {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.9);
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.32);
+  }
+  .tldr .body { font-size: clamp(1.1rem, 1.5vw, 1.35rem); line-height: 1.7; }
+  .tldr .body p + p { margin-top: 0.75rem; }
+
+  .closing .quote {
+    font-family: var(--serif);
+    font-style: normal;
+    font-weight: 400;
+    font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+    line-height: 1.4;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.005em;
+  }
+  .closing .quote::before { content: '“'; display: inline-block; margin-right: 0.05em; color: var(--accent-strong); }
+  .closing .quote::after { content: '”'; display: inline-block; margin-left: 0.05em; color: var(--accent-strong); }
+  .closing .quote-attribution {
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4rem;
+  }
+  .closing .subhead {
+    color: var(--ink-muted);
+    font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+    margin-bottom: 2rem;
+  }
+
+  .signup-form { display: grid; gap: 0.5rem; max-width: 520px; }
+  .signup-form input, .signup-form textarea { width: 100%; }
+  .signup-form textarea { min-height: 92px; resize: vertical; line-height: 1.5; }
+  .signup-form .field-label {
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.15rem;
+    margin-top: 0.85rem;
+  }
+  .signup-form .field-label:first-of-type { margin-top: 0; }
+  .signup-form button { margin-top: 0.75rem; justify-self: start; }
+
+  @media (max-width: 768px) {
+    .signup-form button { width: 100%; justify-self: stretch; }
+  }
+</style>
+</head>
+<body data-theme="heritage">
+
+<div class="themer" id="themer">
+  <div class="tt">DESIGN LANGUAGE</div>
+  <div id="themeButtons"></div>
+  <div class="cap" id="themeCap"></div>
+</div>
+
+<!-- 01 — Hero ====================================================== -->
+<section class="section hero" data-bg="01">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <h1 class="headline">Less stuff. <em>More life.</em></h1>
+    <p class="subhead">Borrow instead of buy. Do instead of own. Lean on the people nearby. Ripls makes the simpler life the easy one.</p>
+    <a href="#signup" class="hero-cta">Get on the list<span class="arrow">→</span></a>
+    <span class="category">An app for the tool shed, the hand-me-down chain, the supper club</span>
+  </div>
+  <div class="scroll-indicator">Scroll</div>
+  <div class="photo-credit">Photo by <a href="https://unsplash.com/@trippyoutdoor?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">Shane Dawson</a> on <a href="https://unsplash.com/?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></div>
+</section>
+
+<!-- 02 — Problem =================================================== -->
+<section class="section" data-bg="02">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <p class="kicker">How we got here</p>
+    <h2 class="headline">We filled our homes with things and somehow have less to show for it.</h2>
+    <div class="body">
+      <p>Look around a normal house. A drill used for fourteen minutes in its whole life. A garage you can't park in. Closets packed, a storage unit across town, a credit-card balance to match — and a calendar with more errands in it than people. Somewhere along the way we were sold the idea that the good life is something you buy, one purchase at a time.</p>
+      <p>Most of it we barely use. And most of what we're actually missing — a hand when we need one, people close enough to call, an afternoon that isn't about a screen or a store — was never for sale in the first place.</p>
+    </div>
+  </div>
+  <div class="photo-credit">Photo by <a href="https://unsplash.com/@wonderwallphotos?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">Zach Kessinger</a> on <a href="https://unsplash.com/?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></div>
+</section>
+
+<!-- 03 — TL;DR ===================================================== -->
+<section class="section tldr" data-bg="03">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <p class="kicker">The shape of the thing</p>
+    <h2 class="headline">Ask the people nearby. <em>Skip the store.</em></h2>
+    <div class="body">
+      <p>You need something, or you want to do something.</p>
+      <p>You write one line.</p>
+      <p>The people nearby lend, share, or show up.</p>
+      <p>You spent <em>time</em> instead of money.</p>
+    </div>
+  </div>
+  <div class="photo-credit">Photo by <a href="https://unsplash.com/@hiveboxx?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">HiveBoxx</a> on <a href="https://unsplash.com/?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></div>
+</section>
+
+<!-- 04 — Feature: The Send ========================================== -->
+<section class="section feature" data-bg="09">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <div class="feature-text">
+      <p class="kicker">From idea to plan</p>
+      <h2 class="headline">Write one sentence.<br>The app runs the rest.</h2>
+      <div class="body">
+        <p><em>"Anyone have a pressure washer I can borrow this weekend?"</em> or <em>"Pizza and a fire pit Friday — who's in?"</em> Out comes a real ask or a real invite, with the what, when, and where filled in. No store run, no event-planning rabbit hole.</p>
+        <p>One tap to send, only to your circle. From there it drafts, tracks, and nudges, with on-topic chat for the details.</p>
+      </div>
+    </div>
+    <div class="feature-media">
+      <div class="phone-frame">
+        <video autoplay muted loop playsinline preload="metadata"
+               poster="screens/streaming-create.jpg"
+               aria-label="A plan being generated live — what's needed, when, where — filling in from a single sentence.">
+          <source src="screens/streaming-create.webm" type="video/webm">
+          <source src="screens/streaming-create.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 — Feature: The Reply Loop =================================== -->
+<section class="section feature flip" data-bg="10">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <div class="feature-media">
+      <div class="phone-frame">
+        <video autoplay muted loop playsinline preload="metadata"
+               poster="screens/chat-in-context.jpg"
+               aria-label="A consolidated reply view — who's in, what they're bringing — with a soft second nudge going out to anyone who hasn't replied.">
+          <source src="screens/chat-in-context.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+    <div class="feature-text">
+      <p class="kicker">Find out who's actually in</p>
+      <h2 class="headline">Stop wondering<br>if anyone said <em>yes</em>.</h2>
+      <div class="body">
+        <p>Who's lending, who's coming, who's bringing what — all in one place. Anyone who hasn't replied gets a soft second nudge, automatically. Day-before reminders so plans actually happen instead of fizzling. You glance once and know it's handled.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 — Feature: Divide labor (Claim list) ======================== -->
+<section class="section feature" data-bg="11">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <div class="feature-text">
+      <p class="kicker">A claim list, not a group-text scramble</p>
+      <h2 class="headline">Who's bringing the ladder. Who's got the extra chairs. Who's making the chili.</h2>
+      <div class="body">
+        <p>List what's needed — the folding tables, a cooler, the tent, somebody's truck for the dump run, a side dish, the camp stove. Everybody steps up with what they've got. Whether it's a backyard dinner, a moving day, or a weekend project, no more ten-message thread sorting out who's bringing what. The list fills in real time and everybody can see it.</p>
+      </div>
+    </div>
+    <div class="feature-media">
+      <div class="phone-frame">
+        <video autoplay muted loop playsinline preload="metadata"
+               poster="screens/plan-tab-claim.jpg"
+               aria-label="A Plan tab with a 'Still needed' list — tables, a cooler, a truck, a side dish — and 'I got this' buttons.">
+          <source src="screens/plan-tab-claim.webm" type="video/webm">
+          <source src="screens/plan-tab-claim.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 — Feature: Borrow, don't buy ================================ -->
+<section class="section feature flip" data-bg="06">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <div class="feature-media">
+      <div class="phone-frame">
+        <img src="screens/circles-map.gif"
+             alt="A map of the circle's stuff — drills, ladders, canoes, camping gear — with one-tap borrow and lend buttons.">
+      </div>
+    </div>
+    <div class="feature-text">
+      <p class="kicker">Borrow, don't buy</p>
+      <h2 class="headline">Why own the ladder you'll use <em>twice a year</em>?</h2>
+      <div class="body">
+        <p>One tap to ask, one tap to offer. The drill, the ladder, the carpet cleaner, the canoe, the punch bowl, the camping gear, the kid's bike between sizes — most of what we own sits idle ninety percent of its life. In a real neighborhood, all of it moves.</p>
+        <p>The drill that lived in your basement now keeps four homes in working order. The truck that hauls your mulch hauls everyone's. Nobody buys what someone two doors down already has — and the closets, the garages, and the landfill all get a little lighter.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 — Feature: Momentum ========================================= -->
+<section class="section feature" data-bg="13">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <div class="feature-text">
+      <p class="kicker">Momentum, on its own</p>
+      <h2 class="headline">One good night becomes a <em>standing thing</em>.</h2>
+      <div class="body">
+        <p>After the dinner or the project wraps, a short recap goes out the next day. One more tap makes it a regular thing — the monthly potluck, the Sunday repair café, the seasonal swap. You approve. You don't recreate.</p>
+        <p>And when you've been the one hosting for a few months straight, the app finds the next person up and sends a one-tap <em>"want to take the next one?"</em> Somebody steps up, and nobody has to remember to ask.</p>
+      </div>
+    </div>
+    <div class="feature-media">
+      <div class="phone-frame">
+        <img src="screens/nudges.gif"
+             alt="The app tapping a circle member with a one-tap prompt to host the next gathering, while the burned-out host gets a 'still on?' pulse.">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 — Feature: Re-engage (light midpoint) ====================== -->
+<section class="section feature flip light">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <div class="feature-media">
+      <div class="phone-frame">
+        <!-- Placeholder: reuses nudges.gif until a bespoke re-engage screen exists. -->
+        <img src="screens/nudges.gif"
+             alt="A drafted note to someone who's missed the last few gatherings — with a soft 'is this slipping?' signal up top.">
+      </div>
+    </div>
+    <div class="feature-text">
+      <p class="kicker">When someone drifts off</p>
+      <h2 class="headline">A note for the one who's <em>fallen out of the loop</em>.</h2>
+      <div class="body">
+        <p>If you've been keeping the circle going and you've noticed someone hasn't been around in a while, the app drafts the note you'd send if you had the time — <em>"haven't seen you since the spring swap — potluck Sunday, come by"</em> — built from the last thing you did together. You read it, change a word, send it. Person to person.</p>
+        <p>The gentle eye on who's drifting is opt-in, and only on the organizer's side. Most people come back the first time someone reaches out. People drift before they decide they're done. The note gets there before the door closes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 — The way it used to work (vignette) ======================== -->
+<section class="section" data-bg="04">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <p class="kicker">The way it used to work</p>
+    <h2 class="headline">A borrowed ladder, a shared dinner, and a street that <em>knows each other again</em>.</h2>
+    <div class="body">
+      <p>A Tuesday in spring. Someone in the circle needs a ladder to clear the gutters; two doors down, one's been hanging in a garage all year. A tap, and it's on the porch by noon. That weekend the same handful of people end up around a fire pit nobody had to buy — folding chairs from three houses, a cooler from a fourth, kids running between yards.</p>
+      <p>It used to work this way without an app — you knew your neighbors, you borrowed the cup of sugar, you didn't buy what the block already had. The muscle's still there. It came back the moment somebody made it easy to ask.</p>
+    </div>
+  </div>
+  <div class="photo-credit">Photo by <a href="https://unsplash.com/@graceannefully?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">Grace Anne Bobadilla</a> on <a href="https://unsplash.com/?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></div>
+</section>
+
+<!-- 11 — Trust & privacy =========================================== -->
+<section class="section light">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <p class="kicker">What we don't do</p>
+    <h2 class="headline">Your circle is private. <em>Period.</em></h2>
+    <div class="body">
+      <p>Who's in your circle, what you've borrowed, where you live, the plans you've made — visible to the people you invited, invisible to everyone else. We don't show ads. We don't sell data. We don't recommend you to strangers or turn your life into a feed. This isn't a marketplace and it isn't social media.</p>
+      <p>Built by people who got tired of owning more and knowing fewer — who wanted the cup-of-sugar neighborhood back without the group text that loses the thread. We made the thing we wanted: a closed circle that runs quiet enough that the only thing you notice is that life got simpler.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 12 — Floor and ceiling ========================================== -->
+<section class="section" data-bg="07">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <p class="kicker">Why this is the whole game</p>
+    <h2 class="headline">One borrowed drill is a favor. <em>A hundred</em> is a different way of living.</h2>
+    <div class="body">
+      <p>Anybody can borrow a ladder once. The shift is when it becomes how you live — the swap that's run six seasons, the tool shelf the whole street shares, the standing dinner that means you actually know the people around you.</p>
+      <p>That's when "buy it, use it once, store it forever" stops being the default, and a simpler, lighter, more connected life takes its place — not because anyone gave anything up, but because it turned out to be the better one.</p>
+    </div>
+  </div>
+  <div class="photo-credit">Photo by <a href="https://unsplash.com/@djpaine?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">DJ Paine</a> on <a href="https://unsplash.com/?utm_source=ripls&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></div>
+</section>
+
+<!-- 13 — Closing: testimonial + signup (light section) ============= -->
+<section class="section light closing" id="signup">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content">
+    <p class="quote">Started just trying not to buy a tile saw for one bathroom. Borrowed it from a guy on my street instead. Six months later we've got a little tool list going and a monthly dinner. Bought way less, see people way more.</p>
+    <p class="quote-attribution">— Dana M., Portland ME</p>
+
+    <p class="kicker">For the ones keeping it alive</p>
+    <h2 class="headline">We're in private beta. Want in?</h2>
+    <p class="subhead">We're starting with circles already trying to keep something alive — a tool-sharing group, a swap, a standing dinner, a hand-me-down chain, a block that wants to know each other again. We hand-pick the first ones each week.</p>
+
+    <form class="signup-form" id="signupForm">
+      <label class="field-label" for="email">Your email</label>
+      <input id="email" type="email" name="email" placeholder="user1@example.org" autocomplete="email" required>
+
+      <label class="field-label" for="name">Your name (optional)</label>
+      <input id="name" type="text" name="name" placeholder="Your name" autocomplete="name">
+
+      <label class="field-label" for="keeping_alive">What are you trying to keep alive?</label>
+      <textarea id="keeping_alive" name="keeping_alive" placeholder="A tool-sharing group. A swap. A standing dinner. The block that's currently just a group text."></textarea>
+
+      <button type="submit">Get me on the list</button>
+    </form>
+    <p class="form-success" id="formSuccess" role="status" aria-live="polite">You're on the list! We hand-pick the first circles each week, so we'll be in touch soon.</p>
+  </div>
+</section>
+
+<script>
+  // ---------- Theme switcher ----------
+  const THEMES = [
+    { id: 'heritage',     name: 'Heritage',      dot: '#5B8268', serif: 'Source Serif 4',     sans: 'Public Sans' },
+    { id: 'fieldguide',   name: 'Field Guide',   dot: '#6B8F71', serif: 'Lora',               sans: 'Karla' },
+    { id: 'apothecary',   name: 'Apothecary',    dot: '#4A6B56', serif: 'Cormorant Garamond', sans: 'Jost' },
+    { id: 'forest',       name: 'Forest Floor',  dot: '#8FB89B', serif: 'Bitter',             sans: 'Hanken Grotesk' },
+    { id: 'printmaker',   name: 'Printmaker',    dot: '#191C1A', serif: 'Spectral',           sans: 'IBM Plex Sans' },
+    { id: 'scandi',       name: 'Scandi Larder', dot: '#7C99AC', serif: 'Literata',           sans: 'Work Sans' },
+    { id: 'trailhead',    name: 'Trailhead',     dot: '#3F6147', serif: 'Zilla Slab',         sans: 'Archivo' },
+    { id: 'conservatory', name: 'Conservatory',  dot: '#9DC2A8', serif: 'EB Garamond',        sans: 'Figtree' },
+    { id: 'civic',        name: 'Civic Ledger',  dot: '#34597A', serif: 'Frank Ruhl Libre',   sans: 'Inter' },
+    { id: 'gallery',      name: 'Gallery',       dot: '#181A18', serif: 'DM Serif Display',   sans: 'Manrope' },
+  ];
+  const themeWrap = document.getElementById('themeButtons');
+  const themeCap = document.getElementById('themeCap');
+  function setTheme(id) {
+    document.body.dataset.theme = id;
+    try { localStorage.setItem('ripls-theme-host', id); } catch (e) {}
+    const t = THEMES.find(t => t.id === id);
+    themeWrap.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+    themeCap.innerHTML = '<b>' + t.serif + '</b> titles · <b>' + t.sans + '</b> labels';
+  }
+  THEMES.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.dataset.id = t.id;
+    b.innerHTML = '<span class="no">' + ((i + 1) % 10) + '</span><span class="dot" style="background:' + t.dot + '"></span>' + t.name;
+    b.onclick = () => setTheme(t.id);
+    themeWrap.appendChild(b);
+  });
+  document.addEventListener('keydown', e => {
+    if (/^[0-9]$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) {
+      const idx = e.key === '0' ? 9 : parseInt(e.key, 10) - 1;
+      if (THEMES[idx]) setTheme(THEMES[idx].id);
+    }
+  });
+  let initialTheme = 'heritage';
+  try { initialTheme = localStorage.getItem('ripls-theme-host') || 'heritage'; } catch (e) {}
+  setTheme(THEMES.some(t => t.id === initialTheme) ? initialTheme : 'heritage');
+
+  // ---------- Background image loader ----------
+  const EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+  function loadBackground(section) {
+    const num = section.dataset.bg;
+    if (!num) return;
+    let i = 0;
+    function tryNext() {
+      if (i >= EXTENSIONS.length) return;
+      const url = `background/${num}.${EXTENSIONS[i]}`;
+      const img = new Image();
+      img.onload = () => { section.style.backgroundImage = `url('${url}')`; };
+      img.onerror = () => { i++; tryNext(); };
+      img.src = url;
+    }
+    tryNext();
+  }
+  document.querySelectorAll('.section').forEach(loadBackground);
+
+  // ---------- Fade-in on scroll ----------
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.section').forEach(s => io.observe(s));
+  const hero = document.querySelector('.hero');
+  if (hero) hero.classList.add('visible');
+
+  // ---------- Waitlist handler (inlined from /js/waitlist.js) ----------
+  (function () {
+    const WAITLIST_API_URL =
+      'https://server.ripls.org/ripls.api.WaitlistService/JoinWaitlist';
+    const form = document.getElementById('signupForm');
+    const success = document.getElementById('formSuccess');
+    if (!form || !success) return;
+    const defaultSuccess = success.textContent.trim();
+    success.textContent = '';
+    const field = (name) => {
+      const el = form.querySelector(`[name="${name}"]`);
+      return el ? el.value.trim() : '';
+    };
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const button = form.querySelector('button[type="submit"]');
+      const original = button.textContent;
+      button.textContent = 'Joining…';
+      button.disabled = true;
+      success.classList.remove('visible');
+      const payload = { email: field('email') };
+      const name = field('name');
+      if (name) payload.name = name;
+      const note = field('keeping_alive');
+      if (note) payload.intendedUse = note;
+      try {
+        const res = await fetch(WAITLIST_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.message || 'Something went wrong. Please try again.');
+        }
+        form.style.display = 'none';
+        success.textContent =
+          data.message ||
+          (data.alreadyRegistered
+            ? "You're already on the list — we've got you."
+            : defaultSuccess);
+        success.classList.add('visible');
+      } catch (err) {
+        button.textContent = original;
+        button.disabled = false;
+        success.textContent = err.message || 'Something went wrong. Please try again.';
+        success.classList.add('visible');
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>

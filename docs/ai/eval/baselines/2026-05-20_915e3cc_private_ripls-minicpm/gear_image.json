@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "suite": "TestGearImagePrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T03:38:46Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-minicpm"
+  },
+  "goldens_file": "gear_image_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-minicpm",
+      "pass_rate": 0.6448863636363636,
+      "threshold": 0.85,
+      "passed": false,
+      "median_latency_ms": 5339,
+      "p95_latency_ms": 13715,
+      "field_pass_rates": {
+        "brand_contains": 0.7272727272727273,
+        "has_description": 1,
+        "material_category_any_of": 0.5,
+        "min_confidence": 1,
+        "model_contains": 0.22727272727272727,
+        "title_contains": 0.8409090909090909,
+        "value_estimate_usd": 0.5681818181818182,
+        "weight_grams_approx": 0.29545454545454547
+      },
+      "invocation_failures": [
+        "atomic_maverick_ski",
+        "dewalt_dcd800b",
+        "milwaukee_2904_20",
+        "festool_tid18_basic",
+        "channellock_440"
+      ]
+    }
+  ]
+}

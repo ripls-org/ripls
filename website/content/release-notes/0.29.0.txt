@@ -1,0 +1,22 @@
+Release 0.29.0
+
+
+Passwordless email sign-in, plan-again shortcuts for recurring events, and a group-page Invite action.
+
+Features
+
+- Passwordless Email Sign-In: Email accounts now authenticate with a one-time code delivered to your inbox — the same flow phone numbers have always used. The six-digit code expires in 10 minutes and is single-use. Existing password holders still have a “Use my password instead” fallback during the transition; passwords will be removed in a follow-up release once the soak completes. The change also closes the email-shadowing gap where an unverified address could absorb a pending identity — promoteProvisionalByEmail now gates on a verified-at timestamp (#2571)
+
+- Schedule the Next One: A wrapped event’s Who’s-in card now carries a Schedule the next one chip for the host. Tapping it opens a pre-filled draft that inherits the guest list and, for weekly events, suggests the next same-weekday slot at the same wall-clock hour in the event’s own timezone — so a 6:30 am run stays 6:30 am across a DST boundary (#2860)
+
+- Invite from the Group Page: The group page in the People tab now has a dedicated Invite button alongside Message, Plans, and Library. Previously every invite path hung off the feed card or Settings (#2860)
+
+Bug Fixes
+
+- Embedding Write Race: The vector-embedding goroutine could run its UPDATE before the surrounding INSERT transaction was visible on the connection pool, silently writing to a row that didn’t exist yet and leaving the gear item without a search embedding. The goroutine is now deferred until after its parent transaction commits, and the done-channel carries the error so a failed write surfaces immediately in tests (#2847)
+
+Internal
+
+- Email Delivery Metrics: The server now receives and verifies Mailgun delivery webhook events, enabling true time-to-inbox measurement for the first time. Three log-based metrics ship with it: email_code_age (issue-to-verify latency — a proxy that includes human typing time), email_code_failures by reason, and email_signins_by_credential (#2862)
+
+- CI Reliability: Live AI provider health-check integration tests now skip when the vendor is unreachable from the runner (timeout / connection error) rather than failing the required Go Tests gate. Auth, parsing, and response-shape regressions still fail loudly (#2865)

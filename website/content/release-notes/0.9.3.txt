@@ -1,0 +1,12 @@
+Release 0.9.3
+
+
+Chat interactions upgrade. Added emoji reactions to messages and fixed @-mentions in inline chat.
+
+Features
+
+- Message Reactions: Long-press any chat message to react with an emoji. Full emoji picker with search, reaction badges on messages, and a detail sheet showing who reacted. Server-side support with real-time broadcast to all conversation participants (#1028, #1031)
+
+Bug Fixes
+
+- @-mentions in Inline Chat: Fixed @-mentions not working in the inline conversation view’s chat tab — mentions now resolve and notify correctly (#1026, #1030)

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.9.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.9.0-private-beta-launch">Release 0.9.0 — Private Beta
+Launch</h1>
+            <p class="release-date">April 1, 2026</p>
+<p><strong>This is the official Ripls Private Beta launch.</strong>
+After months of closed testing, iteration, and hardening, Ripls is
+opening up to our first wave of private beta users. This release
+represents a major milestone: a polished, stable, and feature-complete
+foundation for community sharing of goods and experiences.</p>
+<h2 id="highlights">Highlights</h2>
+<ul>
+<li><strong>Private Beta Ready</strong>: Comprehensive UX polish, bug
+fixes, and stability improvements across every workflow — loans,
+giveaways, requests, and experiences are all production-ready for real
+communities.</li>
+<li><strong>Notification Deep Linking</strong>: All notifications now
+navigate directly to the relevant item detail screen, not just a generic
+chat view (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/977">#977</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/962">#962</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/978">#978</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/980">#980</a>)</li>
+<li><strong>Nudge Cards</strong>: AI-generated nudge cards in the feed
+encourage engagement — suggesting items to share, experiences to plan,
+or requests to make (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/935">#935</a>)</li>
+<li><strong>Feed Freshness</strong>: Smart feed expiration based on view
+count and time since last activity, so the feed always feels current and
+relevant</li>
+<li><strong>Expanded Metrics</strong>: Community and personal impact
+metrics with leaderboards, charts, and detailed drill-down views (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/975">#975</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/949">#949</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/952">#952</a>)</li>
+</ul>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><strong>Item Link Previews</strong>: Sharing a Ripls link on social
+media or messaging apps now shows rich OG metadata with item-specific
+titles, descriptions, and thumbnail images (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/955">#955</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/953">#953</a>)</li>
+<li><strong>Pickup Coordination</strong>: Arrange pickup times directly
+within loan and giveaway conversations with date/time proposals and
+notifications</li>
+<li><strong>Time Polls for Experiences</strong>: Organizers can propose
+multiple times and collect votes from attendees, with a “none work for
+me” option</li>
+<li><strong>Multi-Model AI</strong>: Switched to Haiku as the primary AI
+provider with Gemini fallback for faster, more cost-effective gear
+recognition (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/918">#918</a>)</li>
+</ul>
+<h2 id="ux-improvements">UX Improvements</h2>
+<ul>
+<li><strong>Loan Workflow Polish</strong>: State-aware menus, responsive
+pill labels by queue position, visual interest counts, and streamlined
+pickup modals (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/974">#974</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/960">#960</a>)</li>
+<li><strong>Giveaway Workflow Polish</strong>: Simplified recipient
+picker, state-aware menus, pickup notifications, and consistent title
+casing (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/968">#968</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/959">#959</a>)</li>
+<li><strong>Request Workflow Polish</strong>: Improved offer management,
+action button updates on withdrawal, and cross-community sharing fixes
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/971">#971</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/965">#965</a>)</li>
+<li><strong>Experience Workflow Polish</strong>: Fixed completion flow,
+RSVP updates, and cross-community leakage (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/969">#969</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/985">#985</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/984">#984</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/967">#967</a>)</li>
+<li><strong>Consolidated Menus</strong>: Consistent workflow-driven
+menus across all item types with grayed-out completed steps (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/938">#938</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/939">#939</a>)</li>
+<li><strong>Community Metrics Landing</strong>: Redesigned community
+metrics screen (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/982">#982</a>)</li>
+<li><strong>Waitlist Improvements</strong>: Expanded signup fields and
+refreshed landing page messaging (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/948">#948</a>)</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li>Fixed experience completion requiring a summary and not allowing
+direct completion from active state (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/984">#984</a>)</li>
+<li>Fixed cross-community RSVP leakage (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/665">#665</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/945">#945</a>)</li>
+<li>Fixed chat notification routing to wrong screen (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/962">#962</a>)</li>
+<li>Fixed system messages not appearing until a user message was sent
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/947">#947</a>)</li>
+<li>Fixed dark mode contrast in form fields, modals, and RSVP buttons
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/936">#936</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/865">#865</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/932">#932</a>)</li>
+<li>Fixed EXIF rotation on OG images when shared via Signal (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/958">#958</a>)</li>
+<li>Fixed Pexels rate limiting for stock video generation (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/929">#929</a>)</li>
+<li>Fixed Android layout crash in action bars (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/853">#853</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/867">#867</a>)</li>
+<li>Fixed video crash when viewing details (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/934">#934</a>)</li>
+</ul>
+<h2 id="infrastructure">Infrastructure</h2>
+<ul>
+<li><strong>Patrol E2E Test Suite</strong>: Full end-to-end test
+coverage for all workflow types — loans, giveaways, requests, and
+experiences — with screen recording, multi-user coordination, and
+postcondition verification (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/866">#866</a>)</li>
+<li><strong>Equity System Removal</strong>: Removed the community equity
+system in favor of impact metrics (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/874">#874</a>)</li>
+<li><strong>Conversation Topic Refactor</strong>: Consolidated
+conversation topic handling into a dedicated proto type (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/872">#872</a>)</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.8.0.html">0.8.0</a> &mdash; March 20,
+2026</li>
+                <li><a href="0.7.0.html">0.7.0</a> &mdash; March 16,
+2026</li>
+                <li><a href="0.6.0.html">0.6.0</a> &mdash; March 7,
+2026</li>
+                <li><a href="0.5.0.html">0.5.0</a> &mdash; February 28,
+2026</li>
+                <li><a href="0.4.0.html">0.4.0</a> &mdash; February 20,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

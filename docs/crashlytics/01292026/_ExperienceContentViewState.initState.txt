@@ -1,0 +1,309 @@
+# Crashlytics - Stack trace
+# Application: org.ripls.app
+# Platform: apple
+# Version: 0.1.4 (3274)
+# Issue: 9db036a8c94c74d38162db248f7d32aa
+# Session: 1ede879146614059a0c7210b6af1a688_DNE_0_v2
+# Date: Wed Jan 28 2026 14:23:41 GMT-0700 (Mountain Standard Time)
+
+Fatal Exception: FlutterError
+0  ???                            0x0 ConsumerStatefulElement._assertNotDisposed + 432 (consumer.dart:432)
+1  ???                            0x0 ConsumerStatefulElement.listenManual + 534 (consumer.dart:534)
+2  ???                            0x0 _ExperienceContentViewState.initState.<fn> + 105 (experience_content_view.dart:105)
+
+Crashed: com.apple.main-thread
+0  FirebaseCrashlytics            0x1d140 FIRCLSProcessRecordAllThreads + 392 (FIRCLSProcess.c:392)
+1  FirebaseCrashlytics            0x1d54c FIRCLSProcessRecordAllThreads + 423 (FIRCLSProcess.c:423)
+2  FirebaseCrashlytics            0x14dac FIRCLSHandler + 39 (FIRCLSHandler.m:39)
+3  FirebaseCrashlytics            0xf040 FIRCLSExceptionRecordOnDemand + 360 (FIRCLSException.mm:360)
+4  FirebaseCrashlytics            0xea68 FIRCLSExceptionRecordOnDemandModel + 99 (FIRCLSException.mm:99)
+5  FirebaseCrashlytics            0x1c91c -[FIRCLSOnDemandModel recordOnDemandExceptionWithModel:] + 182 (FIRCLSOnDemandModel.m:182)
+6  FirebaseCrashlytics            0x1c354 -[FIRCLSOnDemandModel recordOnDemandExceptionIfQuota:withDataCollectionEnabled:usingExistingReportManager:] + 104 (FIRCLSOnDemandModel.m:104)
+7  FirebaseCrashlytics            0x2af28 -[FIRCrashlytics recordOnDemandExceptionModel:] + 425 (FIRCrashlytics.m:425)
+8  Runner                         0x161fd8 -[FLTFirebaseCrashlyticsPlugin recordError:withMethodCallResult:] + 170 (FLTFirebaseCrashlyticsPlugin.m:170)
+9  Runner                         0x161850 -[FLTFirebaseCrashlyticsPlugin handleMethodCall:result:] + 89 (FLTFirebaseCrashlyticsPlugin.m:89)
+10 Flutter                        0x4e9bb8 __45-[FlutterMethodChannel setMethodCallHandler:]_block_invoke + 322 (FlutterChannels.mm:322)
+11 Flutter                        0x75928 invocation function for block in flutter::PlatformMessageHandlerIos::HandlePlatformMessage(std::_fl::unique_ptr<flutter::PlatformMessage, std::_fl::default_delete<flutter::PlatformMessage>>) + 111 (ref_ptr.h:111)
+12 libdispatch.dylib              0x1adc _dispatch_call_block_and_release + 32
+13 libdispatch.dylib              0x1b7fc _dispatch_client_callout + 16
+14 libdispatch.dylib              0x38b10 _dispatch_main_queue_drain.cold.5 + 812
+15 libdispatch.dylib              0x10ec8 _dispatch_main_queue_drain + 180
+16 libdispatch.dylib              0x10e04 _dispatch_main_queue_callback_4CF + 44
+17 CoreFoundation                 0x6a2b4 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__ + 16
+18 CoreFoundation                 0x1db3c __CFRunLoopRun + 1944
+19 CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+20 GraphicsServices               0x1498 GSEventRunModal + 120
+21 UIKitCore                      0x9ddf8 -[UIApplication _run] + 792
+22 UIKitCore                      0x46e54 UIApplicationMain + 336
+23 UIKitCore                      0x172820 -[UIScrollView contentInset] + 588
+24 Runner                         0x4840 main + 4296460352 (AppDelegate.swift:4296460352)
+25 ???                            0x18ffaae28 (Missing)
+
+com.apple.uikit.eventfetch-thread
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  CoreFoundation                 0x46868 __CFRunLoopServiceMachPort + 160
+5  CoreFoundation                 0x1d848 __CFRunLoopRun + 1188
+6  CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+7  Foundation                     0x9c9068 -[NSRunLoop(NSRunLoop) runMode:beforeDate:] + 212
+8  Foundation                     0x9c9240 -[NSRunLoop(NSRunLoop) runUntilDate:] + 64
+9  UIKitCore                      0x73094 -[UIEventFetcher threadMain] + 408
+10 Foundation                     0x6221c __NSThread__start__ + 732
+11 libsystem_pthread.dylib        0x444c _pthread_start + 136
+12 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.flutter.1.raster
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  CoreFoundation                 0x46868 __CFRunLoopServiceMachPort + 160
+5  CoreFoundation                 0x1d848 __CFRunLoopRun + 1188
+6  CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+7  Flutter                        0xa1f2c fml::MessageLoopDarwin::Run() + 52 (message_loop_darwin.mm:52)
+8  Flutter                        0xa1580 std::_fl::__function::__func<fml::Thread::Thread(std::_fl::function<void (fml::Thread::ThreadConfig const&)> const&, fml::Thread::ThreadConfig const&)::$_0, std::_fl::allocator<fml::Thread::Thread(std::_fl::function<void (fml::Thread::ThreadConfig const&)> const&, fml::Thread::ThreadConfig const&)::$_0>, void ()>::operator()() + 94 (message_loop_impl.cc:94)
+9  Flutter                        0xa128c fml::ThreadHandle::ThreadHandle(std::_fl::function<void ()>&&)::$_0::__invoke(void*) + 403 (function.h:403)
+10 libsystem_pthread.dylib        0x444c _pthread_start + 136
+11 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.flutter.1.io
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  CoreFoundation                 0x46868 __CFRunLoopServiceMachPort + 160
+5  CoreFoundation                 0x1d848 __CFRunLoopRun + 1188
+6  CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+7  Flutter                        0xa1f2c fml::MessageLoopDarwin::Run() + 52 (message_loop_darwin.mm:52)
+8  Flutter                        0xa1580 std::_fl::__function::__func<fml::Thread::Thread(std::_fl::function<void (fml::Thread::ThreadConfig const&)> const&, fml::Thread::ThreadConfig const&)::$_0, std::_fl::allocator<fml::Thread::Thread(std::_fl::function<void (fml::Thread::ThreadConfig const&)> const&, fml::Thread::ThreadConfig const&)::$_0>, void ()>::operator()() + 94 (message_loop_impl.cc:94)
+9  Flutter                        0xa128c fml::ThreadHandle::ThreadHandle(std::_fl::function<void ()>&&)::$_0::__invoke(void*) + 403 (function.h:403)
+10 libsystem_pthread.dylib        0x444c _pthread_start + 136
+11 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.worker.1
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  Flutter                        0x9b064 void* std::_fl::__thread_proxy[abi:nn210000]<std::_fl::tuple<std::_fl::unique_ptr<std::_fl::__thread_struct, std::_fl::default_delete<std::_fl::__thread_struct>>, fml::ConcurrentMessageLoop::ConcurrentMessageLoop(unsigned long)::$_0>>(void*) + 31 (condition_variable.cpp:31)
+3  libsystem_pthread.dylib        0x444c _pthread_start + 136
+4  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.worker.2
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  Flutter                        0x9b064 void* std::_fl::__thread_proxy[abi:nn210000]<std::_fl::tuple<std::_fl::unique_ptr<std::_fl::__thread_struct, std::_fl::default_delete<std::_fl::__thread_struct>>, fml::ConcurrentMessageLoop::ConcurrentMessageLoop(unsigned long)::$_0>>(void*) + 31 (condition_variable.cpp:31)
+3  libsystem_pthread.dylib        0x444c _pthread_start + 136
+4  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.worker.3
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  Flutter                        0x9b064 void* std::_fl::__thread_proxy[abi:nn210000]<std::_fl::tuple<std::_fl::unique_ptr<std::_fl::__thread_struct, std::_fl::default_delete<std::_fl::__thread_struct>>, fml::ConcurrentMessageLoop::ConcurrentMessageLoop(unsigned long)::$_0>>(void*) + 31 (condition_variable.cpp:31)
+3  libsystem_pthread.dylib        0x444c _pthread_start + 136
+4  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+dart:io EventHandler
+0  libsystem_kernel.dylib         0x78d0 kevent + 8
+1  Flutter                        0x49aca4 dart::bin::EventHandlerImplementation::EventHandlerEntry(unsigned long) + 459 (eventhandler_macos.cc:459)
+2  Flutter                        0x4c6e20 dart::bin::ThreadStart(void*) + 65 (thread_macos.cc:65)
+3  libsystem_pthread.dylib        0x444c _pthread_start + 136
+4  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.google.firebase.crashlytics.MachExceptionServer
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  FirebaseCrashlytics            0x175a4 FIRCLSMachExceptionServer + 196 (FIRCLSMachException.c:196)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.MB Coalescer
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.MB HTTPRequests
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.location.sharedRunloop
+0  CoreFoundation                 0x166d28 -[__NSSetM containsObject:] + 160
+1  Foundation                     0xaa689c -[_NSXPCConnectionClassCache containsClass:] + 72
+2  Foundation                     0xa9f980 -[NSXPCDecoder _validateAllowedClass:forKey:allowingInvocations:] + 180
+3  Foundation                     0x153fc _decodeObject + 1244
+4  Foundation                     0xaa0120 -[NSXPCDecoder _decodeObjectOfClasses:atObject:] + 164
+5  Foundation                     0x29170 _NSXPCSerializationDecodeTypedObjCValuesFromArray + 840
+6  Foundation                     0x28bb0 _NSXPCSerializationDecodeInvocationArgumentArray + 408
+7  Foundation                     0xaa0638 -[NSXPCDecoder __decodeXPCObject:allowingSimpleMessageSend:outInvocation:outArguments:outArgumentsMaxCount:outMethodSignature:outSelector:isReply:replySelector:] + 688
+8  Foundation                     0xaa035c -[NSXPCDecoder _decodeReplyFromXPCObject:forSelector:] + 76
+9  Foundation                     0xa93b70 -[NSXPCConnection _decodeAndInvokeReplyBlockWithEvent:sequence:replyInfo:] + 248
+10 Foundation                     0xa979f4 __88-[NSXPCConnection _sendInvocation:orArguments:count:methodSignature:selector:withProxy:]_block_invoke_5 + 188
+11 Foundation                     0xa97504 -[NSXPCConnection _sendInvocation:orArguments:count:methodSignature:selector:withProxy:] + 2164
+12 Foundation                     0xa96b84 -[NSXPCConnection _sendSelector:withProxy:arg1:arg2:arg3:] + 136
+13 Foundation                     0x2ace0 _NSXPCDistantObjectSimpleMessageSend3 + 76
+14 CoreLocation                   0x14267c CLGetUncertaintyScaleFactors + 314648
+15 CoreLocation                   0x124bc CLCopyGnssBandsInUse + 5888
+16 CoreLocation                   0x1234c CLCopyGnssBandsInUse + 5520
+17 MapboxCommon                   0x275b68 mapbox::bindgen::mapbox::common::location::LocationServiceObserver::onAccuracyAuthorizationChanged(mapbox::common::location::AccuracyAuthorization) + 6244
+18 MapboxCommon                   0x275410 mapbox::bindgen::mapbox::common::location::LocationServiceObserver::onAccuracyAuthorizationChanged(mapbox::common::location::AccuracyAuthorization) + 4364
+19 CoreLocation                   0x35704 CLClientStopVehicleHeadingUpdates + 103308
+20 CoreLocation                   0x3419c CLClientStopVehicleHeadingUpdates + 97828
+21 CoreLocation                   0x2b5c (Missing UUID 8169b89a0a31304da998b9fd6a34162d)
+22 LocationSupport                0x10194 CLConnectionServer::handleDisconnection(CLConnection*) + 12988
+23 CoreFoundation                 0x1c320 __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__ + 28
+24 CoreFoundation                 0x1bfec __CFRunLoopDoBlocks + 396
+25 CoreFoundation                 0x1d6c8 __CFRunLoopRun + 804
+26 CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+27 CoreFoundation                 0x9a7c8 CFRunLoopRun + 64
+28 MapboxCommon                   0x2796e4 mapbox::bindgen::mapbox::common::location::LocationServiceObserver::onAccuracyAuthorizationChanged(mapbox::common::location::AccuracyAuthorization) + 21472
+29 Foundation                     0x6221c __NSThread__start__ + 732
+30 libsystem_pthread.dylib        0x444c _pthread_start + 136
+31 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.apple.NSURLConnectionLoader
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  CoreFoundation                 0x46868 __CFRunLoopServiceMachPort + 160
+5  CoreFoundation                 0x1d848 __CFRunLoopRun + 1188
+6  CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+7  CFNetwork                      0x248d20 +[__CFN_CoreSchedulingSetRunnable _run:] + 416
+8  Foundation                     0x6221c __NSThread__start__ + 732
+9  libsystem_pthread.dylib        0x444c _pthread_start + 136
+10 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.MB TileStore
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x2279c std::__1::condition_variable::__do_timed_wait(std::__1::unique_lock<std::__1::mutex>&, std::__1::chrono::time_point<std::__1::chrono::system_clock, std::__1::chrono::duration<long long, std::__1::ratio<1l, 1000000000l>>>) + 104
+3  MapboxCommon                   0x1ea2a8 mapbox::common::SystemInformationProvider::getSystemInformation() + 12012
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.AssetFS
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.TileStoreFS
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.LocalFS
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.OnlineFS
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x2279c std::__1::condition_variable::__do_timed_wait(std::__1::unique_lock<std::__1::mutex>&, std::__1::chrono::time_point<std::__1::chrono::system_clock, std::__1::chrono::duration<long long, std::__1::ratio<1l, 1000000000l>>>) + 104
+3  MapboxCommon                   0x1ea2a8 mapbox::common::SystemInformationProvider::getSystemInformation() + 12012
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.ResourceLoader
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.ModelParser
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+caulk::deferred_logger
+0  libsystem_kernel.dylib         0xc50 semaphore_wait_trap + 8
+1  caulk                          0x443c caulk::semaphore::timed_wait(double) + 224
+2  caulk                          0x4488 caulk::concurrent::details::worker_thread::run() + 32
+3  caulk                          0x8bf4 void* caulk::thread_proxy<std::__1::tuple<caulk::thread::attributes, void (caulk::concurrent::details::worker_thread::*)(), std::__1::tuple<caulk::concurrent::details::worker_thread*>>>(void*) + 96
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+caulk.messenger.shared:high
+0  libsystem_kernel.dylib         0xc50 semaphore_wait_trap + 8
+1  caulk                          0x443c caulk::semaphore::timed_wait(double) + 224
+2  caulk                          0x4488 caulk::concurrent::details::worker_thread::run() + 32
+3  caulk                          0x8bf4 void* caulk::thread_proxy<std::__1::tuple<caulk::thread::attributes, void (caulk::concurrent::details::worker_thread::*)(), std::__1::tuple<caulk::concurrent::details::worker_thread*>>>(void*) + 96
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+Thread
+0  libsystem_kernel.dylib         0xa80 __workq_kernreturn + 8
+1  libsystem_pthread.dylib        0x1404 _pthread_wqthread + 368
+2  libsystem_pthread.dylib        0x8c0 start_wqthread + 8
+
+Thread
+0  libsystem_kernel.dylib         0xa80 __workq_kernreturn + 8
+1  libsystem_pthread.dylib        0x1404 _pthread_wqthread + 368
+2  libsystem_pthread.dylib        0x8c0 start_wqthread + 8
+
+Thread
+0  libsystem_pthread.dylib        0x8b8 start_wqthread + 8313649334
+
+Thread
+0  libsystem_kernel.dylib         0xa80 __workq_kernreturn + 8
+1  libsystem_pthread.dylib        0x1404 _pthread_wqthread + 368
+2  libsystem_pthread.dylib        0x8c0 start_wqthread + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8

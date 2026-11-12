@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mock G — Botanical bulletin</title>
+<link rel="stylesheet" href="../../../website/content/css/tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    color: var(--color-text-primary);
+    background: var(--color-surface);
+    min-height: 100vh; padding: var(--space-5) var(--space-3);
+  }
+  .label { font-size: var(--font-size-meta); color: var(--color-text-tertiary);
+           text-align: center; padding: var(--space-3); font-style: italic;
+           margin-bottom: var(--space-4); }
+
+  .bulletin {
+    max-width: 600px; margin: 0 auto;
+    background: var(--color-card-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pin {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--color-experience);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3),
+                inset 0 -2px 0 rgba(0,0,0,0.15);
+    z-index: 5;
+  }
+
+  /* Hero band */
+  .hero {
+    height: 240px; position: relative; overflow: hidden;
+  }
+  .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(248,243,238,0.05) 60%, var(--color-card-background) 100%);
+  }
+
+  .header-band {
+    padding: var(--space-5) var(--space-5) var(--space-4);
+    text-align: center;
+    background: var(--color-card-background);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .header-kicker {
+    font-family: var(--font-heading); font-style: italic;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-body); margin-bottom: var(--space-2);
+  }
+  .header-band h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 6vw, 2.75rem);
+    font-weight: 400; line-height: 1.1;
+    color: var(--color-text-primary);
+  }
+  .header-flourish {
+    margin-top: var(--space-3);
+    font-family: var(--font-heading); font-size: var(--font-size-meta);
+    color: var(--color-text-secondary);
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+
+  .body { padding: var(--space-5); }
+
+  .when-where {
+    display: grid; gap: var(--space-3);
+    padding: var(--space-4); background: var(--color-surface);
+    border-radius: var(--radius-md); margin-bottom: var(--space-5);
+  }
+  .ww-row { display: flex; gap: var(--space-3); align-items: baseline; }
+  .ww-label {
+    font-family: var(--font-heading); font-size: var(--font-size-meta);
+    color: var(--color-text-secondary); text-transform: uppercase;
+    letter-spacing: 0.15em; width: 80px; flex-shrink: 0;
+  }
+  .ww-value {
+    font-family: var(--font-heading); font-size: var(--font-size-body-large);
+    color: var(--color-text-primary);
+  }
+
+  .host-band {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-4) 0; margin-bottom: var(--space-5);
+    border-top: 1px solid var(--color-divider);
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .avatar {
+    width: 56px; height: 56px; border-radius: var(--radius-pill);
+    overflow: hidden; flex-shrink: 0; background: var(--color-surface);
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .host-meta .name { font-weight: 600; font-size: var(--font-size-body-large); }
+  .host-meta .sub {
+    font-family: var(--font-heading); font-style: italic;
+    color: var(--color-text-secondary); font-size: var(--font-size-meta);
+  }
+
+  /* Attendee garden — photo tags */
+  .att-section { margin-bottom: var(--space-5); }
+  .att-title {
+    font-family: var(--font-heading); font-size: var(--font-size-card);
+    color: var(--color-text-primary); margin-bottom: var(--space-3);
+  }
+  .att-title .count {
+    color: var(--color-text-secondary); font-size: var(--font-size-meta);
+    font-style: italic; margin-left: var(--space-2);
+  }
+  .att-garden {
+    display: flex; flex-wrap: wrap; gap: var(--space-3);
+  }
+  .att-tag {
+    display: flex; align-items: center; gap: var(--space-2);
+    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-meta);
+  }
+  .att-tag .av {
+    width: 28px; height: 28px; border-radius: 50%;
+    overflow: hidden; background: var(--color-card-background);
+  }
+  .att-tag .av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .rsvp-header {
+    text-align: center;
+    font-family: var(--font-heading); font-size: var(--font-size-section);
+    color: var(--color-text-primary); margin-bottom: var(--space-4);
+  }
+  .rsvp-header::before, .rsvp-header::after {
+    content: '·'; margin: 0 var(--space-3); color: var(--color-text-tertiary);
+  }
+
+  .ctas { display: flex; gap: var(--space-3); }
+  .cta {
+    flex: 1; padding: var(--space-4) var(--space-3);
+    font-family: var(--font-body); font-weight: 600;
+    font-size: var(--font-size-body);
+    border-radius: var(--radius-md); border: none;
+    cursor: pointer; transition: transform 120ms ease;
+  }
+  .cta:hover:not([disabled]) { transform: translateY(-2px); }
+  .cta.yes { background: var(--color-primary); color: #FDFAF7; }
+  .cta.maybe { background: var(--color-secondary); color: var(--color-text-primary); }
+  .cta.no { background: var(--color-card-background);
+            color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+  .cta[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+  .full-message {
+    text-align: center;
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-body);
+    line-height: 1.6;
+  }
+  .full-message strong { display: block;
+                         font-family: var(--font-heading);
+                         margin-bottom: var(--space-2);
+                         font-size: var(--font-size-card); }
+
+  .variant {
+    max-width: 600px; margin: var(--space-6) auto;
+    border: 1px dashed var(--color-divider);
+    border-radius: var(--radius-md); padding: var(--space-4);
+    background: var(--color-card-background);
+  }
+  .variant h3 { font-family: var(--font-heading); font-size: var(--font-size-card);
+                margin-bottom: var(--space-3); color: var(--color-text-secondary); }
+</style>
+</head>
+<body>
+  <div class="label">Mock G — “Botanical bulletin” · organic, community-board feel · color-distinct CTAs</div>
+
+  <article class="bulletin">
+    <span class="pin" aria-hidden="true"></span>
+    <header class="hero" aria-hidden="true">
+      <img src="../../../server/simulation/assets/experiences/exp_004.jpg" alt="">
+    </header>
+    <div class="header-band">
+      <p class="header-kicker">An invitation from Two Oaks Block —</p>
+      <h1>Community Potluck Dinner</h1>
+      <p class="header-flourish">— May 24 · 6 PM —</p>
+    </div>
+    <div class="body">
+      <div class="when-where">
+        <div class="ww-row"><div class="ww-label">When</div>
+          <div class="ww-value">Saturday, May 24 — 6:00 PM</div></div>
+        <div class="ww-row"><div class="ww-label">Where</div>
+          <div class="ww-value">Two Oaks Community Center</div></div>
+        <div class="ww-row"><div class="ww-label">Bring</div>
+          <div class="ww-value">A dish that serves 8</div></div>
+      </div>
+
+      <div class="host-band">
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_010.jpg" alt=""></div>
+        <div class="host-meta">
+          <div class="name">Emma R.</div>
+          <div class="sub">your host · Two Oaks Block</div>
+        </div>
+      </div>
+
+      <div class="att-section">
+        <div class="att-title">Already in
+          <span class="count">6 of 18 members</span></div>
+        <div class="att-garden">
+          <span class="att-tag"><span class="av"><img src="../../../server/simulation/assets/profiles/profile_001.jpg" alt=""></span>Marcus</span>
+          <span class="att-tag"><span class="av"><img src="../../../server/simulation/assets/profiles/profile_005.jpg" alt=""></span>Henry</span>
+          <span class="att-tag"><span class="av"><img src="../../../server/simulation/assets/profiles/profile_012.jpg" alt=""></span>Ian</span>
+          <span class="att-tag"><span class="av"><img src="../../../server/simulation/assets/profiles/profile_018.jpg" alt=""></span>Betty</span>
+          <span class="att-tag"><span class="av"><img src="../../../server/simulation/assets/profiles/profile_025.jpg" alt=""></span>Tom</span>
+          <span class="att-tag"><span class="av"><img src="../../../server/simulation/assets/profiles/profile_030.jpg" alt=""></span>Sarah</span>
+        </div>
+      </div>
+
+      <h2 class="rsvp-header">Will you join us</h2>
+      <div class="ctas">
+        <button class="cta yes" disabled aria-label="Coming soon — RSVP available shortly">Yes</button>
+        <button class="cta maybe" disabled aria-label="Coming soon">Maybe</button>
+        <button class="cta no" disabled aria-label="Coming soon">Can't make it</button>
+      </div>
+    </div>
+  </article>
+
+  <div class="variant">
+    <h3>At-capacity variant</h3>
+    <p style="color:var(--color-text-secondary); font-size:var(--font-size-meta); margin-bottom: var(--space-3);">
+      The “Will you join us” header and three CTAs are hidden; this notice takes their place.
+    </p>
+    <div class="full-message" role="status">
+      <strong>This community is full</strong>
+      Can't RSVP because the hosting community is full
+      (32 of 32 members). Ask your inviter for options.
+    </div>
+  </div>
+
+  <div class="variant">
+    <h3>Empty-attendee variant</h3>
+    <p style="color:var(--color-text-secondary); font-size:var(--font-size-meta);">
+      “Already in” section hides until first RSVP; host band still shows.
+    </p>
+  </div>
+</body>
+</html>

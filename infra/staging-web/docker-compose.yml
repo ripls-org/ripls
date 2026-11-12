@@ -1,0 +1,10 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: static_web_type2fun_staging
+    ports:
+      - "18791:80"
+    volumes:
+      - /srv/sites/type2fun_static_web_staging/sites:/srv/sites:ro
+      - /srv/sites/type2fun_static_web_staging/config:/etc/nginx/conf.d:ro
+    restart: always

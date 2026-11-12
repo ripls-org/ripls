@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.12.1 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.12.1">Release 0.12.1</h1>
+            <p class="release-date">April 12, 2026</p>
+<p>Notification deep link reliability, database stability, and
+infrastructure hardening.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>Notification Deep Links</strong>: Fixed chat notification
+taps failing to navigate to the correct conversation after background or
+cold start. Added resume-check and deduplication to prevent stale or
+duplicate navigations (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1036">#1036</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1101">#1101</a>)</li>
+<li><strong>Database Connection Exhaustion</strong>: Fixed connection
+pool exhaustion caused by streaming autoscaling — connections are now
+properly bounded under concurrent real-time update streams (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1096">#1096</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1097">#1097</a>)</li>
+<li><strong>Empty Community Guard</strong>: Feed and search endpoints
+now validate community_id before querying the database, preventing
+spurious errors (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1100">#1100</a>)</li>
+</ul>
+<h2 id="infrastructure">Infrastructure</h2>
+<ul>
+<li><strong>CI Performance</strong>: Moved all CI to self-hosted runners
+with pre-installed Android SDK and Flutter, removed redundant caching
+and build artifact uploads, scaled runners from 4 to 8 (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1095">#1095</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1098">#1098</a>)</li>
+<li><strong>Terraform State</strong>: Migrated Terraform state to GCS
+remote backend for team-safe concurrent access (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1094">#1094</a>)</li>
+<li><strong>Metabase Analytics (Prod)</strong>: Deployed analytics
+dashboards to the prod environment (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1090">#1090</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1091">#1091</a>)</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.12.0.html">0.12.0</a> &mdash; April 11,
+2026</li>
+                <li><a href="0.11.0.html">0.11.0</a> &mdash; April 9,
+2026</li>
+                <li><a href="0.10.0.html">0.10.0</a> &mdash; April 6,
+2026</li>
+                <li><a href="0.9.3.html">0.9.3</a> &mdash; April 4,
+2026</li>
+                <li><a href="0.9.2.html">0.9.2</a> &mdash; April 3,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "suite": "TestGearWebpagePrompt",
+  "run": {
+    "timestamp_utc": "2026-07-08T20:31:10Z",
+    "git_commit": "cc64a141b4",
+    "git_branch": "prompt_rewrite",
+    "label": "expanded-webpage-goldens"
+  },
+  "goldens_file": "gear_webpage_goldens.json",
+  "goldens_version": 2,
+  "pairs": [
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "pass_rate": 0.9552238805970149,
+      "threshold": 0.78,
+      "passed": true,
+      "median_latency_ms": 3243,
+      "p95_latency_ms": 5301,
+      "field_pass_rates": {
+        "brand_contains": 1,
+        "category_contains_any_of": 0,
+        "has_description": 1,
+        "material_category_any_of": 1,
+        "max_confidence": 1,
+        "min_confidence": 1,
+        "title_contains": 0.9,
+        "value_estimate_usd": 1,
+        "weight_grams_approx": 1
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "pass_rate": 0.9701492537313433,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 17749,
+      "p95_latency_ms": 40373,
+      "field_pass_rates": {
+        "brand_contains": 1,
+        "category_contains_any_of": 1,
+        "has_description": 1,
+        "material_category_any_of": 1,
+        "max_confidence": 1,
+        "min_confidence": 0.9,
+        "title_contains": 0.9,
+        "value_estimate_usd": 1,
+        "weight_grams_approx": 1
+      }
+    },
+    {
+      "provider": "gemini",
+      "model": "vertexai/gemini-3.1-flash-lite",
+      "pass_rate": 0.9701492537313433,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 1471,
+      "p95_latency_ms": 2560,
+      "field_pass_rates": {
+        "brand_contains": 1,
+        "category_contains_any_of": 0.5,
+        "has_description": 1,
+        "material_category_any_of": 1,
+        "max_confidence": 1,
+        "min_confidence": 1,
+        "title_contains": 0.9,
+        "value_estimate_usd": 1,
+        "weight_grams_approx": 1
+      }
+    }
+  ]
+}

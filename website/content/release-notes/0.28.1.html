@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.28.1 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.28.1">Release 0.28.1</h1>
+            <p class="release-date">July 30, 2026</p>
+<p>Home screen freshness and CTA accuracy, nudge UI fixes, feedback
+screen accessibility, and a calendar booking-limit overflow fix.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Home Screen Staleness</strong>: Items and events older
+than 14 days now age off the home feed. Live opportunities — events with
+open RSVPs, active requests, mid-handoff giveaways — stay visible
+regardless of age; expired or cancelled ones are removed within the
+horizon (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2799">#2799</a>)</p></li>
+<li><p><strong>Home Screen CTA Accuracy</strong>: Event cards no longer
+invite you to Join when you’re already going. Cards now reflect your
+actual participation — RSVP status, offers made, and gear already shared
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2800">#2800</a>)</p></li>
+<li><p><strong>Nested Nudge on Home</strong>: The planning nudge was
+rendering inside the request nudge card on the home zero state. The two
+nudges now appear independently in their own frames (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2796">#2796</a>)</p></li>
+<li><p><strong>Calendar Nudge Text Cut Off</strong>: Planning nudge copy
+was clipped on the calendar screen. Text now scales to fit its host
+frame, and the photo attribution icon is tappable (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2801">#2801</a>)</p></li>
+<li><p><strong>Feedback Screen Accessibility</strong>: The in-app
+feedback entry is now a clearly-labelled row in the Settings menu
+(previously buried in a “help” item). The feedback sheet correctly
+inherits the glass token set, clearing the contrast failures visible in
+the prior layout (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2797">#2797</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2798">#2798</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2806">#2806</a>)</p></li>
+<li><p><strong>Nudge Vocabulary</strong>: The nudge generation prompt
+was seeding the retired phrase “Plan an Experience.” Nudge CTAs now use
+current vocabulary (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2803">#2803</a>)</p></li>
+<li><p><strong>State Region Code</strong>: <code>extractStateCode</code>
+was always returning empty, causing state regions to be persisted
+without a USPS code. Location lookups that rely on the state code now
+work correctly (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2802">#2802</a>)</p></li>
+<li><p><strong>Booking Limit Overflow</strong>: An integer overflow in
+<code>ClaimGearDays</code> allowed a booking to bypass the 30-day
+maximum. The arithmetic is corrected and the limit is consistently
+enforced (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2815">#2815</a>)</p></li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>Infrastructure Cost Savings</strong>: ~$300/month
+reduction via health-checker result caching (15 min), switching Cloud
+Run to Direct VPC egress (removing Serverless VPC Access connectors),
+scaling the dev server to zero, automating Artifact Registry image
+cleanup, and switching prod Cloud SQL to ZONAL tier with an account-wide
+billing budget (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2809">#2809</a>)</p></li>
+<li><p><strong>Go Linter Wave 2</strong>: 18+ additional linters enabled
+— <code>gosec</code>, <code>gocritic</code>, <code>stylecheck</code>,
+<code>gofmt</code>/<code>gofumpt</code>/<code>goimports</code>,
+<code>godot</code>, <code>nolintlint</code>, <code>unparam</code> — plus
+two resource leaks and a swallowed database error fixed by the new
+rules; all gates enforced in CI with pinned versions (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1611">#1611</a>)</p></li>
+<li><p><strong>Android/JDK Upgrade</strong>: Baked JDK bumped from 17 to
+25 and AGP updated to 9.3.1, unblocking bundled-lint improvements on
+Android builds (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2787">#2787</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.28.0.html">0.28.0</a> &mdash; July 28,
+2026</li>
+                <li><a href="0.27.0.html">0.27.0</a> &mdash; July 17,
+2026</li>
+                <li><a href="0.26.4.html">0.26.4</a> &mdash; July 9,
+2026</li>
+                <li><a href="0.26.3.html">0.26.3</a> &mdash; July 7,
+2026</li>
+                <li><a href="0.26.2.html">0.26.2</a> &mdash; July 4,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

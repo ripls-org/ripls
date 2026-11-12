@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.15.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.15.0">Release 0.15.0</h1>
+            <p class="release-date">April 16, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Multi-Photo Chat</strong>: The gallery picker in chat now
+supports multi-select. Photos stage as pending attachments with a
+thumbnail preview strip above the input bar; review, add, or remove
+before sending. Sequential upload with progress (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1124">#1124</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1139">#1139</a>)</p></li>
+<li><p><strong>Tappable Links in Descriptions</strong>: URLs embedded in
+item and experience descriptions now render as tappable links via the
+new <code>LinkifiedText</code> widget (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1140">#1140</a>)</p></li>
+<li><p><strong>Invisible Android Phone Verification</strong>: Play
+Integrity API is now enabled in prod, so phone number verification on
+Android release builds skips the reCAPTCHA browser popup (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1150">#1150</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Stale Chat from Notifications</strong>: Tapping a chat
+notification navigated to the right conversation but showed stale cached
+messages. Conversation and context caches are now invalidated before
+fetch, guaranteeing fresh data on every open (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1133">#1133</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1138">#1138</a>)</p></li>
+<li><p><strong>Text Descriptions Overwritten by AI</strong>: When
+creating an item or experience from typed text and then adding a photo,
+the LLM was replacing your description with generated text. Text mode
+now preserves your description verbatim — the LLM still extracts title,
+metadata, location, time, and value estimates, but leaves the
+description alone. URL-only mode only triggers when the entire input is
+a URL. A confirmation dialog warns before switching from text to image
+mode if it would discard your text (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1105">#1105</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1140">#1140</a>)</p></li>
+<li><p><strong>Wrong Location from Event URLs</strong>: Creating an
+experience from an Eventbrite/Meetup/Luma URL sometimes resolved to the
+wrong place (e.g. Boulder County Jail instead of Boulder Airport)
+because the LLM’s extracted location was overriding the structured
+JSON-LD location. JSON-LD location now always wins when present, and geo
+coordinates from the page flow through to Mapbox as proximity bias for
+accurate matching (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1134">#1134</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1141">#1141</a>)</p></li>
+<li><p><strong>Broken Location Deduplication</strong>: The server was
+discarding Mapbox’s permanent place ID on save, so every location fell
+back to 50m radius matching — causing genuinely different places within
+50m of each other to merge into one record. Saves now capture the
+external place ID and full administrative hierarchy (locality, region,
+postal code, neighborhood, county) for correct dedup and richer display
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1142">#1142</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1145">#1145</a>)</p></li>
+</ul>
+<h2 id="improvements">Improvements</h2>
+<ul>
+<li><p><strong>Unified Chat Experience</strong>: Removed the standalone
+ConversationScreen (1,581 lines and 4 exclusive widgets). Portfolio
+inbox and all conversation entry points now navigate to the item screen
+with the chat tab selected, giving a consistent in-context chat
+everywhere (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1029">#1029</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1139">#1139</a>)</p></li>
+<li><p><strong>Shared Media Picker</strong>: The chat ‘+’ attach button
+and the media bar now use the same <code>MediaPickerDialog</code> bottom
+sheet with a consistent “Add Media” header and plural labels (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1139">#1139</a>)</p></li>
+<li><p><strong>“Create” Buttons</strong>: Renamed “Generate” buttons to
+“Create” across all creation modals to better reflect what they do (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1140">#1140</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.14.0.html">0.14.0</a> &mdash; April 15,
+2026</li>
+                <li><a href="0.13.1.html">0.13.1</a> &mdash; April 14,
+2026</li>
+                <li><a href="0.13.0.html">0.13.0</a> &mdash; April 13,
+2026</li>
+                <li><a href="0.12.2.html">0.12.2</a> &mdash; April 13,
+2026</li>
+                <li><a href="0.12.1.html">0.12.1</a> &mdash; April 12,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

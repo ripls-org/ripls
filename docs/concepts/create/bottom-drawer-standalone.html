@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bottom Drawer — Share Something</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #E8E1D4;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "SF Pro Text", sans-serif;
+    color: #1A1A1A;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 24px;
+  }
+  .phone-frame {
+    width: 390px;
+    height: 844px;
+    background: #0c0c0c;
+    border-radius: 52px;
+    padding: 10px;
+    box-shadow:
+      0 22px 60px rgba(20, 14, 5, 0.22),
+      0 6px 18px rgba(20, 14, 5, 0.10);
+    flex-shrink: 0;
+  }
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 42px;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+  }
+  .notch {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 30px;
+    background: #000;
+    border-radius: 16px;
+    z-index: 200;
+    pointer-events: none;
+  }
+  .vf-corner {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    z-index: 25;
+    pointer-events: none;
+  }
+  .layout-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    align-items: center;
+  }
+  .meta { max-width: 440px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+
+const { useState, useRef } = React;
+
+const HERO_IMAGES = [
+  'https://images.unsplash.com/photo-1551632811-561732d1e306?w=900&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1455218873509-8097305ee378?w=900&auto=format&fit=crop&q=80',
+];
+const HERO_IMAGE = HERO_IMAGES[0];
+
+const TYPES = [
+  { id: 'event',    label: 'Event' },
+  { id: 'ask',      label: 'Request' },
+  { id: 'lending',  label: 'Lending' },
+  { id: 'giveaway', label: 'Giveaway' },
+];
+
+const TYPE_DATA = {
+  event: {
+    title: 'Mt Sanitas Hike',
+    description: 'Going for a hike tomorrow morning at Mt Sanitas — easy pace, dogs welcome.',
+    time: 'Fri, May 8 · 9:00 AM',
+    location: 'Mt Sanitas Trailhead',
+    communities: '4 communities',
+  },
+  ask: {
+    title: 'Hiking buddy needed',
+    description: 'Looking for someone to hit Mt Sanitas with me tomorrow morning. Easy pace, no rush.',
+    location: 'Mt Sanitas Trailhead',
+    communities: '4 communities',
+  },
+  lending: {
+    title: 'Climbing rope (9.6 mm)',
+    description: 'Edelrid BOA ECO 2R, used a few times. Take it on your next big climb.',
+    itemDetails: {
+      brand: 'Edelrid',
+      model: 'BOA ECO 2R',
+      estValue: '$185',
+      material: 'Nylon',
+      weight: '2.1 kg',
+    },
+    location: 'Pearl St. neighborhood',
+    communities: '4 communities',
+  },
+  giveaway: {
+    title: 'Trail running shoes (M9)',
+    description: 'Hoka Speedgoats — barely worn before I sized up. Free to a good home.',
+    itemDetails: {
+      brand: 'Hoka',
+      model: 'Speedgoat 5',
+      estValue: '$155',
+      material: 'Mesh',
+      weight: '0.6 kg',
+    },
+    location: 'Pearl St. neighborhood',
+    communities: '4 communities',
+  },
+};
+
+const FAKE_DESCRIPTIONS = {
+  event:    "Caught this poster at the trailhead — looked like something we'd want to be part of.",
+  ask:      "This one's been on my list for ages. Anyone able to help out?",
+  lending:  "Found this in the closet — happy to loan it out for your next trip.",
+  giveaway: "Found this in the closet — barely used, free to whoever can use it.",
+};
+
+/* ----- Type-specific field set + cascade timing --------------------- */
+
+function fieldsFor(type) {
+  if (type === 'event') return [{ key: 'time', icon: '🕘' }, { key: 'location', icon: '📍' }, { key: 'communities', icon: '👥' }];
+  if (type === 'lending' || type === 'giveaway') {
+    return [
+      { key: 'itemDetails', kind: 'item', icon: '📦' },
+      { key: 'location', icon: '📍' },
+      { key: 'communities', icon: '👥' },
+    ];
+  }
+  // Request
+  return [{ key: 'location', icon: '📍' }, { key: 'communities', icon: '👥' }];
+}
+
+const STEP_MS = 1000;
+function delaysFor(type) {
+  const fields = fieldsFor(type);
+  const typePill    = 0;
+  const title       = STEP_MS;
+  const description = STEP_MS * 2;
+  const fieldDelays = fields.map((_, i) => STEP_MS * (3 + i));
+  const lastFieldDelay = fieldDelays.length ? fieldDelays[fieldDelays.length - 1] : description;
+  const image = lastFieldDelay + STEP_MS;
+  const share = image + STEP_MS;
+  return { typePill, title, description, fields: fieldDelays, image, share, total: share + 800 };
+}
+
+/* ============================================================
+   PRIMITIVES
+============================================================ */
+
+function StatusBar() {
+  return (
+    <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-between px-7 pt-4 text-[13px] font-semibold z-[150] text-white">
+      <span>10:59</span>
+      <span></span>
+    </div>
+  );
+}
+
+function GlassIcon({ children, onClick }) {
+  return (
+    <button onClick={onClick}
+      className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-xl border border-white/25 flex items-center justify-center text-white text-[15px] active:scale-95 transition">
+      {children}
+    </button>
+  );
+}
+
+function ViewfinderCorners() {
+  return (
+    <>
+      <div className="vf-corner" style={{ top: 90, left: 28, borderRight: 'none', borderBottom: 'none', borderTopLeftRadius: 6 }} />
+      <div className="vf-corner" style={{ top: 90, right: 28, borderLeft: 'none', borderBottom: 'none', borderTopRightRadius: 6 }} />
+      <div className="vf-corner" style={{ bottom: 130, left: 28, borderRight: 'none', borderTop: 'none', borderBottomLeftRadius: 6 }} />
+      <div className="vf-corner" style={{ bottom: 130, right: 28, borderLeft: 'none', borderTop: 'none', borderBottomRightRadius: 6 }} />
+    </>
+  );
+}
+
+function CameraBackground({ active }) {
+  return (
+    <>
+      <div className="absolute inset-0 bg-cover bg-center transition-all duration-500"
+           style={{
+             backgroundImage: `url(${HERO_IMAGE})`,
+             filter: active ? 'brightness(0.85)' : 'blur(20px) brightness(0.55)',
+             transform: active ? 'scale(1)' : 'scale(1.1)',
+           }} />
+      <div className="absolute inset-0 bg-black/25" />
+    </>
+  );
+}
+
+function Shutter({ onClick, size = 68 }) {
+  const inner = size - 14;
+  return (
+    <button onClick={onClick}
+      className="rounded-full bg-white/20 backdrop-blur-xl border-2 border-white/80 flex items-center justify-center active:scale-95 transition shadow-2xl"
+      style={{ width: size, height: size }}>
+      <span className="block rounded-full bg-white" style={{ width: inner, height: inner }} />
+    </button>
+  );
+}
+
+function GalleryButton({ onClick }) {
+  return (
+    <button onClick={onClick}
+      className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-xl border border-white/30 flex items-center justify-center active:scale-95 transition shadow-lg overflow-hidden">
+      <div className="w-full h-full bg-cover bg-center opacity-90"
+           style={{ backgroundImage: `url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&auto=format&fit=crop&q=70)` }} />
+    </button>
+  );
+}
+
+function ModeTabs({ value, onChange }) {
+  const tabs = [
+    { id: 'text', label: 'Text' },
+    { id: 'camera', label: 'Image' },
+    { id: 'link', label: 'URL' },
+  ];
+  return (
+    <div className="flex bg-white/12 border border-white/25 rounded-full p-1 gap-1 backdrop-blur-xl">
+      {tabs.map(t => (
+        <button key={t.id} onClick={() => onChange(t.id)}
+          className={`flex-1 py-1 px-3 rounded-full text-[11.5px] font-semibold transition whitespace-nowrap ${
+            value === t.id ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-white/85'
+          }`}>
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function TextPanel({ value, onChange, onGenerate }) {
+  return (
+    <>
+      <textarea autoFocus value={value} onChange={e => onChange(e.target.value)}
+        placeholder="Going for a hike tomorrow morning at Mt Sanitas..."
+        rows={5}
+        className="w-full bg-white/15 border border-white/25 rounded-2xl p-3.5 text-[14px] text-white placeholder-white/50 outline-none resize-none mb-3" />
+      <button onClick={onGenerate} disabled={!value.trim()}
+        className="w-full h-11 rounded-full bg-white text-[#1A1A1A] font-semibold text-[13px] shadow-md disabled:opacity-40 transition flex items-center justify-center">
+        Generate
+      </button>
+    </>
+  );
+}
+
+function LinkPanel({ value, onChange, onGenerate }) {
+  return (
+    <>
+      <div className="flex items-center gap-2 bg-white/15 border border-white/25 rounded-2xl px-3.5 mb-3">
+        <span className="text-white/55 text-[14px]">🔗</span>
+        <input autoFocus value={value} onChange={e => onChange(e.target.value)}
+          placeholder="https://..."
+          className="flex-1 bg-transparent border-none outline-none text-[14px] text-white placeholder-white/50 py-3" />
+      </div>
+      <button onClick={onGenerate} disabled={!value.trim()}
+        className="w-full h-11 rounded-full bg-white text-[#1A1A1A] font-semibold text-[13px] shadow-md disabled:opacity-40 transition flex items-center justify-center">
+        Generate
+      </button>
+    </>
+  );
+}
+
+function Stagger({ delay = 0, loaded, children, className = '' }) {
+  return (
+    <div
+      className={className}
+      style={{
+        opacity: loaded ? 1 : 0,
+        transform: loaded ? 'translateY(0)' : 'translateY(8px)',
+        transition: loaded
+          ? 'opacity 700ms ease, transform 700ms cubic-bezier(0.16, 1, 0.3, 1)'
+          : 'opacity 200ms ease, transform 200ms ease',
+        transitionDelay: loaded ? `${delay}ms` : '0ms',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function PreviewRow({ icon, value, onChange, last }) {
+  return (
+    <div className={`flex items-center gap-3 py-2.5 ${last ? '' : 'border-b border-white/10'}`}>
+      <span className="text-[14px] opacity-75">{icon}</span>
+      <input value={value} onChange={e => onChange(e.target.value)}
+        className="flex-1 bg-transparent border-none outline-none text-white text-[13.5px]" />
+      <span className="text-white/45 text-[14px]">›</span>
+    </div>
+  );
+}
+
+function ItemRow({ value, onClick, last }) {
+  const brand = value?.brand || 'Add details';
+  const model = value?.model || '';
+  return (
+    <button onClick={onClick}
+      className={`w-full flex items-center gap-3 py-2.5 ${last ? '' : 'border-b border-white/10'}`}>
+      <span className="text-[14px] opacity-75">📦</span>
+      <span className="flex-1 text-left text-white text-[13.5px] truncate">
+        {brand}{model ? <span className="text-white/55"> · {model}</span> : null}
+      </span>
+      <span className="text-white/45 text-[14px]">›</span>
+    </button>
+  );
+}
+
+function ItemDetailsModal({ open, value, onChange, onClose }) {
+  if (!open) return null;
+  const v = value || {};
+  const update = (k) => (val) => onChange({ ...v, [k]: val });
+  return (
+    <div className="absolute inset-0 z-[300]">
+      <div onClick={onClose} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      <div className="absolute bottom-0 left-0 right-0 bg-[#F5F1EB] rounded-t-[28px] p-6 pb-9">
+        <div className="w-10 h-1 rounded-full bg-black/15 mx-auto mb-5" />
+        <div className="flex items-center justify-between mb-5">
+          <div className="text-[18px] font-bold text-[#1A1A1A] tracking-tight">Item details</div>
+          <button onClick={onClose}
+            className="w-9 h-9 rounded-full bg-black/8 flex items-center justify-center text-[#5A4A3D] text-[15px]">
+            ✕
+          </button>
+        </div>
+        <ModalRow label="Brand"      value={v.brand     || ''} onChange={update('brand')} />
+        <ModalRow label="Model"      value={v.model     || ''} onChange={update('model')} />
+        <ModalRow label="Est. Value" value={v.estValue  || ''} onChange={update('estValue')} />
+        <ModalRow label="Material"   value={v.material  || ''} onChange={update('material')} />
+        <ModalRow label="Weight"     value={v.weight    || ''} onChange={update('weight')} last />
+        <button onClick={onClose}
+          className="mt-6 w-full h-[48px] rounded-2xl bg-[#E89B7E] text-white font-semibold text-[14.5px]">
+          Done
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ModalRow({ label, value, onChange, last }) {
+  return (
+    <div className={`flex items-center justify-between gap-4 py-3 ${last ? '' : 'border-b border-black/8'}`}>
+      <span className="text-[13px] text-[#5A4A3D] font-medium">{label}</span>
+      <input value={value} onChange={e => onChange(e.target.value)}
+        placeholder="—"
+        className="bg-transparent border-none outline-none text-[14px] text-[#1A1A1A] font-semibold text-right placeholder-[#B8A082]" />
+    </div>
+  );
+}
+
+function BuildingPill() {
+  return (
+    <div className="inline-flex items-center gap-1.5 bg-white/15 border border-white/25 backdrop-blur-xl rounded-full px-2.5 py-1">
+      <div className="w-3 h-3 rounded-full border border-white/70 border-t-transparent animate-spin" />
+      <span className="text-white/85 text-[10px] font-semibold tracking-[0.04em]">Building...</span>
+    </div>
+  );
+}
+
+/* ============================================================
+   PREVIEW CARD
+============================================================ */
+
+function PreviewCard({ post, update, typeMenu, setTypeMenu, loaded, building, onChangeType, onOpenItemModal }) {
+  const current = TYPES.find(t => t.id === post.type);
+  const fields = fieldsFor(post.type);
+  const delays = delaysFor(post.type);
+
+  return (
+    <div className="rounded-[24px] bg-white/15 backdrop-blur-2xl border border-white/30 shadow-[0_24px_60px_rgba(0,0,0,0.3)] p-6">
+      <Stagger delay={delays.typePill} loaded={loaded} className="relative z-[60]">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="relative inline-flex">
+            <button onClick={() => setTypeMenu(v => !v)}
+              className="bg-white/22 border border-white/30 rounded-full px-2.5 py-1 text-[10.5px] font-semibold text-white flex items-center gap-1.5">
+              <span>{current.label}</span><span className="text-[8px] opacity-70">▼</span>
+            </button>
+            {typeMenu && (
+              <div className="absolute top-9 left-0 bg-[#1f1f1f]/95 backdrop-blur-xl rounded-2xl p-1.5 border border-white/10 shadow-2xl min-w-[140px] z-[100]">
+                {TYPES.map(t => (
+                  <button key={t.id} onClick={() => { onChangeType(t.id); setTypeMenu(false); }}
+                    className={`px-3 py-2 rounded-xl text-[12.5px] w-full text-left ${
+                      post.type === t.id ? 'bg-white/12 text-white' : 'text-white/70'
+                    }`}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {building && <div className="ml-auto"><BuildingPill /></div>}
+        </div>
+      </Stagger>
+
+      <Stagger delay={delays.title} loaded={loaded}>
+        <input value={post.title} onChange={e => update('title')(e.target.value)}
+          className="w-full bg-transparent text-white text-[24px] font-bold leading-[1.1] tracking-tight outline-none border-none mb-2" />
+      </Stagger>
+
+      <Stagger delay={delays.description} loaded={loaded}>
+        <textarea value={post.description} onChange={e => update('description')(e.target.value)}
+          rows={2}
+          placeholder="Describe it..."
+          className="w-full bg-transparent text-white/85 text-[13px] leading-relaxed outline-none resize-none border-none placeholder-white/35 mb-3 pb-3"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.18)' }} />
+      </Stagger>
+
+      {fields.map((f, i) => (
+        <Stagger key={`${post.type}-${f.key}`} delay={delays.fields[i]} loaded={loaded}>
+          {f.kind === 'item' ? (
+            <ItemRow value={post[f.key]} onClick={onOpenItemModal} last={i === fields.length - 1} />
+          ) : (
+            <PreviewRow icon={f.icon} value={post[f.key] || ''} onChange={update(f.key)} last={i === fields.length - 1} />
+          )}
+        </Stagger>
+      ))}
+    </div>
+  );
+}
+
+/* ============================================================
+   FLOW HOOK
+============================================================ */
+
+function useFlow() {
+  const [stage, setStage] = useState('input');
+  const [inputMode, setInputMode] = useState('text');
+  const [prompt, setPrompt] = useState('');
+  const [link, setLink] = useState('');
+  const [post, setPost] = useState({ type: 'event', ...TYPE_DATA.event, image: HERO_IMAGE });
+  const [typeMenu, setTypeMenu] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [building, setBuilding] = useState(false);
+  const timersRef = useRef([]);
+
+  const clearTimers = () => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+  };
+
+  const triggerCascade = (forType) => {
+    clearTimers();
+    setLoaded(false);
+    setBuilding(true);
+    const d = delaysFor(forType);
+    timersRef.current.push(setTimeout(() => setLoaded(true), 80));
+    timersRef.current.push(setTimeout(() => setBuilding(false), d.total));
+  };
+
+  const update = (k) => (v) => setPost(p => ({ ...p, [k]: v }));
+
+  const generate = (kind) => {
+    let descOverride;
+    if (kind === 'image')      descOverride = FAKE_DESCRIPTIONS[post.type];
+    else if (kind === 'link')  descOverride = link.trim();
+    else                       descOverride = prompt.trim();
+    setPost(p => ({ ...p, description: descOverride }));
+    setStage('preview');
+    triggerCascade(post.type);
+  };
+
+  const changeType = (newType) => {
+    setPost(p => ({ ...p, ...TYPE_DATA[newType], type: newType }));
+    triggerCascade(newType);
+  };
+
+  const replaceImage = () => {
+    setPost(p => {
+      const idx = HERO_IMAGES.indexOf(p.image);
+      const next = HERO_IMAGES[((idx === -1 ? 0 : idx) + 1) % HERO_IMAGES.length];
+      return { ...p, image: next };
+    });
+  };
+
+  const restart = () => {
+    clearTimers();
+    setStage('input');
+    setInputMode('text');
+    setPrompt('');
+    setLink('');
+    setLoaded(false);
+    setBuilding(false);
+  };
+
+  return { stage, inputMode, setInputMode, prompt, setPrompt, link, setLink,
+           post, update, generate, changeType, replaceImage, restart,
+           typeMenu, setTypeMenu, loaded, building };
+}
+
+/* ============================================================
+   BOTTOM DRAWER
+============================================================ */
+
+function BottomDrawer() {
+  const f = useFlow();
+  const [itemModalOpen, setItemModalOpen] = useState(false);
+  const expanded = f.stage === 'input' && (f.inputMode === 'text' || f.inputMode === 'link');
+  const delays = delaysFor(f.post.type);
+
+  return (
+    <div className="phone-frame">
+      <div className="phone-screen">
+        <div className="notch" />
+
+        {/* Background layers */}
+        {f.stage === 'input' && (
+          <CameraBackground active={f.inputMode === 'camera'} />
+        )}
+        {f.stage === 'preview' && (
+          <>
+            {/* Dark studio backdrop visible during cascade */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#1f1d1a] to-[#0e0d0c]" />
+            {/* Image fades in last */}
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${f.post.image})`,
+                opacity: f.loaded ? 1 : 0,
+                transition: f.loaded ? 'opacity 1200ms ease' : 'opacity 250ms ease',
+                transitionDelay: f.loaded ? `${delays.image}ms` : '0ms',
+              }}
+            />
+            {/* Dark overlay arrives with the image */}
+            <div
+              className="absolute inset-0 bg-black/35 z-[5]"
+              style={{
+                opacity: f.loaded ? 1 : 0,
+                transition: f.loaded ? 'opacity 1200ms ease' : 'opacity 250ms ease',
+                transitionDelay: f.loaded ? `${delays.image}ms` : '0ms',
+              }}
+            />
+          </>
+        )}
+
+        <StatusBar />
+
+        {/* Top right: close */}
+        <div className="absolute top-14 right-5 z-30">
+          <GlassIcon onClick={f.restart}>✕</GlassIcon>
+        </div>
+
+        {f.stage === 'input' && f.inputMode === 'camera' && <ViewfinderCorners />}
+
+        {f.stage === 'input' && f.inputMode === 'camera' && (
+          <>
+            <div className="absolute bottom-[100px] left-0 right-0 flex justify-center z-30">
+              <Shutter onClick={() => f.generate('image')} />
+            </div>
+            <div className="absolute bottom-[110px] left-7 z-30">
+              <GalleryButton onClick={() => f.generate('image')} />
+            </div>
+          </>
+        )}
+
+        {/* Input drawer */}
+        {f.stage === 'input' && (
+          <div
+            className="absolute left-0 right-0 bottom-0 z-30 rounded-t-[28px] bg-white/15 backdrop-blur-2xl border-t border-white/30 transition-all duration-300"
+            style={{ height: expanded ? 360 : 80 }}
+          >
+            <div className="w-10 h-1 rounded-full bg-white/50 mx-auto mt-2.5 mb-3" />
+            <div className="px-4">
+              <ModeTabs value={f.inputMode} onChange={f.setInputMode} />
+              {f.inputMode === 'text' && (
+                <div className="mt-3"><TextPanel value={f.prompt} onChange={f.setPrompt} onGenerate={() => f.generate('text')} /></div>
+              )}
+              {f.inputMode === 'link' && (
+                <div className="mt-3"><LinkPanel value={f.link} onChange={f.setLink} onGenerate={() => f.generate('link')} /></div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Preview */}
+        {f.stage === 'preview' && (
+          <>
+            <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-5">
+              <div className="flex justify-center">
+                <Stagger delay={delays.image + 200} loaded={f.loaded}>
+                  <button onClick={f.replaceImage}
+                    className="flex flex-col items-center gap-2 active:scale-95 transition">
+                    <div className="w-14 h-14 rounded-full bg-white/15 backdrop-blur-xl border border-white/35 flex items-center justify-center text-white shadow-lg">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      </svg>
+                    </div>
+                    <span className="text-white text-[12.5px] font-medium" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.45)' }}>
+                      Replace background
+                    </span>
+                  </button>
+                </Stagger>
+              </div>
+              <PreviewCard
+                post={f.post}
+                update={f.update}
+                typeMenu={f.typeMenu}
+                setTypeMenu={f.setTypeMenu}
+                loaded={f.loaded}
+                building={f.building}
+                onChangeType={f.changeType}
+                onOpenItemModal={() => setItemModalOpen(true)}
+              />
+            </div>
+            <Stagger delay={delays.share} loaded={f.loaded} className="absolute bottom-7 left-5 right-5 z-30">
+              <button className="w-full h-[52px] rounded-2xl bg-[#E89B7E] text-white font-semibold text-[15px] flex items-center justify-center shadow-2xl">
+                Share with communities
+              </button>
+            </Stagger>
+            <ItemDetailsModal
+              open={itemModalOpen}
+              value={f.post.itemDetails}
+              onChange={f.update('itemDetails')}
+              onClose={() => setItemModalOpen(false)}
+            />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   APP
+============================================================ */
+
+function App() {
+  return (
+    <div className="layout-stage">
+      <div className="meta">
+        <div className="text-[12px] tracking-[0.18em] uppercase text-[#8A7665] font-semibold mb-2">
+          Bottom Drawer · Standalone
+        </div>
+        <h1 className="text-[28px] font-bold text-[#1A1A1A] leading-tight tracking-tight mb-2">
+          Share Something
+        </h1>
+        <p className="text-[14px] text-[#5A4A3D] leading-relaxed">
+          Type a prompt (or pick a tab) and tap Generate — the preview pieces
+          load one per second, with the background image arriving last. Tap the
+          type pill to switch types and watch the cascade rebuild from scratch.
+        </p>
+      </div>
+      <BottomDrawer />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+</script>
+</body>
+</html>

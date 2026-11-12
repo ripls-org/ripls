@@ -1,0 +1,36 @@
+Release 0.32.0
+
+
+Ripls is now open source under Apache-2.0. The server infrastructure moves to self-hosted hardware, with a branding layer that lets any deployment supply its own identity without modifying code.
+
+New Features
+
+- Open-Source Release: The Ripls codebase is published under the Apache-2.0 license. The release adds governance files (license, trademark policy, contributing guidelines, code of conduct, security policy) and an export harness that keeps deployment-specific identity out of the public tree. The Go module path is now github.com/ripls-org/ripls (#2953)
+
+- Self-Hosted Server Infrastructure: Both dev and prod server stacks now run on self-hosted hardware (mimir) alongside Cloud Run. The deploy pipeline loads images directly into the host’s daemon (no registry), verifies /readyz before the cutover, rolls back automatically on failure, and keeps the ten most recent builds on disk. Snapshotted ZFS datasets back the databases, and a daily dump script verified with a full prod restore is in place. Server logs ship to Cloud Logging so existing dashboards and alerts remain live (#3074, #3076, #3077)
+
+- Configurable Server Branding: Brand name, legal entity, support email, policy URLs, app store links, Android package ID, deep-link scheme, and bot User-Agent are now supplied at deploy time via environment variables rather than compiled-in defaults. Unset values fall back to the flag defaults, so existing Cloud Run and mimir deployments continue to work without change (#2961, #3093)
+
+- Graceful Stream Shutdown: The server now terminates open streaming RPCs when a shutdown signal arrives, allowing the drain period to complete without being held open by long-lived connections. Self-hosted deployments that use Docker’s stop timeout benefit most (#3092)
+
+Bug Fixes
+
+- Push Notifications Use Firebase Installation ID: The server now addresses push notifications by Firebase Installation ID (FID) as the primary identifier, falling back to the registration token. FIDs survive app reinstalls and token refreshes, making delivery more reliable (#3043)
+
+- Branding Regression Fixed Before Reaching Prod: The v0.31.0 open-source prep blanked the server’s identity defaults but did not wire the replacement environment variables through entrypoint.sh or Terraform. Any build of main between v0.31.0 and this release would have served empty invite landings, Play Store links, and policy URLs. The wiring was completed before prod was updated (#2984, #3093)
+
+- Stock Image Copy No Longer Logs False Errors: A stock image copy whose media row was deleted mid-copy (by e2e test cleanup) logged an ERROR and tripped the all-errors alert. The race is now treated as a normal outcome (#3090)
+
+- Server Starts Without Google Credentials in Dev Mode: The server can now start in dev mode without Google Application Default Credentials, making local development possible without a full GCP setup (#3055)
+
+Internal
+
+- golangci-lint v2 Migration: Migrated server/.golangci.yml to the v2 schema, enabled staticcheck’s QF checks (minus control-flow rewrites), applied gofumpt’s extra rules, threaded context.Context through storage initialization, and guarded local bucket keys against path traversal (#3008)
+
+- ONNX Runtime Upgraded: Native ONNX Runtime 1.22 → 1.29 and the Go binding 1.24 → 1.35, bringing ARM performance improvements and bug fixes to the on-device AI inference path (#3009, #3011)
+
+- Metabase Removed: The local Metabase analytics setup, its Terraform resources, and the analytics skill are removed; a read-only Postgres role and SSH-tunnel access path replace it for ad-hoc queries (#3075)
+
+- OSS Denylist Scan Now Blocks PRs: The scan that checks for deployment-specific identifiers in the public export was previously report-only; it now blocks merges, making the open-source boundary a hard gate (#3063)
+
+- Dependency Updates: Flutter 3.47.4, Go 1.27.1, connectrpc v2.2.0, go_router 18, freezed 4, firebase plugins, Kotlin 2.4.20, Android Gradle 9.7.1, and various JS/Terraform dependencies

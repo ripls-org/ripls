@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.18.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.18.0">Release 0.18.0</h1>
+            <p class="release-date">April 30, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Per-community notification preferences</strong>: Each
+community membership now has a “Manage Notifications” screen with nine
+independent toggles — new requests, new events, gear shared, event
+completed, transfer updates, request updates, RSVPs, planning updates,
+and chats. The server filters push delivery against these preferences
+before dispatch (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1107">#1107</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1553">#1553</a>)</p></li>
+<li><p><strong>Add to calendar from the Event tab</strong>: An inline
+calendar icon on each event row drops the event into the device calendar
+in one tap, without opening the detail screen (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1546">#1546</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1550">#1550</a>)</p></li>
+<li><p><strong>Streaming community creation</strong>: AI-assisted
+community creation now streams results to the preview the same way gear,
+request, and event generation do. Fields populate incrementally instead
+of all at once at the end (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1540">#1540</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1567">#1567</a>)</p></li>
+<li><p><strong>Image-mode and webpage-mode AI streaming</strong>:
+Generating gear from an image and generating events from a webpage URL
+now stream provider responses end to end, including image-mode flows for
+requests and events. Description is emitted mid-stream and time/location
+skeletons render before the structured response completes (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1452">#1452</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1456">#1456</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1471">#1471</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1487">#1487</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1502">#1502</a>)</p></li>
+<li><p><strong>Event-tab UI sweep — “Experience” → “Event”</strong>:
+Every user-visible string that referred to an “experience” now says
+“event,” in the app, in push notifications, in emails, and in
+screen-reader labels. Code identifiers, RPC names, and proto messages
+still use <code>Experience</code> internally (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1107">#1107</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1570">#1570</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1603">#1603</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Recipient withdrawal ended a giveaway</strong>: When a
+recipient withdrew from a giveaway, the entire giveaway was being marked
+complete instead of just releasing that recipient’s slot. Cancellation
+now scopes correctly to the withdrawing recipient (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1230">#1230</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1565">#1565</a>)</p></li>
+<li><p><strong>Stale chat history after backgrounding</strong>:
+Reopening a conversation after the app had been backgrounded for a while
+would show messages that were out of date. Chat now refreshes on resume
+and gap-fills any messages missed while the stream was disconnected (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1256">#1256</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1566">#1566</a>)</p></li>
+<li><p><strong>Replacing a video left the old preview onscreen</strong>:
+Swapping a video in gear/event creation flows kept showing the previous
+preview because the old controller wasn’t being torn down. Media
+replacement now clears the controller and stabilizes the background
+image while the new media loads (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1544">#1544</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1598">#1598</a>)</p></li>
+<li><p><strong>“Offer help” failed when a stale community was
+active</strong>: Tapping “offer help” on a request from a community the
+user was no longer a member of errored out instead of falling back to a
+community both parties share. The stale-community guard now extends to
+the gear and event flows too (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1547">#1547</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1549">#1549</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1571">#1571</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1590">#1590</a>)</p></li>
+<li><p><strong>Second community settings screen showed the first
+community</strong>: Opening the governance screen for a second community
+always rendered the first community’s data because of a state bleed
+across community contexts (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1371">#1371</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1373">#1373</a>)</p></li>
+<li><p><strong>Gear-share epoch-timestamp bug</strong>: A
+missing-timestamp path was rendering shares as “20568 days ago.” Empty
+timestamps now suppress the relative display instead of formatting
+epoch-zero (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1374">#1374</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1375">#1375</a>)</p></li>
+<li><p><strong>Stats screen swipe order was wrong</strong>: Horizontal
+swipe order on the stats screen didn’t match the tab order (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1376">#1376</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1385">#1385</a>)</p></li>
+<li><p><strong>Help-offered and events-hosted counts hardcoded to
+0</strong>: The user-stats RPC was returning literal zeros for
+<code>HelpOfferedCount</code> and <code>EventsHostedCount</code> instead
+of querying the underlying tables (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1355">#1355</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1402">#1402</a>)</p></li>
+<li><p><strong>Request stats lost help_value_usd</strong>:
+<code>GetRequestStats</code> was recomputing the dollar value instead of
+reading the persisted ImpactEstimate, so the number drifted across views
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1357">#1357</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1420">#1420</a>)</p></li>
+<li><p><strong>Experience time skeleton showed wrong place
+coordinates</strong>: Lat/lng and RSVP counts weren’t being populated by
+the experience API mapper, so the detail view rendered with empty
+coordinates (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1356">#1356</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1403">#1403</a>)</p></li>
+<li><p><strong>Phone-auth refresh dropped phone_number</strong>: The
+refresh-token-issued access token was missing the
+<code>phone_number</code> claim, breaking flows that read the user’s
+phone number from the token (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1450">#1450</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1455">#1455</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1482">#1482</a>)</p></li>
+<li><p><strong>Feed flashed on detail-level real-time events</strong>:
+The feed was triggering a full re-render whenever any community event
+arrived, even ones unrelated to the visible items. Only feed-relevant
+events re-render now (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1137">#1137</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1321">#1321</a>)</p></li>
+</ul>
+<h2 id="reliability-security">Reliability &amp; Security</h2>
+<ul>
+<li><p><strong>JWT signing secret hardening</strong>: The server now
+requires a flag-supplied JWT signing secret of at least 32 bytes,
+rejecting startup if the secret is missing or weak. Wired through
+Terraform and the Dockerfile (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1284">#1284</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1572">#1572</a>)</p></li>
+<li><p><strong>Removed FindUserByEmail enumeration oracle</strong>: The
+unauthenticated <code>FindUserByEmail</code> RPC let an attacker probe
+whether an email was registered. Removed; <code>GetUser</code> now
+requires authentication (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1530">#1530</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1564">#1564</a>)</p></li>
+<li><p><strong>Authentication endpoints rate-limited</strong>: Per-IP
+and per-email rate limits on the LoginService authentication paths (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1531">#1531</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1561">#1561</a>)</p></li>
+<li><p><strong>Audit logging on failed authentication attempts</strong>:
+Failures now produce structured audit log entries with masked email and
+rate-limit context (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1342">#1342</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1422">#1422</a>)</p></li>
+<li><p><strong>Stop leaking raw internals via Connect
+CodeInternal</strong>: Bare
+<code>connect.NewError(connect.CodeInternal, err)</code> calls leaked
+storage / SDK / decoder error text to clients. Replaced with a
+<code>connecterr.Internal</code> helper that logs <code>err</code>
+server-side and returns a generic public message; CI gate enforces the
+new pattern going forward (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1340">#1340</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1597">#1597</a>)</p></li>
+<li><p><strong>Sanitized client-side error messages</strong>: Client
+viewmodels now classify errors into a typed <code>UserError</code> and
+localize at render time instead of surfacing raw exception strings to
+the UI (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1518">#1518</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1576">#1576</a>)</p></li>
+<li><p><strong>Access token moved to FlutterSecureStorage</strong>: The
+auth access token is now stored in the OS-backed secure store instead of
+SharedPreferences (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1528">#1528</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1600">#1600</a>)</p></li>
+<li><p><strong>Panic recovery for streaming and notification
+goroutines</strong>: Background goroutines in chat, AI streaming, and
+notification dispatch now recover from panics so a single crash can’t
+take down the server. Also added HTTP-level panic recovery middleware
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1275">#1275</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1276">#1276</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1369">#1369</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1378">#1378</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1517">#1517</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1563">#1563</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1595">#1595</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1596">#1596</a>)</p></li>
+<li><p><strong>Hardcoded DB credentials and password in startup
+logs</strong>: Removed the default DB password baked into the server
+binary and redacted the password from the startup log line (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1351">#1351</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1352">#1352</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1405">#1405</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1406">#1406</a>)</p></li>
+<li><p><strong>Production CORS allowlist + HTTP server
+timeouts</strong>: CORS now restricts to an explicit origin allowlist in
+production, and the HTTP server has read/write/idle timeouts to prevent
+connection exhaustion (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1282">#1282</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1285">#1285</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1309">#1309</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1312">#1312</a>)</p></li>
+<li><p><strong>SQL identifier injection hardening</strong>:
+protosql/embedding helpers now validate identifier inputs against a
+strict allowlist (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1353">#1353</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1410">#1410</a>)</p></li>
+<li><p><strong>Dependency security updates</strong>: Bumped Go runtime
+to 1.25.9 (5 stdlib CVEs), <code>golang.org/x/image</code> to v0.39.0
+(GO-2026-4815, GO-2026-4961), <code>anthropic-sdk-go</code> to v1.38.0,
+<code>mark3labs/mcp-go</code> to v0.49.0, and <code>genkit</code> to
+v1.6.1 (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1273">#1273</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1274">#1274</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1337">#1337</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1338">#1338</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1311">#1311</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1365">#1365</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1379">#1379</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1380">#1380</a>)</p></li>
+</ul>
+<h2 id="performance">Performance</h2>
+<ul>
+<li><p><strong>N+1 query elimination across hot paths</strong>: Batch
+fetches replaced loops in ListCommunities, ListCommunityEvents,
+ListConversations, GetUnreadCounts, GetUserTransferStatus, ListUserGear,
+leaderboard member-count, portfolio unread counts, and
+<code>buildAPIExperience</code>. Server query count under the load
+harness dropped meaningfully on every list endpoint (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1280">#1280</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1281">#1281</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1283">#1283</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1345">#1345</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1346">#1346</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1347">#1347</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1348">#1348</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1350">#1350</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1525">#1525</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1534">#1534</a>)</p></li>
+<li><p><strong>Stream video thumbnail bytes through disk</strong>:
+Thumbnail generation no longer holds the full-resolution bytes on the
+heap, eliminating a memory spike on large uploads (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1449">#1449</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1573">#1573</a>)</p></li>
+<li><p><strong>GCS server-side copy for stock images</strong>:
+<code>CopyStockImageForUser</code> now uses GCS server-side Copy instead
+of streaming through the server, so large stock images don’t traverse
+the app’s heap (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1262">#1262</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1415">#1415</a>)</p></li>
+<li><p><strong>Index on ChatConversation.participant_ids</strong>:
+Removes an unbounded ListAll on every conversation lookup (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1524">#1524</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1577">#1577</a>)</p></li>
+<li><p><strong>Bounded fetchNudgeImagery fan-out</strong>: Process-wide
+semaphore (cap 4) prevents the nudge-imagery generator from saturating
+the AI provider during a community-wide fan-out (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1263">#1263</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1310">#1310</a>)</p></li>
+</ul>
+<h2 id="observability">Observability</h2>
+<ul>
+<li><p><strong>Server-side Prometheus metrics endpoint</strong>: Added a
+<code>server/metrics</code> package, an HTTP middleware that observes
+<code>ripls_http_request_*</code>, a Connect interceptor that emits
+<code>ripls_connect_rpcs_total{connect_code}</code>, SQL query and
+pool-stats instrumentation, and a <code>/metrics</code> endpoint
+protected by a Secret Manager token. The observability doc links to the
+endpoint (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1520">#1520</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1589">#1589</a>)</p></li>
+<li><p><strong>Renamed entity-level <code>request_id</code> log key to
+<code>target_request_id</code></strong>: Avoids collision with the
+X-Request-ID HTTP correlation key in structured logs (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1548">#1548</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1592">#1592</a>)</p></li>
+<li><p><strong>Migrate 6 services to ObservableLogger</strong>: Six
+services moved from raw <code>slog.Logger</code> to the project’s
+wrapper that auto-attaches request and user context (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1343">#1343</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1368">#1368</a>)</p></li>
+<li><p><strong>Readiness probe endpoint</strong>: Added
+<code>/readyz</code> for orchestrator readiness probes;
+<code>HEALTHCHECK</code> now hits <code>/health</code> instead of
+<code>/</code> (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1278">#1278</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1308">#1308</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1521">#1521</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1562">#1562</a>)</p></li>
+</ul>
+<h2 id="developer-experience-quality">Developer Experience &amp;
+Quality</h2>
+<ul>
+<li><p><strong>Accessibility migration</strong>: Full WCAG-A coverage
+with a CI ratchet that prevents regressions; lint guard catches literal
+<code>semanticsLabel:</code> arguments (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1439">#1439</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1489">#1489</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1512">#1512</a>)</p></li>
+<li><p><strong>Dart-file-size CI gate</strong>: Files over 1,000 lines
+under <code>app/lib/</code> fail CI; existing offenders were split below
+the cap (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1293">#1293</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1324">#1324</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1416">#1416</a>)</p></li>
+<li><p><strong>Wave 1 golangci-lint linters enabled</strong>: Including
+<code>revive.exported</code> at error severity (every exported symbol
+now has a doc comment that starts with the symbol name and avoids
+package stuttering) (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1428">#1428</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1474">#1474</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1514">#1514</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1605">#1605</a>)</p></li>
+<li><p><strong>Go coverage reporting + zero-coverage gate</strong>: CI
+publishes coverage and fails when a package has no tests at all (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1433">#1433</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1437">#1437</a>)</p></li>
+<li><p><strong>Streaming Go test output via gotestfmt</strong>:
+Live-streamed test output in CI logs instead of buffered-at-end JSON (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1239">#1239</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1435">#1435</a>)</p></li>
+<li><p><strong>Phase 1 AI eval harness</strong>: Restructured prompt +
+assertion design for Request/Experience generation evals; community eval
+suite added (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1216">#1216</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1298">#1298</a>)</p></li>
+<li><p><strong>Claude workflows for issue triage and CI repair</strong>:
+Split issue handler into Opus plan + Sonnet implement workflows, added
+CI failure investigation and PR conflict resolution workflows, and an
+address-PR-feedback workflow (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1294">#1294</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1457">#1457</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1459">#1459</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1484">#1484</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.17.0.html">0.17.0</a> &mdash; April 24,
+2026</li>
+                <li><a href="0.16.0.html">0.16.0</a> &mdash; April 20,
+2026</li>
+                <li><a href="0.15.0.html">0.15.0</a> &mdash; April 16,
+2026</li>
+                <li><a href="0.14.0.html">0.14.0</a> &mdash; April 15,
+2026</li>
+                <li><a href="0.13.1.html">0.13.1</a> &mdash; April 14,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

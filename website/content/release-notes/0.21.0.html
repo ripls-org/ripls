@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.21.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.21.0">Release 0.21.0</h1>
+            <p class="release-date">May 15, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Unified Create</strong>: A single creation modal replaces
+the four separate entry points for gear, requests, events, and
+communities. Type or paste anything — a description, URL, or image — and
+the server classifies your input and streams the right form pre-filled.
+Tap the preview to adjust before saving. The classifier routes through
+the same multi-provider AI abstraction used elsewhere and its response
+shape was slimmed and enum-constrained to cut latency by roughly 40 %
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1867">#1867</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1868">#1868</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1869">#1869</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1876">#1876</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1907">#1907</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1932">#1932</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1900">#1900</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1902">#1902</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1905">#1905</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1937">#1937</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1942">#1942</a>)</p></li>
+<li><p><strong>Scheduled notifications</strong>: The server now sends
+event reminders to attendees and loan-return reminders to borrowers on a
+configurable schedule. A reconciler queues upcoming notifications and a
+dispatcher delivers them, with per-user quiet-hours support so reminders
+arrive at sensible times. A new Notification Preferences screen lets
+each user opt in or out of specific notification types (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/625">#625</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1938">#1938</a>)</p></li>
+<li><p><strong>Chat notification improvements</strong>: Chat
+notifications now collapse and batch by conversation so a busy thread
+doesn’t flood your notification shade. Notifications cancel
+automatically when you open the conversation. On Android, the app
+registers conversation-space shortcuts so chats appear in the
+system-level conversation widget (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1892">#1892</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1909">#1909</a>)</p></li>
+<li><p><strong>Heritage Sage accent color</strong>: The app’s accent
+color migrated from coral to Heritage Sage (#5B8268) — a cooler, more
+grounded palette. All accent pixels now route through
+<code>AppColors</code>, so status semantics (warnings, request color)
+intentionally stay warm orange. A new CI lint gate blocks future
+hardcoded color literals outside the theme directory (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1950">#1950</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1945">#1945</a>)</p></li>
+<li><p><strong>Navigation restructure</strong>: The sidebar and bottom
+Search tab are removed. A floating Workshop avatar takes their place in
+the header, and the Create flow moves to a right-side FAB. The Inbox
+gains filter pills and a Done tab, the Workshop gets a community
+carousel and dedicated selection, and the Feed gains a search-nearby
+pill with a suggestions sheet (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1895">#1895</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1896">#1896</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1897">#1897</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1898">#1898</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1918">#1918</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1921">#1921</a>)</p></li>
+<li><p><strong>Event update notifications</strong>: When an event
+organizer changes the time or location of an event, all Yes and Maybe
+RSVPs now receive a push notification so no one is caught off guard by
+last-minute changes (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1893">#1893</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1894">#1894</a>)</p></li>
+<li><p><strong>Pick winning time in vote modal</strong>: Event
+organizers can now tap “Pick winning time” directly inside the vote
+modal to lock in the winning slot without navigating away (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1686">#1686</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1830">#1830</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Photos in carousel showed an error icon</strong>: Opening
+a gear photo from the carousel strip displayed an exclamation icon
+because presigned media URLs had expired since the list was loaded. The
+carousel now re-resolves the full media URL at viewer-mount time so
+photos always load (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1833">#1833</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1913">#1913</a>)</p></li>
+<li><p><strong>Inbox marked unread after reading via notification
+deep-link</strong>: Tapping a chat notification navigated to the
+conversation and marked messages read, but the Inbox still highlighted
+the thread as unread until you tapped through a second time.
+<code>MarkMessagesRead</code> now updates the watch-entry timestamp
+atomically so the Inbox clears on the first visit (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1855">#1855</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1863">#1863</a>)</p></li>
+<li><p><strong>Chat messages appeared out of order</strong>: Messages in
+an active chat thread sometimes rendered out of chronological sequence
+even after a pull-to-refresh. The server now sorts the backlog by
+<code>sent_at_unix_sec</code> before streaming, and the client applies a
+defensive sort as well (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1826">#1826</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1829">#1829</a>)</p></li>
+<li><p><strong>Inbox pill showed “On Loan to You” to the
+lender</strong>: When lending an item, the Inbox status pill incorrectly
+read “On Loan to You” from the lender’s perspective. The label now
+correctly reflects the user’s role in the loan (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1837">#1837</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1839">#1839</a>)</p></li>
+<li><p><strong>iOS keyboard hid creation input and generate
+button</strong>: On iOS, raising the keyboard while typing in the
+creation modal pushed the input area and Generate button off screen. The
+modal now accounts for keyboard insets so the input stays visible (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1933">#1933</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1940">#1940</a>)</p></li>
+<li><p><strong>Feedback button hidden; frosted-glass buttons low
+contrast</strong>: The in-app feedback entry point was difficult to
+find, and action buttons on frosted-glass modals (especially orange)
+were too faint to read. Button contrast is improved and the feedback
+path is surfaced more prominently (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1934">#1934</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1940">#1940</a>)</p></li>
+<li><p><strong>Content view crash on navigation</strong>: Navigating
+away from a content view before it finished loading triggered an
+unmounted-widget reference crash. The state check is now guarded against
+the unmounted case (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1857">#1857</a>)</p></li>
+</ul>
+<h2 id="reliability-infrastructure">Reliability &amp;
+Infrastructure</h2>
+<ul>
+<li><p><strong>Activity digest emails</strong>: The server generates and
+sends daily and weekly activity digest emails to ops, summarizing
+actions across all communities. Daily digests go out each morning;
+weekly digests go out on Monday mornings in Mountain Time. Both are
+enabled in prod via Terraform (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1924">#1924</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1926">#1926</a>)</p></li>
+<li><p><strong>Community event pub/sub</strong>: Community-event fan-out
+moved from inline dispatch inside the community service to a durable
+in-process pub/sub bus. Story creation, story subscribers, and
+notifications each run as independent subscribers, making it easier to
+add new reactions to community events without touching the service layer
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/510">#510</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1841">#1841</a>)</p></li>
+<li><p><strong>Chat-message event bus</strong>: Chat messages now emit
+events on a server-side <code>chat_event_bus</code> so downstream
+subscribers (unread counts, notifications) can react without polling or
+coupling to the chat service directly (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1842">#1842</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1860">#1860</a>)</p></li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li><p><strong>Secrets moved to Secret Manager</strong>: The Cloud Run
+deployment no longer carries <code>DB_PASSWORD</code> or
+<code>MB_DB_PASS</code> as plain environment variables. Both secrets are
+now fetched from Secret Manager at container startup via
+<code>secret_key_ref</code> refs, eliminating plaintext credentials from
+the runtime environment (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1768">#1768</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1770">#1770</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1884">#1884</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1936">#1936</a>)</p></li>
+<li><p><strong>Firebase service account JSON removed</strong>: The
+server no longer ships or reads a service-account JSON file.
+Authentication to Firebase now goes through Application Default
+Credentials (ADC), consistent with all other Google Cloud services (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1769">#1769</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1825">#1825</a>)</p></li>
+</ul>
+<h2 id="developer-experience">Developer Experience</h2>
+<ul>
+<li><p><strong>Hourly CI container sweeper</strong>: A cron job on the
+CI host runs every hour and terminates any
+<code>pgvector/pgvector:pg16</code> containers that were leaked by
+interrupted test runs, keeping the host clean without manual
+intervention (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1928">#1928</a>)</p></li>
+<li><p><strong>Patrol E2E stack removed</strong>: The Patrol-based
+end-to-end test infrastructure has been removed. Integration coverage
+continues through Go testcontainer-based server tests and Flutter
+widget/viewmodel tests (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1887">#1887</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1927">#1927</a>)</p></li>
+<li><p><strong>gcloud auth preflight on server start</strong>:
+<code>npm run start:server</code> now checks both
+<code>gcloud auth</code> (CLI) and
+<code>gcloud auth application-default</code> (ADC) before launching, and
+prints the exact reauth command when either context is missing (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1915">#1915</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.20.1.html">0.20.1</a> &mdash; May 9,
+2026</li>
+                <li><a href="0.20.0.html">0.20.0</a> &mdash; May 9,
+2026</li>
+                <li><a href="0.19.2.html">0.19.2</a> &mdash; May 6,
+2026</li>
+                <li><a href="0.19.1.html">0.19.1</a> &mdash; May 4,
+2026</li>
+                <li><a href="0.19.0.html">0.19.0</a> &mdash; May 1,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

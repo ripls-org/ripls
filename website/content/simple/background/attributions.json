@@ -1,0 +1,82 @@
+{
+  "01": {
+    "photographer": "Shane Dawson",
+    "username": "trippyoutdoor",
+    "photo_id": "PQEMhT0xG8A",
+    "alt_description": "Young friends relaxing in the backyard around a firepit at night, on Trippy Chairs",
+    "slide": "Hero — Less stuff, more life (friends, backyard fire pit)",
+    "credit_display": "visible"
+  },
+  "02": {
+    "photographer": "Zach Kessinger",
+    "username": "wonderwallphotos",
+    "photo_id": "nGGo9UFBU88",
+    "alt_description": "Closet",
+    "slide": "Problem — we filled our homes with things (packed closet)",
+    "credit_display": "visible"
+  },
+  "03": {
+    "photographer": "HiveBoxx",
+    "username": "hiveboxx",
+    "photo_id": "vpa7L_8YUG8",
+    "alt_description": "Friends helping each other move.",
+    "slide": "TL;DR — ask the people nearby, they show up (friends helping)",
+    "credit_display": "visible"
+  },
+  "09": {
+    "photographer": "Artur Adilkhanian",
+    "username": "br00m",
+    "photo_id": "WtgR_pE-nlQ",
+    "alt_description": "A table is set with food on the grass.",
+    "slide": "The Send — pizza Friday / a shared spread",
+    "credit_display": "feature"
+  },
+  "10": {
+    "photographer": "Land O'Lakes, Inc.",
+    "username": "landolakesinc",
+    "photo_id": "MdcJY5doCTo",
+    "alt_description": "Two women arriving at a doorway, greeted by another woman.",
+    "slide": "Reply loop — who is actually in (friends arriving, greeted)",
+    "credit_display": "feature"
+  },
+  "11": {
+    "photographer": "Stefan Vladimirov",
+    "username": "skv_creates",
+    "photo_id": "Q_Moi2xjieU",
+    "alt_description": "Every summer our team has the tradition to pack and move office to the quiet and cool place of Mechi Chal. It’s a mountain hut located near Pamporovo in Rhodope Mountains, Bulgaria. We work, have fun and stuff ourselves with delicious local food.",
+    "slide": "Claim list — who is bringing what (shared dishes)",
+    "credit_display": "feature"
+  },
+  "06": {
+    "photographer": "Bailey Alexander",
+    "username": "baileyal3xander",
+    "photo_id": "Jgs58oLJ0iA",
+    "alt_description": "a wooden table topped with lots of different types of tools",
+    "slide": "Borrow, do not buy — tools that move around the circle",
+    "credit_display": "feature"
+  },
+  "13": {
+    "photographer": "Bruno BD",
+    "username": "brunobd",
+    "photo_id": "AWURKa0DEe8",
+    "alt_description": "Men browsing items at an outdoor market stall.",
+    "slide": "Momentum — the seasonal swap becomes a standing thing",
+    "credit_display": "feature"
+  },
+  "04": {
+    "photographer": "Grace Anne Bobadilla",
+    "username": "graceannefully",
+    "photo_id": "bR7YxP4eUQI",
+    "alt_description": "People gathered outdoors on a sunny day.",
+    "slide": "The way it used to work (neighbors, a backyard circle)",
+    "credit_display": "visible"
+  },
+  "07": {
+    "photographer": "DJ Paine",
+    "username": "djpaine",
+    "photo_id": "nOVt9Yeo9Xc",
+    "alt_description": "a multicultural lunch or dinner with friends around a welcome table for friends",
+    "slide": "Floor & ceiling — a different way of living (welcome friends)",
+    "credit_display": "visible"
+  }
+}

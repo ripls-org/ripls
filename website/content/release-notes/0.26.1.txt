@@ -1,0 +1,8 @@
+Release 0.26.1
+
+
+Member reshare fix. Any member of a community an item is shared with can now reshare it — the growth loop of the phone-first pivot that was broken since 0.26.0.
+
+Bug Fixes
+
+- Member Reshare Permission Error: Fixed “You don’t have permission to perform this action” shown to non-owner community members when tapping Invite on gear, events, or requests. The share sheet calls ShareItem on open to resolve the per-item share link; the RPC previously owner-gated its entire body including that link fetch. Link-only calls (no invitees, no audience changes) now allow any member with view access, matching the intent of the phone-first reshare growth loop. Audience management — inviting individuals and sharing to additional communities — stays host-only, and the share sheet hides those rows for non-owner members. Each resharer receives their own revocable /go/ link (#2630)

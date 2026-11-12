@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.11.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.11.0">Release 0.11.0</h1>
+            <p class="release-date">April 9, 2026</p>
+<p>Social metrics, media management, and infrastructure improvements for
+closed beta.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Social Metrics on Items</strong>: Experiences and requests
+now display social attribute dimensions (tie strength, reciprocity,
+novelty, vulnerability, modality) with real-time impact metric updates
+as owners adjust values (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1058">#1058</a>)</li>
+<li><strong>Media Management</strong>: Redesigned media screen with
+photo upload, download (individual and batch), long-press reordering of
+thumbnails, deletion of individual media items, and attribution bars for
+third-party and user-uploaded media (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1076">#1076</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1032">#1032</a>)</li>
+<li><strong>Smart Nudge Cards</strong>: “Start your first loan” card now
+navigates to the Discover tab, and all nudge cards (loans, experiences,
+requests) suppress automatically when the user already has an in-flight
+activity of that type (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1057">#1057</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1066">#1066</a>)</li>
+<li><strong>Media Strip in Chat</strong>: Photo strip moved from the
+item header to the chat area, and experiences now auto-RSVP the creator
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1058">#1058</a>)</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>Cache Invalidation</strong>: Fixed glob pattern matching so
+bare prefix keys (e.g., <code>request:my</code>) are correctly
+invalidated after mutations — eliminates stale request lists after
+submitting a new request (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1064">#1064</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1068">#1068</a>)</li>
+</ul>
+<h2 id="infrastructure">Infrastructure</h2>
+<ul>
+<li><strong>Always-On Servers</strong>: Dev and prod Cloud Run instances
+now run with <code>min_instances=1</code> and
+<code>cpu_idle=false</code>, eliminating cold starts and enabling
+background goroutines to run between requests (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1073">#1073</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1075">#1075</a>)</li>
+<li><strong>GitHub Actions Node.js 24</strong>: Updated 9 GitHub Actions
+to versions compatible with the Node.js 24 runner ahead of the June
+deadline (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1053">#1053</a>)</li>
+<li><strong>Dev Setup Docs</strong>: Added Git LFS, Flutter VS Code
+extension, and Android Studio to the setup prerequisites (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1065">#1065</a>)</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.10.0.html">0.10.0</a> &mdash; April 6,
+2026</li>
+                <li><a href="0.9.3.html">0.9.3</a> &mdash; April 4,
+2026</li>
+                <li><a href="0.9.2.html">0.9.2</a> &mdash; April 3,
+2026</li>
+                <li><a href="0.9.1.html">0.9.1</a> &mdash; April 2,
+2026</li>
+                <li><a href="0.9.0.html">0.9.0</a> &mdash; April 1,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

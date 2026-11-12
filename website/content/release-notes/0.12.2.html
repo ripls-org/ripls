@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.12.2 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.12.2">Release 0.12.2</h1>
+            <p class="release-date">April 13, 2026</p>
+<p>Small screen fixes, experience completion bug fix, and deep link
+infrastructure.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>Experience Completion</strong>: Fixed “failed to complete
+experience” error when wrapping up events that were in JOINED state.
+<code>RecordAttendance</code> now accepts JOINED experiences, matching
+the <code>CompleteExperience</code> behavior (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1104">#1104</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1116">#1116</a>)</li>
+<li><strong>Small Screen Overflow</strong>: Creation preview modals
+(gear, experience, request) now scroll on small screens and with large
+text, so action buttons are always reachable (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1108">#1108</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1109">#1109</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1114">#1114</a>)</li>
+</ul>
+<h2 id="infrastructure">Infrastructure</h2>
+<ul>
+<li><strong>App Links Verification</strong>:
+<code>.well-known/assetlinks.json</code> and
+<code>apple-app-site-association</code> are now served directly from the
+Go server, fixing 404s that prevented Android App Links and iOS
+Universal Links verification (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1115">#1115</a>)</li>
+<li><strong>Deferred Deep Links</strong>: Added invite code recovery
+infrastructure — Play Store referrer encoding, iOS clipboard handoff,
+manual invite code entry on registration, and landing page improvements
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1071">#1071</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1112">#1112</a>)</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.12.1.html">0.12.1</a> &mdash; April 12,
+2026</li>
+                <li><a href="0.12.0.html">0.12.0</a> &mdash; April 11,
+2026</li>
+                <li><a href="0.11.0.html">0.11.0</a> &mdash; April 9,
+2026</li>
+                <li><a href="0.10.0.html">0.10.0</a> &mdash; April 6,
+2026</li>
+                <li><a href="0.9.3.html">0.9.3</a> &mdash; April 4,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

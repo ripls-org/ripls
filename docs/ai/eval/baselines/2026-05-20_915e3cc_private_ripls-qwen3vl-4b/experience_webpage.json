@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "suite": "TestExperienceWebpagePrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T02:18:55Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-qwen3vl-4b"
+  },
+  "goldens_file": "experience_webpage_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-qwen3vl-4b",
+      "pass_rate": 0,
+      "threshold": 0.85,
+      "passed": false,
+      "median_latency_ms": 0,
+      "p95_latency_ms": 0,
+      "field_pass_rates": {},
+      "invocation_failures": [
+        "concert_event",
+        "meetup_recurring"
+      ]
+    }
+  ]
+}

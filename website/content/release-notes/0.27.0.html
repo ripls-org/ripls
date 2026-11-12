@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.27.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.27.0">Release 0.27.0</h1>
+            <p class="release-date">July 17, 2026</p>
+<p>Requests morph into loans, gear contributions to events become
+trackable loans, and a comprehensive journey-polish pass across every
+walkthrough surface.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li><p><strong>Request-to-Loan</strong>: A helper can now fulfill a
+borrow-style request with their actual item. From the request, they tap
+“I have one to lend,” create a new listing or pick existing gear, and a
+loan starts — the request morphs into the loan with full handoff, return
+reminders, and the item’s own conversation. The request’s impact rolls
+up every child transfer’s savings, and the committed impact now matches
+the preview (previously the two computations ran separately and could
+diverge at the moment of commitment) (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2702">#2702</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2275">#2275</a>)</p></li>
+<li><p><strong>Event Gear Loans</strong>: Bringing gear to an event now
+creates a real loan for the event’s duration rather than a note in the
+chat. The gear contribution is linked to the event and the loan
+lifecycle follows it — the item is returned when the event wraps, with
+the handoff beat visible in the brunch walkthrough (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2708">#2708</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Offer Visibility on Requests</strong>: Offers-to-help are
+now surfaced on the request card for both sides. The helper sees
+confirmation after offering (not just an “Account created” toast), and
+the requester’s card shows offerer avatars and count. A guest’s
+auto-fired offer after phone registration is confirmed from server truth
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2701">#2701</a>)</p></li>
+<li><p><strong>Guest RSVP Row Stayed Stale</strong>: After completing a
+phone-OTP RSVP, the event view showed “You haven’t replied yet” on the
+terminal frame. The handoff-RSVP refetch now re-keys correctly so “You —
+Going” appears immediately (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2727">#2727</a>)</p></li>
+<li><p><strong>Completed Giveaway 403</strong>: Recipients and community
+members received a permission error when revisiting an item after a
+giveaway completed. Archived shares now count toward read access (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2695">#2695</a>)</p></li>
+<li><p><strong>Cross-Community Event Completion</strong>:
+<code>RecordAttendance</code> returned 404 for attendees who RSVPed via
+a different community than the one the host used to complete the event.
+Attendance is now resolved across all of the event’s communities (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2690">#2690</a>)</p></li>
+<li><p><strong>Completion Quick-Add Double-Attribution</strong>: After a
+phone-invited guest registered, their claimed placeholder still appeared
+in the completion modal’s quick-add grid alongside their real account.
+Claimed provisionals are now excluded from that search (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2699">#2699</a>)</p></li>
+<li><p><strong>Gear Lend/Give Toggle Had No Effect</strong>: Toggling
+Lend vs. Give when creating gear from a photo was decorative — every
+item was shared FOR_LOAN regardless. The toggle choice now carries
+through to the first share (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2687">#2687</a>)</p></li>
+<li><p><strong>$0 Gear Value on Photo Create</strong>: The full gear
+detection result was not persisted on save, leaving some photo-created
+items with a $0 estimate (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2702">#2702</a>)</p></li>
+<li><p><strong>App Stability</strong>: Fixed a
+<code>ProviderScope</code> setState crash by upgrading to
+flutter_riverpod 3.3.2 (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2688">#2688</a>)</p></li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>User Journey Walkthroughs</strong>: A hermetic video
+pipeline renders end-to-end walkthroughs from a fabricated cast. Four
+walkthroughs are live: events (brunch), requests (lawn mower), gear
+sharing (kitchen food), and a multi-helper campus yard-day supply drive
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2684">#2684</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2686">#2686</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2687">#2687</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2703">#2703</a>)</p></li>
+<li><p><strong>Journey Polish</strong>: Frame-by-frame reel review
+produced ~120 findings across all five walkthrough surfaces,
+deduplicated into 8 P0s and 11 workstreams — vocabulary, formatting,
+live-state correctness, guest flow parity, needs-claim visibility, and
+RSVP display (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2724">#2724</a>)</p></li>
+<li><p><strong>Calendar Suggestion Threshold</strong>: One-off calendar
+suggestions are suppressed; at least two similar past events are now
+required before a suggestion is offered (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2674">#2674</a>)</p></li>
+<li><p><strong>Feedback Screenshot URL Durability</strong>: Feedback
+screenshots now use a dedicated, non-rotating signing key so URLs remain
+valid for their full stated expiry (previously they rotated out within
+~2 weeks). A backfill tool re-signs screenshots in all existing
+<code>user-feedback</code> issues (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2549">#2549</a>)</p></li>
+<li><p><strong>CI Stability</strong>: Fixed a Go Tests flake where
+testcontainer image pulls failed on self-hosted runners; images are now
+pre-warmed on the host daemon before the test run (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2709">#2709</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.26.4.html">0.26.4</a> &mdash; July 9,
+2026</li>
+                <li><a href="0.26.3.html">0.26.3</a> &mdash; July 7,
+2026</li>
+                <li><a href="0.26.2.html">0.26.2</a> &mdash; July 4,
+2026</li>
+                <li><a href="0.26.1.html">0.26.1</a> &mdash; July 4,
+2026</li>
+                <li><a href="0.26.0.html">0.26.0</a> &mdash; July 2,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

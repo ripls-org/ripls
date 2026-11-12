@@ -1,0 +1,14 @@
+Release 0.12.2
+
+
+Small screen fixes, experience completion bug fix, and deep link infrastructure.
+
+Bug Fixes
+
+- Experience Completion: Fixed “failed to complete experience” error when wrapping up events that were in JOINED state. RecordAttendance now accepts JOINED experiences, matching the CompleteExperience behavior (#1104, #1116)
+- Small Screen Overflow: Creation preview modals (gear, experience, request) now scroll on small screens and with large text, so action buttons are always reachable (#1108, #1109, #1114)
+
+Infrastructure
+
+- App Links Verification: .well-known/assetlinks.json and apple-app-site-association are now served directly from the Go server, fixing 404s that prevented Android App Links and iOS Universal Links verification (#1115)
+- Deferred Deep Links: Added invite code recovery infrastructure — Play Store referrer encoding, iOS clipboard handoff, manual invite code entry on registration, and landing page improvements (#1071, #1112)

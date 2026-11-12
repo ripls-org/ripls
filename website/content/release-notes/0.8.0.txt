@@ -1,0 +1,21 @@
+Release 0.8.0 — Improved Portfolio and Chat-Based Loans
+
+
+New Features
+
+- Portfolio Redesign: Revamped portfolio screen with community-grouped inbox, action bar on inbox items, and new filter sheet for gear, experiences, and requests (#860, #861)
+- Internationalization (i18n): Full i18n infrastructure with 207+ localized strings; added Spanish language support with a language picker in profile settings (#854)
+- Comment Action Bar: Unified action bar on content views for commenting and interaction (#857)
+
+Improvements
+
+- Patrol E2E Test Suite: Comprehensive end-to-end test coverage for loan, giveaway, and request workflows with screen recording, multi-user RPC actions, and postcondition verification (#855, #856, #858, #859)
+- CI Infrastructure: Moved Go tests to self-hosted Linux runner to reduce GitHub Actions minutes; upgraded to Node 24-compatible actions; added iOS build smoke tests (#851, #852)
+
+Bug Fixes
+
+- Fixed community selection on content views not passing through correctly (#843)
+- Fixed spacing and font consistency in transfer management modals (#813)
+- Fixed request text entry using wrong TextField selector
+- Fixed Anthropic AI occasionally returning gear items as plain strings instead of structured JSON
+- Fixed unread/read count consistency in inbox

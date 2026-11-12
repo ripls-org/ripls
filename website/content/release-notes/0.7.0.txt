@@ -1,0 +1,33 @@
+Release 0.7.0
+
+
+New Features
+
+- Loan Chat Workflow: Full in-chat loan experience — borrowers are funneled into chat, can schedule pickup, track loan status, and complete returns with dedicated action buttons and progress bars (#844)
+- Giveaway Chat Workflow: Chat-based giveaway flow with recipient selection modal, completion tracking, and system messages (#807)
+- Impact Metrics Drill-Down: New formula visualization screens replacing the old audit trail — tap any metric to see the calculation breakdown with references and sub-formulas (#822)
+- Portfolio View: New portfolio screen showing personal gear inventory with filtering and detailed metrics (#835)
+- Video Support: Video caching, playback in stories, and server-side thumbnail generation (#823, #848)
+
+Improvements
+
+- Dark Mode & Theming: Replaced hard-coded colors with theme tokens throughout the app, added dark mode toggle in user settings (#837, #841)
+- Redesigned Discover Screen: Magazine-style results with item avatars on the map, simplified initial loading, and improved zero-state (#836)
+- Updated Chat Design: Consistent badging, improved action bars, and terminal state button handling (#819)
+- Sidebar Navigation: Persistent header nav, hamburger menu fixes, and sidebar improvements (#832, #834)
+- Map Filters: Discover screen filter sheet with category and availability filtering (#845)
+- Proto Optional Fields: Added optional keyword to conditionally-present fields across all protos for explicit presence tracking (#828)
+- Dependency Updates: Go 1.25.8 (CVE fixes), Flutter dependency upgrades (#826)
+- Dead Code Removal: Removed 74 unused Flutter files (15,500+ lines) and cascading orphans (#827)
+
+Bug Fixes
+
+- Fixed empty loan state handling (#849)
+- Fixed video thumbnail generation and client-side graceful failure (#848)
+- Fixed invitation link URL (#833)
+- Fixed consent modal overflow (#809)
+- Fixed discover screen initial load issues (#810)
+- Fixed daylight savings time bug in date formatting
+- Fixed quality time units displaying as “QT” instead of “mins” (#815)
+- Fixed spacing and font consistency in transfer management modals
+- Fixed pickup pre-population, stale context, and modal sync issues

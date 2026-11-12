@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.13.1 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.13.1">Release 0.13.1</h1>
+            <p class="release-date">April 14, 2026</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Deferred Deep Linking</strong>: Fixed the invite landing
+page not working on production — the Go server template was missing all
+the deferred deep linking JavaScript (referrer encoding, clipboard copy,
+re-tap CTA, invite code display) (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1099">#1099</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1123">#1123</a>)</p></li>
+<li><p><strong>First-Launch Routing</strong>: Fixed “Page not Found”
+error on first app launch when deferred deep link context was present.
+Replaced Riverpod providers with static fields for router redirect
+state, since modifying provider state inside GoRouter’s redirect throws
+during the build phase (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1127">#1127</a>)</p></li>
+<li><p><strong>First-Launch Flag</strong>: Fixed the first-launch flag
+not persisting across app restarts, causing the registration screen to
+show on every launch instead of just the first (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1126">#1126</a>)</p></li>
+<li><p><strong>Duplicate Heading</strong>: Removed duplicate “Sign Up”
+heading on the registration screen (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1113">#1113</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1122">#1122</a>)</p></li>
+</ul>
+<h2 id="improvements">Improvements</h2>
+<ul>
+<li><p><strong>Invite Code Entry</strong>: The manual code field now
+accepts full invite URLs (paste
+<code>https://ripls.app/go/CODE?gear_id=...</code>) in addition to bare
+codes</p></li>
+<li><p><strong>Registration Screen UX</strong>: Consolidated the
+invitation-required message into a single concise prompt; renamed the
+screen title to “Join Ripls” when no invite code is present; made the
+disabled Apply Code button visible on Android</p></li>
+<li><p><strong>Query Param Forwarding</strong>: Fixed item IDs being
+dropped in the Google Sign-In registration path and the invitation error
+recovery path</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.13.0.html">0.13.0</a> &mdash; April 13,
+2026</li>
+                <li><a href="0.12.2.html">0.12.2</a> &mdash; April 13,
+2026</li>
+                <li><a href="0.12.1.html">0.12.1</a> &mdash; April 12,
+2026</li>
+                <li><a href="0.12.0.html">0.12.0</a> &mdash; April 11,
+2026</li>
+                <li><a href="0.11.0.html">0.11.0</a> &mdash; April 9,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "suite": "TestExperiencePrompt",
+  "run": {
+    "timestamp_utc": "2026-07-08T15:53:13Z",
+    "git_commit": "edf503cbe0",
+    "git_branch": "prompt_rewrite",
+    "label": "post-rewrite-text-r2b-gemini-retry"
+  },
+  "goldens_file": "experience_goldens.json",
+  "goldens_version": 2,
+  "pairs": [
+    {
+      "provider": "gemini",
+      "model": "vertexai/gemini-3.1-flash-lite",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 1233,
+      "p95_latency_ms": 1471,
+      "field_pass_rates": {
+        "date": 1,
+        "location_query": 1,
+        "location_query_contains": 1,
+        "mentioned_names_set": 1,
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "search_keywords_must_not_contain": 1,
+        "time": 1,
+        "time_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "suite": "TestGearPrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T03:51:44Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-qwen25vl-7b"
+  },
+  "goldens_file": "gear_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-qwen25vl-7b",
+      "pass_rate": 0.9066666666666666,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 2120,
+      "p95_latency_ms": 2275,
+      "field_pass_rates": {
+        "brand": 1,
+        "brand_contains": 1,
+        "brand_empty": 1,
+        "category_contains_any_of": 1,
+        "location_query_contains": 1,
+        "material_category_any_of": 1,
+        "min_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 0.5833333333333334,
+        "weight_grams_approx": 0.6
+      }
+    }
+  ]
+}

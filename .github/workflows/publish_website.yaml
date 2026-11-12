@@ -1,0 +1,70 @@
+name: Publish Website
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "website/**"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy from"
+        required: true
+        default: "main"
+        type: string
+
+jobs:
+  deploy:
+    # Deploys to the instance's web host; only the canonical repo has one.
+    if: vars.INSTANCE_PIPELINES == 'true'
+    runs-on: self-hosted-linux
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.branch || github.ref }}
+          # Walkthrough reel .mp4s are in Git LFS; fetch real files so rsync
+          # ships them (not pointer stubs).
+          lfs: true
+
+      # actions/checkout's lfs:true fetches objects but doesn't reliably smudge
+      # the working tree — materialize explicitly by OID so rsync ships real
+      # files, never 132-byte pointer stubs.
+      - name: Materialize Git LFS content
+        shell: bash
+        run: git lfs pull
+
+      - name: Deploy website
+        uses: ./.github/actions/deploy-website
+        with:
+          ssh_private_key: ${{ secrets.WEB_PUBLISH_SSH_PRIVATE_KEY }}
+          ssh_destination: ${{ vars.WEB_DEPLOY_SSH }}
+          ssh_port: ${{ vars.WEB_DEPLOY_PORT }}
+          deploy_root: ${{ vars.WEB_DEPLOY_ROOT }}
+
+      # Staging's regex server block (infra/staging-web/config/default.conf) is
+      # the fallback for a branch preview that has no per-branch server block
+      # yet — one deployed before #2895's routing fix, or one mid-deploy. It
+      # includes a shared locations.include, and main is the right source for
+      # it: the fallback should serve production's routes. PR deploys
+      # deliberately no longer write this file (they write their own
+      # locations-<slug>.include instead), so without this step it would freeze
+      # at whatever branch happened to deploy last.
+      - name: Sync production routing to the staging fallback
+        env:
+          SSH_KEY: ${{ secrets.WEB_PUBLISH_SSH_PRIVATE_KEY }}
+          DEST: ${{ vars.WEB_DEPLOY_SSH }}
+          PORT: ${{ vars.WEB_DEPLOY_PORT }}
+          ROOT: ${{ vars.WEB_DEPLOY_ROOT }}
+        run: |
+          mkdir -p ~/.ssh
+          # Trailing newline is required or OpenSSH rejects the key
+          # ("error in libcrypto") — match the deploy-website action's herestring.
+          cat > ~/.ssh/deploy_key <<< "$SSH_KEY"
+          chmod 600 ~/.ssh/deploy_key
+          rsync -az -e "ssh -i ~/.ssh/deploy_key -p $PORT -o StrictHostKeyChecking=no" \
+            website/config/locations.include \
+            "$DEST:${ROOT%/}/staging/config/locations.include"
+          rm -f ~/.ssh/deploy_key

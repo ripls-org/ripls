@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "suite": "TestExperienceWebpagePrompt",
+  "run": {
+    "timestamp_utc": "2026-05-19T23:02:27Z",
+    "git_commit": "a6101a126e",
+    "git_branch": "private_llm",
+    "label": "private"
+  },
+  "goldens_file": "experience_webpage_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-vision",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 3219,
+      "p95_latency_ms": 3313,
+      "field_pass_rates": {
+        "date": 1,
+        "has_description": 1,
+        "location_query_contains": 1,
+        "min_confidence": 1,
+        "time": 1,
+        "time_confidence_any_of": 1,
+        "title_contains": 1
+      }
+    }
+  ]
+}

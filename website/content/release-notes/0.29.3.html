@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.29.3 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.29.3">Release 0.29.3</h1>
+            <p class="release-date">August 13, 2026</p>
+<p>One bug fix: system-generated notifications now render with real text
+instead of blank name slots.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>Notification Copy No Longer Blank</strong>: Eight
+system-generated notification types — event reminders, close prompts,
+nudges, and others — were sending off-app messages that read
+<code>"  posted an update in "</code> with two empty name slots and a
+dangling preposition. The same strings appeared as SMS messages and
+email subjects. Root cause: those eight types were not mapped in the
+off-app copy table, so all fell through to a <code>default</code>
+template that expects an actor name and a community name neither system
+jobs nor these payloads ever supply. The fix maps every notification
+kind to its own copy, adds name-slot fallbacks (<code>"Someone"</code>,
+<code>"your community"</code>) so a missing lookup produces a readable
+sentence rather than blanks, and adds a build-time gate
+(<code>TestEveryNotificationEventTypeHasCopy</code>) that fails if any
+future event type reaches production without copy. Push, SMS, and email
+now all draw from a single per-kind template instead of four divergent
+copies (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2896">#2896</a>)</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.29.2.html">0.29.2</a> &mdash; August 11,
+2026</li>
+                <li><a href="0.29.1.html">0.29.1</a> &mdash; August 9,
+2026</li>
+                <li><a href="0.29.0.html">0.29.0</a> &mdash; August 8,
+2026</li>
+                <li><a href="0.28.3.html">0.28.3</a> &mdash; August 2,
+2026</li>
+                <li><a href="0.28.2.html">0.28.2</a> &mdash; July 31,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

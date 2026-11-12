@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.26.3 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.26.3">Release 0.26.3</h1>
+            <p class="release-date">July 7, 2026</p>
+<p>Home-view latency tail fix and server cleanup.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Home Screen Loads Faster</strong>: Fixed the Home view
+taking up to 8 seconds on certain requests. The root cause was a
+synchronous weather fetch with no failure caching: a weather-provider
+timeout (8s) was paid in full on every request for the affected
+location, and cache keys expired at midnight forcing a fresh fetch at
+the start of each day. Weather data is now served stale-while-revalidate
+(returns immediately from cache while refreshing in the background) with
+a 1.2s budget cap on true misses, so worst-case home load is
+structurally bounded near P50 regardless of weather-provider
+availability (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2646">#2646</a>)</p></li>
+<li><p><strong>AI Concurrent Call Recording Race</strong>: Fixed a data
+race in <code>ai.MockProvider</code> where parallel goroutines appended
+to the same <code>Calls</code> slice without synchronization. The race
+was latent under the normal test runner but immediately fatal under
+<code>go test -race</code>. Added mutex-protected recording and a
+<code>Snapshot()</code> accessor for safe concurrent reads (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2658">#2658</a>)</p></li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>Server Composition Root Refactor</strong>: Deleted ~4,100
+lines of completed one-shot migration and backfill code
+(conversation-ID, provisional-user rename, category, impact, share-link,
+and community-cascade backfills — all verified as no-ops in prod).
+Startup logic factored into <code>server/config</code>,
+<code>server/middleware</code>, <code>server/jobs</code>,
+<code>server/statslog</code>, and owning service packages;
+<code>server/main.go</code> shrinks from 1,945 lines to a 284-line
+driver (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2643">#2643</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2056">#2056</a>)</p></li>
+<li><p><strong>Observability</strong>: Two-tier P95 latency alerting
+(interactive 2s / slow-class 8s), legacy count-based rpc_errors alert
+retired, availability and latency SLOs with multi-window burn-rate
+alerts added (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2622">#2622</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2623">#2623</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2624">#2624</a>)</p></li>
+<li><p><strong>Legacy Invite URL Cleanup</strong>: Removed the old
+<code>?gear_id=</code>/<code>?request_id=</code>/
+<code>?experience_id=</code> query-parameter handling for invite links
+(minted by an RPC removed in v0.22.0). Web event auth unified with
+gear/request — the “Sign in to RSVP” gate now routes to
+<code>/login</code> like other item types (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2562">#2562</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2644">#2644</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.26.2.html">0.26.2</a> &mdash; July 4,
+2026</li>
+                <li><a href="0.26.1.html">0.26.1</a> &mdash; July 4,
+2026</li>
+                <li><a href="0.26.0.html">0.26.0</a> &mdash; July 2,
+2026</li>
+                <li><a href="0.25.0.html">0.25.0</a> &mdash; June 29,
+2026</li>
+                <li><a href="0.24.0.html">0.24.0</a> &mdash; June 1,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

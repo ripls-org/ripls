@@ -43,8 +43,7 @@ RUN npm run generate:proto:go
 # assets the server serves live under server/services/web/static/ and are
 # compiled in via //go:embed, which cannot reach outside its own package
 # directory. The build stage carried `COPY website ./website` for a while after
-# that move — dead weight here, and a hard build failure in the open-source
-# repo, where website/ is private-bound (#2953).
+# that move; it was dead weight.
 COPY server ./server
 
 # Build the server binary with CGO enabled (required for ONNX Runtime)

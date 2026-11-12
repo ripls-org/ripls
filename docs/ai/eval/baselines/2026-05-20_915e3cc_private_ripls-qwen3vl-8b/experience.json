@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "suite": "TestExperiencePrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T02:31:41Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-qwen3vl-8b"
+  },
+  "goldens_file": "experience_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-qwen3vl-8b",
+      "pass_rate": 0.9411764705882353,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 10454,
+      "p95_latency_ms": 13118,
+      "field_pass_rates": {
+        "date": 0.5,
+        "location_query": 1,
+        "location_query_contains": 1,
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "time": 1,
+        "time_confidence": 1,
+        "title_contains": 1
+      },
+      "invocation_failures": [
+        "explicit_hike_tomorrow",
+        "explicit_pickleball_longmont",
+        "explicit_breakfast_tomorrow_morning",
+        "relative_saturday_run",
+        "vague_dinner_friends",
+        "named_participants_hike",
+        "named_participants_lunch_pearl",
+        "named_participants_drinks",
+        "past_tense_coffee",
+        "past_tense_hike",
+        "outdoor_camping_july4",
+        "kids_birthday_saturday",
+        "value_cooking_class",
+        "value_wine_tasting",
+        "value_yoga_retreat",
+        "contextual_yoga_rec",
+        "run_club_weekly",
+        "painting_workshop_kids",
+        "stargazing_anne_white",
+        "potluck_sunday_evening",
+        "movie_night_tbd",
+        "denver_gardens_visit",
+        "family_reunion_vague"
+      ]
+    }
+  ]
+}

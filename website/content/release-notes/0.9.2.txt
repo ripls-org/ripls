@@ -1,0 +1,29 @@
+Release 0.9.2
+
+
+Metrics overhaul and bug fixes. Redesigned portfolio and community impact metrics, improved gear-from-URL error handling, and refreshed the user profile screen.
+
+Features
+
+- Redesigned Portfolio Metrics: New secondary metrics for portfolio including meal and trip comparisons, CO2 savings, and consistent formatting across inventory and community views (#1007)
+- Community Impact Metrics: Updated community CO2 prompts to be event-based with detailed per-community breakdowns (#1007)
+- Internationalization for Metrics: Added i18n support for all impact metric strings (#1007)
+
+UX Improvements
+
+- Refreshed User Profile Screen: Cleaned up the user screen layout and improved the zero-state experience (#1009, #1018)
+- Improved URL Fetch Error Messages: Gear-from-URL failures now show typed, localized error messages instead of generic errors, with in-modal error overlays replacing disruptive snackbars (#1010)
+- Giveaway Feed Visibility: Giveaways now always appear in the feed and portfolio, with active giveaways correctly distinguished from loans (#1013, #1015)
+- Disabled Onboarding Screens: Temporarily removed onboarding flow to streamline first-launch experience (#983)
+
+Bug Fixes
+
+- Fixed avatar display issue on profile screen (#1014)
+- Fixed ServiceException handling to preserve Connect error codes instead of parsing message strings (#1010)
+- Fixed portfolio incorrectly showing active giveaway openings as loans (#1013)
+
+Infrastructure
+
+- FCM Auth Retry: Added automatic retry with re-authentication when FCM token expires, and downgraded per-device notification failure logs from Error to Warn (#1004, #1006)
+- Web Fetch Hardening: Added browser User-Agent headers, cookie jar support, and typed FetchError kinds for gear-from-URL scraping (#1010)
+- Added retailer URL integration test suite with 28 sites baseline (#1010)

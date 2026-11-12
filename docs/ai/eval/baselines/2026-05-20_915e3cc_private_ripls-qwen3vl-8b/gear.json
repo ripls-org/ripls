@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "suite": "TestGearPrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T02:34:49Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-qwen3vl-8b"
+  },
+  "goldens_file": "gear_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-qwen3vl-8b",
+      "pass_rate": 0,
+      "threshold": 0.85,
+      "passed": false,
+      "median_latency_ms": 0,
+      "p95_latency_ms": 0,
+      "field_pass_rates": {},
+      "invocation_failures": [
+        "dewalt_drill_branded",
+        "camping_tent_generic",
+        "japanese_pull_saw",
+        "kitchenaid_mixer",
+        "gas_lawn_mower",
+        "pickleball_paddle",
+        "bluetooth_speaker",
+        "northface_backpack",
+        "aluminum_ladder",
+        "trek_road_bike_frameset",
+        "coleman_cooler",
+        "corded_circular_saw",
+        "tent_with_location"
+      ]
+    }
+  ]
+}

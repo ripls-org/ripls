@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.23.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.23.0">Release 0.23.0</h1>
+            <p class="release-date">May 28, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Web app at ripls.app</strong>: The full Ripls app is now
+available in the browser at ripls.app (dev.ripls.app for staging).
+Non-members can view event details and RSVP directly from a share link
+without installing the app. Feedback screenshots, video playback, and
+auth persistence all work on web. Item creation (gallery, text, and URL
+modes) is enabled; flows that require native hardware surface a clear
+“not yet supported on web” message (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1195">#1195</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2049">#2049</a>,
+<a href="https://github.com/Type2Fun-Foundation/ripls/issues/2050"
+title="placeholder">#2050</a>, <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2155">#2155</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2157">#2157</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2186">#2186</a>)</p></li>
+<li><p><strong>Google Maps</strong>: Maps tiles, the location picker,
+place autocomplete, and geocoding are now powered by Google Maps on all
+platforms (iOS, Android, and web). The server-side provider interface
+was extracted so either mapping backend can be selected at deploy time,
+and both the client picker and the server geocoder can route
+independently (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2188">#2188</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2218">#2218</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2224">#2224</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2226">#2226</a>)</p></li>
+<li><p><strong>Redesigned event and request views</strong>: The “Plan”
+tab is removed from both event and request content views. All
+information — time, location, needs, RSVP, and impact — lives on a
+single scrollable tab. A frosted manage-menu sheet (opened via a pencil
+icon next to the title) replaces the scattered action buttons. RSVPs are
+now cross-community so the owner’s auto-RSVP appears regardless of which
+community context you view the event from (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2174">#2174</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2177">#2177</a>)</p></li>
+<li><p><strong>Revamped Needs &amp; Contributions</strong>: Needs and
+Contributions sheets are rebuilt on the same frosted glass-modal pattern
+used by location and time polls. Both experience and request scopes
+share a single widget set under <code>widgets/needs/</code>;
+scope-specific copy (experience-flavored “chip in / the list”
+vs. request-flavored “take on a piece / the breakdown”) is handled
+entirely in locale strings. A Mark Ready / Finalized roster with
+covered-vs-uncovered callouts and nudge actions for unclaimed needs
+rounds out the flow (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2160">#2160</a>)</p></li>
+<li><p><strong>Time poll UX overhaul</strong>: The time-poll flow now
+mirrors the location-poll flow end-to-end — propose, vote, manage,
+confirm, and finalized modals with matching chrome. Auto-submit binary
+voting means a single tap commits your vote immediately. A finalized
+“It’s Set” card surfaces a calendar-export CTA, and a Choose/Chosen pill
+on the Event tab’s time row opens the vote modal directly (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2149">#2149</a>)</p></li>
+<li><p><strong>Audio support and video fixes</strong>: Muted background
+videos no longer hijack other apps’ audio on iOS (Spotify, podcasts keep
+playing). Content views and the media carousel both get a mute/unmute
+toggle. Video uploads now surface the server-returned URL instead of a
+local picker path, fixing the blank background regression. Non-owner
+community members can now add media to events, requests, and gear they
+don’t own (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2092">#2092</a>)</p></li>
+<li><p><strong>Candidate media thumbnails</strong>: The “Replace
+background” modal for URL-mode and Pexels-mode unified-create now offers
+3–4 squircle candidate images (and video candidates) to swap in with a
+single tap. Attribution-preserving import flows through the trusted
+stock-provider path so Unsplash credit is never lost (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2038">#2038</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2062">#2062</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2063">#2063</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2085">#2085</a>)</p></li>
+<li><p><strong>Server-side localization</strong>: Push notifications,
+emails, chat system messages, and user-visible RPC error messages are
+now rendered in the recipient’s preferred language. AI prompts pass the
+recipient locale so suggestions and descriptions come back in the right
+language. CI gates enforce catalog parity and block inline string
+regressions (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1904">#1904</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2153">#2153</a>)</p></li>
+<li><p><strong>RSVP to in-progress events</strong>: Users can now RSVP
+to an event that has already started, rather than being blocked at the
+door (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1080">#1080</a>)</p></li>
+<li><p><strong>Manual entry in unified create</strong>: A
+pencil-and-paper icon on the right edge of the Generate button lets
+users skip AI generation entirely and author items manually (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2178">#2178</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Borrow queue duplicates</strong>: Tapping “Borrow”
+quickly twice no longer queues the same user twice. The server now
+enforces a uniqueness check and the client suspends the button during
+the in-flight request (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2116">#2116</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2121">#2121</a>)</p></li>
+<li><p><strong>Missed notifications for new requests and event
+offers</strong>: Push dispatch for community events was silently
+dropping deliveries. Instrumentation added across the dispatch path
+exposed the gaps; the fan-out branches now log outcomes and the missing
+triggers are wired correctly (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2109">#2109</a>)</p></li>
+<li><p><strong>Duplicate scheduled event notifications</strong>: The
+day-before reminder was firing multiple times for the same event. The
+scheduler now deduplicates notification records before dispatching (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2089">#2089</a>)</p></li>
+<li><p><strong>Photos in event chat via media bar</strong>: Uploading a
+photo to an event conversation via the “+” on the media bar no longer
+spins indefinitely and then denies access. The GetMedia access rule now
+includes loan/transfer participants, and navigating back no longer
+triggers a spurious permission error (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1110">#1110</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2170">#2170</a>)</p></li>
+<li><p><strong>Completed gives no longer listed in inventory</strong>:
+Gear that has been fully given away is now excluded from the user’s gear
+inventory so it no longer appears as still “Giving” (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1051">#1051</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2103">#2103</a>)</p></li>
+<li><p><strong>DeleteGear left dangling transfer rows</strong>: Deleting
+gear left associated transfer rows in a CANCELLED-but-live state,
+causing non-owners to hit a 404 on GetGear. Transfer-bound RPCs now use
+a lenient read that tolerates the soft-deleted gear state (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1701">#1701</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2184">#2184</a>)</p></li>
+<li><p><strong>GetExperience permission denied for event
+creator</strong>: Event owners were seeing
+<code>permission_denied</code> when fetching their own events from the
+public experience RPCs. The ownership check now correctly grants access
+to the creator regardless of how the experience is fetched (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1916">#1916</a>)</p></li>
+<li><p><strong>AI gear description was verbose</strong>: Image-mode
+unified create was producing multi-sentence descriptions with marketing
+copy and spec narration instead of a single identifying sentence. The
+prompt now requires one crisp sentence (~80–160 chars) naming the item
+and its primary use (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2225">#2225</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2226">#2226</a>)</p></li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li><p><strong>GetUser PII scoping</strong>: Email address and
+home-location ID are now returned only when the caller is fetching their
+own profile (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2138">#2138</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2167">#2167</a>)</p></li>
+<li><p><strong>GetNearbyUsers/GetNearbyGear community scoping</strong>:
+Exact home coordinates are no longer disclosed to arbitrary
+authenticated callers. Results are now community-scoped and coordinates
+are quantized before leaving the server (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2137">#2137</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2144">#2144</a>)</p></li>
+<li><p><strong>Cross-community event/gear/request data leak</strong>:
+Experience, gear, and request RPCs now enforce community-scoped read
+access so data from one community cannot be read through another
+community’s membership (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2136">#2136</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2143">#2143</a>)</p></li>
+<li><p><strong>SSRF hardening</strong>: A shared <code>safehttp</code>
+package now guards all URL-mode RPCs that fetch user-controlled URLs.
+Internal cloud metadata endpoints, RFC1918 addresses, and loopback
+services are blocked before the request leaves the server (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2135">#2135</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2140">#2140</a>)</p></li>
+<li><p><strong>Chat access after community leave</strong>: Leaving a
+community now strips the leaver from
+<code>ChatConversation.ParticipantIds</code>, preventing ex-members from
+reading or sending messages in community conversations (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2133">#2133</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2141">#2141</a>)</p></li>
+<li><p><strong>SendMessage authorization</strong>:
+<code>ChatService.SendMessage</code> now routes through
+<code>requireConversationAccess</code>, closing the gap where
+conversation participants and community membership were not verified
+before accepting a message (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2132">#2132</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2139">#2139</a>)</p></li>
+<li><p><strong>SetCommunityRegionOverride access control</strong>: The
+RPC is now gated on the caller being both the current owner and an
+active member, preventing former owners from modifying community regions
+after leaving (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2134">#2134</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2142">#2142</a>)</p></li>
+</ul>
+<h2 id="reliability-infrastructure">Reliability &amp;
+Infrastructure</h2>
+<ul>
+<li><p><strong>Community impact metrics performance</strong>:
+<code>GetCommunityImpactMetrics</code> was taking 10+ seconds per call
+due to per-item database queries. Per-request memoization and batched
+percentile queries bring it down to under a second (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2055">#2055</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2070">#2070</a>)</p></li>
+<li><p><strong>Image upload sanitization</strong>: The upload path now
+validates content types against an allow-list, enforces unified size
+caps, rejects decompression-bomb dimensions, and transcodes non-web
+image formats (HEIC, TIFF, BMP) for browser compatibility. EXIF metadata
+stripping is available as an opt-in (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1953">#1953</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2191">#2191</a>)</p></li>
+<li><p><strong>AI streaming rate limiting</strong>: Per-user rate limits
+are now enforced on AI streaming generation RPCs and the
+<code>AddMediaFromURL</code> generic-URL path. Dev mode runs all rules
+in metrics-only shadow mode so limits can be tuned before enforcement
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2066">#2066</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2098">#2098</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2100">#2100</a>)</p></li>
+<li><p><strong>Chat notification N+1 eliminated</strong>: Gear,
+experience, and community name lookups in the chat-notification fan-out
+were issued per message. They are now batched ahead of the fan-out loop,
+cutting the query count proportionally to the number of chat
+participants (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2173">#2173</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2189">#2189</a>)</p></li>
+<li><p><strong>Dead leaderboard code removed</strong>: The community
+leaderboard shipped fabricated data for every community and was never
+user-visible. All server and client leaderboard code has been removed
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1354">#1354</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2102">#2102</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2180">#2180</a>)</p></li>
+<li><p><strong>Blocking Go format CI check</strong>: The Go format gate
+is now blocking in CI, preventing gofmt violations from landing on main
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2190">#2190</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.22.0.html">0.22.0</a> &mdash; May 20,
+2026</li>
+                <li><a href="0.21.1.html">0.21.1</a> &mdash; May 16,
+2026</li>
+                <li><a href="0.21.0.html">0.21.0</a> &mdash; May 15,
+2026</li>
+                <li><a href="0.20.1.html">0.20.1</a> &mdash; May 9,
+2026</li>
+                <li><a href="0.20.0.html">0.20.0</a> &mdash; May 9,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

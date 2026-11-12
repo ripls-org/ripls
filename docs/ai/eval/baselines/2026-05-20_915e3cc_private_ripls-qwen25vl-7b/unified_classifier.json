@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "suite": "TestUnifiedClassifierPrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T03:59:28Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-qwen25vl-7b"
+  },
+  "goldens_file": "unified_create_classifier_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-qwen25vl-7b",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 253,
+      "p95_latency_ms": 4106,
+      "field_pass_rates": {
+        "classified_type": 1
+      }
+    }
+  ]
+}

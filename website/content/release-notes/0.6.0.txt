@@ -1,0 +1,26 @@
+Release 0.6.0
+
+
+New Features
+
+- Time Polling for Experiences: Organizers can now poll group members to find the best time for an experience. Includes voting, poll cancellation, and chat integration (#772)
+- Redesigned Discover Screen: New carousel-based discover screen with improved avatars, thumbnails, and navigation (#778, #784, #785)
+- Gear Metadata Editing: Users can now view and edit all gear metadata (brand, model, material, weight, value) via a new bottom sheet on both creation and detail screens (#726, #776)
+- Provenance Indicators: AI-detected fields now show sparkle icons during gear creation, with full provenance tracking for user edits vs. AI estimates (#727)
+- Refresh Token Authentication: Reduced login frequency with long-lived refresh tokens (#757, #787)
+- Pixabay Image Support: Added Pixabay as an image source for community and experience media (#773)
+
+Improvements
+
+- Quality Time Metrics: Renamed “Social Footprint / Rich Minutes” to “Quality Time” across the entire stack for clarity (#798, #801, #805)
+- Impact Metrics Cleanup: Consolidated metrics screens, renamed types for consistency, removed dead code and broken doc links (#794, #797)
+- Weekly Cadence: Switched community activity cadence from daily to weekly
+- Create Modal: Updated create modal with specific action buttons for clearer UX (#775)
+
+Bug Fixes
+
+- Fixed deleted gear still appearing in search/discover results (#681)
+- Fixed AI placeholder values (e.g., “<UNKNOWN>”) leaking through to clients
+- Fixed info chip text overflow with flexible wrapping and ellipsis
+- Fixed background image rendering issues
+- Fixed metric box sizing

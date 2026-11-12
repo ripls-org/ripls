@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Greens · accent color study</title>
+<style>
+  :root {
+    --bg: #0c0c0d;
+    --ink: #ffffff;
+    --ink-dim: rgba(255,255,255,0.55);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 24px 64px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .head {
+    max-width: 880px;
+    margin: 0 auto 36px;
+    text-align: center;
+  }
+  .head h1 {
+    font-family: Georgia, serif;
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .head p {
+    font-size: 14px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .group-label {
+    grid-column: 1 / -1;
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.42);
+    padding: 8px 4px 4px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: 8px;
+  }
+  .group-label:first-child { border-top: none; margin-top: 0; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 28px 22px;
+    max-width: 1480px;
+    margin: 0 auto;
+  }
+  @media (max-width: 1400px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 1120px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 820px)  { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px)  { .grid { grid-template-columns: 1fr; } }
+
+  .card { display: flex; flex-direction: column; align-items: stretch; }
+
+  .swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+  .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--accent);
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.18);
+  }
+  .swatch-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .swatch-hex {
+    margin-left: auto;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.42);
+  }
+
+  /* ── Phone frame ───────────────────────────────────── */
+  .phone {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 393 / 852;
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow:
+      0 18px 38px rgba(0,0,0,0.55),
+      0 0 0 1.5px rgba(255,255,255,0.05);
+    background: #060606;
+    font-size: 10px;
+  }
+
+  .photo {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(140% 60% at 35% 100%, rgba(214,140,40,0.32), transparent 55%),
+      radial-gradient(120% 50% at 75% 100%, rgba(214,140,40,0.22), transparent 60%),
+      linear-gradient(to bottom,
+        #6a93b8 0%,
+        #94b6d4 14%,
+        #b0c8e0 22%,
+        #2c2620 30%,
+        #221c16 55%,
+        #14100c 80%,
+        #0a0805 100%
+      );
+  }
+  .photo::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    top: 28%; bottom: 0;
+    background:
+      repeating-linear-gradient(
+        to right,
+        rgba(0,0,0,0.0) 0,
+        rgba(0,0,0,0.0) 12%,
+        rgba(0,0,0,0.55) 12.4%,
+        rgba(0,0,0,0.0) 12.8%
+      ),
+      repeating-linear-gradient(
+        to right,
+        rgba(255,255,255,0.0) 0,
+        rgba(255,255,255,0.04) 4%,
+        rgba(255,255,255,0.0) 8%
+      );
+    mix-blend-mode: overlay;
+    opacity: 0.85;
+  }
+  .photo::after {
+    content: "";
+    position: absolute;
+    top: -10%;
+    right: -10%;
+    width: 55%;
+    height: 35%;
+    background:
+      radial-gradient(closest-side, rgba(70,110,55,0.85), transparent 70%),
+      radial-gradient(closest-side, rgba(110,150,80,0.6) 30%, transparent 70%);
+    background-position: 30% 60%, 70% 30%;
+    background-size: 60% 70%, 80% 60%;
+    background-repeat: no-repeat;
+    filter: blur(6px);
+    opacity: 0.6;
+  }
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 30%, transparent 55%, rgba(0,0,0,0.55) 90%, rgba(0,0,0,0.75) 100%);
+    pointer-events: none;
+  }
+
+  .status {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 9px;
+    font-weight: 600;
+    color: #fff;
+    z-index: 5;
+  }
+  .notch {
+    width: 28%;
+    height: 16px;
+    background: #000;
+    border-radius: 12px;
+  }
+  .signals { display: flex; gap: 4px; align-items: center; opacity: 0.92; }
+  .signals .bar { font-size: 8px; letter-spacing: -1px; }
+
+  .search {
+    position: absolute;
+    top: 38px;
+    left: 10px; right: 10px;
+    height: 26px;
+    background: rgba(255,255,255,0.92);
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    color: #6a6a6a;
+    font-size: 10px;
+    z-index: 5;
+    backdrop-filter: blur(8px);
+  }
+  .search svg { flex-shrink: 0; }
+
+  .chips {
+    position: absolute;
+    bottom: 33%;
+    left: 0; right: 0;
+    padding: 0 12px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    z-index: 4;
+  }
+  .chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px);
+    letter-spacing: 0.1px;
+  }
+  .chip.primary { background: var(--accent); color: var(--on-accent, #fff); }
+  .chip.secondary { background: rgba(0,0,0,0.45); font-weight: 600; }
+  .stack {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px 3px 3px;
+    background: rgba(0,0,0,0.55);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+  }
+  .stack-av {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6c8d57, #3f5b35);
+    border: 1.5px solid rgba(255,255,255,0.4);
+  }
+  .stack-count { font-size: 9px; font-weight: 700; color: #fff; }
+
+  .title-block {
+    position: absolute;
+    bottom: 26%;
+    left: 14px; right: 14px;
+    z-index: 4;
+  }
+  .title {
+    font-family: Georgia, serif;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.08;
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 1px 12px rgba(0,0,0,0.7);
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    margin-top: 3px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.85);
+    text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+  }
+
+  .loc {
+    position: absolute;
+    bottom: 21.5%;
+    left: 14px; right: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.82);
+    z-index: 4;
+  }
+  .loc-pin { font-size: 11px; color: rgba(255,255,255,0.62); }
+  .loc-name { font-weight: 500; }
+  .loc-nav {
+    margin-left: auto;
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .divider {
+    position: absolute;
+    bottom: 19.5%;
+    left: 14px; right: 14px;
+    height: 1px;
+    background: rgba(255,255,255,0.13);
+    z-index: 3;
+  }
+
+  .author {
+    position: absolute;
+    bottom: 15%;
+    left: 14px; right: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    z-index: 4;
+  }
+  .av {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #b9aa86, #6b5d3f);
+    flex-shrink: 0;
+  }
+  .author-name { font-weight: 600; color: #fff; }
+  .author-meta {
+    margin-left: auto;
+    color: rgba(255,255,255,0.5);
+    font-size: 9px;
+  }
+
+  .reply {
+    position: absolute;
+    bottom: 9%;
+    left: 14px; right: 14px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    z-index: 4;
+  }
+  .reply-input {
+    flex: 1;
+    padding: 7px 12px;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 18px;
+    background: rgba(0,0,0,0.12);
+    color: rgba(255,255,255,0.55);
+    font-size: 9px;
+  }
+  .reply-btn {
+    padding: 7px 14px;
+    background: var(--accent);
+    color: var(--on-accent, #fff);
+    border-radius: 18px;
+    font-size: 10px;
+    font-weight: 700;
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+
+  .nav {
+    position: absolute;
+    bottom: 2.4%;
+    left: 14px; right: 14px;
+    height: 38px;
+    background: rgba(240,238,234,0.96);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    z-index: 5;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
+  .nav-item {
+    width: 28px; height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-size: 13px;
+    position: relative;
+    border-radius: 50%;
+  }
+  .nav-item.home {
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+  }
+  .nav-item.plus {
+    background: var(--accent);
+    color: var(--on-accent, #fff);
+  }
+  .nav-badge {
+    position: absolute;
+    top: 0; right: -3px;
+    background: var(--accent);
+    color: var(--on-accent, #fff);
+    font-size: 7px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 8px;
+    min-width: 10px;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* ── Light‑accent mode (for very bright accents) ───── */
+  .card.light-accent .nav {
+    background: rgba(18,14,10,0.78);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  }
+  .card.light-accent .nav-item {
+    color: rgba(255,255,255,0.55);
+  }
+  .card.light-accent .reply-btn {
+    box-shadow: 0 2px 14px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .card.light-accent .loc-nav {
+    color: #fff;
+  }
+
+  /* Soft glow specifically for the futuristic shades */
+  .card.glow .reply-btn,
+  .card.glow .chip.primary {
+    box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+
+  .footer {
+    max-width: 880px;
+    margin: 48px auto 0;
+    text-align: center;
+    color: rgba(255,255,255,0.32);
+    font-size: 11px;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Greens · accent color study</h1>
+  <p>Twelve green accents on the “Help Painting My Fence” screen, ordered from deepest forest to softest moss. Includes the three originals (Forest, Sage, Olive) plus Heritage Sage and Lichen, rounded out with five complementary shades and two refined modern greens.</p>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="footer">
+  Backdrop is a CSS approximation of the original photo — colors evaluated against a dark, woody, sky‑lit context.<br>
+  Original orange for reference: <code style="color:#E07B54">#E07B54</code>
+</div>
+
+<template id="phone-tpl">
+  <div class="card" style="">
+    <div class="swatch-row">
+      <span class="swatch"></span>
+      <span class="swatch-name"></span>
+      <span class="swatch-hex"></span>
+    </div>
+    <div class="phone">
+      <div class="photo"></div>
+      <div class="scrim"></div>
+
+      <div class="status">
+        <span>7:10</span>
+        <span class="notch"></span>
+        <span class="signals">
+          <span class="bar">•••</span>
+          <span>📶</span>
+          <span>🔋</span>
+        </span>
+      </div>
+
+      <div class="search">
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="5" stroke="#6a6a6a" stroke-width="1.5"/>
+          <path d="M11 11L14 14" stroke="#6a6a6a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>Search nearby</span>
+      </div>
+
+      <div class="chips">
+        <span class="chip primary">Request</span>
+        <span class="chip secondary">Plan</span>
+        <span class="chip secondary">Discuss</span>
+        <span class="stack">
+          <span class="stack-av"></span>
+          <span class="stack-count">10</span>
+        </span>
+      </div>
+
+      <div class="title-block">
+        <div class="title">Help Painting My Fence</div>
+        <div class="subtitle">I need help painting my fence</div>
+      </div>
+
+      <div class="loc">
+        <span class="loc-pin">📍</span>
+        <span class="loc-name">Francie's Cabin</span>
+        <span class="loc-nav">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <path d="M2 8L8 2L14 8L12 8L12 14L4 14L4 8L2 8Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" transform="rotate(45 8 8)"/>
+          </svg>
+        </span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="author">
+        <span class="av"></span>
+        <span class="author-name">Thomas</span>
+        <span class="author-meta">shared 1d ago</span>
+      </div>
+
+      <div class="reply">
+        <span class="reply-input">Be the first to help</span>
+        <span class="reply-btn">I'll Help</span>
+      </div>
+
+      <div class="nav">
+        <span class="nav-item home">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M3 12L12 4L21 12V20H14V14H10V20H3V12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-item" style="color:#666">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M4 5C4 4.4 4.4 4 5 4H19C19.6 4 20 4.4 20 5V16C20 16.6 19.6 17 19 17H8L4 21V5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+          <span class="nav-badge">1</span>
+        </span>
+        <span class="nav-item" style="color:#666">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="6" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="18" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="9" cy="17" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="15" cy="17" r="3" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+        </span>
+        <span class="nav-item plus">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  // Ordered roughly dark → light, mixing the originals with new shades.
+  const PALETTE = [
+    { group: "Deep greens" },
+    { name: "Pine",          hex: "#2D4A3A", note: "dark, cool, evergreen" },
+    { name: "Forest",        hex: "#2F5D3A", note: "original — deep, grounded" },
+    { name: "Juniper",       hex: "#3F5B43", note: "muted, classic dark" },
+    { name: "Moss",          hex: "#4A6B3A", note: "warm, woodland floor" },
+
+    { group: "Mid sage & olive" },
+    { name: "Heritage Sage", hex: "#5B8268", note: "trad, dependable" },
+    { name: "Fern",          hex: "#5A8C4F", note: "balanced, fresh" },
+    { name: "Olive",         hex: "#6F7A3D", note: "original — warm yellow‑green" },
+    { name: "Lichen",        hex: "#7C8B5C", note: "soft, mineral" },
+
+    { group: "Soft, light greens" },
+    { name: "Sage",          hex: "#88A878", note: "original — calm, muted" },
+    { name: "Eucalyptus",    hex: "#8FA88F", note: "dusty, cool gray‑green" },
+
+    { group: "Modern" },
+    { name: "Emerald",       hex: "#1F7A55", note: "confident, design‑forward" },
+    { name: "Jade",          hex: "#3D8B72", note: "calm, refined, balanced" },
+  ];
+
+  const grid = document.getElementById("grid");
+  const tpl  = document.getElementById("phone-tpl");
+
+  for (const item of PALETTE) {
+    if (item.group) {
+      const label = document.createElement("div");
+      label.className = "group-label";
+      label.textContent = item.group;
+      grid.appendChild(label);
+      continue;
+    }
+    const node = tpl.content.cloneNode(true);
+    const card = node.querySelector(".card");
+    card.style.setProperty("--accent", item.hex);
+    if (item.on) card.style.setProperty("--on-accent", item.on);
+    if (item.light) card.classList.add("light-accent");
+    if (item.glow)  card.classList.add("glow");
+    node.querySelector(".swatch-name").textContent = item.name;
+    node.querySelector(".swatch-hex").textContent  = item.hex;
+    grid.appendChild(node);
+  }
+</script>
+
+</body>
+</html>

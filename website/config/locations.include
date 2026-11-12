@@ -1,0 +1,55 @@
+# Shared location/routing rules for the Ripls static site.
+#
+# Included by BOTH server blocks so routing lives in one place and the
+# production and staging configs cannot drift:
+#   - production:  website/config/default.conf
+#   - staging:     infra/staging-web/config/default.conf
+#
+# Rules are root-agnostic: every try_files resolves against whatever `root`
+# the including server block set, so the same file works for production's
+# fixed root and staging's per-branch `root /srv/sites/$branch`.
+#
+# This file is intentionally NOT named *.conf so nginx does not auto-load it
+# from conf.d in the http context (its location blocks are only valid inside
+# a server block, where the include pulls them in).
+
+# Serve the Ripls Foundation home page at the site root. The page lives under
+# /home/. Fall back to a root /index.html for any site that has one —
+# e.g. a staging branch preview that isn't the home page — so this rule is
+# safe on the shared staging server that hosts every branch.
+location = / {
+    try_files /home/index.html /index.html =404;
+}
+
+# Canonical: send the folder URL to the root so it isn't a duplicate.
+location = /home/ {
+    return 301 /;
+}
+
+# /homescreen/ used to be the root page and 301'd here; it is now one audience
+# landing page among several (crew/, moms/, builders/, …) and serves itself at
+# its own subpath. It is kept out of sitemap.xml and self-canonicals there.
+
+# Universal Links / App Links association files (served without extension).
+location /.well-known/ {
+    try_files $uri =404;
+    default_type application/json;
+}
+
+# Community invite short links.
+location /go/ {
+    try_files /invite.html =404;
+}
+location = /invite {
+    try_files /invite.html =404;
+}
+
+# Password-reset landing.
+location = /reset-password {
+    try_files /reset-password.html =404;
+}
+
+# Everything else: static files.
+location / {
+    try_files $uri $uri/ =404;
+}

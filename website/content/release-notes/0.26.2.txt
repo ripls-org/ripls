@@ -1,0 +1,12 @@
+Release 0.26.2
+
+
+Borrower return-flow fixes and duplicate borrow-row repair.
+
+Bug Fixes
+
+- Duplicate “Who’s Using It” Rows: Fixed the gear detail view showing the same borrower multiple times. The server was double-listing the active loan holder (once as the holder and once in pending requests). Multiple calendar bookings from the same borrower now show compact date pills (JUL 11, JUL 18–20) so separate reservations are visually distinct (#2638)
+
+- Borrower “Mark Returned” Unreachable on Web: Fixed the borrower having no reachable way to mark a loan returned. The gear “Who’s using it” card now shows a Mark returned button when the viewer is the current holder. The Home Needs You pill was also fixed on Flutter Web, where it was nested inside a tap target that silently swallowed clicks and hid it from screen readers (#2638)
+
+- Calendar Drop Available for Active Loans: Fixed the calendar showing a Drop option for bookings already in progress. Only RESERVED-stage bookings can now be dropped; attempting to drop an active loan returns a clear error rather than silently cancelling and skipping impact accounting (#2638)

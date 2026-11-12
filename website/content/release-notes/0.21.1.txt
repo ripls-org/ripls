@@ -1,0 +1,30 @@
+Release 0.21.1
+
+
+Bug Fixes
+
+- Gear metadata not generated in unified create: Items created through the unified create flow were not having metadata generated and stored. The preview stage now captures and persists metadata correctly (#1959, #1982)
+
+- Missing community in share picker and feed: Users who joined a second community after initial app setup had no way to see it — the share picker, search, unread counts, and feed silently collapsed to the original community. Stale single-community persistence in SharedPreferences is now cleared on first launch; affected users recover automatically on restart (#1968, #1971, #1974)
+
+- Bottom navigation disappeared on inbox screen: The bottom navigation bar irretrievably vanished when entering the inbox, requiring an app restart to restore it. The inbox no longer hides the bottom nav (#1966, #1975)
+
+- Request creation produced multiple duplicates: Submitting a request through the create flow could result in several identical copies. The submission path is now deduplicated (#1962, #1975)
+
+- Location did not update in creation preview: The location field in the unified create preview was stale and did not reflect changes made during composition. The preview now syncs location in real time (#1961, #1975)
+
+- Background image replaced when switching creation type: Switching between gear, request, and event creation types after uploading an image caused the chosen image to be swapped out. User-provided media is now preserved across type switches (#1957, #1960)
+
+- Create modal required X button to dismiss: The unified create modal could only be dismissed via the X button; swipe-down and tap-off did nothing, unlike every other modal in the app. The modal now dismisses on swipe or tap-off in text, URL, and preview modes. The X button is kept only during the live-camera viewport where tap-off has no landing target (#1980, #1981)
+
+- Feedback and settings were hard to find: The in-app feedback entry point and user settings were difficult to locate after the navigation restructure. The user avatar now appears in the header on Feed and Inbox screens, providing quick access to settings and feedback from anywhere (#1963, #1975)
+
+Improvements
+
+- Camera-first unified create: Tapping the create button now opens a live in-app camera immediately, with a coaching carousel cycling through example subjects (gear, clothing, food, event flyers). A gallery shortcut in the lower left serves users who prefer picking an existing photo. The previous two-tap Image → Camera/Gallery path is removed (#1948, #1960)
+
+- Invite members from Workshop: A unified community picker replaces three separate legacy invite and access-editing surfaces. Tapping the plus-group icon on the Workshop screen opens an invite sheet with a community switcher and QR code. The same picker is used in item creation and access editing for consistency (#1979)
+
+Infrastructure
+
+- Release pipeline: Mapbox token fetched via Secret Manager REST API: The iOS and Android release pipelines previously failed when fetching the Mapbox token via gcloud — the Mac runner’s bundled gcloud does not support Python 3.9, and the script path was wrong on Linux. Both builds now fetch the token directly from Secret Manager via the REST API, with no gcloud dependency on the runner (#1956)

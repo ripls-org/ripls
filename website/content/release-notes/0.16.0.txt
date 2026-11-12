@@ -1,0 +1,38 @@
+Release 0.16.0
+
+
+New Features
+
+- Watchlist & Timeless Inbox: A new watchlist system replaces the chronological inbox. Items you own, borrow, RSVP to, or offer on are automatically watched, with unread badges surfacing new activity. Swipe to dismiss or manually watch/unwatch items. An access ring shows participant avatars at a glance (#1102, #1151)
+
+- Unified Content Views: Gear, request, and experience screens now share a consistent swipeable layout with tab-based navigation. Content actions (lend, borrow, RSVP, offer) are integrated directly into each view instead of separate sheets (#1102)
+
+- Access Circles: A new access ring widget shows who has access to an item — participants, community members, and pending invitees — with a unified sharing sheet for managing access across gear, requests, and experiences (#1102)
+
+Bug Fixes
+
+- “Be the first to borrow” on own items: The borrow prompt no longer appears on items you own (#1163)
+
+- Community member count showing 0: Communities with members were displaying “0 members” due to a count query bug (#1161)
+
+- Inbox showing stale loan status: Inbox items displayed “on loan” when only interest had been expressed, not an actual loan (#1164)
+
+- Duplicate request creation: Sharing a request with multiple communities was creating duplicate request objects instead of reusing the same request (#1169)
+
+- FCM invalid-token noise: Push notification failures from stale device tokens were logged at ERROR level and triggering Cloud Monitoring alerts. Invalid-token responses (including “Request contains an invalid argument”) are now classified correctly and cleaned up silently (#1165, #1166, #1167)
+
+- Location permission not prompted on Android: A timing race on first cold-start meant the location permission popup was never shown. The prompt is now deferred until user gesture (#1174, #1182)
+
+- Dangling community join rows on delete: Deleting gear, requests, or experiences did not cascade to their community sharing rows, leaving orphaned references. Soft-delete metadata now propagates to all join rows, and a startup backfill cleans up pre-existing orphans (#1185)
+
+- NOT_FOUND lookups logged at ERROR: Missing-entity lookups were spamming Cloud Monitoring alerts. These are now logged at an appropriate level (#1184, #1187)
+
+Improvements
+
+- GPS proximity bias for search: Location autocomplete results are now biased toward the user’s current GPS position for more relevant suggestions (#1143, #1158)
+
+- Deduplicated feeds and search: Items shared to multiple communities no longer appear multiple times in search results and community feeds (#1102)
+
+- Simplified navigation: Removed unimplemented sidebar sections and streamlined the main navigation with unread count on the bottom nav bar (#1102)
+
+- Proto conventions documentation: Added comprehensive documentation for API/models proto conventions with automated sync checks (#1144, #1172)

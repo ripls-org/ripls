@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.10.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.10.0">Release 0.10.0</h1>
+            <p class="release-date">April 6, 2026</p>
+<p>Single player mode, iOS notification fixes, and a batch of
+community-reported bug fixes.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Single Player Mode</strong>: Record past experiences, loans,
+giveaways, and requests — complete with shadow users for non-registered
+participants, completion modals showing impact estimates, and a manage
+members screen in community settings (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1043">#1043</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1046">#1046</a>)</li>
+<li><strong>Active Participant Counts</strong>: The manage button now
+shows the number of people actively involved in each item (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1016">#1016</a>)</li>
+<li><strong>Giveaways in Feed</strong>: Giveaways now always appear in
+the community feed, matching the behavior of experiences and help
+requests (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1015">#1015</a>)</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>iOS Push Notifications</strong>: Fixed three independent
+issues that broke iOS notifications — FCM not initializing after fresh
+login, debug/profile builds using wrong bundle ID, and stale device
+tokens never being evicted (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1027">#1027</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1035">#1035</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1039">#1039</a>)</li>
+<li><strong>Chat Notification Deep Links</strong>: Chat notifications
+now navigate directly to the correct chat tab instead of getting lost
+during navigation (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1036">#1036</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1041">#1041</a>)</li>
+<li><strong>Gear from URL</strong>: Improved success rate from 61% to
+71% of retailer sites with browser-like User-Agent, plus clear localized
+error messages when a site can’t be scraped (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1002">#1002</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1010">#1010</a>)</li>
+<li><strong>Auto-Capitalization</strong>: Fixed missing
+auto-capitalization on feedback sheet text fields (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1038">#1038</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1042">#1042</a>)</li>
+<li><strong>Giveaway Display</strong>: Profile screen now correctly
+shows active giveaways instead of mislabeling them as loans (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1013">#1013</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1019">#1019</a>)</li>
+<li><strong>User Screen Metrics</strong>: Other users’ profile screens
+now match the portfolio metrics layout (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1009">#1009</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1018">#1018</a>)</li>
+<li><strong>Onboarding Disabled</strong>: Removed onboarding screens
+during closed beta — all users enter directly into their community (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/983">#983</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1014">#1014</a>)</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.9.3.html">0.9.3</a> &mdash; April 4,
+2026</li>
+                <li><a href="0.9.2.html">0.9.2</a> &mdash; April 3,
+2026</li>
+                <li><a href="0.9.1.html">0.9.1</a> &mdash; April 2,
+2026</li>
+                <li><a href="0.9.0.html">0.9.0</a> &mdash; April 1,
+2026</li>
+                <li><a href="0.8.0.html">0.8.0</a> &mdash; March 20,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Month In — The Ripls Private Beta - Ripls</title>
+    <meta name="description" content="A look back at the first month of the Ripls private beta — features shipped, bugs squashed, and who helped find them.">
+    <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/privacy-policy.css">
+    <style>
+        .lede {
+            color: #6a5d56;
+            font-style: italic;
+            margin: 0 0 30px 0;
+        }
+
+        .impact-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            padding: 24px;
+            background: #f5ece1;
+            border-radius: 8px;
+        }
+
+        .impact-row .stat-card {
+            background: transparent;
+            border: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        .impact-row .num {
+            font-size: 2.2em;
+            color: #e07a5f;
+            line-height: 1.1;
+            display: block;
+        }
+
+        .impact-row .label {
+            color: #6a5d56;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .feature {
+            display: grid;
+            grid-template-columns: minmax(0, 320px) 1fr;
+            gap: 36px;
+            margin: 56px 0;
+            align-items: center;
+        }
+
+        .feature.flip {
+            grid-template-columns: 1fr minmax(0, 320px);
+        }
+
+        .feature.flip .feature-media {
+            order: 2;
+        }
+
+        .feature-media {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(61, 53, 49, 0.12);
+            background: #fdfaf7;
+            margin: 0 auto;
+        }
+
+        .feature-media-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .feature-media-pair img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(61, 53, 49, 0.12);
+            background: #fdfaf7;
+        }
+
+        .feature.cluster {
+            grid-template-columns: minmax(0, 260px) 1fr minmax(0, 260px);
+            gap: 28px;
+        }
+
+        .feature.cluster .feature-text {
+            text-align: center;
+        }
+
+        .feature.cluster .feature-media {
+            max-width: 260px;
+        }
+
+        .feature-text h3 {
+            color: #e07a5f;
+            margin-bottom: 8px;
+        }
+
+        .feature-text p {
+            margin: 12px 0;
+        }
+
+        .feature-text .release {
+            color: #9a8d86;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
+        .release a {
+            color: #9a8d86;
+        }
+
+        .bugs-list {
+            list-style: none;
+            padding: 0;
+            margin: 24px 0;
+        }
+
+        .bugs-list li {
+            padding: 14px 0;
+            border-bottom: 1px solid #e9dfd6;
+        }
+
+        .bugs-list li:last-child {
+            border-bottom: none;
+        }
+
+        .bugs-list .who {
+            color: #9a8d86;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
+        .thanks-list {
+            font-size: 1.3em;
+            line-height: 2;
+            text-align: center;
+            color: #e07a5f;
+            margin: 24px 0;
+        }
+
+        .inline-stats {
+            color: #6a5d56;
+            font-size: 0.95em;
+        }
+
+        .inline-stats strong {
+            color: #3d3531;
+        }
+
+        @media (max-width: 720px) {
+            .feature,
+            .feature.flip,
+            .feature.cluster {
+                grid-template-columns: 1fr;
+            }
+            .feature.flip .feature-media {
+                order: 0;
+            }
+            .feature-media,
+            .feature.cluster .feature-media {
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="assets/logo.png" alt="Ripls logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <main>
+    <section class="content-section">
+        <div class="content-wrapper">
+            <h1>One month in.</h1>
+            <p class="lede">A tour of what shipped in the first month
+            of the Ripls private beta — and the people who helped find
+            the bugs along the way. April 1 – April 30, 2026.</p>
+
+            <p>Ripls is for the <em>latent host</em> — the friend,
+            neighbor, or family member who would host the potluck or
+            rebuild the fence if the coordinating didn't break them.
+            What they lack isn't intent; it's bandwidth. Group threads,
+            Doodle, Venmo, Mealtrain, calendar invites, the
+            half-spreadsheet — every modern tool solves one slice of
+            the work, none of them know about the others, and most
+            latent hosts give up before they start.</p>
+
+            <p>The product replaces that patchwork with a single layer
+            built around a small invite-only circle, anchored to a
+            real-world place like a block, school, gym, or family. AI
+            handles the invite, the claim list, the RSVPs, the
+            reminders, and watches for momentum so the next instance
+            of a recurring thing gets proposed instead of forgotten.
+            The host's job shrinks to deciding to do the thing.</p>
+
+            <p>Above all, we want to thank our very first testers
+            for all their help — finding bugs, giving us ideas and
+            inspiration, and supporting us through the rough edges
+            of an early build. We've been busy trying to respond to
+            that feedback and make Ripls viable as a tool for
+            everyday use. Nine releases shipped this month — <a
+            href="release-notes/0.11.0.html">0.11</a> through <a
+            href="release-notes/0.18.0.html">0.18</a>, roughly one
+            every three days. Here's what we've been up to.</p>
+
+            <h2>Phone signup, deep-linked invites</h2>
+
+            <div class="feature">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/invite.jpg"
+                       aria-label="An invite screen showing 'You're invited!' with an avatar, the message 'Marcus Thompson invited you to join Oakwood Heights Neighbors', and two buttons: 'Create a new account' and 'I already have an account'.">
+                    <source src="assets/beta-1-month/invite.webm" type="video/webm">
+                    <source src="assets/beta-1-month/invite.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>Land in the right place, every time.</h3>
+                    <p>Sign up with a phone number, no email or
+                    password. An invite link survives a Play Store
+                    or App Store install — the invite code follows
+                    the recipient through the install and lands them
+                    on the shared content instead of a generic
+                    "page not found".</p>
+                    <p class="release">Released <a href="release-notes/0.13.0.html">0.13</a>
+                    + <a href="release-notes/0.14.0.html">0.14</a>
+                    · #171, #1099, #1131</p>
+                </div>
+            </div>
+
+            <h2>Media improvements</h2>
+
+            <div class="feature cluster">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/media-multi-upload.jpg"
+                       aria-label="Pending multi-image upload preview with two photos staged and a thumbnail strip below for review before posting.">
+                    <source src="assets/beta-1-month/media-multi-upload.webm" type="video/webm">
+                    <source src="assets/beta-1-month/media-multi-upload.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>Photos that work like photos.</h3>
+                    <p>Multi-image upload from the camera roll, a
+                    redesigned media screen with long-press
+                    reordering, individual deletion, attribution bars
+                    on third-party media, batch download with
+                    "Save All", and a media carousel reachable from
+                    chat or the photo strip on any item.</p>
+                    <p class="release">Released <a href="release-notes/0.11.0.html">0.11</a>
+                    + <a href="release-notes/0.12.0.html">0.12</a>
+                    · #1076, #1086</p>
+                </div>
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/media-browser.jpg"
+                       aria-label="A 4-item media browser with a hero photo, a Save All button, and a thumbnail strip for navigating between items.">
+                    <source src="assets/beta-1-month/media-browser.webm" type="video/webm">
+                    <source src="assets/beta-1-month/media-browser.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <h2>The Plan tab</h2>
+
+            <div class="feature flip">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/plan-tab-claim.jpg"
+                       aria-label="Plan tab on a potluck event showing a 'Still needed' list (Pasta salad, Beverages, Music) with 'I got this' buttons, plus a 'Who's bringing what' section already showing one person bringing hamburgers.">
+                    <source src="assets/beta-1-month/plan-tab-claim.webm" type="video/webm">
+                    <source src="assets/beta-1-month/plan-tab-claim.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>Claim a slot, in one tap.</h3>
+                    <p>Experiences and requests share a collaborative
+                    Plan tab. Organizers list what's still needed with
+                    slot counts; participants tap "I got this" or add
+                    a free-form contribution. The back-and-forth
+                    surfaces as system messages in the conversation
+                    so the whole group stays in sync without anyone
+                    running a spreadsheet.</p>
+                    <p class="release">Released <a href="release-notes/0.17.0.html">0.17</a>
+                    · #1192, #1201, #1208</p>
+                </div>
+            </div>
+
+            <div class="feature">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/plan-tab-event.jpg"
+                       aria-label="Camping trip event view with the Plan tab selected, showing 'Who's bringing what' and one participant already committed to bringing the tent and gear.">
+                    <source src="assets/beta-1-month/plan-tab-event.webm" type="video/webm">
+                    <source src="assets/beta-1-month/plan-tab-event.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>Requests and offers, on the event itself.</h3>
+                    <p>Need help with the gear? Got a spare cooler?
+                    Both go right on the event view alongside RSVPs —
+                    no separate thread, no out-of-band texting. The
+                    same Plan tab carries needs <em>and</em>
+                    contributions for both events and requests.</p>
+                    <p class="release">Released <a href="release-notes/0.17.0.html">0.17</a>
+                    · #1201</p>
+                </div>
+            </div>
+
+            <h2>Chat, in context</h2>
+
+            <div class="feature cluster">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/chat-in-context.jpg"
+                       aria-label="A chat thread on a 'Pet Alligator Babysitting' request, with two friends offering to help, an emoji-reaction heart on one of the messages, and a system message marking when an offer was withdrawn.">
+                    <source src="assets/beta-1-month/chat-in-context.webm" type="video/webm">
+                    <source src="assets/beta-1-month/chat-in-context.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>The conversation lives on the thing — and on the circle.</h3>
+                    <p>Every item — every loan, every request, every
+                    event — has its own chat right there on the thing.
+                    Tap the message; you land on the item with the
+                    chat tab open. <strong>Emoji reactions</strong>,
+                    multi-photo attachments staged above the input,
+                    and tappable links in descriptions all live in
+                    the same surface.</p>
+                    <p>And now every <em>circle</em> has its own chat
+                    too. The Boulder Backcountry Crew, the school
+                    list, the block — each one is a place where the
+                    group can talk about anything that doesn't fit on
+                    a specific item, and that conversation is pinned
+                    to the top of the inbox so it never gets lost.</p>
+                    <p class="release">Released <a href="release-notes/0.10.0.html">0.10</a>
+                    – 0.19 · #1029, #1031, #1124, #1139, #1140, #1646</p>
+                </div>
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/community-chat.jpg"
+                       aria-label="A community page for the Boulder Backcountry Crew with a hero photo of a goat in a tree, the description 'A tight group of Boulder adventurers who get out into the backcountry together for hiking, skiing, climbing, and backpacking', and three tabs: Community, Members, Discuss — with an unread badge on the Discuss tab.">
+                    <source src="assets/beta-1-month/community-chat.webm" type="video/webm">
+                    <source src="assets/beta-1-month/community-chat.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <h2>Time polls</h2>
+
+            <div class="feature">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/time-poll.jpg"
+                       aria-label="Climbing trip event with a time poll badge next to 'Agree on Time' on the Plan tab. Below it, a list of items needed: climbing rope, harness, chalk and brush, crash pad, water bottles, snacks.">
+                    <source src="assets/beta-1-month/time-poll.webm" type="video/webm">
+                    <source src="assets/beta-1-month/time-poll.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>When the right time isn't obvious.</h3>
+                    <p>Open a poll, people vote, the winning slot
+                    becomes the event time. Closed polls are
+                    preserved so a follow-up poll on the same event
+                    doesn't clobber the original comment thread.</p>
+                    <p class="release">Released <a href="release-notes/0.17.0.html">0.17</a>
+                    · #1219, #1245</p>
+                </div>
+            </div>
+
+            <h2>Streaming AI generation</h2>
+
+            <div class="feature flip">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/streaming-create.jpg"
+                       aria-label="A finished 'Mt Sanitas Hike' event view with title, time, location, and description filled in — produced from a single typed sentence by the streaming AI generator.">
+                    <source src="assets/beta-1-month/streaming-create.webm" type="video/webm">
+                    <source src="assets/beta-1-month/streaming-create.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>Title, description, time, location — all live.</h3>
+                    <p>AI-assisted creation streams its work as it
+                    goes. Title and description populate first;
+                    location and time fill in as they're parsed.
+                    Time-to-first-content dropped about 78% on
+                    device, and streaming now runs end-to-end through
+                    community, gear-image, and request-image flows.
+                    Event URLs from Eventbrite, Meetup, Luma, and
+                    AllEvents pull dates and locations directly from
+                    JSON-LD.</p>
+                    <p class="release">Released <a href="release-notes/0.17.0.html">0.17</a>
+                    + <a href="release-notes/0.18.0.html">0.18</a>
+                    · #1140, #1157, #1253, #1502, #1540, #1554, #1567</p>
+                </div>
+            </div>
+
+            <h2>The timeless inbox</h2>
+
+            <div class="feature">
+                <img class="feature-media"
+                     src="assets/beta-1-month/watchlist.png"
+                     alt="The new timeless inbox showing six watched items across four communities: a scanner being lent (Alfred expressed interest), a flagstone-walkway-repair help offered, help installing solar panels (Betty offered), a mahjong set, a classical guitar, and a kid's mountain bike. Each row shows the item type, title, the most recent activity, and an interest count.">
+                <div class="feature-text">
+                    <h3>Watch what matters; ignore what doesn't.</h3>
+                    <p>The inbox stopped being a chronological list
+                    of events. Items you own, borrow, RSVP to, or
+                    offer on are auto-watched, with unread badges
+                    surfacing real activity. Swipe to dismiss; manually
+                    watch or unwatch anything; a participant ring
+                    shows who's already in. Rows show "expressed
+                    interest" / "offered to help" callouts so a host
+                    knows what's waiting on them at a glance.</p>
+                    <p class="release">Released <a href="release-notes/0.16.0.html">0.16</a>
+                    · #1102, #1151, #1170</p>
+                </div>
+            </div>
+
+            <h2>Across communities, all at once</h2>
+
+            <div class="feature flip">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/across-communities.jpg"
+                       aria-label="A 'This Week' calendar view across four communities showing aggregate impact ($2.7K saved, 109 kg CO2 avoided, 27 hours back), a day strip, and three upcoming items — a hike at Chautauqua, a morning climb at Rifle, and a 'Founded Breck Moose Spotters' badge — drawn from multiple circles into one view.">
+                    <source src="assets/beta-1-month/across-communities.webm" type="video/webm">
+                    <source src="assets/beta-1-month/across-communities.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>Switch between circles, or see them together.</h3>
+                    <p>One sidebar selection no longer scopes the
+                    whole app to a single community. Pick the circles
+                    that matter right now — the block, the school
+                    list, the run club — and the inbox, the calendar,
+                    the impact summary, and search all aggregate
+                    across them. Items shared into multiple circles
+                    deduplicate into one row.</p>
+                    <p class="release">Released <a href="release-notes/0.16.0.html">0.16</a>
+                    · #1102</p>
+                </div>
+            </div>
+
+            <h2>Notifications you can tune</h2>
+
+            <div class="feature flip">
+                <div class="feature-media-pair">
+                    <img src="assets/beta-1-month/notif-banner.png"
+                         alt="Android lock-screen notification: 'New Gear Shared — Marcus Thompson shared Atomic Skis with Bindings'.">
+                    <img src="assets/beta-1-month/notif-prefs.png"
+                         alt="Manage Notifications screen with per-event-type toggles: New events, Event RSVPs, Event planning updates, Events wrapped up, New requests, Updates on requests, Shared items, Loans and Giveaways, Chats.">
+                </div>
+                <div class="feature-text">
+                    <h3>Per circle. Per kind of activity.</h3>
+                    <p>Notification settings now live <em>per
+                    community</em>, not just globally. Decide which
+                    activity matters for which circle — events from
+                    the school list, but only chat from the
+                    block — and the rest stays quiet.</p>
+                    <p class="release">Released <a href="release-notes/0.18.0.html">0.18</a>
+                    · #1107, #1553</p>
+                </div>
+            </div>
+
+            <h2>Generalized undo</h2>
+
+            <div class="feature">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/undo-giveaway.jpg"
+                       aria-label="A book giveaway in the Oakwood Heights Neighbors community, with the option to undo the giveaway action surfaced in the chat.">
+                    <source src="assets/beta-1-month/undo-giveaway.webm" type="video/webm">
+                    <source src="assets/beta-1-month/undo-giveaway.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>Take back any state change.</h3>
+                    <p>Started a loan by mistake? Marked an event
+                    complete too early? Accepted the wrong offer? Undo
+                    is right there in chat, the story feed, or a
+                    snackbar. The server records enough prior state to
+                    replay the inverse faithfully — including cascade
+                    effects, like sibling transfers being auto-cancelled
+                    when a giveaway completes.</p>
+                    <p class="release">Released <a href="release-notes/0.17.0.html">0.17</a>
+                    · #964, #1207, #1228</p>
+                </div>
+            </div>
+
+            <h2>Swiping content navigation</h2>
+
+            <div class="feature flip">
+                <video class="feature-media" autoplay muted loop playsinline preload="metadata"
+                       poster="assets/beta-1-month/swipe-content.jpg"
+                       aria-label="A request titled 'Flagstone Walkway Repair Help' showing the swipeable navigation between Request, Details, and Discuss tabs.">
+                    <source src="assets/beta-1-month/swipe-content.webm" type="video/webm">
+                    <source src="assets/beta-1-month/swipe-content.mp4" type="video/mp4">
+                </video>
+                <div class="feature-text">
+                    <h3>Same content, three swipes.</h3>
+                    <p>Gear, requests, and experiences all share a
+                    consistent swipeable layout now. Lend, borrow,
+                    RSVP, and offer actions are integrated directly
+                    into each view instead of behind separate sheets.</p>
+                    <p class="release">Released <a href="release-notes/0.16.0.html">0.16</a>
+                    · #1102, #1168</p>
+                </div>
+            </div>
+
+            <h2>Accessibility &amp; Spanish</h2>
+
+            <p>Two pieces of work that don't have a screen-grab but
+            matter as much as anything that does.</p>
+
+            <p><strong>The app works for everyone.</strong> Every
+            button, link, and toggle now has a label that screen
+            readers can announce — so blind and low-vision users can
+            navigate the app the same way as anyone else. Animations
+            quiet down for people who get motion sickness from them.
+            Status indicators that used to rely on color (red dot vs.
+            green dot) now also tell you what they mean in words.
+            Every change like this is checked automatically before
+            the code can ship, so we don't backslide. The cataract
+            neighbor, the aging parent, the widower, the friend who
+            uses VoiceOver — they can all use Ripls.
+            <span class="release">Across <a href="release-notes/0.16.0.html">0.16</a> –
+            <a href="release-notes/0.18.0.html">0.18</a></span></p>
+
+            <p><strong>Spanish, end to end.</strong> About 1,400
+            phrases — every button, every error message, every push
+            notification — are now translated. If your phone is set
+            to Spanish, Ripls speaks Spanish back. We built it the
+            careful way, so adding the next language (Portuguese,
+            Mandarin, whatever the next circle needs) is a translation
+            exercise, not a re-engineering project.
+            <span class="release">Across <a href="release-notes/0.10.0.html">0.10</a> –
+            <a href="release-notes/0.18.0.html">0.18</a></span></p>
+
+            <h2>Bugs you found, bugs we squashed</h2>
+
+            <p>None of these found themselves.</p>
+
+            <ul class="bugs-list">
+                <li><strong>Chat notifications didn't deep-link to the chat
+                tab</strong> — taps got lost during navigation or showed
+                stale messages on cold start.
+                <span class="who">Reported by Leslie across 0.10, 0.12.1, and 0.15.</span></li>
+
+                <li><strong>Add gear from URL kept failing</strong> on common
+                retailer sites; switched to a browser-like User-Agent and
+                added localized error messages. Success rate jumped from 61%
+                to 71%. <span class="who">Reported by Thomas in 0.10.</span></li>
+
+                <li><strong>Auto-capitalize was missing on the feedback sheet.</strong>
+                <span class="who">Reported by Leslie in 0.10.</span></li>
+
+                <li><strong>Couldn't edit a media item.</strong> Redesigned
+                the media screen with photo upload, batch download, long-press
+                reordering, deletion, and attribution bars.
+                <span class="who">Reported by Lisa in 0.11.</span></li>
+
+                <li><strong>"Start your first loan" went to the wrong
+                place</strong>, and nudge cards kept appearing for users who
+                already had in-flight activity of that type.
+                <span class="who">Reported by Brian in 0.11.</span></li>
+
+                <li><strong>"Failed to complete experience"</strong> on
+                events that were in the JOINED state. Fixed by accepting
+                JOINED experiences in RecordAttendance.
+                <span class="who">Reported by Leslie in 0.12.2.</span></li>
+
+                <li><strong>Couldn't tap lend or giveaway buttons</strong>
+                on small screens — creation preview modals overflowed with
+                large text. They scroll now.
+                <span class="who">Reported by Marc in 0.12.2.</span></li>
+
+                <li><strong>Edit fields scrolled out of view</strong> behind
+                the keyboard. Resolved across multiple creation surfaces.
+                <span class="who">Reported by Eric.</span></li>
+
+                <li><strong>Wrong location from event URLs.</strong> Creating
+                an experience from an Eventbrite or Meetup URL sometimes
+                resolved the wrong place — Boulder County Jail instead of
+                Boulder Airport, that kind of thing. JSON-LD location now
+                wins, with geo coordinates flowing through to Mapbox as
+                proximity bias. <span class="who">0.15, #1134.</span></li>
+
+                <li><strong>Description got overwritten by AI</strong> when
+                adding a photo to a typed item or event. Text mode now
+                preserves your description verbatim; the LLM only fills in
+                metadata. <span class="who">Reported by Leslie in 0.15.</span></li>
+
+                <li><strong>Homepage seemed non-intuitive.</strong> Filed
+                via in-app feedback; informed the unified content-views
+                redesign in 0.16. <span class="who">Reported by Joanne.</span></li>
+
+                <li><strong>"Be the first to borrow" appeared on items
+                you own.</strong> The borrow prompt now respects ownership.
+                <span class="who">0.16, #1163.</span></li>
+
+                <li><strong>Communities with members showed "0
+                members"</strong> due to a count-query bug, and the inbox
+                showed "on loan" when only interest had been expressed. Both
+                fixed. <span class="who">0.16, #1161, #1164.</span></li>
+
+                <li><strong>Recipient withdrawal was ending the
+                giveaway.</strong> A recipient changing their mind no
+                longer ends the giveaway for everyone else.
+                <span class="who">0.18, #1565.</span></li>
+            </ul>
+
+            <h2>Thanks</h2>
+
+            <p>Thanks to our testers and bug reporters:</p>
+
+            <p class="thanks-list">
+                Brian &middot; Eric &middot; Joanne &middot; Leslie &middot; Lisa &middot; Marc &middot; Susan
+            </p>
+
+            <h2>What it added up to</h2>
+
+            <p class="inline-stats">After a month: <strong>17 people</strong>
+            across <strong>12 circles</strong>, <strong>61 items
+            shared</strong>, <strong>29 events</strong> planned,
+            <strong>59 RSVPs</strong>, <strong>401 chat messages</strong>,
+            and <strong>86 photos</strong> uploaded onto shared items.
+            Across all the completed loans, giveaways, fulfilled
+            requests, and finished events:</p>
+
+            <div class="impact-row" role="list" aria-label="Aggregate impact across completed activity">
+                <div class="stat-card" role="listitem">
+                    <span class="num">$553</span>
+                    <span class="label">money saved</span>
+                </div>
+                <div class="stat-card" role="listitem">
+                    <span class="num">6.3 kg</span>
+                    <span class="label">CO<sub>2</sub>e avoided</span>
+                </div>
+                <div class="stat-card" role="listitem">
+                    <span class="num">52 hrs</span>
+                    <span class="label">time saved</span>
+                </div>
+            </div>
+
+            <p>Next: the recurring side — standing things, repeat
+            project days, the system noticing what's worth doing
+            again. Thanks for being here.</p>
+
+            <h2>More</h2>
+            <ul>
+                <li><a href="release-notes/0.18.0.html">Release notes 0.18.0</a> &mdash; April 30, 2026</li>
+                <li><a href="release-notes/0.17.0.html">Release notes 0.17.0</a> &mdash; April 24, 2026</li>
+                <li><a href="release-notes/0.16.0.html">Release notes 0.16.0</a> &mdash; April 20, 2026</li>
+                <li><a href="release-notes/">Full release notes index</a></li>
+                <li><a href="/">Back to home</a></li>
+            </ul>
+        </div>
+    </section>
+    </main>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2026 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

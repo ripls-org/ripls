@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "suite": "TestGearPrompt",
+  "run": {
+    "timestamp_utc": "2026-07-08T15:08:07Z",
+    "git_commit": "97ceb1f6d6",
+    "git_branch": "prompt_rewrite",
+    "label": "pre-rewrite"
+  },
+  "goldens_file": "gear_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "pass_rate": 0.9866666666666667,
+      "threshold": 0.78,
+      "passed": true,
+      "median_latency_ms": 2145,
+      "p95_latency_ms": 3079,
+      "field_pass_rates": {
+        "brand": 1,
+        "brand_contains": 1,
+        "brand_empty": 1,
+        "category_contains_any_of": 1,
+        "location_query_contains": 0,
+        "material_category_any_of": 1,
+        "min_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 1,
+        "weight_grams_approx": 1
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "pass_rate": 0.9866666666666667,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 18943,
+      "p95_latency_ms": 44327,
+      "field_pass_rates": {
+        "brand": 1,
+        "brand_contains": 1,
+        "brand_empty": 1,
+        "category_contains_any_of": 1,
+        "location_query_contains": 0,
+        "material_category_any_of": 1,
+        "min_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 1,
+        "weight_grams_approx": 1
+      }
+    },
+    {
+      "provider": "gemini",
+      "model": "vertexai/gemini-3.1-flash-lite",
+      "pass_rate": 0.9733333333333334,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 1196,
+      "p95_latency_ms": 1376,
+      "field_pass_rates": {
+        "brand": 1,
+        "brand_contains": 1,
+        "brand_empty": 1,
+        "category_contains_any_of": 1,
+        "location_query_contains": 0,
+        "material_category_any_of": 1,
+        "min_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 0.9166666666666666,
+        "weight_grams_approx": 1
+      }
+    }
+  ]
+}

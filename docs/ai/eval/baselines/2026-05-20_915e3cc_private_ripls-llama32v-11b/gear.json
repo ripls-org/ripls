@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "suite": "TestGearPrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T03:11:27Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-llama32v-11b"
+  },
+  "goldens_file": "gear_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-llama32v-11b",
+      "pass_rate": 0.8666666666666667,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 2148,
+      "p95_latency_ms": 2327,
+      "field_pass_rates": {
+        "brand": 1,
+        "brand_contains": 1,
+        "brand_empty": 0.8571428571428571,
+        "category_contains_any_of": 1,
+        "location_query_contains": 1,
+        "material_category_any_of": 0.8181818181818182,
+        "min_confidence": 0.9230769230769231,
+        "title_contains": 1,
+        "value_estimate_usd": 0.6666666666666666,
+        "weight_grams_approx": 0.6
+      }
+    }
+  ]
+}

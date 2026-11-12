@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.26.2 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.26.2">Release 0.26.2</h1>
+            <p class="release-date">July 4, 2026</p>
+<p>Borrower return-flow fixes and duplicate borrow-row repair.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Duplicate “Who’s Using It” Rows</strong>: Fixed the gear
+detail view showing the same borrower multiple times. The server was
+double-listing the active loan holder (once as the holder and once in
+pending requests). Multiple calendar bookings from the same borrower now
+show compact date pills (<code>JUL 11</code>, <code>JUL 18–20</code>) so
+separate reservations are visually distinct (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2638">#2638</a>)</p></li>
+<li><p><strong>Borrower “Mark Returned” Unreachable on Web</strong>:
+Fixed the borrower having no reachable way to mark a loan returned. The
+gear “Who’s using it” card now shows a <strong>Mark returned</strong>
+button when the viewer is the current holder. The Home <strong>Needs
+You</strong> pill was also fixed on Flutter Web, where it was nested
+inside a tap target that silently swallowed clicks and hid it from
+screen readers (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2638">#2638</a>)</p></li>
+<li><p><strong>Calendar Drop Available for Active Loans</strong>: Fixed
+the calendar showing a <strong>Drop</strong> option for bookings already
+in progress. Only RESERVED-stage bookings can now be dropped; attempting
+to drop an active loan returns a clear error rather than silently
+cancelling and skipping impact accounting (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2638">#2638</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.26.1.html">0.26.1</a> &mdash; July 4,
+2026</li>
+                <li><a href="0.26.0.html">0.26.0</a> &mdash; July 2,
+2026</li>
+                <li><a href="0.25.0.html">0.25.0</a> &mdash; June 29,
+2026</li>
+                <li><a href="0.24.0.html">0.24.0</a> &mdash; June 1,
+2026</li>
+                <li><a href="0.23.2.html">0.23.2</a> &mdash; May 29,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,56 @@
+Release 0.21.0
+
+
+New Features
+
+- Unified Create: A single creation modal replaces the four separate entry points for gear, requests, events, and communities. Type or paste anything — a description, URL, or image — and the server classifies your input and streams the right form pre-filled. Tap the preview to adjust before saving. The classifier routes through the same multi-provider AI abstraction used elsewhere and its response shape was slimmed and enum-constrained to cut latency by roughly 40 % (#1867, #1868, #1869, #1876, #1907, #1932, #1900, #1902, #1905, #1937, #1942)
+
+- Scheduled notifications: The server now sends event reminders to attendees and loan-return reminders to borrowers on a configurable schedule. A reconciler queues upcoming notifications and a dispatcher delivers them, with per-user quiet-hours support so reminders arrive at sensible times. A new Notification Preferences screen lets each user opt in or out of specific notification types (#625, #1938)
+
+- Chat notification improvements: Chat notifications now collapse and batch by conversation so a busy thread doesn’t flood your notification shade. Notifications cancel automatically when you open the conversation. On Android, the app registers conversation-space shortcuts so chats appear in the system-level conversation widget (#1892, #1909)
+
+- Heritage Sage accent color: The app’s accent color migrated from coral to Heritage Sage (#5B8268) — a cooler, more grounded palette. All accent pixels now route through AppColors, so status semantics (warnings, request color) intentionally stay warm orange. A new CI lint gate blocks future hardcoded color literals outside the theme directory (#1950, #1945)
+
+- Navigation restructure: The sidebar and bottom Search tab are removed. A floating Workshop avatar takes their place in the header, and the Create flow moves to a right-side FAB. The Inbox gains filter pills and a Done tab, the Workshop gets a community carousel and dedicated selection, and the Feed gains a search-nearby pill with a suggestions sheet (#1895, #1896, #1897, #1898, #1918, #1921)
+
+- Event update notifications: When an event organizer changes the time or location of an event, all Yes and Maybe RSVPs now receive a push notification so no one is caught off guard by last-minute changes (#1893, #1894)
+
+- Pick winning time in vote modal: Event organizers can now tap “Pick winning time” directly inside the vote modal to lock in the winning slot without navigating away (#1686, #1830)
+
+Bug Fixes
+
+- Photos in carousel showed an error icon: Opening a gear photo from the carousel strip displayed an exclamation icon because presigned media URLs had expired since the list was loaded. The carousel now re-resolves the full media URL at viewer-mount time so photos always load (#1833, #1913)
+
+- Inbox marked unread after reading via notification deep-link: Tapping a chat notification navigated to the conversation and marked messages read, but the Inbox still highlighted the thread as unread until you tapped through a second time. MarkMessagesRead now updates the watch-entry timestamp atomically so the Inbox clears on the first visit (#1855, #1863)
+
+- Chat messages appeared out of order: Messages in an active chat thread sometimes rendered out of chronological sequence even after a pull-to-refresh. The server now sorts the backlog by sent_at_unix_sec before streaming, and the client applies a defensive sort as well (#1826, #1829)
+
+- Inbox pill showed “On Loan to You” to the lender: When lending an item, the Inbox status pill incorrectly read “On Loan to You” from the lender’s perspective. The label now correctly reflects the user’s role in the loan (#1837, #1839)
+
+- iOS keyboard hid creation input and generate button: On iOS, raising the keyboard while typing in the creation modal pushed the input area and Generate button off screen. The modal now accounts for keyboard insets so the input stays visible (#1933, #1940)
+
+- Feedback button hidden; frosted-glass buttons low contrast: The in-app feedback entry point was difficult to find, and action buttons on frosted-glass modals (especially orange) were too faint to read. Button contrast is improved and the feedback path is surfaced more prominently (#1934, #1940)
+
+- Content view crash on navigation: Navigating away from a content view before it finished loading triggered an unmounted-widget reference crash. The state check is now guarded against the unmounted case (#1857)
+
+Reliability & Infrastructure
+
+- Activity digest emails: The server generates and sends daily and weekly activity digest emails to ops, summarizing actions across all communities. Daily digests go out each morning; weekly digests go out on Monday mornings in Mountain Time. Both are enabled in prod via Terraform (#1924, #1926)
+
+- Community event pub/sub: Community-event fan-out moved from inline dispatch inside the community service to a durable in-process pub/sub bus. Story creation, story subscribers, and notifications each run as independent subscribers, making it easier to add new reactions to community events without touching the service layer (#510, #1841)
+
+- Chat-message event bus: Chat messages now emit events on a server-side chat_event_bus so downstream subscribers (unread counts, notifications) can react without polling or coupling to the chat service directly (#1842, #1860)
+
+Security
+
+- Secrets moved to Secret Manager: The Cloud Run deployment no longer carries DB_PASSWORD or MB_DB_PASS as plain environment variables. Both secrets are now fetched from Secret Manager at container startup via secret_key_ref refs, eliminating plaintext credentials from the runtime environment (#1768, #1770, #1884, #1936)
+
+- Firebase service account JSON removed: The server no longer ships or reads a service-account JSON file. Authentication to Firebase now goes through Application Default Credentials (ADC), consistent with all other Google Cloud services (#1769, #1825)
+
+Developer Experience
+
+- Hourly CI container sweeper: A cron job on the CI host runs every hour and terminates any pgvector/pgvector:pg16 containers that were leaked by interrupted test runs, keeping the host clean without manual intervention (#1928)
+
+- Patrol E2E stack removed: The Patrol-based end-to-end test infrastructure has been removed. Integration coverage continues through Go testcontainer-based server tests and Flutter widget/viewmodel tests (#1887, #1927)
+
+- gcloud auth preflight on server start: npm run start:server now checks both gcloud auth (CLI) and gcloud auth application-default (ADC) before launching, and prints the exact reauth command when either context is missing (#1915)

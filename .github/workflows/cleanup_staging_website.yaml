@@ -1,0 +1,87 @@
+name: Cleanup Staging Website
+
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - "website/**"
+      - ".github/actions/deploy-website/**"
+      - ".github/workflows/deploy_staging_website.yaml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  cleanup:
+    # Same gate as deploy_staging_website.yaml: a fork's PR never got a
+    # staging site, and its code must not run with the deploy key.
+    if: vars.INSTANCE_PIPELINES == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: self-hosted-linux
+
+    steps:
+      - name: Compute branch slug
+        id: slug
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          slug=$(printf '%s' "$HEAD_REF" \
+            | tr '[:upper:]' '[:lower:]' \
+            | tr -c 'a-z0-9-' '-' \
+            | sed -E 's/-+/-/g; s/^-+|-+$//g' \
+            | cut -c1-30 \
+            | sed -E 's/-+$//')
+          if [ -z "$slug" ]; then
+            slug="pr-${PR_NUMBER}"
+          fi
+          echo "slug=$slug" >> "$GITHUB_OUTPUT"
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          cat > ~/.ssh/deploy_key <<< "${{ secrets.WEB_PUBLISH_SSH_PRIVATE_KEY }}"
+          chmod 600 ~/.ssh/deploy_key
+
+      # Remove the branch's content and the two routing files the deploy
+      # generated for it (config/site-<slug>.conf and its
+      # config/locations-<slug>.include). Leaving the server block behind would
+      # keep <slug>.staging.ripls.org resolving to a root that no longer
+      # exists, and an include pointing at a deleted file fails `nginx -t` —
+      # which would freeze the whole staging container on its last-good config.
+      - name: Remove staging directory and routing
+        env:
+          SLUG: ${{ steps.slug.outputs.slug }}
+          DEST: ${{ vars.WEB_DEPLOY_SSH }}
+          PORT: ${{ vars.WEB_DEPLOY_PORT }}
+          ROOT: ${{ vars.WEB_DEPLOY_ROOT }}
+        run: |
+          if [ -z "$SLUG" ] || [[ ! "$SLUG" =~ ^[a-z0-9-]+$ ]]; then
+            echo "Refusing to delete with unsafe slug: '$SLUG'" >&2
+            exit 1
+          fi
+          # Same check as the deploy-website action: an empty root would aim
+          # the rm -rf below at the remote filesystem root.
+          if [ -z "$DEST" ] || [ -z "$PORT" ] || [[ ! "$ROOT" =~ ^/[^/].* ]]; then
+            echo "::error::vars.WEB_DEPLOY_SSH, vars.WEB_DEPLOY_PORT and vars.WEB_DEPLOY_ROOT (an absolute path, not /) must be set"
+            exit 1
+          fi
+          staging="${ROOT%/}/staging"
+          # Server block first: while it is gone the include is merely unused,
+          # whereas the reverse order leaves a window where nginx -t fails.
+          ssh -i ~/.ssh/deploy_key -p "$PORT" -o StrictHostKeyChecking=no \
+              "$DEST" \
+              "rm -f -- '$staging/config/site-$SLUG.conf' && \
+               rm -f -- '$staging/config/locations-$SLUG.include' && \
+               rm -rf -- '$staging/sites/$SLUG'"
+
+      - name: Update PR comment
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: staging-website
+          message: |
+            🧹 Staging website for this PR has been removed.
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

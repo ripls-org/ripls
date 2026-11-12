@@ -1,0 +1,562 @@
+# Crashlytics - Stack trace
+# Application: org.ripls.app
+# Platform: apple
+# Version: 0.1.4 (3274)
+# Issue: b432cc2713d0e96d59c48aa28f2ce00a
+# Session: 25571a071d9249fe8354cf992c984736_DNE_0_v2
+# Date: Wed Jan 28 2026 20:27:22 GMT-0700 (Mountain Standard Time)
+
+Fatal Exception: FlutterError
+0  ???                            0x0 Ref._throwIfInvalidUsage + 220 (ref.dart:220)
+1  ???                            0x0 AnyNotifier.state + 82 (notifier_provider.dart:82)
+2  ???                            0x0 GearNotifier.loadGearDetails + 185 (gear_view_model.dart:185)
+
+Crashed: com.apple.main-thread
+0  FirebaseCrashlytics            0x1d140 FIRCLSProcessRecordAllThreads + 392 (FIRCLSProcess.c:392)
+1  FirebaseCrashlytics            0x1d54c FIRCLSProcessRecordAllThreads + 423 (FIRCLSProcess.c:423)
+2  FirebaseCrashlytics            0x14dac FIRCLSHandler + 39 (FIRCLSHandler.m:39)
+3  FirebaseCrashlytics            0xf040 FIRCLSExceptionRecordOnDemand + 360 (FIRCLSException.mm:360)
+4  FirebaseCrashlytics            0xea68 FIRCLSExceptionRecordOnDemandModel + 99 (FIRCLSException.mm:99)
+5  FirebaseCrashlytics            0x1c91c -[FIRCLSOnDemandModel recordOnDemandExceptionWithModel:] + 182 (FIRCLSOnDemandModel.m:182)
+6  FirebaseCrashlytics            0x1c354 -[FIRCLSOnDemandModel recordOnDemandExceptionIfQuota:withDataCollectionEnabled:usingExistingReportManager:] + 104 (FIRCLSOnDemandModel.m:104)
+7  FirebaseCrashlytics            0x2af28 -[FIRCrashlytics recordOnDemandExceptionModel:] + 425 (FIRCrashlytics.m:425)
+8  Runner                         0x161fd8 -[FLTFirebaseCrashlyticsPlugin recordError:withMethodCallResult:] + 170 (FLTFirebaseCrashlyticsPlugin.m:170)
+9  Runner                         0x161850 -[FLTFirebaseCrashlyticsPlugin handleMethodCall:result:] + 89 (FLTFirebaseCrashlyticsPlugin.m:89)
+10 Flutter                        0x4e9bb8 __45-[FlutterMethodChannel setMethodCallHandler:]_block_invoke + 322 (FlutterChannels.mm:322)
+11 Flutter                        0x75928 invocation function for block in flutter::PlatformMessageHandlerIos::HandlePlatformMessage(std::_fl::unique_ptr<flutter::PlatformMessage, std::_fl::default_delete<flutter::PlatformMessage>>) + 111 (ref_ptr.h:111)
+12 libdispatch.dylib              0x1adc _dispatch_call_block_and_release + 32
+13 libdispatch.dylib              0x1b7fc _dispatch_client_callout + 16
+14 libdispatch.dylib              0x38b10 _dispatch_main_queue_drain.cold.5 + 812
+15 libdispatch.dylib              0x10ec8 _dispatch_main_queue_drain + 180
+16 libdispatch.dylib              0x10e04 _dispatch_main_queue_callback_4CF + 44
+17 CoreFoundation                 0x6a2b4 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__ + 16
+18 CoreFoundation                 0x1db3c __CFRunLoopRun + 1944
+19 CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+20 GraphicsServices               0x1498 GSEventRunModal + 120
+21 UIKitCore                      0x9ddf8 -[UIApplication _run] + 792
+22 UIKitCore                      0x46e54 UIApplicationMain + 336
+23 UIKitCore                      0x172820 -[UIScrollView contentInset] + 588
+24 Runner                         0x4840 main + 4337928256 (AppDelegate.swift:4337928256)
+25 ???                            0x19a6c6e28 (Missing)
+
+Thread
+0  libsystem_kernel.dylib         0xa80 __workq_kernreturn + 8
+1  libsystem_pthread.dylib        0x1404 _pthread_wqthread + 368
+2  libsystem_pthread.dylib        0x8c0 start_wqthread + 8
+
+Thread
+0  libsystem_kernel.dylib         0xa80 __workq_kernreturn + 8
+1  libsystem_pthread.dylib        0x1404 _pthread_wqthread + 368
+2  libsystem_pthread.dylib        0x8c0 start_wqthread + 8
+
+com.apple.uikit.eventfetch-thread
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  CoreFoundation                 0x46868 __CFRunLoopServiceMachPort + 160
+5  CoreFoundation                 0x1d848 __CFRunLoopRun + 1188
+6  CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+7  Foundation                     0x9c9068 -[NSRunLoop(NSRunLoop) runMode:beforeDate:] + 212
+8  Foundation                     0x9c9240 -[NSRunLoop(NSRunLoop) runUntilDate:] + 64
+9  UIKitCore                      0x73094 -[UIEventFetcher threadMain] + 408
+10 Foundation                     0x6221c __NSThread__start__ + 732
+11 libsystem_pthread.dylib        0x444c _pthread_start + 136
+12 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.flutter.1.raster
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  CoreFoundation                 0x46868 __CFRunLoopServiceMachPort + 160
+5  CoreFoundation                 0x1d848 __CFRunLoopRun + 1188
+6  CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+7  Flutter                        0xa1f2c fml::MessageLoopDarwin::Run() + 52 (message_loop_darwin.mm:52)
+8  Flutter                        0xa1580 std::_fl::__function::__func<fml::Thread::Thread(std::_fl::function<void (fml::Thread::ThreadConfig const&)> const&, fml::Thread::ThreadConfig const&)::$_0, std::_fl::allocator<fml::Thread::Thread(std::_fl::function<void (fml::Thread::ThreadConfig const&)> const&, fml::Thread::ThreadConfig const&)::$_0>, void ()>::operator()() + 94 (message_loop_impl.cc:94)
+9  Flutter                        0xa128c fml::ThreadHandle::ThreadHandle(std::_fl::function<void ()>&&)::$_0::__invoke(void*) + 403 (function.h:403)
+10 libsystem_pthread.dylib        0x444c _pthread_start + 136
+11 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.flutter.1.io
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  CoreFoundation                 0x46868 __CFRunLoopServiceMachPort + 160
+5  CoreFoundation                 0x1d848 __CFRunLoopRun + 1188
+6  CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+7  Flutter                        0xa1f2c fml::MessageLoopDarwin::Run() + 52 (message_loop_darwin.mm:52)
+8  Flutter                        0xa1580 std::_fl::__function::__func<fml::Thread::Thread(std::_fl::function<void (fml::Thread::ThreadConfig const&)> const&, fml::Thread::ThreadConfig const&)::$_0, std::_fl::allocator<fml::Thread::Thread(std::_fl::function<void (fml::Thread::ThreadConfig const&)> const&, fml::Thread::ThreadConfig const&)::$_0>, void ()>::operator()() + 94 (message_loop_impl.cc:94)
+9  Flutter                        0xa128c fml::ThreadHandle::ThreadHandle(std::_fl::function<void ()>&&)::$_0::__invoke(void*) + 403 (function.h:403)
+10 libsystem_pthread.dylib        0x444c _pthread_start + 136
+11 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.worker.1
+0  Flutter                        0x619758 ycc_rgb_convert + 60 (jdcolext.c:60)
+1  Flutter                        0x621508 sep_upsample + 104 (jdsample.c:104)
+2  Flutter                        0x61da38 process_data_context_main + 377 (jdmainct.c:377)
+3  Flutter                        0x616f48 jpeg_read_scanlines + 283 (jdapistd.c:283)
+4  Flutter                        0x2621cc SkJpegCodec::readRows(SkImageInfo const&, void*, unsigned long, int, SkCodec::Options const&, int*) + 442 (SkJpegCodec.cpp:442)
+5  Flutter                        0x260edc SkJpegCodec::onGetPixels(SkImageInfo const&, void*, unsigned long, SkCodec::Options const&, int*) + 561 (SkJpegCodec.cpp:561)
+6  Flutter                        0x1bda38 SkCodec::getPixels(SkImageInfo const&, void*, unsigned long, SkCodec::Options const*) + 519 (SkCodec.cpp:519)
+7  Flutter                        0x47e62c flutter::BuiltinSkiaCodecImageGenerator::GetPixels(SkImageInfo const&, void*, unsigned long, unsigned int, std::_fl::optional<unsigned int>) + 180 (image_generator.cc:180)
+8  Flutter                        0x490304 std::_fl::__function::__func<flutter::ImageDecoderImpeller::Decode(fml::RefPtr<flutter::ImageDescriptor>, unsigned int, unsigned int, std::_fl::function<void (sk_sp<flutter::DlImage>, std::_fl::basic_string<char, std::_fl::char_traits<char>, std::_fl::allocator<char>>)> const&)::$_1, std::_fl::allocator<flutter::ImageDecoderImpeller::Decode(fml::RefPtr<flutter::ImageDescriptor>, unsigned int, unsigned int, std::_fl::function<void (sk_sp<flutter::DlImage>, std::_fl::basic_string<char, std::_fl::char_traits<char>, std::_fl::allocator<char>>)> const&)::$_1>, void ()>::operator()() + 207 (image_decoder_impeller.cc:207)
+9  Flutter                        0xa1e08 fml::ConcurrentMessageLoopDarwin::ExecuteTask(std::_fl::function<void ()> const&) + 18 (concurrent_message_loop_factory.mm:18)
+10 Flutter                        0x9b260 void* std::_fl::__thread_proxy[abi:nn210000]<std::_fl::tuple<std::_fl::unique_ptr<std::_fl::__thread_struct, std::_fl::default_delete<std::_fl::__thread_struct>>, fml::ConcurrentMessageLoop::ConcurrentMessageLoop(unsigned long)::$_0>>(void*) + 101 (concurrent_message_loop.cc:101)
+11 libsystem_pthread.dylib        0x444c _pthread_start + 136
+12 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.worker.2
+0  Flutter                        0x621738 h2v2_fancy_upsample + 351 (jdsample.c:351)
+1  Flutter                        0x6214a8 sep_upsample + 73 (jdsample.c:73)
+2  Flutter                        0x61da38 process_data_context_main + 377 (jdmainct.c:377)
+3  Flutter                        0x616f48 jpeg_read_scanlines + 283 (jdapistd.c:283)
+4  Flutter                        0x2621cc SkJpegCodec::readRows(SkImageInfo const&, void*, unsigned long, int, SkCodec::Options const&, int*) + 442 (SkJpegCodec.cpp:442)
+5  Flutter                        0x260edc SkJpegCodec::onGetPixels(SkImageInfo const&, void*, unsigned long, SkCodec::Options const&, int*) + 561 (SkJpegCodec.cpp:561)
+6  Flutter                        0x1bda38 SkCodec::getPixels(SkImageInfo const&, void*, unsigned long, SkCodec::Options const*) + 519 (SkCodec.cpp:519)
+7  Flutter                        0x47e62c flutter::BuiltinSkiaCodecImageGenerator::GetPixels(SkImageInfo const&, void*, unsigned long, unsigned int, std::_fl::optional<unsigned int>) + 180 (image_generator.cc:180)
+8  Flutter                        0x490304 std::_fl::__function::__func<flutter::ImageDecoderImpeller::Decode(fml::RefPtr<flutter::ImageDescriptor>, unsigned int, unsigned int, std::_fl::function<void (sk_sp<flutter::DlImage>, std::_fl::basic_string<char, std::_fl::char_traits<char>, std::_fl::allocator<char>>)> const&)::$_1, std::_fl::allocator<flutter::ImageDecoderImpeller::Decode(fml::RefPtr<flutter::ImageDescriptor>, unsigned int, unsigned int, std::_fl::function<void (sk_sp<flutter::DlImage>, std::_fl::basic_string<char, std::_fl::char_traits<char>, std::_fl::allocator<char>>)> const&)::$_1>, void ()>::operator()() + 207 (image_decoder_impeller.cc:207)
+9  Flutter                        0xa1e08 fml::ConcurrentMessageLoopDarwin::ExecuteTask(std::_fl::function<void ()> const&) + 18 (concurrent_message_loop_factory.mm:18)
+10 Flutter                        0x9b260 void* std::_fl::__thread_proxy[abi:nn210000]<std::_fl::tuple<std::_fl::unique_ptr<std::_fl::__thread_struct, std::_fl::default_delete<std::_fl::__thread_struct>>, fml::ConcurrentMessageLoop::ConcurrentMessageLoop(unsigned long)::$_0>>(void*) + 101 (concurrent_message_loop.cc:101)
+11 libsystem_pthread.dylib        0x444c _pthread_start + 136
+12 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+io.worker.3
+0  Flutter                        0x61c4e8 decode_mcu + 699 (jdhuff.c:699)
+1  Flutter                        0x61cee4 decompress_onepass + 106 (jdcoefct.c:106)
+2  Flutter                        0x61d8c0 process_data_context_main + 337 (jdmainct.c:337)
+3  Flutter                        0x616f48 jpeg_read_scanlines + 283 (jdapistd.c:283)
+4  Flutter                        0x2621cc SkJpegCodec::readRows(SkImageInfo const&, void*, unsigned long, int, SkCodec::Options const&, int*) + 442 (SkJpegCodec.cpp:442)
+5  Flutter                        0x260edc SkJpegCodec::onGetPixels(SkImageInfo const&, void*, unsigned long, SkCodec::Options const&, int*) + 561 (SkJpegCodec.cpp:561)
+6  Flutter                        0x1bda38 SkCodec::getPixels(SkImageInfo const&, void*, unsigned long, SkCodec::Options const*) + 519 (SkCodec.cpp:519)
+7  Flutter                        0x47e62c flutter::BuiltinSkiaCodecImageGenerator::GetPixels(SkImageInfo const&, void*, unsigned long, unsigned int, std::_fl::optional<unsigned int>) + 180 (image_generator.cc:180)
+8  Flutter                        0x490304 std::_fl::__function::__func<flutter::ImageDecoderImpeller::Decode(fml::RefPtr<flutter::ImageDescriptor>, unsigned int, unsigned int, std::_fl::function<void (sk_sp<flutter::DlImage>, std::_fl::basic_string<char, std::_fl::char_traits<char>, std::_fl::allocator<char>>)> const&)::$_1, std::_fl::allocator<flutter::ImageDecoderImpeller::Decode(fml::RefPtr<flutter::ImageDescriptor>, unsigned int, unsigned int, std::_fl::function<void (sk_sp<flutter::DlImage>, std::_fl::basic_string<char, std::_fl::char_traits<char>, std::_fl::allocator<char>>)> const&)::$_1>, void ()>::operator()() + 207 (image_decoder_impeller.cc:207)
+9  Flutter                        0xa1e08 fml::ConcurrentMessageLoopDarwin::ExecuteTask(std::_fl::function<void ()> const&) + 18 (concurrent_message_loop_factory.mm:18)
+10 Flutter                        0x9b260 void* std::_fl::__thread_proxy[abi:nn210000]<std::_fl::tuple<std::_fl::unique_ptr<std::_fl::__thread_struct, std::_fl::default_delete<std::_fl::__thread_struct>>, fml::ConcurrentMessageLoop::ConcurrentMessageLoop(unsigned long)::$_0>>(void*) + 101 (concurrent_message_loop.cc:101)
+11 libsystem_pthread.dylib        0x444c _pthread_start + 136
+12 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+dart:io EventHandler
+0  libsystem_kernel.dylib         0x78d0 kevent + 8
+1  Flutter                        0x49aca4 dart::bin::EventHandlerImplementation::EventHandlerEntry(unsigned long) + 459 (eventhandler_macos.cc:459)
+2  Flutter                        0x4c6e20 dart::bin::ThreadStart(void*) + 65 (thread_macos.cc:65)
+3  libsystem_pthread.dylib        0x444c _pthread_start + 136
+4  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.google.firebase.crashlytics.MachExceptionServer
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  FirebaseCrashlytics            0x175a4 FIRCLSMachExceptionServer + 196 (FIRCLSMachException.c:196)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.MB Coalescer
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.MB HTTPRequests
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.location.sharedRunloop
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  CoreFoundation                 0x46868 __CFRunLoopServiceMachPort + 160
+5  CoreFoundation                 0x1d848 __CFRunLoopRun + 1188
+6  CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+7  CoreFoundation                 0x9a7c8 CFRunLoopRun + 64
+8  MapboxCommon                   0x2796e4 mapbox::bindgen::mapbox::common::location::LocationServiceObserver::onAccuracyAuthorizationChanged(mapbox::common::location::AccuracyAuthorization) + 21472
+9  Foundation                     0x6221c __NSThread__start__ + 732
+10 libsystem_pthread.dylib        0x444c _pthread_start + 136
+11 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.apple.NSURLConnectionLoader
+0  libsystem_kernel.dylib         0xcd4 mach_msg2_trap + 8
+1  libsystem_kernel.dylib         0x42f8 mach_msg2_internal + 76
+2  libsystem_kernel.dylib         0x4214 mach_msg_overwrite + 428
+3  libsystem_kernel.dylib         0x405c mach_msg + 24
+4  CoreFoundation                 0x46868 __CFRunLoopServiceMachPort + 160
+5  CoreFoundation                 0x1d848 __CFRunLoopRun + 1188
+6  CoreFoundation                 0x1ca6c _CFRunLoopRunSpecificWithOptions + 532
+7  CFNetwork                      0x248d20 +[__CFN_CoreSchedulingSetRunnable _run:] + 416
+8  Foundation                     0x6221c __NSThread__start__ + 732
+9  libsystem_pthread.dylib        0x444c _pthread_start + 136
+10 libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.MB TileStore
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x2279c std::__1::condition_variable::__do_timed_wait(std::__1::unique_lock<std::__1::mutex>&, std::__1::chrono::time_point<std::__1::chrono::system_clock, std::__1::chrono::duration<long long, std::__1::ratio<1l, 1000000000l>>>) + 104
+3  MapboxCommon                   0x1ea2a8 mapbox::common::SystemInformationProvider::getSystemInformation() + 12012
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.AssetFS
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.TileStoreFS
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.LocalFS
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.OnlineFS
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x2279c std::__1::condition_variable::__do_timed_wait(std::__1::unique_lock<std::__1::mutex>&, std::__1::chrono::time_point<std::__1::chrono::system_clock, std::__1::chrono::duration<long long, std::__1::ratio<1l, 1000000000l>>>) + 104
+3  MapboxCommon                   0x1ea2a8 mapbox::common::SystemInformationProvider::getSystemInformation() + 12012
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+com.mapbox.common.ResourceLoader
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b58 _pthread_cond_wait + 984
+2  libc++.1.dylib                 0x22704 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3  MapboxCommon                   0x1ea270 mapbox::common::SystemInformationProvider::getSystemInformation() + 11956
+4  libsystem_pthread.dylib        0x444c _pthread_start + 136
+5  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+Thread
+0  libsystem_kernel.dylib         0xa80 __workq_kernreturn + 8
+1  libsystem_pthread.dylib        0x1404 _pthread_wqthread + 368
+2  libsystem_pthread.dylib        0x8c0 start_wqthread + 8
+
+Thread
+0  libsystem_kernel.dylib         0xa80 __workq_kernreturn + 8
+1  libsystem_pthread.dylib        0x1404 _pthread_wqthread + 368
+2  libsystem_pthread.dylib        0x8c0 start_wqthread + 8
+
+Thread
+0  libsystem_kernel.dylib         0xa80 __workq_kernreturn + 8
+1  libsystem_pthread.dylib        0x1404 _pthread_wqthread + 368
+2  libsystem_pthread.dylib        0x8c0 start_wqthread + 8
+
+Thread
+0  libsystem_kernel.dylib         0xa80 __workq_kernreturn + 8
+1  libsystem_pthread.dylib        0x1404 _pthread_wqthread + 368
+2  libsystem_pthread.dylib        0x8c0 start_wqthread + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8
+
+DartWorker
+0  libsystem_kernel.dylib         0x65d4 __psynch_cvwait + 8
+1  libsystem_pthread.dylib        0x2b84 _pthread_cond_wait + 1028
+2  Flutter                        0x50c0c0 dart::ConditionVariable::WaitMicros(dart::Mutex*, long long) + 149 (synchronization_posix.cc:149)
+3  Flutter                        0x5cea6c dart::ThreadPool::Worker::Main(unsigned long) + 112 (intrusive_dlist.h:112)
+4  Flutter                        0x5aec3c dart::ThreadStart(void*) + 94 (os_thread_macos.cc:94)
+5  libsystem_pthread.dylib        0x444c _pthread_start + 136
+6  libsystem_pthread.dylib        0x8cc thread_start + 8

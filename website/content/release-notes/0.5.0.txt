@@ -1,0 +1,44 @@
+Ripls 0.5.0 Release Notes
+
+
+New Features
+
+Daily Screen
+
+The inbox has been replaced with a new Daily screen that gives you a snapshot of your community activity at a glance. At the top, weekly metrics show your personal sharing impact – items shared, people helped, and time contributed. Below that, today’s activity is organized into what you’ve done, what needs your attention, and what’s coming up in the next few days. Other community members’ recent activity appears in a browsable magazine-style carousel. (#769, #770)
+
+Chat-Based Workflows
+
+Experiences and requests now center around chat instead of separate workflow modals. Actions like voting on times, confirming attendance, or offering to help happen directly in the conversation. A status indicator in the chat input area shows the current state and lets you take the next action without leaving the conversation. Offering gear to lend in response to a request slides the item in for easy one-tap borrowing. (#761, #767)
+
+Social Impact Metrics
+
+A new “rich minutes” metric captures the social value of sharing – the quality time spent helping others and participating in community events. This appears as a fourth hero metric on the community impact screen and on individual item metrics. Values are estimated from actual activity data (event duration, group size, number of helpers) and refined by AI. (#759)
+
+Community Activity Simulator
+
+A new simulation framework can populate communities with realistic activity for demos and load testing. Simulations include personas with distinct behavior patterns, realistic locations and venue data, chat conversations, media uploads, and multi-week activity timelines. Results are captured in an HTML report. (#760, #762)
+
+Improvements
+
+- Redesigned content views: Gear, experience, and request screens now feature a unified action bar at the bottom grouping people, chat, and actions. Location, time, and URL are displayed as formal chips for clarity. (#758)
+
+- Updated item metrics: The item impact screen now matches the community metrics design with hero metrics at the top and tappable drill-down into per-action savings. (#756, fixes #753)
+
+- Feedback moved: The feedback link is now in the add modal, making it more discoverable. (#766)
+
+- Unread message badge: Content views now show an unread message indicator so you know when there are new messages without navigating away. (#770)
+
+- Localized time display: Times are now displayed in your local timezone throughout the app. (#770)
+
+Bug Fixes
+
+- iOS keyboard no longer covers buttons: A “Done” toolbar now appears above the iOS keyboard, and tapping outside a text field dismisses it. Applied consistently across all input screens. (#754, fixes #751)
+
+- Screen transition flash fixed: Eliminated the brief black flash that appeared when navigating back from some screens. All slide-in screens now use a consistent overlay approach. (#755, fixes #752)
+
+Performance
+
+- 68% fewer database queries: Profiling identified and eliminated N+1 query patterns across the top API endpoints. ListCommunityGear dropped from 217 to 8 queries per call, GetFeed from 96 to 17, and GetCommunityImpactMetrics from 139 to 18. Overall server response times improved significantly. (#765, #768)
+
+- Storage layer modernized: New batch APIs (GetByIDs, QueryByFieldIn, InsertBatch) and generic type-safe wrappers replace per-item query loops throughout the codebase. (#765, #768)

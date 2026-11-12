@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.33.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.33.0">Release 0.33.0</h1>
+            <p class="release-date">October 23, 2026</p>
+<p>Sharing an item with someone on Ripls now actually tells them, and
+the shared “That’s everything” card finally loads its image for
+everyone. Prod completes its move to self-hosted hardware, and the
+project’s agent tooling is ported to a new dispatch bridge ahead of
+going public.</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Notifications When an Item Is Shared With You</strong>:
+Sharing an item with someone already on Ripls used to add them to the
+item’s community and tell them nothing: no push, no text, no email.
+Recipients now get a notification naming who shared what, with copy that
+distinguishes an item to borrow or claim, an event, and a request for
+help (English and Spanish). Only the people a share newly adds are
+notified, so widening an item’s audience never re-notifies existing
+members, and the recipient’s community list, portfolio, and feed refresh
+immediately so the item appears without a manual refresh (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3106">#3106</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3109">#3109</a>)</p></li>
+<li><p><strong>Prod Runs on Self-Hosted Infrastructure</strong>:
+Production was cut over from Cloud Run and Cloud SQL to the self-hosted
+mimir stack (freeze to flip took 23 seconds with an identical data
+copy). <code>server.ripls.org</code> and <code>ripls.app</code> now
+point at mimir, monitoring reads the mimir stack’s logs and probes the
+public health endpoint, and a new <code>Server Logs Absent</code> alert
+covers missing log shipping (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3078">#3078</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3102">#3102</a>)</p></li>
+<li><p><strong>New ripls.org Home Page</strong>: The website’s front
+door is rewritten for the Ripls Foundation, leading with mission,
+principles, and story. Each branch preview on staging now gets its own
+nginx routing, so previews no longer overwrite each other’s root page
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2895">#2895</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2898">#2898</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3114">#3114</a>)</p></li>
+<li><p><strong>Open-Source Readiness for Contributors</strong>: Every
+agent and Renovate workflow now refuses fork PRs, self-hosted runners
+register at the org level, and the agent workflows
+(<code>claude_*</code>, release cut) are ported to a new agent bridge
+with a <code>@claude-bridge</code> trigger, retiring the personal access
+token they previously needed. The export harness and governance files
+completed (#2966, #2967) are now closed out (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3172">#3172</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3174">#3174</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3175">#3175</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3185">#3185</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3190">#3190</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Shared Nudge Images Load for Everyone</strong>: The
+shared “That’s everything” card’s stock image was owned by whichever
+user’s feed load created it, so every other viewer got a permission
+error and a broken image. Stock imagery is now owned by the system user
+and readable by all. Existing broken cards are replaced at the next
+daily rollover (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3105">#3105</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3108">#3108</a>)</p></li>
+<li><p><strong>Story Community Index Created</strong>: The
+<code>idx_story_community</code> index targeted <code>"story"</code>
+instead of <code>"Story"</code> and silently failed on every boot, so
+community story lookups were always sequential scans. The statement is
+fixed and a test now asserts every schema index exists after
+initialization (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3088">#3088</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3107">#3107</a>)</p></li>
+<li><p><strong>False “Database Pool Saturation” Alerts</strong>: Pool
+utilization was measured against the connections currently open rather
+than the pool’s limit, so a single query on an idle server read as 100%.
+It is now measured against the configured maximum (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3103">#3103</a>)</p></li>
+<li><p><strong>Docker Build Check Fetches the Real Model</strong>: The
+Docker build check now fetches Git LFS files, so the image contains the
+actual embedding model rather than an LFS pointer (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3153">#3153</a>)</p></li>
+<li><p><strong>Flaky Auto-Fulfill Test</strong>: The request hand-off
+test now waits for the fulfillment event instead of racing it (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3113">#3113</a>)</p></li>
+</ul>
+<h2 id="maintenance">Maintenance</h2>
+<ul>
+<li>Routine dependency updates: Flutter 3.47.7, Go 1.27.2, Buf 1.74.0,
+Playwright 1.64.1, ESLint 10.13.0, typescript-eslint 8.71.2, Gradle
+9.8.0, Kotlin Android plugin 2.4.21, Android Gradle plugin 9.4.1,
+golangci-lint 2.14.0, gofumpt 0.12.0, Terraform Cloudflare provider
+5.26.0, and Go module updates.</li>
+<li>Documentation: anyone who verifies a doc against its code may now
+advance its freshness stamp (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3112">#3112</a>).</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.32.0.html">0.32.0</a> &mdash; September
+19, 2026</li>
+                <li><a href="0.31.0.html">0.31.0</a> &mdash; August 16,
+2026</li>
+                <li><a href="0.30.1.html">0.30.1</a> &mdash; August 16,
+2026</li>
+                <li><a href="0.30.0.html">0.30.0</a> &mdash; August 15,
+2026</li>
+                <li><a href="0.29.3.html">0.29.3</a> &mdash; August 13,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

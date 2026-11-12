@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.9.1 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.9.1">Release 0.9.1</h1>
+            <p class="release-date">April 2, 2026</p>
+<p>A focused patch release with UX improvements to requests and loans,
+plus cleanup from the 0.9.0 launch.</p>
+<h2 id="ux-improvements">UX Improvements</h2>
+<ul>
+<li><strong>Streamlined Request Fulfillment</strong>: Removed the
+two-phase summary modal when marking a request fulfilled — owners now go
+directly to the impact metrics screen. The server already sends a
+FULFILLED system message, making the client-side summary redundant (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/992">#992</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1001">#1001</a>)</li>
+<li><strong>Withdraw Offer from Requests</strong>: Helpers can now
+withdraw their offer directly from the request pill menu, without
+needing to navigate into the conversation (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/991">#991</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/997">#997</a>)</li>
+<li><strong>Pickup Modal Text Fix</strong>: The arrange pickup modal now
+correctly shows owner-perspective duration text (e.g., “How long do you
+want to lend it?”) instead of borrower-perspective text (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/988">#988</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/998">#998</a>)</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li>Fixed redundant success toast when withdrawing an offer from a
+request (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/997">#997</a>)</li>
+<li>Fixed <code>markFulfilled</code> call in request management card not
+passing the correct arguments (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1001">#1001</a>)</li>
+</ul>
+<h2 id="infrastructure">Infrastructure</h2>
+<ul>
+<li>Removed conversation topic migration job that had already run in
+production (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/996">#996</a>)</li>
+<li>Downgraded feed “not found in batch” logs from Error to Warn for
+soft-deleted items — expected behavior, not a system error (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/995">#995</a>)</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.9.0.html">0.9.0</a> &mdash; April 1,
+2026</li>
+                <li><a href="0.8.0.html">0.8.0</a> &mdash; March 20,
+2026</li>
+                <li><a href="0.7.0.html">0.7.0</a> &mdash; March 16,
+2026</li>
+                <li><a href="0.6.0.html">0.6.0</a> &mdash; March 7,
+2026</li>
+                <li><a href="0.5.0.html">0.5.0</a> &mdash; February 28,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

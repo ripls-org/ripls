@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event: Mother's Day Brunch</title>
+<link rel="canonical" href="https://ripls.org/walkthroughs/brunch/">
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="/css/gen/tokens.gen.css">
+<link rel="stylesheet" href="tokens.gen.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--light-background);
+    color: var(--light-text-primary);
+    font-family: var(--font-sans);
+  }
+  h1, h2, .brand { font-family: var(--font-serif); }
+  .hero { max-width: 720px; margin: 0 auto; padding: 4rem 1.5rem 1.5rem; text-align: center; }
+  .hero .brand { font-size: 1.2rem; color: var(--light-accent); letter-spacing: 0.04em; }
+  .hero .brand a { color: inherit; text-decoration: none; }
+  .hero h1 { font-weight: 600; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.2; margin-top: 1rem; }
+  .scene { padding: 3.5rem 1.5rem; }
+  .scene.alt { background: var(--light-surface); }
+  .scene-inner { max-width: 980px; margin: 0 auto; display: flex; gap: 3rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .scene.alt .scene-inner { flex-direction: row-reverse; }
+  .scene-copy { flex: 1 1 340px; max-width: 480px; }
+  .scene-copy h2 { font-weight: 600; font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.2; }
+  .scene-copy .actor { font-size: 0.9rem; color: var(--light-text-faint); margin: 0.4rem 0 1rem; }
+  .scene-copy p { font-weight: 300; line-height: 1.7; color: var(--light-text-secondary); margin-bottom: 0.9rem; }
+  .scene-copy strong { color: var(--light-text-primary); font-weight: 600; }
+  .scene-phone { flex: 0 0 auto; }
+  /* The bezel is a wrapper so the border never eats into the video's box —
+     border-on-the-video shrinks its content box and letterboxes the clip.
+     #00000048 = pure black + alpha, the one raw form lint:web:colors allows. */
+  .phone-frame {
+    width: min(300px, 80vw);
+    border-radius: 28px; border: 6px solid var(--dark-background); overflow: hidden;
+    box-shadow: 0 24px 60px #00000048; background: var(--dark-background);
+  }
+  .phone-frame video { width: 100%; height: auto; display: block; }
+  .missing { color: var(--light-text-faint); font-style: italic; }
+  .index-list { max-width: 760px; margin: 2.5rem auto 0; padding: 0 1.5rem; list-style: none; display: grid; gap: 2rem; text-align: left; }
+  .index-row { display: grid; grid-template-columns: 92px 1fr; gap: 1.25rem; align-items: start; }
+  .index-text a { font-family: var(--font-serif); font-size: clamp(1.2rem, 2vw, 1.5rem); color: var(--light-text-primary); text-decoration: none; border-bottom: 1px solid var(--light-border); }
+  .index-text a:hover { color: var(--light-accent); border-bottom-color: var(--light-accent); }
+  .index-list .desc { display: block; font-weight: 300; font-size: 0.95rem; line-height: 1.55; color: var(--light-text-secondary); margin-top: 0.35rem; }
+  /* Phone-shaped teaser, matching the scene frames on the reel pages. */
+  .index-teaser {
+    display: block; width: 92px; aspect-ratio: 780 / 1688; border: 0;
+    border-radius: 12px; overflow: hidden; background: var(--dark-background);
+    box-shadow: 0 8px 22px #00000026;
+  }
+  .index-teaser video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (max-width: 520px) {
+    .index-row { grid-template-columns: 68px 1fr; gap: 1rem; }
+    .index-teaser { width: 68px; }
+  }
+  footer { padding: 3rem 1.5rem 4rem; text-align: center; color: var(--light-text-faint); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <p class="brand"><a href="/walkthroughs/">ripls</a></p>
+  <h1>Event: Mother's Day Brunch</h1>
+</header>
+
+  <section class="scene">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Start with a sentence</h2>
+        <p class="actor">Leslie, the host</p>
+        <p>Leslie types one sentence, the way she'd text a friend. Ripls picks out the date and time, and reads "our place" as her home address. She adds a photo, saves, and shares it three ways: a link for a text thread, two friends invited by name, and her family circle added as a group.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-01-01-create-and-share.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene alt">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Join from a text</h2>
+        <p class="actor">Susan, an invitee</p>
+        <p>Susan opens the link from a text and lands on the event itself — the photo, the time, the place, and who's already coming. She confirms with her phone number and a six-digit code. <strong>There's nothing to install and no password to pick.</strong></p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-02-02-join-by-phone.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Plan in context</h2>
+        <p class="actor">Leslie, the host</p>
+        <p>Leslie is notified as RSVPs come in. She lists what the day still needs — brunch dishes, dessert, craft supplies — <strong>on the event itself</strong>, next to the list of who's coming, so every guest sees it without her repeating it in a group text.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-03-03-plan-the-day.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene alt">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Build momentum</h2>
+        <p class="actor">Leslie, the host</p>
+        <p>Each event has <strong>its own thread, with the people who are coming</strong>. Leslie floats her crown idea there rather than in the family group text, and the replies come back in the same place, without reaching anyone who isn't involved.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-04-04-rally-the-crew.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Claim what you'll bring</h2>
+        <p class="actor">Lisa, an invitee</p>
+        <p>Lisa taps "Brunch dishes" and adds a note about what the kids are making. <strong>The list updates for everyone</strong>: dishes are covered, dessert is still open. Nobody has to ask who's bringing what.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-05-05-friends-pitch-in.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene alt">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Watch the day happen</h2>
+        <p class="actor">Bryan, at the brunch</p>
+        <p>Photos land in the event thread straight from the kitchen — kids in aprons, the cake, the crowns in action. <strong>They collect where the day was planned</strong> rather than scattering across everyone's camera rolls.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-06-06-photos-from-the-day.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Wrap up</h2>
+        <p class="actor">Leslie, the host</p>
+        <p>Afterward, Leslie wraps the brunch up. Everyone who said yes is ticked already, so confirming who came is a glance rather than a form, and Ripls totals the time the family spent together — <strong>about four hours</strong>. The photos, the plan and the thread all stay on the event.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-07-07-wrap-up.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+<footer>Filmed in the live product by the Ripls walkthrough pipeline (#2684) — every clip is the real app.</footer>
+</body>
+</html>

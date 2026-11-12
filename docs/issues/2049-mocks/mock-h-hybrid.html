@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mock H — Hybrid (visual-language tuned)</title>
+<link rel="stylesheet" href="../../../website/content/css/tokens.css">
+<style>
+  /*
+   * Iteration 3 — restores the compact layout from iteration 1
+   * (full-bleed hero with title overlay → meta-pill → host row →
+   * attendee cluster → sticky 3-CTA bar), but applies the
+   * Ripls app's visual language: sage pill CTAs, backdrop-blurred
+   * sticky bar, thinner subtle dividers, app typography. Theme
+   * follows OS preference (light cream / dark warm-brown), so dark
+   * mode matches the app's experience screen exactly.
+   */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    color: var(--color-text-primary);
+    background: var(--color-background);
+    padding-bottom: 100px;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .label { font-size: var(--font-size-meta); color: var(--color-text-tertiary);
+           text-align: center; padding: var(--space-3); font-style: italic; }
+
+  /* Hero — full-bleed, long soft fade into body. Gradient kicks in
+     well below the title so the photo stays visible; title legibility
+     comes from text-shadow rather than a heavy scrim. */
+  .hero {
+    position: relative;
+    height: 56vh;
+    min-height: 420px;
+    overflow: hidden;
+  }
+  .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 65%,
+      rgba(0, 0, 0, 0.18) 80%,
+      rgba(0, 0, 0, 0.45) 92%,
+      var(--color-background) 100%
+    );
+  }
+  .hero-inner {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: var(--space-5) var(--space-5) var(--space-4);
+    z-index: 2;
+    color: #FDFAF7;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  }
+  .kicker {
+    text-transform: uppercase; letter-spacing: 0.16em;
+    font-size: var(--font-size-micro); font-weight: 600;
+    color: rgba(253, 250, 247, 0.92);
+    margin-bottom: var(--space-2);
+  }
+  .hero h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(1.875rem, 6vw, 2.625rem);
+    line-height: 1.1;
+    font-weight: 400;
+    max-width: 18ch;
+    color: #FDFAF7;
+    margin: 0;
+  }
+
+  /* Body */
+  main {
+    max-width: 560px; margin: 0 auto;
+    padding: var(--space-4) var(--space-4) var(--space-5);
+  }
+
+  /* Meta-pill — single row, surface background, subtle */
+  .meta-pill {
+    display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    margin-bottom: var(--space-4);
+    font-size: var(--font-size-meta);
+    color: var(--color-text-primary);
+  }
+  .meta-pill .item {
+    display: inline-flex; align-items: center; gap: var(--space-1);
+  }
+  .meta-pill .icon {
+    color: var(--color-text-secondary);
+    width: 16px; height: 16px;
+    display: inline-grid; place-items: center;
+    font-size: 14px;
+  }
+  .meta-pill .sep {
+    color: var(--color-text-tertiary);
+    margin: 0 var(--space-1);
+  }
+
+  /* Host single-row */
+  .host {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--color-divider);
+    border-bottom: 1px solid var(--color-divider);
+    margin-bottom: var(--space-3);
+  }
+  .avatar {
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    background: var(--color-surface);
+    flex-shrink: 0;
+    display: grid; place-items: center;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .avatar-fallback {
+    font-weight: 600; font-size: var(--font-size-meta);
+    color: var(--color-text-secondary);
+  }
+  .host .avatar { width: 36px; height: 36px; }
+  .host-text { font-size: var(--font-size-meta); line-height: 1.4; }
+  .host-text strong { font-weight: 600; color: var(--color-text-primary); }
+  .host-text .role { color: var(--color-text-secondary); }
+
+  /* Attendee cluster */
+  .attendees {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-2) 0;
+  }
+  .att-avatars { display: flex; }
+  .att-avatars .avatar {
+    width: 32px; height: 32px;
+    border: 2px solid var(--color-background);
+    margin-left: -8px;
+  }
+  .att-avatars .avatar:first-child { margin-left: 0; }
+  .att-text {
+    font-size: var(--font-size-meta);
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+  .att-text strong { color: var(--color-text-primary); font-weight: 600; }
+
+  /* Sticky CTA bar — app-style backdrop blur + sage pills */
+  .cta-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(253, 250, 247, 0.85);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border-top: 1px solid var(--color-divider);
+    padding: var(--space-3) var(--space-4);
+    z-index: 10;
+  }
+  @media (prefers-color-scheme: dark) {
+    .cta-bar { background: rgba(26, 21, 18, 0.85); }
+  }
+  .cta-bar-inner {
+    max-width: 560px; margin: 0 auto;
+    display: flex; gap: var(--space-2);
+  }
+  .cta {
+    flex: 1;
+    padding: var(--space-3) var(--space-3);
+    font-size: var(--font-size-body); font-weight: 600;
+    font-family: var(--font-body);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: opacity 120ms ease, transform 120ms ease;
+    white-space: nowrap;
+  }
+  .cta:hover:not([disabled]) { transform: translateY(-1px); }
+  .cta.primary {
+    background: #6B8F71; /* transferSage — matches app's Manage button */
+    color: #FDFAF7;
+  }
+  @media (prefers-color-scheme: dark) {
+    .cta.primary { background: #8AAF8F; color: #1A1512; }
+  }
+  .cta.secondary {
+    background: transparent;
+    border-color: var(--color-divider);
+    color: var(--color-text-primary);
+  }
+  .cta.subtle {
+    background: transparent;
+    color: var(--color-text-secondary);
+  }
+  .cta[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+  /* At-capacity full message — replaces the sticky bar */
+  .cta-bar-full {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(253, 250, 247, 0.92);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border-top: 1px solid var(--color-divider);
+    padding: var(--space-4);
+    text-align: center;
+    font-size: var(--font-size-meta);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    z-index: 10;
+  }
+  @media (prefers-color-scheme: dark) {
+    .cta-bar-full { background: rgba(26, 21, 18, 0.92); }
+  }
+  .cta-bar-full strong {
+    display: block; color: var(--color-text-primary);
+    font-weight: 600; margin-bottom: var(--space-1);
+  }
+
+  /* Inline variant sections (review only) */
+  .variant {
+    max-width: 560px; margin: var(--space-5) auto;
+    border: 1px dashed var(--color-divider);
+    border-radius: var(--radius-md); padding: var(--space-4);
+  }
+  .variant h3 {
+    font-family: var(--font-heading); font-size: var(--font-size-card);
+    margin-bottom: var(--space-3); color: var(--color-text-secondary);
+    font-weight: 400;
+  }
+  .variant-inner {
+    position: static !important; box-shadow: none !important;
+    border-radius: var(--radius-md) !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  }
+</style>
+</head>
+<body>
+  <div class="label">Mock H (v3) — original compact layout · app's colors, fonts, pill CTAs · OS-aware theme</div>
+
+  <header class="hero">
+    <img src="../../../server/simulation/assets/experiences/exp_004.jpg" alt="">
+    <div class="hero-inner">
+      <div class="kicker">Two Oaks Block · Saturday</div>
+      <h1>Community potluck dinner</h1>
+    </div>
+  </header>
+
+  <main>
+    <div class="meta-pill" aria-label="Event details">
+      <span class="item"><span class="icon" aria-hidden="true">📅</span>Sat, May 24</span>
+      <span class="sep" aria-hidden="true">·</span>
+      <span class="item"><span class="icon" aria-hidden="true">🕐</span>6:00 PM</span>
+      <span class="sep" aria-hidden="true">·</span>
+      <span class="item"><span class="icon" aria-hidden="true">📍</span>Two Oaks Community Center</span>
+    </div>
+
+    <div class="host">
+      <div class="avatar">
+        <img src="../../../server/simulation/assets/profiles/profile_010.jpg" alt="">
+      </div>
+      <div class="host-text">
+        <strong>Emma R.</strong> <span class="role">is hosting · bring a dish that serves 8</span>
+      </div>
+    </div>
+
+    <div class="attendees">
+      <div class="att-avatars" aria-hidden="true">
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_001.jpg" alt=""></div>
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_005.jpg" alt=""></div>
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_012.jpg" alt=""></div>
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_018.jpg" alt=""></div>
+      </div>
+      <div class="att-text">
+        <strong>Marcus, Henry, Ian, Betty</strong> + 2 others going
+      </div>
+    </div>
+  </main>
+
+  <!-- Inline variants for review -->
+  <div class="variant">
+    <h3>At-capacity variant</h3>
+    <p style="color:var(--color-text-tertiary); font-size:var(--font-size-meta); margin-bottom: var(--space-3);">
+      The sticky CTA bar is replaced entirely by this message:
+    </p>
+    <div class="cta-bar-full variant-inner" role="status">
+      <strong>This community is full</strong>
+      Can't RSVP because the hosting community is full
+      (32 of 32 members). Ask your inviter for options.
+    </div>
+  </div>
+
+  <div class="variant">
+    <h3>Empty-attendee variant</h3>
+    <p style="color:var(--color-text-tertiary); font-size:var(--font-size-meta);">
+      The avatar cluster + “+ N others going” row collapses; the
+      host row and meta pill remain.
+    </p>
+  </div>
+
+  <nav class="cta-bar" aria-label="RSVP">
+    <div class="cta-bar-inner">
+      <button class="cta subtle" aria-label="Coming soon — RSVP available shortly" disabled>I'm out</button>
+      <button class="cta secondary" aria-label="Coming soon" disabled>Maybe</button>
+      <button class="cta primary" aria-label="Coming soon" disabled>I'm in</button>
+    </div>
+  </nav>
+</body>
+</html>

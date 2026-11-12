@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mock C — Compact list</title>
+<link rel="stylesheet" href="../../../website/content/css/tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    color: var(--color-text-primary);
+    background: var(--color-background);
+    padding: var(--space-3);
+  }
+  .label { font-size: var(--font-size-meta); color: var(--color-text-tertiary);
+           text-align: center; padding: var(--space-3); font-style: italic; }
+
+  main { max-width: 560px; margin: 0 auto; }
+
+  .hero {
+    height: 200px; border-radius: var(--radius-md); overflow: hidden;
+    margin-bottom: var(--space-4);
+  }
+  .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  h1 {
+    font-family: var(--font-heading); font-size: var(--font-size-display);
+    line-height: 1.15; font-weight: 400; margin-bottom: var(--space-2);
+  }
+  .subtitle {
+    color: var(--color-text-secondary); font-size: var(--font-size-body);
+    margin-bottom: var(--space-4);
+  }
+
+  .meta-block {
+    display: flex; flex-wrap: wrap; gap: var(--space-2);
+    padding: var(--space-3); border-radius: var(--radius-md);
+    background: var(--color-surface); margin-bottom: var(--space-4);
+    font-size: var(--font-size-meta);
+  }
+  .meta-block span { display: flex; align-items: center; gap: var(--space-1); }
+  .meta-block .sep { color: var(--color-text-tertiary); margin: 0 var(--space-1); }
+
+  .att-cluster {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--color-divider);
+    border-bottom: 1px solid var(--color-divider);
+    margin-bottom: var(--space-4);
+  }
+  .avatars { display: flex; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: var(--radius-pill);
+    overflow: hidden;
+    border: 2px solid var(--color-card-background);
+    margin-left: -8px;
+    background: var(--color-surface);
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .avatars .avatar:first-child { margin-left: 0; }
+  .att-text { font-size: var(--font-size-meta); color: var(--color-text-secondary); }
+  .att-text strong { color: var(--color-text-primary); }
+
+  .ctas { display: flex; gap: var(--space-2); }
+  .cta {
+    flex: 1; padding: var(--space-3) var(--space-2);
+    font-size: var(--font-size-meta); font-weight: 600;
+    font-family: var(--font-body); border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border); cursor: pointer;
+    background: var(--color-card-background); color: var(--color-text-primary);
+  }
+  .cta.primary { background: var(--color-primary); color: #FDFAF7; border-color: var(--color-primary); }
+  .cta[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+  .full-message {
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-meta);
+    line-height: 1.5;
+  }
+  .full-message strong { color: var(--color-text-primary); display: block;
+                         margin-bottom: var(--space-1);
+                         font-family: var(--font-heading);
+                         font-size: var(--font-size-card); }
+
+  .variant {
+    margin: var(--space-5) auto; padding: var(--space-3);
+    border: 1px dashed var(--color-divider); border-radius: var(--radius-md);
+  }
+  .variant h3 { font-family: var(--font-heading); font-size: var(--font-size-card);
+                margin-bottom: var(--space-3); color: var(--color-text-secondary); }
+</style>
+</head>
+<body>
+  <div class="label">Mock C — “Compact list” · dense one-column scan · CTAs side by side</div>
+
+  <main>
+    <div class="hero"><img src="../../../server/simulation/assets/experiences/exp_004.jpg" alt=""></div>
+
+    <h1>Community Potluck Dinner</h1>
+    <div class="subtitle">Hosted by Emma R. · Two Oaks Block</div>
+
+    <div class="meta-block">
+      <span>📅 Sat, May 24</span><span class="sep">·</span>
+      <span>⏰ 6:00 PM</span><span class="sep">·</span>
+      <span>📍 Two Oaks Community Center</span>
+    </div>
+
+    <div class="att-cluster">
+      <div class="avatars">
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_001.jpg" alt=""></div>
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_005.jpg" alt=""></div>
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_012.jpg" alt=""></div>
+        <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_018.jpg" alt=""></div>
+      </div>
+      <div class="att-text"><strong>Marcus, Henry, Ian, Betty</strong> + 2 others</div>
+    </div>
+
+    <div class="ctas">
+      <button class="cta primary" disabled aria-label="Coming soon — RSVP available shortly">Yes</button>
+      <button class="cta" disabled aria-label="Coming soon">Maybe</button>
+      <button class="cta" disabled aria-label="Coming soon">No</button>
+    </div>
+  </main>
+
+  <div class="variant">
+    <h3>At-capacity variant</h3>
+    <p style="color:var(--color-text-secondary); font-size:var(--font-size-meta); margin-bottom: var(--space-3);">
+      RSVP row is replaced entirely by the message below.
+    </p>
+    <div class="full-message" role="status">
+      <strong>This community is full</strong>
+      Can't RSVP because the hosting community is full
+      (32 of 32 members). Ask your inviter for options.
+    </div>
+  </div>
+
+  <div class="variant">
+    <h3>Empty-attendee variant</h3>
+    <p style="color:var(--color-text-secondary); font-size:var(--font-size-meta);">
+      Avatar cluster + “n others” block is hidden until the first guest RSVPs.
+    </p>
+  </div>
+</body>
+</html>

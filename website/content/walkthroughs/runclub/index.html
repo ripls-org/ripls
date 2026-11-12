@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event: The Regular Wednesday Morning Run</title>
+<link rel="canonical" href="https://ripls.org/walkthroughs/runclub/">
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="/css/gen/tokens.gen.css">
+<link rel="stylesheet" href="tokens.gen.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--light-background);
+    color: var(--light-text-primary);
+    font-family: var(--font-sans);
+  }
+  h1, h2, .brand { font-family: var(--font-serif); }
+  .hero { max-width: 720px; margin: 0 auto; padding: 4rem 1.5rem 1.5rem; text-align: center; }
+  .hero .brand { font-size: 1.2rem; color: var(--light-accent); letter-spacing: 0.04em; }
+  .hero .brand a { color: inherit; text-decoration: none; }
+  .hero h1 { font-weight: 600; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.2; margin-top: 1rem; }
+  .scene { padding: 3.5rem 1.5rem; }
+  .scene.alt { background: var(--light-surface); }
+  .scene-inner { max-width: 980px; margin: 0 auto; display: flex; gap: 3rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .scene.alt .scene-inner { flex-direction: row-reverse; }
+  .scene-copy { flex: 1 1 340px; max-width: 480px; }
+  .scene-copy h2 { font-weight: 600; font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.2; }
+  .scene-copy .actor { font-size: 0.9rem; color: var(--light-text-faint); margin: 0.4rem 0 1rem; }
+  .scene-copy p { font-weight: 300; line-height: 1.7; color: var(--light-text-secondary); margin-bottom: 0.9rem; }
+  .scene-copy strong { color: var(--light-text-primary); font-weight: 600; }
+  .scene-phone { flex: 0 0 auto; }
+  /* The bezel is a wrapper so the border never eats into the video's box —
+     border-on-the-video shrinks its content box and letterboxes the clip.
+     #00000048 = pure black + alpha, the one raw form lint:web:colors allows. */
+  .phone-frame {
+    width: min(300px, 80vw);
+    border-radius: 28px; border: 6px solid var(--dark-background); overflow: hidden;
+    box-shadow: 0 24px 60px #00000048; background: var(--dark-background);
+  }
+  .phone-frame video { width: 100%; height: auto; display: block; }
+  .missing { color: var(--light-text-faint); font-style: italic; }
+  .index-list { max-width: 760px; margin: 2.5rem auto 0; padding: 0 1.5rem; list-style: none; display: grid; gap: 2rem; text-align: left; }
+  .index-row { display: grid; grid-template-columns: 92px 1fr; gap: 1.25rem; align-items: start; }
+  .index-text a { font-family: var(--font-serif); font-size: clamp(1.2rem, 2vw, 1.5rem); color: var(--light-text-primary); text-decoration: none; border-bottom: 1px solid var(--light-border); }
+  .index-text a:hover { color: var(--light-accent); border-bottom-color: var(--light-accent); }
+  .index-list .desc { display: block; font-weight: 300; font-size: 0.95rem; line-height: 1.55; color: var(--light-text-secondary); margin-top: 0.35rem; }
+  /* Phone-shaped teaser, matching the scene frames on the reel pages. */
+  .index-teaser {
+    display: block; width: 92px; aspect-ratio: 780 / 1688; border: 0;
+    border-radius: 12px; overflow: hidden; background: var(--dark-background);
+    box-shadow: 0 8px 22px #00000026;
+  }
+  .index-teaser video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (max-width: 520px) {
+    .index-row { grid-template-columns: 68px 1fr; gap: 1rem; }
+    .index-teaser { width: 68px; }
+  }
+  footer { padding: 3rem 1.5rem 4rem; text-align: center; color: var(--light-text-faint); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <p class="brand"><a href="/walkthroughs/">ripls</a></p>
+  <h1>Event: The Regular Wednesday Morning Run</h1>
+</header>
+
+  <section class="scene">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Posting the run</h2>
+        <p class="actor">Nadia, the host</p>
+        <p>Nadia types the run the way she'd text it: what, where, when. Ripls reads the Wednesday and the 6:30am out of the sentence and fills in the gate she meets at, and she adds a photo. Saving gives her a link to paste wherever her runners already are — a group chat, a neighborhood thread, a noticeboard.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-01-01-post-the-run.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene alt">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Joining from the link</h2>
+        <p class="actor">Marcus, who was sent the link</p>
+        <p>Marcus opens the link on his phone. There's no app to install and no account to make: the run's page loads in his browser, he confirms his number, gives a first name, and he's on the list. Nadia didn't need his email or have to add him to anything.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-02-02-join-by-phone.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Who's coming</h2>
+        <p class="actor">Nadia, the host</p>
+        <p>By Tuesday evening six people have joined, all from the same link being forwarded around. Nadia can see who's in without asking anyone to reply.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-03-03-who-is-coming.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene alt">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Wednesday, 6:30am</h2>
+        <p class="actor">Priya, one of the runners</p>
+        <p>The run happens, and the photos go to the run's own thread rather than a group chat where they'd scroll away by lunchtime. Priya opens it afterwards and adds a note; everyone who was there is already in the conversation.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-04-04-the-run-happens.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Wrapping up</h2>
+        <p class="actor">Nadia, the host</p>
+        <p>Wrapping up is a confirmation rather than a form — everyone who said yes is ticked already, and Nadia unticks anyone who didn't make it. Ripls records the time the group spent together, and who came carries forward to next week.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-05-05-wrap-it-up.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene alt">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Naming the group</h2>
+        <p class="actor">Nadia, the host</p>
+        <p>The seven of them have been a group all week without a name. Nadia gives them one — Hump Day Milers — and from the group's page she copies an invite link for the group itself rather than for a single run, so whoever takes it is there for the following weeks too.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-06-06-name-the-group.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene">
+    <div class="scene-inner">
+      <div class="scene-copy">
+        <h2>Setting up next week</h2>
+        <p class="actor">Nadia, the host</p>
+        <p>Back on the home screen, Ripls offers to schedule the run again. Tapping it opens next Wednesday already filled in: the same route, the same 6:30am, and the people who actually showed up. Nadia checks it over and posts it.</p>
+      </div>
+      <div class="scene-phone">
+        <div class="phone-frame"><video src="scene-07-07-next-wednesday.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
+      </div>
+    </div>
+  </section>
+<footer>Filmed in the live product by the Ripls walkthrough pipeline (#2684) — every clip is the real app.</footer>
+</body>
+</html>

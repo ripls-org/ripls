@@ -1,0 +1,20 @@
+Release 0.13.1
+
+
+Bug Fixes
+
+- Deferred Deep Linking: Fixed the invite landing page not working on production — the Go server template was missing all the deferred deep linking JavaScript (referrer encoding, clipboard copy, re-tap CTA, invite code display) (#1099, #1123)
+
+- First-Launch Routing: Fixed “Page not Found” error on first app launch when deferred deep link context was present. Replaced Riverpod providers with static fields for router redirect state, since modifying provider state inside GoRouter’s redirect throws during the build phase (#1127)
+
+- First-Launch Flag: Fixed the first-launch flag not persisting across app restarts, causing the registration screen to show on every launch instead of just the first (#1126)
+
+- Duplicate Heading: Removed duplicate “Sign Up” heading on the registration screen (#1113, #1122)
+
+Improvements
+
+- Invite Code Entry: The manual code field now accepts full invite URLs (paste https://ripls.app/go/CODE?gear_id=...) in addition to bare codes
+
+- Registration Screen UX: Consolidated the invitation-required message into a single concise prompt; renamed the screen title to “Join Ripls” when no invite code is present; made the disabled Apply Code button visible on Android
+
+- Query Param Forwarding: Fixed item IDs being dropped in the Google Sign-In registration path and the invitation error recovery path

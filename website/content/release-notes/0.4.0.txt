@@ -1,0 +1,36 @@
+Ripls 0.4.0 Release Notes
+
+
+New Features
+
+Redesigned Request Workflow
+
+Requests now follow the same clear, step-by-step timeline used by loans and giveaways. The request age is prominently displayed to encourage quick responses. Potential helpers can read an AI-generated conversation summary before deciding to jump in. When the request is fulfilled, the requester reviews an editable AI summary and confirms who actually helped – both of which feed into impact tracking. (#739, fixes #711)
+
+Redesigned Experience Workflow
+
+Experiences now use the same timeline approach as loans, giveaways, and requests. Organizers move through Planning, Wrap Up, and Complete phases. Participants can propose alternative times and vote on them; only the organizer can finalize. Completion includes an editable AI-generated summary and attendee verification before recording impact. (#746, fixes #666)
+
+Expanded Impact Analytics
+
+The community impact tab now lets you drill into each metric dimension – money saved, CO2 prevented, and time recovered – with rich detail views. Each view includes cumulative trend charts, savings-by-source breakdowns, contributing factor cards with sparklines, top shared items, top contributors, and community comparisons with radar charts. Filter by time period (all time, 1 year, 3 months, or 4 weeks) to see trends. (#748, #741, fixes #695)
+
+Community Events and Help Lists
+
+New dedicated screens for browsing all events and fulfilled help requests within a community, accessible from the community impact tab. (#748)
+
+Improvements
+
+- Provenance tracking: All AI-generated and computed values (item descriptions, carbon estimates, value estimates) now carry origin metadata tracking who produced the value, which algorithm version was used, and confidence levels. Your manual edits are marked as user-sourced and will never be overwritten by AI re-estimation. (#743)
+
+- Smarter backfill: The impact backfill system is now provenance-aware – it respects user edits, detects stale AI values, and prefers source URLs and images over text for gear enrichment. (#740, #743, fixes #737)
+
+Bug Fixes
+
+- Attendance recording crash fixed: Fixed a crash when recording event attendance caused by a missing operation name. (#738)
+
+- Gear detail view stability: Fixed a potential crash when navigating away from the gear detail view while data is still loading. (#738)
+
+- Feedback reliability: Added explicit detection and logging when GitHub access fails, preventing silent feedback submission failures. (#738, fixes #710)
+
+- Data compatibility preserved: Reserved old protocol buffer field numbers to prevent data corruption when reading records created before the provenance migration. (#745)

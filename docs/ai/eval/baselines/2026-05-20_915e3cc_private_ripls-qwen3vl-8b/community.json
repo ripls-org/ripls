@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "suite": "TestCommunityPrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T02:39:24Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-qwen3vl-8b"
+  },
+  "goldens_file": "community_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-qwen3vl-8b",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 7425,
+      "p95_latency_ms": 7425,
+      "field_pass_rates": {
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "title_contains": 1
+      },
+      "invocation_failures": [
+        "cycling_group",
+        "gardening_club",
+        "boardgame_friends",
+        "young_pros_networking",
+        "rock_climbers",
+        "vague_neighborhood",
+        "book_club"
+      ]
+    }
+  ]
+}

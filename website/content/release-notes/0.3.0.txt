@@ -1,0 +1,54 @@
+Ripls 0.3.0 Release Notes
+
+
+New Features
+
+Impact Metrics
+
+See the real-world impact of sharing. Every loan, giveaway, request, and experience now calculates estimated cost savings, carbon emissions prevented, and time saved. Impact metrics appear on community dashboards, individual items, and user profiles – and you can tap any metric to see how it was calculated. (#720, #693, #698, #699, #708, #730, fixes #722)
+
+Redesigned Loan and Giveaway Workflows
+
+Borrowing and giving away items now have clear, step-by-step flows: schedule a pickup time, confirm handoff, and see your impact when it’s done. Both parties can see what the other person sees at each step, and a chat button is always available. (#721, #725)
+
+Stories
+
+Completed loans, giveaways, requests, and experiences now generate story cards that appear in the community feed, celebrating what your community accomplished. Archived items are accessible through their stories. (#689)
+
+Add Gear from a URL
+
+Paste a product URL when adding gear and the app will automatically pull the name, description, photos, and estimated value from the page. (#694, fixes #664)
+
+Improved Invite Links
+
+Invite links now use short, memorable codes (e.g. ripls.app/go/qkLCXDLP) instead of long UUIDs. Shared links show a branded preview with community info in messaging apps via OpenGraph metadata. (#697, fixes #690)
+
+Discovery Search Improvements
+
+Search results now properly filter between loans, giveaways, requests, and experiences. Results are sorted by relevance with better coverage across all item types, and tapping a community metric opens a filtered item list. (#732, #733)
+
+Profile Redesign
+
+User profiles now show your personal impact metrics (items shared, money saved, emissions prevented) alongside your activity, matching the community dashboard layout. (#731, #699)
+
+Improvements
+
+- Feedback system upgraded: Bug reports from the app are now filed via a GitHub App instead of a personal access token, improving security and reliability. (#712)
+
+- Faster test runs: Local Go tests now complete in 60-90 seconds (down from 7 minutes) by gating live AI API calls behind a build tag. (#706)
+
+- Skills system removed: The experimental skills feature has been fully removed in favor of the new impact metrics system. This eliminated ~5,000 lines of code. (#703, #705, #724, fixes #723, #669, #654)
+
+Bug Fixes
+
+- Unread message count fixed: Reading a message no longer decrements the unread count by 2x. (#713, fixes #709)
+
+- Server process cleanup: Fixed orphaned server processes accumulating during development and testing, each consuming 100+ MB of memory. Ctrl+C now performs a clean shutdown. (#704)
+
+- Test container cleanup: Old test containers now remove their associated volumes, reclaiming disk space. (#691)
+
+- HTTPS for ripls.app: Fixed certificate provisioning for the ripls.app domain. (#700)
+
+- Stock imagery reliability: Switched primary stock image provider from Pexels (which was blocking requests) to Unsplash. (#701)
+
+- Stale cache after transfers: Community stats and gear metrics now refresh immediately after completing a loan or giveaway. (#703)

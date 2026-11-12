@@ -1,0 +1,18 @@
+Release 0.26.3
+
+
+Home-view latency tail fix and server cleanup.
+
+Bug Fixes
+
+- Home Screen Loads Faster: Fixed the Home view taking up to 8 seconds on certain requests. The root cause was a synchronous weather fetch with no failure caching: a weather-provider timeout (8s) was paid in full on every request for the affected location, and cache keys expired at midnight forcing a fresh fetch at the start of each day. Weather data is now served stale-while-revalidate (returns immediately from cache while refreshing in the background) with a 1.2s budget cap on true misses, so worst-case home load is structurally bounded near P50 regardless of weather-provider availability (#2646)
+
+- AI Concurrent Call Recording Race: Fixed a data race in ai.MockProvider where parallel goroutines appended to the same Calls slice without synchronization. The race was latent under the normal test runner but immediately fatal under go test -race. Added mutex-protected recording and a Snapshot() accessor for safe concurrent reads (#2658)
+
+Internal
+
+- Server Composition Root Refactor: Deleted ~4,100 lines of completed one-shot migration and backfill code (conversation-ID, provisional-user rename, category, impact, share-link, and community-cascade backfills — all verified as no-ops in prod). Startup logic factored into server/config, server/middleware, server/jobs, server/statslog, and owning service packages; server/main.go shrinks from 1,945 lines to a 284-line driver (#2643, #2056)
+
+- Observability: Two-tier P95 latency alerting (interactive 2s / slow-class 8s), legacy count-based rpc_errors alert retired, availability and latency SLOs with multi-window burn-rate alerts added (#2622, #2623, #2624)
+
+- Legacy Invite URL Cleanup: Removed the old ?gear_id=/?request_id=/ ?experience_id= query-parameter handling for invite links (minted by an RPC removed in v0.22.0). Web event auth unified with gear/request — the “Sign in to RSVP” gate now routes to /login like other item types (#2562, #2644)

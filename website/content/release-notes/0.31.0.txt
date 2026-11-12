@@ -1,0 +1,20 @@
+Release 0.31.0
+
+
+The app now speaks its own voice: AI-generated prose is removed from every surface and replaced with deterministic, localizable copy derived from structured data the server already held. Ad-hoc community rows in Settings now show member names instead of blank labels.
+
+New Features
+
+- Home Has Three Persistent Affordances: The AI-written feed nudges are replaced with three always-present action buttons — create an item, a request, or an event — each opening the matching composer tab directly. A tapped calendar day still opens the plan prompt as before (#2936)
+
+- Story Cards Render from Templates: Story cards now render from the server-side template catalog using the structured data the server already held — same fact, same wording, in the viewer’s language. Previously each render was LLM-authored and could differ from viewer to viewer; a new test asserts that every story type carries a template key so a future type cannot silently ship English to all viewers (#2936)
+
+- Workshop Hero Cards Use Detector Templates: Workshop discovery cards now render from detector templates; the AI copy path is removed. The surface and its real engagement signals are unchanged (#2936)
+
+Bug Fixes
+
+- Ad-Hoc Community Names in Settings: Settings listed identical, unlabelled rows — a blank name, a “C” avatar, and an empty accessibility label — for every ad-hoc community. The rows now derive label, subtitle, and avatar from the member rollup (the same derivation the Workshop switcher and sharing picker already used), and ad-hoc groups appear in their own GROUPS section below named communities. The blank name had propagated through the entire governance chain, including the invite sheet’s outbound share text; all sites are corrected except public share copy, where member names must not leave the group (#2937)
+
+Internal
+
+- AI Dead Code Removed: Four AI paths that generated, stored, and wired responses nobody was reading — chat summaries, experience completion summaries, profile impact narratives, and request resolution summaries — are deleted. GenerateNudgeContent is gone with them. The experience recap editor and post-to-chat flow remain; the ghost-writing fallback does not (#2936)

@@ -1,0 +1,37 @@
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" xmlns:ns1="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns2="http://www.inkscape.org/namespaces/inkscape" width="329" height="356" viewBox="0 0 197.4 213.6" version="1.1" id="svg12" ns1:docname="ripls_logo_double_thick.svg" ns2:version="1.4.2 (ebf0e940, 2025-05-08)">
+  <ns1:namedview id="namedview12" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" ns2:showpageshadow="2" ns2:pageopacity="0.0" ns2:pagecheckerboard="0" ns2:deskcolor="#d1d1d1" ns2:zoom="2.0525" ns2:cx="200.24361" ns2:cy="200" ns2:window-width="1520" ns2:window-height="1040" ns2:window-x="1646" ns2:window-y="115" ns2:window-maximized="0" ns2:current-layer="svg12" />
+  
+  <ns0:defs id="defs1">
+    <ns0:style id="style1">
+      .circle-stroke {
+        fill: none;
+        stroke: #87CEEB;
+        stroke-width: 12;
+      }
+    </ns0:style>
+  </ns0:defs>
+  
+  <ns0:g transform="translate(98.952497,106.84531)" id="g12">
+    
+    
+    
+    
+    <ns0:circle cx="0" cy="-60" r="40" class="circle-stroke" id="circle1" />
+    <ns0:circle cx="0" cy="-60" r="20" class="circle-stroke" id="circle2" />
+    
+    <ns0:circle cx="51.959999" cy="-30" r="40" class="circle-stroke" id="circle3" />
+    <ns0:circle cx="51.959999" cy="-30" r="20" class="circle-stroke" id="circle4" />
+    
+    <ns0:circle cx="51.959999" cy="30" r="40" class="circle-stroke" id="circle5" />
+    <ns0:circle cx="51.959999" cy="30" r="20" class="circle-stroke" id="circle6" />
+    
+    <ns0:circle cx="0" cy="60" r="40" class="circle-stroke" id="circle7" />
+    <ns0:circle cx="0" cy="60" r="20" class="circle-stroke" id="circle8" />
+    
+    <ns0:circle cx="-51.959999" cy="30" r="40" class="circle-stroke" id="circle9" />
+    <ns0:circle cx="-51.959999" cy="30" r="20" class="circle-stroke" id="circle10" />
+    
+    <ns0:circle cx="-51.959999" cy="-30" r="40" class="circle-stroke" id="circle11" />
+    <ns0:circle cx="-51.959999" cy="-30" r="20" class="circle-stroke" id="circle12" />
+  </ns0:g>
+</ns0:svg>

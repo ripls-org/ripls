@@ -1,0 +1,12 @@
+Rendered Gen* prompt template sizes (TestPromptSizes, fixed short inputs).
+Pre-rewrite snapshot at 781c9bf for #1265; ~tokens = bytes/4.
+
+community_from_text         689 bytes  ~ 172 tokens
+experience_from_image      9388 bytes  ~2347 tokens
+experience_from_text       7455 bytes  ~1863 tokens
+experience_from_webpage    6889 bytes  ~1722 tokens
+gear_detection_image       4379 bytes  ~1094 tokens
+gear_from_text             5542 bytes  ~1385 tokens
+gear_from_webpage          6976 bytes  ~1744 tokens
+request_from_image         3070 bytes  ~ 767 tokens
+request_from_text          3931 bytes  ~ 982 tokens

@@ -1,0 +1,58 @@
+Release 0.25.0
+
+
+New Features
+
+- Off-app notifications via SMS and email: Ripls now delivers notifications to users outside the app through two new channels. SMS is sent through Twilio’s A2P 10DLC Messaging Service with STOP/HELP opt-out compliance and a monthly cadence reminder; email uses a branded HTML template with a hero image, themed item summary, and one-click unsubscribe. Every notification carries a /go short link that deep-links the recipient directly to the relevant gear, event, or request — including users who haven’t installed the app yet. The channel dispatcher selects between push, email, and SMS based on the recipient’s registered handles and quiet-hours preferences (#2492, #2493, #2494, #2495, #2566, #2572, #2574)
+
+- Ad-hoc per-item communities: Every gear item, event, and request now provisions its own private community at creation time. Nameless communities display group-text style — “You and Ada” — with a cluster of member faces, mirroring the feel of a group chat. Owners see a persistent “Name this group” pill in the Workshop switcher that promotes the community to a named one; named communities work as before. The community list now sorts nameless communities after named ones, and the share sheet hides the item’s own auto-generated community to keep pickers clean (#2492, #2498, #2501, #2543, #2527)
+
+- Phone-first web onboarding: Guest users who follow a gear, request, or event link to ripls.org can now express interest or RSVP without installing the app first. The SSR landing page captures their phone number, sends an OTP via Firebase, and provisions a provisional account. Provisional users are automatically promoted to a full phone-verified account on sign-in. Hosts are notified of new interest via SMS or email with a link back to the item (#2492, #2496, #2497, #2502, #2503, #2504, #2505, #2506, #2527, #2530, #2560)
+
+- Who’s In host management: The event roster now shows a flat list with RSVP status pills for every invited individual and community. Hosts can change a guest’s RSVP state or remove them directly from the roster without leaving the event. RSVP changes stream live to all open clients so the count and list update without a reload (#2492, #2527)
+
+- Unified create + share flow: Creating a gear item or event now saves immediately and auto-opens the Share sheet, replacing the previous two-step create-then-share flow. The redesigned share sheet lets owners invite specific Ripls members by name alongside community-level sharing in a single step (#2492, #2500, #2527)
+
+- Simplified community creation: The community creation flow no longer generates a name or description with AI. A two-field modal (name + optional description) replaces the previous AI-generated preview; the LLM is now used only to generate image-search keywords for the background photo. Naming an existing nameless community uses the same modal in promote mode (#2547, #2555)
+
+- Gear booking and owner reservations: The gear view has been redesigned to align with the experience and request content views. Loans and giveaways now have separate flows — giveaways show a “Who wants it” sign-up card where any interested user can raise a hand and the owner picks. A booking system and owner-reservation screen let owners track interest, and a loan-link lets borrowers deep-link directly to the loan record (#2542)
+
+- Redesigned experience and inbox: The Workshop experience content view has been updated (v4.1) with a new simplified Needs You inbox, an inline conversation preview, shared RSVP chip components, and an expand-in-place pitching-in widget. The community calendar now supports monthly view and displays weather alongside event times, and the time/location poll compose screens match the v3 prototype (#2278, #2279, #2280, #2487, #2486, #2528)
+
+- Design token unification: App and web now share a single source of truth for color (Ink dark + Sage accent) and typography (Libre Baskerville headings + Public Sans body). The token set is enforced in CI — raw hex colors in web styles and non-token font names in Dart fail the lint gate (#2441, #2442)
+
+- Website redesign: ripls.org is now the primary landing page with audience-specific pages for crew, moms, kids, casual, and sustainability audiences, plus updated investor materials. Demo videos show the Walnut Creek event demo and the dripping-sink request demo, and all marketing surfaces share the new Ink/Sage design system and Libre Baskerville/Public Sans typography (#2297, #2434, #2446)
+
+Bug Fixes
+
+- Request followup prompts: Users who post a request now receive a 3-day recurring push notification prompting them to check if it has been fulfilled, deep-linking into the existing fulfill UI rather than asking for a yes/no in the notification (#2274, #2430)
+
+- Revoke share link had no effect: Tapping “Revoke” on a shared item link did not actually invalidate the server-side invite or QR code — the link stayed usable. The new RevokeShareLink RPC accepts a typed short code and correctly invalidates the link; the legacy RevokeInviteLink RPC has been removed (#2273, #2428)
+
+- Deleting an item left it visible: Deleting a gear item did not evict the profile or community-gear cache on the client, so the deleted item continued to appear until the TTL expired. The cache is now explicitly invalidated on delete (#2207, #2431)
+
+- Duplicate and flapping notifications: Two separate notification-dedup fixes land in this release. Duplicate event-completion reminders were caused by the same scheduled-notification row being inserted more than once; the storage layer now prevents this with a unique constraint. Separately, rapid repeated state changes on a request or offer were triggering redundant notification fan-outs; the dispatcher now suppresses repeated sends for fulfilled/selected events (#2458, #2276, #2460)
+
+- Cache stale-read race on invalidation: An in-flight fetch could complete after its cache key was invalidated, re-inserting the stale value. In-flight fetches are now cancelled and evicted when their key is invalidated
+
+- “Manage Members” label: The community governance screen was labeled “Manage Members” even though it primarily lets owners view and invite — removal requires a different flow. It is now labeled “View & Invite Members” (#2272, #2427)
+
+- CAN-SPAM postal address: Outgoing notification emails used the wrong default postal address and legal entity name. Corrected to Type2Fun Foundation, PBC in Boulder, CO, with the support@ripls.org address (#2492, #2575)
+
+Security
+
+- GetMedia authorization: GetMedia previously returned any media file to any authenticated user without checking membership. It now enforces per-resource authorization — the caller must belong to a community that has access to the referenced media (#1529, #2544)
+
+Reliability & Infrastructure
+
+- Server crash alerting: The monitoring module now alerts on server OOM kills, non-zero process exits, and startup fatals — not only uptime gaps — so the on-call channel is paged on actual crashes, not just scheduled maintenance windows (#2490, #2491)
+
+- Android toolchain migration (AGP 9 + Gradle 9): The Android build toolchain is now on AGP 9.2.1 / Gradle 9.5.1. The runner image delegates SDK component provisioning to AGP, removing the hardcoded build-tools, platform, and cmake version pins (#2404, #2422, #2576)
+
+- Self-hosted Renovate with automated fixes: Renovate now runs self-hosted on the mimir runner. Failing Renovate dependency PRs are automatically retried with a Claude-assisted fix step before a human needs to intervene, and human-review PRs auto-merge once approved (#2395, #2396, #2358, #2399, #2413)
+
+- Doc-drift guard: A CI ratchet now verifies that docs under docs/ semantically match the code they describe on every PR that touches governed files. Stale prose is auto-fixed and committed back to the PR branch (#2420, #2425)
+
+- Hierarchical doc-context routing: A generated docs/llms.txt index maps every architecture and convention doc to the code paths it governs, so AI tools and review skills load the right docs automatically for each PR (#2398, #2406)
+
+- API cleanup: Removed the deprecated GetOrCreateInviteLink RPC (#2058, #2563); dropped SubmitRequestRequest.community_id in favor of ShareItem (#2529, #2559); and removed the unused SuggestGearLocation endpoint (#2209, #2558) and the dead QueryByProximityWithJoin storage helper (#2146, #2557)

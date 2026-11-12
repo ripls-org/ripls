@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.13.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.13.0">Release 0.13.0</h1>
+            <p class="release-date">April 13, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><strong>Deferred Deep Linking</strong>: Share links now work even
+when the recipient doesn’t have the app installed. After installing from
+the Play Store or App Store, the app automatically recovers the invite
+code and routes new users to the shared content (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1099">#1099</a>)
+<ul>
+<li><strong>Android</strong>: Uses the Google Play Install Referrer API
+to recover the invite code baked into the Play Store URL</li>
+<li><strong>iOS</strong>: Reads the invite deep link from the clipboard
+(the landing page copies it before redirecting to the App Store). iOS
+16+ shows a system paste permission banner</li>
+<li><strong>Fallbacks</strong>: If the code is lost in transit,
+first-launch users land on the registration screen with a “Tap your
+invite link again, or enter the code below” prompt. The landing page
+also shows a re-tap CTA for Universal Links and displays the invite code
+for manual entry</li>
+</ul></li>
+</ul>
+<h2 id="developer-notes">Developer Notes</h2>
+<ul>
+<li>Added <code>play_install_referrer</code> package for Android Install
+Referrer API</li>
+<li>New <code>DeferredDeepLinkService</code> with platform-specific
+context extraction</li>
+<li>34 unit tests for referrer parsing, clipboard URL parsing, and
+context notifier</li>
+<li>Updated landing page to encode item IDs (gear, request, experience)
+in the Play Store referrer string</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.12.2.html">0.12.2</a> &mdash; April 13,
+2026</li>
+                <li><a href="0.12.1.html">0.12.1</a> &mdash; April 12,
+2026</li>
+                <li><a href="0.12.0.html">0.12.0</a> &mdash; April 11,
+2026</li>
+                <li><a href="0.11.0.html">0.11.0</a> &mdash; April 9,
+2026</li>
+                <li><a href="0.10.0.html">0.10.0</a> &mdash; April 6,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

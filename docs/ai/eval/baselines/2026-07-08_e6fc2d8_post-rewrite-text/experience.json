@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "suite": "TestExperiencePrompt",
+  "run": {
+    "timestamp_utc": "2026-07-08T15:25:48Z",
+    "git_commit": "e6fc2d8978",
+    "git_branch": "prompt_rewrite",
+    "label": "post-rewrite-text"
+  },
+  "goldens_file": "experience_goldens.json",
+  "goldens_version": 2,
+  "pairs": [
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "pass_rate": 0.9920634920634921,
+      "threshold": 0.78,
+      "passed": true,
+      "median_latency_ms": 2230,
+      "p95_latency_ms": 3115,
+      "field_pass_rates": {
+        "date": 1,
+        "location_query": 1,
+        "location_query_contains": 1,
+        "mentioned_names_set": 1,
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "search_keywords_must_not_contain": 1,
+        "time": 1,
+        "time_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 0.6666666666666666
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "pass_rate": 0.9841269841269841,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 15566,
+      "p95_latency_ms": 24846,
+      "field_pass_rates": {
+        "date": 1,
+        "location_query": 1,
+        "location_query_contains": 1,
+        "mentioned_names_set": 1,
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "search_keywords_must_not_contain": 1,
+        "time": 1,
+        "time_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 0.3333333333333333
+      }
+    },
+    {
+      "provider": "gemini",
+      "model": "vertexai/gemini-3.1-flash-lite",
+      "pass_rate": 0.9841269841269841,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 1241,
+      "p95_latency_ms": 1876,
+      "field_pass_rates": {
+        "date": 1,
+        "location_query": 1,
+        "location_query_contains": 1,
+        "mentioned_names_set": 1,
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "search_keywords_must_not_contain": 1,
+        "time": 1,
+        "time_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 0.3333333333333333
+      }
+    }
+  ]
+}

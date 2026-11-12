@@ -1,0 +1,22 @@
+Release 0.30.1
+
+
+UI polish and email fixes following the desktop-adaptive rollout: library gallery measure, SSR hero alignment, email OTP field parity, and email logo centering with real dark mode.
+
+Bug Fixes
+
+- Library No Longer Has a Dead Left Gutter: The v0.30.0 desktop rollout applied the 640px reading measure to the Library’s tile shelves, leaving a 420px void on the left at 1440px and letting tiles scroll into the empty space on the right. The fix introduces a wider 1200px gallery measure so the header and shelf content stay aligned without over-inletting a horizontal rail of tiles (#2926)
+
+- SSR Landing Hero Title Now Centered: The /go/ invite landing pages had the hero title pinned to the left edge while the body copy, host row, and CTA centered at 560px — a visible seam at desktop widths. The hero now shares the same measure as the content below it; phone rendering is unchanged (#2918)
+
+- Email OTP Field Matches Phone: The email sign-in code screen showed “6-digit code” placeholder text instead of the dash-ruler the phone screen uses, and carried a double-submit hole and a whitespace bug that could swallow the sixth digit. The hintText parameter is deleted so the two flows cannot diverge again; both now use digit-only filtering and a shared submit guard (#2925)
+
+- Email Logo Centered in Apple Mail: The Ripls logo at the top of sign-in code and password-reset emails sat flush against the left edge in Apple Mail (Gmail rendered it correctly). Apple Mail drops auto margins on block <img> elements, so the fix uses a align="center" presentation table instead. All six email templates shared the same defect; they now share a single partial so a future fix reaches all of them at once. Emails also gained a real dark mode — Apple Mail was previously inverting the light palette on its own (#2927)
+
+Internal
+
+- Sign-in Code Alert Has a Volume Floor: The email_code_delivery_latency Cloud Monitoring alert could page on a single slow email in an otherwise-empty 10-minute window. The alert now requires both P95 > 10s and ≥6 delivered codes in the same window before firing. A preceding fix corrected the metric type used for the counter (DELTA + DISTRIBUTION cannot be aggregated with ALIGN_COUNT) (#2923)
+
+- CI Flutter Test Flake Eliminated: Flutter 3.47.0’s Dart VM profiler native stack walker dereferences a garbage frame pointer on machines without frame pointers, producing a SIGSEGV inside the signal handler that flutter_tools blamed on a random innocent test file. Roughly 60% of CI runs were red. The fix interposes a shim that strips --enable-dart-profiling from flutter_tester’s argv; the profiler was sampling into a buffer nothing could read anyway (the runner passes --disable-vm-service) (#2933)
+
+- iOS Build Gated on versions.env: The build-ios path filter now includes versions.env, so a FLUTTER_VERSION bump triggers a pod install verification. This gap let Flutter 3.47.0 reach main without checking that Podfile.lock was updated (#2928)

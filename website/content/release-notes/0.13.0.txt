@@ -1,0 +1,16 @@
+Release 0.13.0
+
+
+New Features
+
+- Deferred Deep Linking: Share links now work even when the recipient doesn’t have the app installed. After installing from the Play Store or App Store, the app automatically recovers the invite code and routes new users to the shared content (#1099)
+  - Android: Uses the Google Play Install Referrer API to recover the invite code baked into the Play Store URL
+  - iOS: Reads the invite deep link from the clipboard (the landing page copies it before redirecting to the App Store). iOS 16+ shows a system paste permission banner
+  - Fallbacks: If the code is lost in transit, first-launch users land on the registration screen with a “Tap your invite link again, or enter the code below” prompt. The landing page also shows a re-tap CTA for Universal Links and displays the invite code for manual entry
+
+Developer Notes
+
+- Added play_install_referrer package for Android Install Referrer API
+- New DeferredDeepLinkService with platform-specific context extraction
+- 34 unit tests for referrer parsing, clipboard URL parsing, and context notifier
+- Updated landing page to encode item IDs (gear, request, experience) in the Play Store referrer string

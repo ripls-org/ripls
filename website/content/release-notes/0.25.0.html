@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.25.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.25.0">Release 0.25.0</h1>
+            <p class="release-date">June 29, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Off-app notifications via SMS and email</strong>: Ripls
+now delivers notifications to users outside the app through two new
+channels. SMS is sent through Twilio’s A2P 10DLC Messaging Service with
+STOP/HELP opt-out compliance and a monthly cadence reminder; email uses
+a branded HTML template with a hero image, themed item summary, and
+one-click unsubscribe. Every notification carries a <code>/go</code>
+short link that deep-links the recipient directly to the relevant gear,
+event, or request — including users who haven’t installed the app yet.
+The channel dispatcher selects between push, email, and SMS based on the
+recipient’s registered handles and quiet-hours preferences (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2492">#2492</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2493">#2493</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2494">#2494</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2495">#2495</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2566">#2566</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2572">#2572</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2574">#2574</a>)</p></li>
+<li><p><strong>Ad-hoc per-item communities</strong>: Every gear item,
+event, and request now provisions its own private community at creation
+time. Nameless communities display group-text style — “You and Ada” —
+with a cluster of member faces, mirroring the feel of a group chat.
+Owners see a persistent “Name this group” pill in the Workshop switcher
+that promotes the community to a named one; named communities work as
+before. The community list now sorts nameless communities after named
+ones, and the share sheet hides the item’s own auto-generated community
+to keep pickers clean (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2492">#2492</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2498">#2498</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2501">#2501</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2543">#2543</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2527">#2527</a>)</p></li>
+<li><p><strong>Phone-first web onboarding</strong>: Guest users who
+follow a gear, request, or event link to ripls.org can now express
+interest or RSVP without installing the app first. The SSR landing page
+captures their phone number, sends an OTP via Firebase, and provisions a
+provisional account. Provisional users are automatically promoted to a
+full phone-verified account on sign-in. Hosts are notified of new
+interest via SMS or email with a link back to the item (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2492">#2492</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2496">#2496</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2497">#2497</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2502">#2502</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2503">#2503</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2504">#2504</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2505">#2505</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2506">#2506</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2527">#2527</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2530">#2530</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2560">#2560</a>)</p></li>
+<li><p><strong>Who’s In host management</strong>: The event roster now
+shows a flat list with RSVP status pills for every invited individual
+and community. Hosts can change a guest’s RSVP state or remove them
+directly from the roster without leaving the event. RSVP changes stream
+live to all open clients so the count and list update without a reload
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2492">#2492</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2527">#2527</a>)</p></li>
+<li><p><strong>Unified create + share flow</strong>: Creating a gear
+item or event now saves immediately and auto-opens the Share sheet,
+replacing the previous two-step create-then-share flow. The redesigned
+share sheet lets owners invite specific Ripls members by name alongside
+community-level sharing in a single step (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2492">#2492</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2500">#2500</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2527">#2527</a>)</p></li>
+<li><p><strong>Simplified community creation</strong>: The community
+creation flow no longer generates a name or description with AI. A
+two-field modal (name + optional description) replaces the previous
+AI-generated preview; the LLM is now used only to generate image-search
+keywords for the background photo. Naming an existing nameless community
+uses the same modal in promote mode (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2547">#2547</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2555">#2555</a>)</p></li>
+<li><p><strong>Gear booking and owner reservations</strong>: The gear
+view has been redesigned to align with the experience and request
+content views. Loans and giveaways now have separate flows — giveaways
+show a “Who wants it” sign-up card where any interested user can raise a
+hand and the owner picks. A booking system and owner-reservation screen
+let owners track interest, and a loan-link lets borrowers deep-link
+directly to the loan record (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2542">#2542</a>)</p></li>
+<li><p><strong>Redesigned experience and inbox</strong>: The Workshop
+experience content view has been updated (v4.1) with a new simplified
+Needs You inbox, an inline conversation preview, shared RSVP chip
+components, and an expand-in-place pitching-in widget. The community
+calendar now supports monthly view and displays weather alongside event
+times, and the time/location poll compose screens match the v3 prototype
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2278">#2278</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2279">#2279</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2280">#2280</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2487">#2487</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2486">#2486</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2528">#2528</a>)</p></li>
+<li><p><strong>Design token unification</strong>: App and web now share
+a single source of truth for color (<code>Ink</code> dark +
+<code>Sage</code> accent) and typography (Libre Baskerville headings +
+Public Sans body). The token set is enforced in CI — raw hex colors in
+web styles and non-token font names in Dart fail the lint gate (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2441">#2441</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2442">#2442</a>)</p></li>
+<li><p><strong>Website redesign</strong>: ripls.org is now the primary
+landing page with audience-specific pages for crew, moms, kids, casual,
+and sustainability audiences, plus updated investor materials. Demo
+videos show the Walnut Creek event demo and the dripping-sink request
+demo, and all marketing surfaces share the new Ink/Sage design system
+and Libre Baskerville/Public Sans typography (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2297">#2297</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2434">#2434</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2446">#2446</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Request followup prompts</strong>: Users who post a
+request now receive a 3-day recurring push notification prompting them
+to check if it has been fulfilled, deep-linking into the existing
+fulfill UI rather than asking for a yes/no in the notification (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2274">#2274</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2430">#2430</a>)</p></li>
+<li><p><strong>Revoke share link had no effect</strong>: Tapping
+“Revoke” on a shared item link did not actually invalidate the
+server-side invite or QR code — the link stayed usable. The new
+<code>RevokeShareLink</code> RPC accepts a typed short code and
+correctly invalidates the link; the legacy <code>RevokeInviteLink</code>
+RPC has been removed (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2273">#2273</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2428">#2428</a>)</p></li>
+<li><p><strong>Deleting an item left it visible</strong>: Deleting a
+gear item did not evict the profile or community-gear cache on the
+client, so the deleted item continued to appear until the TTL expired.
+The cache is now explicitly invalidated on delete (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2207">#2207</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2431">#2431</a>)</p></li>
+<li><p><strong>Duplicate and flapping notifications</strong>: Two
+separate notification-dedup fixes land in this release. Duplicate
+event-completion reminders were caused by the same
+scheduled-notification row being inserted more than once; the storage
+layer now prevents this with a unique constraint. Separately, rapid
+repeated state changes on a request or offer were triggering redundant
+notification fan-outs; the dispatcher now suppresses repeated sends for
+fulfilled/selected events (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2458">#2458</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2276">#2276</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2460">#2460</a>)</p></li>
+<li><p><strong>Cache stale-read race on invalidation</strong>: An
+in-flight fetch could complete after its cache key was invalidated,
+re-inserting the stale value. In-flight fetches are now cancelled and
+evicted when their key is invalidated</p></li>
+<li><p><strong>“Manage Members” label</strong>: The community governance
+screen was labeled “Manage Members” even though it primarily lets owners
+view and invite — removal requires a different flow. It is now labeled
+“View &amp; Invite Members” (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2272">#2272</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2427">#2427</a>)</p></li>
+<li><p><strong>CAN-SPAM postal address</strong>: Outgoing notification
+emails used the wrong default postal address and legal entity name.
+Corrected to Type2Fun Foundation, PBC in Boulder, CO, with the
+support@ripls.org address (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2492">#2492</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2575">#2575</a>)</p></li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li><strong>GetMedia authorization</strong>: <code>GetMedia</code>
+previously returned any media file to any authenticated user without
+checking membership. It now enforces per-resource authorization — the
+caller must belong to a community that has access to the referenced
+media (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1529">#1529</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2544">#2544</a>)</li>
+</ul>
+<h2 id="reliability-infrastructure">Reliability &amp;
+Infrastructure</h2>
+<ul>
+<li><p><strong>Server crash alerting</strong>: The monitoring module now
+alerts on server OOM kills, non-zero process exits, and startup fatals —
+not only uptime gaps — so the on-call channel is paged on actual
+crashes, not just scheduled maintenance windows (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2490">#2490</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2491">#2491</a>)</p></li>
+<li><p><strong>Android toolchain migration (AGP 9 + Gradle 9)</strong>:
+The Android build toolchain is now on AGP 9.2.1 / Gradle 9.5.1. The
+runner image delegates SDK component provisioning to AGP, removing the
+hardcoded build-tools, platform, and cmake version pins (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2404">#2404</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2422">#2422</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2576">#2576</a>)</p></li>
+<li><p><strong>Self-hosted Renovate with automated fixes</strong>:
+Renovate now runs self-hosted on the mimir runner. Failing Renovate
+dependency PRs are automatically retried with a Claude-assisted fix step
+before a human needs to intervene, and human-review PRs auto-merge once
+approved (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2395">#2395</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2396">#2396</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2358">#2358</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2399">#2399</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2413">#2413</a>)</p></li>
+<li><p><strong>Doc-drift guard</strong>: A CI ratchet now verifies that
+docs under <code>docs/</code> semantically match the code they describe
+on every PR that touches governed files. Stale prose is auto-fixed and
+committed back to the PR branch (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2420">#2420</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2425">#2425</a>)</p></li>
+<li><p><strong>Hierarchical doc-context routing</strong>: A generated
+<code>docs/llms.txt</code> index maps every architecture and convention
+doc to the code paths it governs, so AI tools and review skills load the
+right docs automatically for each PR (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2398">#2398</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2406">#2406</a>)</p></li>
+<li><p><strong>API cleanup</strong>: Removed the deprecated
+<code>GetOrCreateInviteLink</code> RPC (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2058">#2058</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2563">#2563</a>);
+dropped <code>SubmitRequestRequest.community_id</code> in favor of
+<code>ShareItem</code> (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2529">#2529</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2559">#2559</a>);
+and removed the unused <code>SuggestGearLocation</code> endpoint (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2209">#2209</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2558">#2558</a>)
+and the dead <code>QueryByProximityWithJoin</code> storage helper (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2146">#2146</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2557">#2557</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.24.0.html">0.24.0</a> &mdash; June 1,
+2026</li>
+                <li><a href="0.23.2.html">0.23.2</a> &mdash; May 29,
+2026</li>
+                <li><a href="0.23.1.html">0.23.1</a> &mdash; May 29,
+2026</li>
+                <li><a href="0.23.0.html">0.23.0</a> &mdash; May 28,
+2026</li>
+                <li><a href="0.22.0.html">0.22.0</a> &mdash; May 20,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

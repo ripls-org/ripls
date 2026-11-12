@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.29.1 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.29.1">Release 0.29.1</h1>
+            <p class="release-date">August 9, 2026</p>
+<p>Connection-starvation fix for the home screen and a web-based
+community invite flow.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Home Screen Stall Fixed</strong>: The home screen could
+spin indefinitely because the client opened one realtime stream per
+community — on HTTP/1.1 (local dev and e2e), those streams consumed
+every connection slot before <code>GetHomeView</code> could be sent. On
+production the stall didn’t manifest, but each user was still sustaining
+a poll timer and a blocked goroutine per community, reaching 1.6 req/s
+per user against a design that assumed ~0.1. The fix collapses the
+per-community fan-out to a single <code>StreamUserEvents</code> /
+<code>ListUserEvents</code> pair; membership is resolved server-side per
+event, so joining or leaving takes effect with no reconnect (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2867">#2867</a>)</p></li>
+<li><p><strong>Community Invites Now Work in a Browser</strong>: Tapping
+a <code>/go/{code}</code> community invite on desktop — or any device
+without the app — previously showed only “To accept this invitation,
+download the Ripls app.” There was no way to continue in a browser at
+all. The invite link now opens a phone-first landing page with the group
+name, member count, and a <strong>Join the group</strong> button that
+routes through the existing phone-auth flow. An already-authenticated
+visitor joins directly without re-verifying (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2875">#2875</a>)</p></li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>Deprecated Share RPCs Removed</strong>: The six per-type
+<code>ShareGear</code>, <code>ShareExperience</code>,
+<code>ShareRequest</code>, <code>UnshareGear</code>,
+<code>UnshareExperience</code>, and <code>UnshareRequest</code> RPCs and
+their twelve message types are deleted. All clients have used
+<code>ShareItem</code> / <code>UnshareItem</code> since v0.28.0 (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2526">#2526</a>)</p></li>
+<li><p><strong>SMS Delivery Monitoring</strong>:
+<code>sms_delivery_outcomes_{env}</code> counters and a failure-rate
+alert are now live. The alert uses <code>condition_threshold</code> (not
+PromQL) so it can be in place before the SMS channel goes live in
+production (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2569">#2569</a>)</p></li>
+<li><p><strong>Email Delivery Latency Alert</strong>: A P95
+accepted→delivered latency alert fires when sign-in code delivery
+exceeds 10 s — roughly 12× the typical 700–900 ms observed delivery
+time. Also fixed four Cloud Monitoring dashboard resources that were
+generating noisy no-op plan diffs on every <code>terraform plan</code>
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2862">#2862</a>)</p></li>
+<li><p><strong>Dev Deploy Race Fixed</strong>: Concurrent merges no
+longer cause a red-X dev deploy failure. A workflow concurrency group
+cancels the older in-flight run rather than letting it race and lose (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2879">#2879</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.29.0.html">0.29.0</a> &mdash; August 8,
+2026</li>
+                <li><a href="0.28.3.html">0.28.3</a> &mdash; August 2,
+2026</li>
+                <li><a href="0.28.2.html">0.28.2</a> &mdash; July 31,
+2026</li>
+                <li><a href="0.28.1.html">0.28.1</a> &mdash; July 30,
+2026</li>
+                <li><a href="0.28.0.html">0.28.0</a> &mdash; July 28,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

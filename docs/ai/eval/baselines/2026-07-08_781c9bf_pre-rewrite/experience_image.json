@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "suite": "TestExperienceImagePrompt",
+  "run": {
+    "timestamp_utc": "2026-07-08T15:15:04Z",
+    "git_commit": "42f387a412",
+    "git_branch": "prompt_rewrite",
+    "label": "pre-rewrite"
+  },
+  "goldens_file": "experience_image_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "pass_rate": 1,
+      "threshold": 0.78,
+      "passed": true,
+      "median_latency_ms": 3304,
+      "p95_latency_ms": 3438,
+      "field_pass_rates": {
+        "has_description": 1,
+        "min_confidence": 1,
+        "title_contains": 1
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 13669,
+      "p95_latency_ms": 15019,
+      "field_pass_rates": {
+        "has_description": 1,
+        "min_confidence": 1,
+        "title_contains": 1
+      }
+    },
+    {
+      "provider": "gemini",
+      "model": "vertexai/gemini-3.1-flash-lite",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 3656,
+      "p95_latency_ms": 3709,
+      "field_pass_rates": {
+        "has_description": 1,
+        "min_confidence": 1,
+        "title_contains": 1
+      }
+    }
+  ]
+}

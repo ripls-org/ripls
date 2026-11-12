@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ripls — Visual unification choice sheet (#2441)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Spectral:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Besley:wght@400;500;600;700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  :root {
+    --chrome-bg: #101311; --chrome-card: #181C19; --chrome-ink: #EDF1ED;
+    --chrome-soft: rgba(237,241,237,0.72); --chrome-faint: rgba(237,241,237,0.45);
+    --chrome-line: rgba(237,241,237,0.1); --chrome-sage: #8FB89B;
+  }
+  body {
+    background: var(--chrome-bg); color: var(--chrome-ink);
+    font-family: 'Public Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; padding: 56px 28px 120px;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  .tag { display: inline-flex; padding: 4px 12px; background: #5B8268; color: #0d130e; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 14px; }
+  h1 { font-family: 'Spectral', serif; font-weight: 600; font-size: 34px; letter-spacing: -0.015em; margin-bottom: 10px; }
+  .lede { color: var(--chrome-soft); max-width: 980px; line-height: 1.65; font-size: 14.5px; margin-bottom: 8px; }
+  .lede b { color: var(--chrome-ink); }
+  .lede code { font-size: 13px; background: var(--chrome-card); padding: 1px 6px; border-radius: 5px; }
+
+  /* ---- font pairing control bar ---- */
+  .controls {
+    position: sticky; top: 0; z-index: 30; margin: 26px auto 34px; max-width: 1280px;
+    background: color-mix(in srgb, var(--chrome-card) 92%, transparent);
+    backdrop-filter: blur(10px); border: 1px solid var(--chrome-line);
+    border-radius: 14px; padding: 12px 18px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .controls .lbl { font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; color: var(--chrome-faint); margin-right: 4px; }
+  .fbtn {
+    border: 1px solid var(--chrome-line); background: transparent; color: var(--chrome-soft);
+    border-radius: 999px; padding: 8px 16px; font-size: 12.5px; cursor: pointer;
+    font-family: 'Public Sans', sans-serif; transition: all 120ms ease;
+  }
+  .fbtn .fs { font-size: 14px; }
+  .fbtn:hover { border-color: var(--chrome-sage); color: var(--chrome-ink); }
+  .fbtn.on { background: var(--chrome-sage); border-color: var(--chrome-sage); color: #0d130e; font-weight: 600; }
+  .controls .pairnote { font-size: 12px; color: var(--chrome-faint); margin-left: auto; max-width: 380px; line-height: 1.45; }
+
+  /* ---- non-goals strip ---- */
+  .nongoal { border-radius: 18px; overflow: hidden; margin-bottom: 44px; box-shadow: 0 18px 48px rgba(0,0,0,0.4); position: relative; }
+  .nongoal .body { background: #F5ECE1; color: #2A211C; padding: 30px 34px 28px; }
+  .nongoal .kick { font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; color: #A0623C; text-transform: uppercase; margin-bottom: 12px; font-family: 'Public Sans', sans-serif; }
+  .nongoal h2 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: 36px; line-height: 1.15; max-width: 620px; margin-bottom: 10px; }
+  .nongoal h2 em { color: #5b8268; }
+  .nongoal p { font-family: 'Public Sans', sans-serif; font-size: 14px; line-height: 1.65; color: #6A5D56; max-width: 540px; margin-bottom: 18px; }
+  .nongoal .cta { display: inline-block; background: #E07A5F; color: #fff; font-family: 'Public Sans', sans-serif; font-size: 13px; font-weight: 700; padding: 12px 26px; border-radius: 999px; }
+  .nongoal .strike {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(-45deg, transparent 0 26px, rgba(209,107,78,0.08) 26px 30px);
+  }
+  .nongoal .meta { padding: 13px 22px; background: var(--chrome-card); border-top: 1px solid var(--chrome-line); font-size: 12px; line-height: 1.6; color: var(--chrome-soft); }
+  .nongoal .meta b { color: var(--chrome-ink); }
+  .nongoal .meta .no { color: #D16B4E; font-weight: 700; margin-right: 6px; }
+
+  /* ---- candidate sections ---- */
+  .cand { margin-bottom: 52px; }
+  .cand-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+  .cand-head h2 { font-family: 'Spectral', serif; font-weight: 600; font-size: 24px; }
+  .cand-head .no { color: var(--chrome-sage); font-family: 'Spectral', serif; font-weight: 600; font-size: 24px; }
+  .prov { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--chrome-line); color: var(--chrome-soft); }
+  .cand-sub { color: var(--chrome-soft); font-size: 13.5px; line-height: 1.6; max-width: 980px; margin-bottom: 18px; }
+  .cand-sub b { color: var(--chrome-ink); }
+
+  .themes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 1080px) { .themes { grid-template-columns: 1fr; } }
+
+  /* ---- one theme panel, rendered in ITS OWN tokens ---- */
+  .panel { border-radius: 16px; overflow: hidden; box-shadow: 0 18px 48px rgba(0,0,0,0.45); background: var(--bg); color: var(--text); }
+  .panel-tag { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .panel-tag .t { font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text2); }
+  .panel-tag .p { font-family: var(--sans); font-size: 10px; color: var(--faint); letter-spacing: 0.04em; }
+
+  /* hero sample */
+  .hero { background: var(--heroBg); color: var(--heroInk); padding: 30px 26px 28px; }
+  .hero .kick { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--heroKick); margin-bottom: 12px; }
+  .hero h3 { font-family: var(--serif); font-weight: var(--dispW, 500); font-size: clamp(26px, 3vw, 34px); line-height: 1.14; letter-spacing: -0.01em; max-width: 460px; margin-bottom: 10px; }
+  .hero h3 .acc { color: var(--heroAccent); font-style: normal; box-shadow: inset 0 -0.14em 0 0 color-mix(in srgb, var(--heroAccent) 38%, transparent); }
+  .hero p { font-family: var(--sans); font-size: 13.5px; line-height: 1.6; color: var(--heroSub); max-width: 420px; margin-bottom: 18px; }
+  .hero .ctas { display: flex; gap: 10px; flex-wrap: wrap; }
+  .hero .cta1 { font-family: var(--sans); font-size: 12.5px; font-weight: 700; padding: 11px 22px; border-radius: 999px; background: var(--primary); color: var(--onPrimary); }
+  .hero .cta2 { font-family: var(--sans); font-size: 12.5px; font-weight: 600; padding: 11px 22px; border-radius: 999px; border: 1.5px solid color-mix(in srgb, var(--heroInk) 45%, transparent); color: var(--heroInk); }
+
+  /* app body sample */
+  .appbody { padding: 22px 26px 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px 16px; margin-bottom: 14px; }
+  .card .ckick { font-family: var(--sans); font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primaryText); margin-bottom: 7px; }
+  .card h4 { font-family: var(--serif); font-weight: var(--dispW, 500); font-size: 19px; line-height: 1.25; margin-bottom: 5px; }
+  .card .cbody { font-family: var(--sans); font-size: 13px; line-height: 1.6; color: var(--text2); margin-bottom: 12px; }
+  .card .cmeta { font-family: var(--sans); font-size: 11px; color: var(--faint); margin-bottom: 13px; }
+  .card .crow { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+  .b1 { font-family: var(--sans); font-size: 12px; font-weight: 700; padding: 10px 19px; border-radius: 999px; background: var(--primary); color: var(--onPrimary); }
+  .b2 { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 10px 19px; border-radius: 999px; background: transparent; color: var(--primaryText); border: 1.5px solid var(--border); }
+  .chip { font-family: var(--sans); font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accentText); }
+
+  /* status banners */
+  .statuses { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .st { font-family: var(--sans); font-size: 11.5px; font-weight: 600; padding: 9px 12px; border-radius: 10px; border: 1px solid; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  .st .r { font-size: 9.5px; font-weight: 700; opacity: 0.85; letter-spacing: 0.03em; }
+
+  /* swatches */
+  .swatches { display: flex; gap: 6px; margin-bottom: 6px; }
+  .sw { flex: 1; height: 30px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--text) 14%, transparent); position: relative; }
+  .sw span { position: absolute; left: 5px; bottom: -16px; font-family: var(--sans); font-size: 8px; letter-spacing: 0.03em; color: var(--faint); white-space: nowrap; }
+  .swl { height: 18px; margin-bottom: 8px; }
+
+  /* contrast badge table */
+  .ratios { border-top: 1px dashed var(--border); margin-top: 20px; padding-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .ratio { font-family: var(--sans); font-size: 10px; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--border); color: var(--text2); display: inline-flex; gap: 6px; align-items: center; }
+  .ratio b { font-variant-numeric: tabular-nums; }
+  .ratio .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .ratio.pass .dot { background: #4C9A5F; }
+  .ratio.large .dot { background: #D9A53F; }
+  .ratio.fail .dot { background: #D14C3A; }
+  .ratio.fail { border-color: #D14C3A; color: var(--text); font-weight: 600; }
+
+  .cand .meta { margin-top: 14px; padding: 13px 20px; background: var(--chrome-card); border: 1px solid var(--chrome-line); border-radius: 12px; font-size: 12.5px; line-height: 1.65; color: var(--chrome-soft); }
+  .cand .meta b { color: var(--chrome-ink); }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 30px; font-size: 11.5px; color: var(--chrome-soft); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <span class="tag">VISUAL UNIFICATION · ISSUE #2441 · PHASE 1</span>
+  <h1>One palette, one font pair — the choice sheet</h1>
+  <p class="lede">Seven palette candidates, each presented as a <b>complete light + dark token set</b> using the minimal vocabulary from #2441: background ramp, text ramp, border, primary + on-primary, accent, and the shared status colors. The favorites from PR&nbsp;#2440 (<b>ink &amp; sage</b>, <b>deep river</b>, <b>plum</b>) were single-theme explorations — their counterpart themes here are <b>synthesized</b> and labeled as such. Two outliers (<b>glacier</b>, <b>evergreen</b>) are included for contrast. Every panel renders a marketing hero, an app-style card, buttons, body text, and status banners in its own tokens, with <b>live-computed WCAG ratios</b> for the load-bearing pairs. Pick a font pairing below — it re-renders everything.</p>
+  <p class="lede">Status colors are the current app set (<code>#7A9B76 / #E8A661 / #D16B4E / #5A7A82</code>), shown shared across themes per the issue. Heads-up on what the badges will show: <b>warning fails (&lt;3:1) on every light theme below — and on today’s shipped light theme too</b>; success clears only the large-text bar. That’s pre-existing, not a defect of any candidate, and it’s the concrete evidence for giving status colors per-theme variants in <code>tokens.json</code>.</p>
+</div>
+
+<div class="controls" id="fontControls">
+  <span class="lbl">FONT PAIRING</span>
+  <!-- buttons injected -->
+  <span class="pairnote" id="pairNote"></span>
+</div>
+
+<div class="wrap">
+  <div class="legend">
+    <span><span class="dot" style="background:#4C9A5F"></span> ≥ 4.5:1 — passes AA normal text</span>
+    <span><span class="dot" style="background:#D9A53F"></span> ≥ 3:1 — large text / UI components only</span>
+    <span><span class="dot" style="background:#D14C3A"></span> &lt; 3:1 — fails</span>
+  </div>
+
+  <!-- non-goals strip -->
+  <div class="nongoal">
+    <div class="body">
+      <div class="strike"></div>
+      <div class="kick">For contrast · the look we are leaving</div>
+      <h2 style="font-style:normal">Share more, <em style="font-style:italic">buy less</em>, together.</h2>
+      <p>Warm cream background (#F5ECE1), conventional serif display, the italic word-accent, terracotta call-to-action (#E07A5F). Pleasant — and indistinguishable from every other 2025-era AI-product landing page.</p>
+      <span class="cta">Get the app</span>
+    </div>
+    <div class="meta"><span class="no">✕</span><b>Non-goal.</b> The anti-constraints from #2441: no warm cream/off-white field (~#F4F1EA family), no Georgia/Fraunces/Playfair-family display serif, no italic word-accents, no terracotta/amber accent. Headline accents below use a non-italic color + underline treatment instead.</div>
+  </div>
+
+  <div id="candidates"></div>
+</div>
+
+<script>
+/* ---------- font pairings ---------- */
+const PAIRINGS = [
+  {
+    id: 'lb-ps', serif: "'Libre Baskerville', serif", sans: "'Public Sans', sans-serif", dispW: 400, selected: true,
+    label: 'Libre Baskerville + Public Sans',
+    note: 'The app incumbent serif with the marketing sans. Re-justification: Baskerville is a conventional book serif — closest to the "expected" end of the allowed range. Keeps app font assets unchanged.'
+  },
+  {
+    id: 'nr-ps', serif: "'Newsreader', serif", sans: "'Public Sans', sans-serif", dispW: 500,
+    label: 'Newsreader + Public Sans',
+    note: 'The marketing incumbent pair. Editorial, slightly condensed display forms; optical sizing gives real display/text variants. Re-justification: outside the banned family, but currently fashionable.'
+  },
+  {
+    id: 'sp-ipx', serif: "'Spectral', serif", sans: "'IBM Plex Sans', sans-serif", dispW: 500,
+    label: 'Spectral + IBM Plex Sans',
+    note: 'Bookish-but-modern serif designed for screens, with a rational engineered sans. Quieter than Newsreader, warmer than Baskerville; the most "durable" of the four.'
+  },
+  {
+    id: 'bs-sg', serif: "'Besley', serif", sans: "'Schibsted Grotesk', sans-serif", dispW: 500,
+    label: 'Besley + Schibsted Grotesk',
+    note: 'A Clarendon-family revival with real character in the display sizes, paired with a contemporary grotesk. The most distinctive option — furthest from the serif clichés.'
+  },
+];
+
+/* ---------- shared status colors (current app set) ---------- */
+const STATUS = [
+  { name: 'Success', hex: '#7A9B76' },
+  { name: 'Warning', hex: '#E8A661' },
+  { name: 'Error',   hex: '#D16B4E' },
+  { name: 'Info',    hex: '#5A7A82' },
+];
+
+/* ---------- candidates ----------
+   Each theme: bg, surface, border, text, text2, faint,
+   primary (+onPrimary, hover), primaryText (primary usable as text on bg),
+   accent (+accentText: accent usable as text on surface),
+   heroBg/heroInk/heroSub/heroKick/heroAccent (presentation: the marketing band).
+   provenance: 'original' (verbatim from PR #2440 explorer) or 'synthesized'. */
+const CANDIDATES = [
+  {
+    id: 'inksage', no: '01', name: 'Ink & Sage', selected: true,
+    sub: 'White field, near-black band, deep sage reserved for actions. Max-contrast minimal — the palette does almost nothing, so the type pairing does almost everything. The dark theme is the band promoted to a full surface system.',
+    meta: '<b>Why it could win:</b> timeless, the most legible of the five, photography and user content pop against it. <b>Risk:</b> coldest of the five — the community warmth has to come entirely from imagery and copy.',
+    light: {
+      prov: 'original (PR #2440)',
+      bg: '#FFFFFF', surface: '#F2F2EE', border: '#DDDDD4',
+      text: '#191C19', text2: '#4A524C', faint: '#7C837C',
+      primary: '#3E5A47', onPrimary: '#F4F7F1', primaryText: '#3E5A47',
+      accent: '#1F2421', accentText: '#1F2421',
+      heroBg: '#1F2421', heroInk: '#F4F4EF', heroSub: '#C2C6BE', heroKick: '#9DBFA8', heroAccent: '#9DBFA8',
+    },
+    dark: {
+      prov: 'synthesized',
+      bg: '#141714', surface: '#1F2421', border: '#323832',
+      text: '#F4F4EF', text2: '#ABB3AB', faint: '#7B837B',
+      primary: '#9DBFA8', onPrimary: '#14241A', primaryText: '#9DBFA8',
+      accent: '#E6E8E1', accentText: '#E6E8E1',
+      heroBg: '#0E100E', heroInk: '#F4F4EF', heroSub: '#AFB6AF', heroKick: '#9DBFA8', heroAccent: '#9DBFA8',
+    },
+  },
+  {
+    id: 'deepriver', no: '02', name: 'Deep River',
+    sub: 'Blue-slate depths with a sea-sage lead and stone-blue second — the brand green drifts cooler and reads aquatic. The light theme is synthesized: the same sea-sage family deepened until it carries buttons on near-white.',
+    meta: '<b>Why it could win:</b> the most atmospheric dark theme of the set; sage-on-slate feels like none of the competitors. <b>Risk:</b> the cool cast can read "fintech"; the light synthesis must keep the river identity without going generic teal.',
+    light: {
+      prov: 'synthesized',
+      bg: '#F4F8F8', surface: '#FFFFFF', border: '#D9E4E4',
+      text: '#182529', text2: '#4E6166', faint: '#7C8C8F',
+      primary: '#2E6157', onPrimary: '#F0F7F5', primaryText: '#2E6157',
+      accent: '#41718C', accentText: '#3A657E',
+      heroBg: '#254A47', heroInk: '#EAF1F0', heroSub: '#B9C9C7', heroKick: '#A9D2C1', heroAccent: '#A9D2C1',
+    },
+    dark: {
+      prov: 'original (PR #2440)',
+      bg: '#141C22', surface: '#202B32', border: '#30404A',
+      text: '#EAF1F0', text2: '#A9B8B9', faint: '#76878A',
+      primary: '#8FBFAD', onPrimary: '#102019', primaryText: '#8FBFAD',
+      accent: '#7FA8BF', accentText: '#8FB5C9',
+      heroBg: '#0E1418', heroInk: '#EAF1F0', heroSub: '#A9B8B9', heroKick: '#8FBFAD', heroAccent: '#A9D2C1',
+    },
+  },
+  {
+    id: 'plum', no: '03', name: 'Plum',
+    sub: 'Deep plum-charcoal with the sage lead and a lilac second — the adventurous one. The light theme is synthesized: plum-tinted whites with sage deepened for buttons and the lilac darkened until it works as a text accent.',
+    meta: '<b>Why it could win:</b> instantly ownable; nobody in the sharing/community space looks like this, and sage-on-plum is genuinely beautiful. <b>Risk:</b> the boldest brand bet — lilac must stay an accent, not a theme, or it tips twee; hardest of the five to keep coherent across surfaces.',
+    light: {
+      prov: 'synthesized',
+      bg: '#FBF8FB', surface: '#FFFFFF', border: '#E6DEE8',
+      text: '#241B26', text2: '#5E5162', faint: '#8D8090',
+      primary: '#3F644F', onPrimary: '#F2F7F2', primaryText: '#3F644F',
+      accent: '#7B5E96', accentText: '#6E5387',
+      heroBg: '#3A2E40', heroInk: '#F0EAF0', heroSub: '#CBBFCE', heroKick: '#ADCDB9', heroAccent: '#ADCDB9',
+    },
+    dark: {
+      prov: 'original (PR #2440)',
+      bg: '#1E1820', surface: '#2A2230', border: '#3E3445',
+      text: '#F0EAF0', text2: '#BCAFC0', faint: '#897D8D',
+      primary: '#93B8A0', onPrimary: '#16241A', primaryText: '#93B8A0',
+      accent: '#B59FCC', accentText: '#B59FCC',
+      heroBg: '#140F16', heroInk: '#F0EAF0', heroSub: '#BCAFC0', heroKick: '#93B8A0', heroAccent: '#ADCDB9',
+    },
+  },
+  {
+    id: 'glacier', no: '04', name: 'Glacier  ·  outlier',
+    sub: 'Icy cool light field with a deep spruce lead and a glacier-teal second. Included as the light-theme outlier: where Ink & Sage is stark, Glacier is tinted — a cool counter-proposal to the warm cream it replaces. Dark theme synthesized from its spruce band.',
+    meta: '<b>Why it could win:</b> calm and fresh without warmth-cliché; the deep spruce primary has the best button contrast in the set. <b>Risk:</b> icy can drift clinical; the teal second wants careful rationing.',
+    light: {
+      prov: 'original (PR #2440)',
+      bg: '#EFF4F5', surface: '#FFFFFF', border: '#D6E1E3',
+      text: '#1A2425', text2: '#4E6062', faint: '#7B8B8D',
+      primary: '#2F5D4A', onPrimary: '#EDF6F1', primaryText: '#2F5D4A',
+      accent: '#3E7E8C', accentText: '#38717E',
+      heroBg: '#1F3A3D', heroInk: '#EDF5F5', heroSub: '#B7C8C9', heroKick: '#9CC4B0', heroAccent: '#9CC4B0',
+    },
+    dark: {
+      prov: 'synthesized',
+      bg: '#101D1F', surface: '#1A2B2E', border: '#2B3F42',
+      text: '#E8F1F1', text2: '#A4B8B9', faint: '#718587',
+      primary: '#9CC4B0', onPrimary: '#11241B', primaryText: '#9CC4B0',
+      accent: '#6FAAB8', accentText: '#7FB6C3',
+      heroBg: '#0B1517', heroInk: '#E8F1F1', heroSub: '#A4B8B9', heroKick: '#9CC4B0', heroAccent: '#9CC4B0',
+    },
+  },
+  {
+    id: 'evergreen', no: '05', name: 'Evergreen  ·  outlier',
+    sub: 'Tonal forest dark — green on green on green, with light sage carrying actions. Included as the dark-theme outlier against Deep River’s blue and Plum’s purple: the all-in nature statement. Light theme synthesized as a green-tinted white. Its explorer amber second is shown muted: amber is on the anti-constraint list, so here it survives only as the (shared) warning color. Candidate 06 below is the same base with the amber second allowed back in.',
+    meta: '<b>Why it could win:</b> the most "Ripls is the green app" of the five; tonal depth photographs beautifully behind imagery. <b>Risk:</b> monochrome green needs the second hue for wayfinding — and its natural second (amber) is anti-constrained, leaving it the least differentiated accent story.',
+    light: {
+      prov: 'synthesized',
+      bg: '#F6F9F4', surface: '#FFFFFF', border: '#DCE5D9',
+      text: '#1C241D', text2: '#505C51', faint: '#7E8A7E',
+      primary: '#3E6A4D', onPrimary: '#F0F7F1', primaryText: '#3E6A4D',
+      accent: '#2A4233', accentText: '#2A4233',
+      heroBg: '#2A4233', heroInk: '#ECF2E9', heroSub: '#BFCDBC', heroKick: '#9DBFA8', heroAccent: '#9DBFA8',
+    },
+    dark: {
+      prov: 'original (PR #2440)',
+      bg: '#161D17', surface: '#232F26', border: '#344236',
+      text: '#ECF2E9', text2: '#AEBFAE', faint: '#7B8B7B',
+      primary: '#8FB89B', onPrimary: '#14241A', primaryText: '#8FB89B',
+      accent: '#9DBFA8', accentText: '#9DBFA8',
+      heroBg: '#10160F', heroInk: '#ECF2E9', heroSub: '#AEBFAE', heroKick: '#8FB89B', heroAccent: '#9DBFA8',
+    },
+  },
+  {
+    id: 'evergreen-amber', no: '06', name: 'Evergreen & Amber',
+    sub: 'The same tonal forest base as 05, but the explorer’s original second hue is let back in — as a true <b>gold/honey amber</b> (hue ≈ 41°), deliberately far from Claude’s terracotta/coral (<b>#E07A5F</b>, hue ≈ 13°). Sage still owns every action; amber is rationed to highlights, chips, and the accent word. This is a scoped exception to the anti-amber constraint, not a repeal.',
+    meta: '<b>Why it could win:</b> solves Evergreen’s wayfinding problem — the gold second gives the monochrome forest a warm counterpoint that photographs like lantern light, without touching coral. <b>Risk:</b> the current warning color <code>#E8A661</code> (hue ≈ 31°) sits between this amber and coral — adopting this variant forces the warning status to shift (cooler or darker) so banner ≠ brand accent; and the amber needs strict rationing or the palette drifts toward the autumnal cliché it borders.',
+    light: {
+      prov: 'synthesized',
+      bg: '#F6F9F4', surface: '#FFFFFF', border: '#DCE5D9',
+      text: '#1C241D', text2: '#505C51', faint: '#7E8A7E',
+      primary: '#3E6A4D', onPrimary: '#F0F7F1', primaryText: '#3E6A4D',
+      accent: '#C9971F', accentText: '#826318',
+      heroBg: '#2A4233', heroInk: '#ECF2E9', heroSub: '#BFCDBC', heroKick: '#9DBFA8', heroAccent: '#E3BC66',
+    },
+    dark: {
+      prov: 'original base (PR #2440), amber re-tuned',
+      bg: '#161D17', surface: '#232F26', border: '#344236',
+      text: '#ECF2E9', text2: '#AEBFAE', faint: '#7B8B7B',
+      primary: '#8FB89B', onPrimary: '#14241A', primaryText: '#8FB89B',
+      accent: '#CBA85C', accentText: '#DBB45E',
+      heroBg: '#10160F', heroInk: '#ECF2E9', heroSub: '#AEBFAE', heroKick: '#8FB89B', heroAccent: '#E3BC66',
+    },
+  },
+  {
+    id: 'evergreen-clay', no: '07', name: 'Evergreen & Clay',
+    sub: 'The comparison point: the same forest base with the second hue allowed to veer <b>reddish</b> — clay/terracotta at hue ≈ 17°, knowingly inside the Claude-overlap zone (<b>#E07A5F</b> sits at ≈ 13°). This deliberately violates the issue’s anti-terracotta constraint so the choice between 06 and 07 is made by looking, not by prohibition. Sage still owns every action.',
+    meta: '<b>Why it’s here:</b> warm-red against deep green is the strongest complementary pairing in the set — if it wins on looks, the anti-constraint conversation reopens with evidence. <b>Risk:</b> it is the house style we set out to leave: this clay is near-indistinguishable from the Claude terracotta and from our own error color <code>#D16B4E</code> (hue ≈ 13°) — error states and brand accent would collide, and the palette reads as “Claude with a green coat.”',
+    light: {
+      prov: 'synthesized',
+      bg: '#F6F9F4', surface: '#FFFFFF', border: '#DCE5D9',
+      text: '#1C241D', text2: '#505C51', faint: '#7E8A7E',
+      primary: '#3E6A4D', onPrimary: '#F0F7F1', primaryText: '#3E6A4D',
+      accent: '#B85F3C', accentText: '#A14E2E',
+      heroBg: '#2A4233', heroInk: '#ECF2E9', heroSub: '#BFCDBC', heroKick: '#9DBFA8', heroAccent: '#E8A183',
+    },
+    dark: {
+      prov: 'original base (PR #2440), clay second added',
+      bg: '#161D17', surface: '#232F26', border: '#344236',
+      text: '#ECF2E9', text2: '#AEBFAE', faint: '#7B8B7B',
+      primary: '#8FB89B', onPrimary: '#14241A', primaryText: '#8FB89B',
+      accent: '#D98A6A', accentText: '#E29A7C',
+      heroBg: '#10160F', heroInk: '#ECF2E9', heroSub: '#AEBFAE', heroKick: '#8FB89B', heroAccent: '#E8A183',
+    },
+  },
+];
+
+/* ---------- WCAG contrast ---------- */
+function lum(hex) {
+  const c = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map(i => {
+    const v = parseInt(c.substr(i, 2), 16) / 255;
+    return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+function ratio(a, b) {
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+function badge(label, fg, bg) {
+  const r = ratio(fg, bg);
+  const cls = r >= 4.5 ? 'pass' : r >= 3 ? 'large' : 'fail';
+  return `<span class="ratio ${cls}"><span class="dot"></span>${label} <b>${r.toFixed(2)}</b></span>`;
+}
+
+/* ---------- rendering ---------- */
+function mix(hex, bgHex, pct) { // simple srgb mix for status banner tints
+  const p = pct / 100;
+  const c = h => [0, 2, 4].map(i => parseInt(h.replace('#', '').substr(i, 2), 16));
+  const [a, b] = [c(hex), c(bgHex)];
+  return '#' + a.map((v, i) => Math.round(v * p + b[i] * (1 - p)).toString(16).padStart(2, '0')).join('');
+}
+
+function themePanel(c, t, themeName) {
+  const vars = `
+    --bg:${t.bg}; --surface:${t.surface}; --border:${t.border};
+    --text:${t.text}; --text2:${t.text2}; --faint:${t.faint};
+    --primary:${t.primary}; --onPrimary:${t.onPrimary}; --primaryText:${t.primaryText};
+    --accent:${t.accent}; --accentText:${t.accentText};
+    --heroBg:${t.heroBg}; --heroInk:${t.heroInk}; --heroSub:${t.heroSub};
+    --heroKick:${t.heroKick}; --heroAccent:${t.heroAccent};`;
+
+  const sw = [
+    ['bg', t.bg], ['surface', t.surface], ['border', t.border],
+    ['text', t.text], ['text-2', t.text2], ['primary', t.primary], ['accent', t.accent],
+  ].map(([n, h]) => `<div class="sw" style="background:${h}"><span>${n} ${h.replace('#','')}</span></div>`).join('');
+
+  const sts = STATUS.map(s => {
+    const r = ratio(s.hex, t.surface);
+    const cls = r >= 4.5 ? 'pass' : r >= 3 ? 'large' : 'fail';
+    return `<div class="st" style="color:${s.hex}; border-color:${mix(s.hex, t.surface, 45)}; background:${mix(s.hex, t.surface, 12)}">
+      ${s.name} — RSVP didn’t send <span class="r">${r.toFixed(2)}:1 ${cls === 'fail' ? '✕' : cls === 'large' ? '△' : '✓'}</span></div>`;
+  }).join('');
+
+  const ratios = [
+    badge('text / bg', t.text, t.bg),
+    badge('text-2 / bg', t.text2, t.bg),
+    badge('faint / bg', t.faint, t.bg),
+    badge('on-primary / primary', t.onPrimary, t.primary),
+    badge('primary-as-text / bg', t.primaryText, t.bg),
+    badge('accent-as-text / surface', t.accentText, t.surface),
+    badge('hero ink / hero bg', t.heroInk, t.heroBg),
+  ].join('');
+
+  return `
+  <div class="panel" style="${vars}">
+    <div class="panel-tag"><span class="t">${themeName}</span><span class="p">${t.prov}</span></div>
+    <div class="hero">
+      <div class="kick">Ripls · Your neighborhood, organized</div>
+      <h3>The things we <span class="acc">share</span> are the things that hold us together.</h3>
+      <p>Lend the ladder. Host the potluck. Ask for the ride. One place for the hundred small exchanges that make a street a neighborhood.</p>
+      <div class="ctas"><span class="cta1">Get the app</span><span class="cta2">See how it works</span></div>
+    </div>
+    <div class="appbody">
+      <div class="card">
+        <div class="ckick">Event · Saturday 5:30 pm</div>
+        <h4>Potluck at the corner park</h4>
+        <div class="cbody">Nine households in. Maya’s bringing the folding tables — still need two mains and someone with a cooler.</div>
+        <div class="cmeta">Hosted by Maya W. · Elm Street Neighbors · 0.3 mi</div>
+        <div class="crow"><span class="b1">RSVP — I’m in</span><span class="b2">Bring something</span><span class="chip">Food</span><span class="chip">Outdoor</span></div>
+      </div>
+      <div class="statuses">${sts}</div>
+      <div class="swatches swl">${sw}</div>
+      <div class="ratios" style="margin-top:26px">${ratios}</div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const host = document.getElementById('candidates');
+  host.innerHTML = CANDIDATES.map(c => `
+    <section class="cand" id="${c.id}">
+      <div class="cand-head"><span class="no">${c.no}</span><h2>${c.name}</h2>${c.selected ? '<span class="prov" style="background:#5B8268; color:#0d130e; border-color:#5B8268; font-weight:700">✓ SELECTED — 2026-06-12</span>' : ''}</div>
+      <p class="cand-sub">${c.sub}</p>
+      <div class="themes">
+        ${themePanel(c, c.light, 'Light')}
+        ${themePanel(c, c.dark, 'Dark')}
+      </div>
+      <div class="meta">${c.meta}</div>
+    </section>`).join('');
+}
+
+/* ---------- font controls ---------- */
+function setPairing(p) {
+  document.documentElement.style.setProperty('--serif', p.serif);
+  document.documentElement.style.setProperty('--sans', p.sans);
+  document.documentElement.style.setProperty('--dispW', p.dispW);
+  document.getElementById('pairNote').textContent = p.note;
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.id === p.id));
+}
+
+const bar = document.getElementById('fontControls');
+const noteEl = document.getElementById('pairNote');
+PAIRINGS.forEach(p => {
+  const b = document.createElement('button');
+  b.className = 'fbtn'; b.dataset.id = p.id;
+  b.innerHTML = `<span class="fs" style="font-family:${p.serif}">Aa</span> ${p.label}${p.selected ? ' ✓' : ''}`;
+  b.addEventListener('click', () => setPairing(p));
+  bar.insertBefore(b, noteEl);
+});
+
+render();
+setPairing(PAIRINGS.find(p => p.selected)); // Libre Baskerville + Public Sans — chosen 2026-06-12
+</script>
+</body>
+</html>

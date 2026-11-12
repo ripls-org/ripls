@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ripls — Marketing pages index</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="/css/marketing.css">
+<style>
+  /* Convenience index of all the marketing pages — internal use, noindex. */
+  .index-group {
+    margin-top: 3rem;
+  }
+  .index-group:first-of-type { margin-top: 2.5rem; }
+  .index-group-title {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(42, 33, 28, 0.14);
+  }
+  .index-list { list-style: none; display: grid; gap: 1.1rem; }
+  .index-list a {
+    font-family: var(--serif);
+    font-size: clamp(1.15rem, 1.8vw, 1.4rem);
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(91, 130, 104, 0.4);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .index-list a:hover { color: var(--sage); border-bottom-color: var(--sage); }
+  .index-list .desc {
+    display: block;
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    margin-top: 0.3rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- "visible" is set statically since this page doesn't load marketing.js
+     (no backgrounds or scroll effects needed). -->
+<section class="section light visible" style="align-items: flex-start;">
+  <a href="/" class="brand" aria-label="Ripls home"><svg class="dot" viewBox="0 0 197.4 213.6" aria-hidden="true"><g transform="translate(98.952497,106.84531)"><circle cx="0" cy="-60" r="40"/><circle cx="0" cy="-60" r="20"/><circle cx="51.959999" cy="-30" r="40"/><circle cx="51.959999" cy="-30" r="20"/><circle cx="51.959999" cy="30" r="40"/><circle cx="51.959999" cy="30" r="20"/><circle cx="0" cy="60" r="40"/><circle cx="0" cy="60" r="20"/><circle cx="-51.959999" cy="30" r="40"/><circle cx="-51.959999" cy="30" r="20"/><circle cx="-51.959999" cy="-30" r="40"/><circle cx="-51.959999" cy="-30" r="20"/></g></svg>ripls</a>
+  <div class="content" style="margin-top: 4rem;">
+    <h1 class="headline">The marketing pages, <em>all in one place.</em></h1>
+
+    <div class="index-group">
+      <p class="index-group-title">For users</p>
+      <ul class="index-list">
+        <li><a href="/">Homescreen</a><span class="desc">The main landing page — gather without the group text.</span></li>
+        <li><a href="/moms/">Moms</a><span class="desc">It takes a village — the playgroup, the meal train, the school list.</span></li>
+        <li><a href="/kids/">Kids</a><span class="desc">Bring back "be home by dinner" — playdates and carpools without kid phones.</span></li>
+        <li><a href="/simple/">Simple living</a><span class="desc">Less stuff, more life — the tool shed, the hand-me-down chain, the supper club.</span></li>
+        <li><a href="/crew/">Crew</a><span class="desc">Take your weekends back — the trips, the projects, the standing rides.</span></li>
+        <li><a href="/walkthroughs/">Walkthroughs</a><span class="desc">Real journeys filmed step by step in the live product (#2684 pipeline) — starting with a family's Mother's Day brunch.</span></li>
+      </ul>
+    </div>
+
+    <div class="index-group">
+      <p class="index-group-title">For investors &amp; partners</p>
+      <ul class="index-list">
+        <li><a href="/green/">Green</a><span class="desc">A climate thesis that runs on the demand side — for climate and circular-economy investors.</span></li>
+        <li><a href="/builders/">Builders</a><span class="desc">Help build the way out — for technologists who want a different legacy.</span></li>
+        <li><a href="/social/">Social</a><span class="desc">Rebuild the thing we lost — for funders who treat connection as a matter of health.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

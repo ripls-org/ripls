@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.32.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.32.0">Release 0.32.0</h1>
+            <p class="release-date">September 19, 2026</p>
+<p>Ripls is now open source under Apache-2.0. The server infrastructure
+moves to self-hosted hardware, with a branding layer that lets any
+deployment supply its own identity without modifying code.</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Open-Source Release</strong>: The Ripls codebase is
+published under the Apache-2.0 license. The release adds governance
+files (license, trademark policy, contributing guidelines, code of
+conduct, security policy) and an export harness that keeps
+deployment-specific identity out of the public tree. The Go module path
+is now <code>github.com/ripls-org/ripls</code> (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2953">#2953</a>)</p></li>
+<li><p><strong>Self-Hosted Server Infrastructure</strong>: Both dev and
+prod server stacks now run on self-hosted hardware (mimir) alongside
+Cloud Run. The deploy pipeline loads images directly into the host’s
+daemon (no registry), verifies <code>/readyz</code> before the cutover,
+rolls back automatically on failure, and keeps the ten most recent
+builds on disk. Snapshotted ZFS datasets back the databases, and a daily
+dump script verified with a full prod restore is in place. Server logs
+ship to Cloud Logging so existing dashboards and alerts remain live (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3074">#3074</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3076">#3076</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3077">#3077</a>)</p></li>
+<li><p><strong>Configurable Server Branding</strong>: Brand name, legal
+entity, support email, policy URLs, app store links, Android package ID,
+deep-link scheme, and bot User-Agent are now supplied at deploy time via
+environment variables rather than compiled-in defaults. Unset values
+fall back to the flag defaults, so existing Cloud Run and mimir
+deployments continue to work without change (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2961">#2961</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3093">#3093</a>)</p></li>
+<li><p><strong>Graceful Stream Shutdown</strong>: The server now
+terminates open streaming RPCs when a shutdown signal arrives, allowing
+the drain period to complete without being held open by long-lived
+connections. Self-hosted deployments that use Docker’s stop timeout
+benefit most (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3092">#3092</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Push Notifications Use Firebase Installation ID</strong>:
+The server now addresses push notifications by Firebase Installation ID
+(FID) as the primary identifier, falling back to the registration token.
+FIDs survive app reinstalls and token refreshes, making delivery more
+reliable (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3043">#3043</a>)</p></li>
+<li><p><strong>Branding Regression Fixed Before Reaching Prod</strong>:
+The v0.31.0 open-source prep blanked the server’s identity defaults but
+did not wire the replacement environment variables through
+<code>entrypoint.sh</code> or Terraform. Any build of <code>main</code>
+between v0.31.0 and this release would have served empty invite
+landings, Play Store links, and policy URLs. The wiring was completed
+before prod was updated (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2984">#2984</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3093">#3093</a>)</p></li>
+<li><p><strong>Stock Image Copy No Longer Logs False Errors</strong>: A
+stock image copy whose media row was deleted mid-copy (by e2e test
+cleanup) logged an ERROR and tripped the all-errors alert. The race is
+now treated as a normal outcome (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3090">#3090</a>)</p></li>
+<li><p><strong>Server Starts Without Google Credentials in Dev
+Mode</strong>: The server can now start in dev mode without Google
+Application Default Credentials, making local development possible
+without a full GCP setup (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3055">#3055</a>)</p></li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>golangci-lint v2 Migration</strong>: Migrated
+<code>server/.golangci.yml</code> to the v2 schema, enabled
+staticcheck’s QF checks (minus control-flow rewrites), applied gofumpt’s
+extra rules, threaded <code>context.Context</code> through storage
+initialization, and guarded local bucket keys against path traversal (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3008">#3008</a>)</p></li>
+<li><p><strong>ONNX Runtime Upgraded</strong>: Native ONNX Runtime 1.22
+→ 1.29 and the Go binding 1.24 → 1.35, bringing ARM performance
+improvements and bug fixes to the on-device AI inference path (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3009">#3009</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3011">#3011</a>)</p></li>
+<li><p><strong>Metabase Removed</strong>: The local Metabase analytics
+setup, its Terraform resources, and the analytics skill are removed; a
+read-only Postgres role and SSH-tunnel access path replace it for ad-hoc
+queries (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/3075">#3075</a>)</p></li>
+<li><p><strong>OSS Denylist Scan Now Blocks PRs</strong>: The scan that
+checks for deployment-specific identifiers in the public export was
+previously report-only; it now blocks merges, making the open-source
+boundary a hard gate (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/3063">#3063</a>)</p></li>
+<li><p><strong>Dependency Updates</strong>: Flutter 3.47.4, Go 1.27.1,
+connectrpc v2.2.0, go_router 18, freezed 4, firebase plugins, Kotlin
+2.4.20, Android Gradle 9.7.1, and various JS/Terraform
+dependencies</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.31.0.html">0.31.0</a> &mdash; August 16,
+2026</li>
+                <li><a href="0.30.1.html">0.30.1</a> &mdash; August 16,
+2026</li>
+                <li><a href="0.30.0.html">0.30.0</a> &mdash; August 15,
+2026</li>
+                <li><a href="0.29.3.html">0.29.3</a> &mdash; August 13,
+2026</li>
+                <li><a href="0.29.2.html">0.29.2</a> &mdash; August 11,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

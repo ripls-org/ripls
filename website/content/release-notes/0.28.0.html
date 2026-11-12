@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.28.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.28.0">Release 0.28.0</h1>
+            <p class="release-date">July 28, 2026</p>
+<p>Four-tab navigation, smarter multi-need AI extraction, lend↔︎giveaway
+toggling, and a comprehensive contrast overhaul that clears WCAG AA
+across the app’s glass surfaces.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li><p><strong>Four-Tab Navigation</strong>: The main navigation is
+reorganized into four dedicated tabs — Home, Plans, Library, and People.
+Library replaces the old portfolio inbox and surfaces your gear
+collection clearly; People brings contacts and community discovery into
+a single tab alongside search (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2723">#2723</a>)</p></li>
+<li><p><strong>Multi-Need Request Extraction</strong>: When a request
+plainly names several things (“a ladder, a drill, and some help moving
+boxes”), the AI now extracts all of them into separate needs rather than
+collapsing to one. The extraction runs at request-create time on both
+client and server, with a precision/recall eval gate backing the model
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2731">#2731</a>)</p></li>
+<li><p><strong>Lend ↔︎ Giveaway Toggle</strong>: Owners can now switch an
+item between lending and permanent giveaway from the gear edit screen at
+any time — not just at creation. The new
+<code>SetGearAvailability</code> RPC makes this item-wide and enforces
+it consistently (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1152">#1152</a>)</p></li>
+<li><p><strong>Notification Deep-Link Recovery</strong>: Tapping a push
+notification now reliably routes to the relevant event, request, or loan
+— even when the app was cold-started or the deep link was dropped during
+startup. A route holder replays the saved route after the app is ready,
+and unrecoverable drops are reported to Crashlytics (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2636">#2636</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Contrast on Glass and Photo Surfaces</strong>: A measured
+sweep across all production renders found 160 failing contrast instances
+on glass sheets, hero photos, date pickers, and toasts. All are now
+fixed and gated: date-picker Cancel/OK went from 1.75:1 to 4.74:1;
+status colours in light theme from 1.86–2.76:1 to 4.73–5.73:1; the
+bottom tab dock, hero text over bright photos, and dark-theme toasts all
+reach WCAG AA. The glass token set (previously ~40 hand-tuned alpha
+constants outside every gate) is now part of the canonical
+<code>design/tokens.json</code> with a CI harness that measures
+composited pixel contrast (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2770">#2770</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2764">#2764</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2445">#2445</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2788">#2788</a>)</p></li>
+<li><p><strong>Share Link Community Scope</strong>: Item share links no
+longer include the sharing user’s private community name in the preview
+description — the link is scoped to the ad-hoc open-link community it
+was actually minted for (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2767">#2767</a>)</p></li>
+<li><p><strong>Server-Side i18n for Invite Pages</strong>: The
+invite.html and event.html SSR landing pages are now fully localized —
+error/fallback strings, plurals, composed copy, and date/time labels all
+respect the Accept-Language header (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2090">#2090</a>)</p></li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>Dead Flutter Code Removal</strong>: ~75 K lines of
+Flutter code unreachable from main.dart or their own tests were removed.
+A new dead-code detector (<code>app/tool/dead_code.dart</code>) runs in
+CI to gate against new accumulation, and 833 orphaned ARB localization
+keys were pruned alongside the removed screens (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2774">#2774</a>)</p></li>
+<li><p><strong>Sharing API Convergence</strong>: All client-side sharing
+is now routed through the unified <code>ShareItem</code> /
+<code>UnshareItem</code> RPCs. The six per-type <code>Share*</code> /
+<code>Unshare*</code> RPCs are deprecated and no longer called by new
+client code (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2526">#2526</a>)</p></li>
+<li><p><strong>AI Provider Reliability</strong>: Composite health status
+now aggregates across fallback and load-balanced AI providers so a
+leaf-provider outage no longer pages as a global failure. Transient
+API-call-failed log entries are demoted from ERROR to WARN (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2757">#2757</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2762">#2762</a>)</p></li>
+<li><p><strong>CI</strong>: Web e2e tests now record video only on
+failure (saves ~2 GB of Actions storage per run); the port guard works
+without <code>lsof</code> and no longer hangs CI (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2738">#2738</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.27.0.html">0.27.0</a> &mdash; July 17,
+2026</li>
+                <li><a href="0.26.4.html">0.26.4</a> &mdash; July 9,
+2026</li>
+                <li><a href="0.26.3.html">0.26.3</a> &mdash; July 7,
+2026</li>
+                <li><a href="0.26.2.html">0.26.2</a> &mdash; July 4,
+2026</li>
+                <li><a href="0.26.1.html">0.26.1</a> &mdash; July 4,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

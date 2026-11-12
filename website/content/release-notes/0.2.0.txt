@@ -1,0 +1,28 @@
+Ripls 0.2.0 Release Notes
+
+
+New Features
+
+Simplified Sharing with QR Codes
+
+Share your community, gear, experiences, and requests more easily with a streamlined sharing modal. New QR code support makes in-person sharing quick and natural - just scan to join. (#678, #685, fixes #428)
+
+Event Source Links
+
+When you create an experience from a website URL (like Eventbrite or Meetup), the app now displays a link back to the original event page. This makes it easy to access tickets, registration, or additional event details. (#680, fixes #640)
+
+Bug Fixes
+
+- Sharp images everywhere: Fixed blurry backgrounds and images in detail views. Photos now display at full resolution instead of showing cached thumbnails. (#656, fixes #655)
+
+- iOS sign-in fixed: Resolved an issue where joining a community from an invite link wasn’t working on iOS. (#676, fixes #668)
+
+- Android sign-in fixed: Fixed Google sign-in failures on Android. (#675, fixes #663)
+
+- Deep link navigation fixed: Fixed a black screen issue that occurred when navigating back after opening a shared link. (#685)
+
+- Deleted gear no longer causes errors: Community listings and feeds now gracefully handle gear that has been deleted. (#674)
+
+- Stability improvements: Fixed several crashes reported through Crashlytics, including issues with screen disposal and network connectivity. (#658)
+
+- Orientation fixes: Resolved display issues when rotating the device. (#661)

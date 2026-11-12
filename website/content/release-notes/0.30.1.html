@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.30.1 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.30.1">Release 0.30.1</h1>
+            <p class="release-date">August 16, 2026</p>
+<p>UI polish and email fixes following the desktop-adaptive rollout:
+library gallery measure, SSR hero alignment, email OTP field parity, and
+email logo centering with real dark mode.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Library No Longer Has a Dead Left Gutter</strong>: The
+v0.30.0 desktop rollout applied the 640px reading measure to the
+Library’s tile shelves, leaving a 420px void on the left at 1440px and
+letting tiles scroll into the empty space on the right. The fix
+introduces a wider 1200px gallery measure so the header and shelf
+content stay aligned without over-inletting a horizontal rail of tiles
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2926">#2926</a>)</p></li>
+<li><p><strong>SSR Landing Hero Title Now Centered</strong>: The
+<code>/go/</code> invite landing pages had the hero title pinned to the
+left edge while the body copy, host row, and CTA centered at 560px — a
+visible seam at desktop widths. The hero now shares the same measure as
+the content below it; phone rendering is unchanged (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2918">#2918</a>)</p></li>
+<li><p><strong>Email OTP Field Matches Phone</strong>: The email sign-in
+code screen showed “6-digit code” placeholder text instead of the
+dash-ruler the phone screen uses, and carried a double-submit hole and a
+whitespace bug that could swallow the sixth digit. The
+<code>hintText</code> parameter is deleted so the two flows cannot
+diverge again; both now use digit-only filtering and a shared submit
+guard (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2925">#2925</a>)</p></li>
+<li><p><strong>Email Logo Centered in Apple Mail</strong>: The Ripls
+logo at the top of sign-in code and password-reset emails sat flush
+against the left edge in Apple Mail (Gmail rendered it correctly). Apple
+Mail drops <code>auto</code> margins on block <code>&lt;img&gt;</code>
+elements, so the fix uses a <code>align="center"</code> presentation
+table instead. All six email templates shared the same defect; they now
+share a single partial so a future fix reaches all of them at once.
+Emails also gained a real dark mode — Apple Mail was previously
+inverting the light palette on its own (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2927">#2927</a>)</p></li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>Sign-in Code Alert Has a Volume Floor</strong>: The
+<code>email_code_delivery_latency</code> Cloud Monitoring alert could
+page on a single slow email in an otherwise-empty 10-minute window. The
+alert now requires both P95 &gt; 10s and ≥6 delivered codes in the same
+window before firing. A preceding fix corrected the metric type used for
+the counter (<code>DELTA + DISTRIBUTION</code> cannot be aggregated with
+<code>ALIGN_COUNT</code>) (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2923">#2923</a>)</p></li>
+<li><p><strong>CI Flutter Test Flake Eliminated</strong>: Flutter
+3.47.0’s Dart VM profiler native stack walker dereferences a garbage
+frame pointer on machines without frame pointers, producing a SIGSEGV
+inside the signal handler that <code>flutter_tools</code> blamed on a
+random innocent test file. Roughly 60% of CI runs were red. The fix
+interposes a shim that strips <code>--enable-dart-profiling</code> from
+<code>flutter_tester</code>’s argv; the profiler was sampling into a
+buffer nothing could read anyway (the runner passes
+<code>--disable-vm-service</code>) (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2933">#2933</a>)</p></li>
+<li><p><strong>iOS Build Gated on versions.env</strong>: The
+<code>build-ios</code> path filter now includes
+<code>versions.env</code>, so a <code>FLUTTER_VERSION</code> bump
+triggers a <code>pod install</code> verification. This gap let Flutter
+3.47.0 reach <code>main</code> without checking that
+<code>Podfile.lock</code> was updated (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2928">#2928</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.30.0.html">0.30.0</a> &mdash; August 15,
+2026</li>
+                <li><a href="0.29.3.html">0.29.3</a> &mdash; August 13,
+2026</li>
+                <li><a href="0.29.2.html">0.29.2</a> &mdash; August 11,
+2026</li>
+                <li><a href="0.29.1.html">0.29.1</a> &mdash; August 9,
+2026</li>
+                <li><a href="0.29.0.html">0.29.0</a> &mdash; August 8,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ripls — 10 design languages anchored in Heritage Sage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Public+Sans:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Karla:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Spectral:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Archivo:wght@400;500;600;700&family=EB+Garamond:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=Frank+Ruhl+Libre:wght@400;500;700&family=Inter:wght@400;500;600;700&family=DM+Serif+Display&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #101311; color: #EDF1ED; font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; padding: 56px 28px 120px; }
+  .head { max-width: 1180px; margin: 0 auto 14px; }
+  .tag { display: inline-flex; padding: 4px 12px; background: #5B8268; color: #0d130e; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 14px; }
+  h1 { font-family: 'Source Serif 4', serif; font-weight: 600; font-size: 32px; letter-spacing: -0.015em; margin-bottom: 10px; }
+  .lede { color: rgba(237,241,237,0.74); max-width: 920px; line-height: 1.6; font-size: 14.5px; }
+  .lede b { color: #EDF1ED; }
+  .anchor-row { max-width: 1180px; margin: 22px auto 40px; display: flex; align-items: center; gap: 14px; }
+  .anchor-chip { width: 52px; height: 52px; border-radius: 12px; background: #5B8268; flex: none; }
+  .anchor-row .t { font-size: 13px; line-height: 1.5; color: rgba(237,241,237,0.74); }
+  .anchor-row .t b { color: #EDF1ED; }
+
+  .grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(540px, 1fr)); gap: 22px; }
+  @media (max-width: 1200px) { .grid { grid-template-columns: 1fr; } }
+
+  /* ---- specimen card chrome ---- */
+  .lang { border-radius: 18px; overflow: hidden; box-shadow: 0 18px 48px rgba(0,0,0,0.4); }
+  .lang .meta { padding: 14px 22px 16px; background: #181C19; border-top: 1px solid rgba(237,241,237,0.08); font-size: 12px; line-height: 1.6; color: rgba(237,241,237,0.66); }
+  .lang .meta b { color: #EDF1ED; }
+  .lang .meta .no { color: #8FB89B; font-weight: 700; margin-right: 6px; }
+
+  /* specimen body — each rendered in its OWN tokens */
+  .spec { padding: 26px 26px 24px; background: var(--bg); color: var(--ink); }
+  .spec .kick { font-family: var(--sans); font-size: 10px; font-weight: var(--kw, 700); letter-spacing: var(--kls, 0.14em); color: var(--green); text-transform: uppercase; margin-bottom: 10px; }
+  .spec .title { font-family: var(--serif); font-weight: var(--tw, 600); font-size: 27px; line-height: 1.12; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .spec .sub { font-family: var(--sans); font-size: 13px; line-height: 1.55; color: var(--soft); max-width: 440px; margin-bottom: 18px; }
+
+  .spec .row { display: flex; gap: 14px; align-items: stretch; flex-wrap: wrap; }
+  .spec .panel { background: var(--card); border-radius: var(--r); border: var(--cb, none); box-shadow: var(--sh, none); padding: 14px 16px; flex: 1; min-width: 180px; }
+  .spec .panel .k { font-family: var(--sans); font-size: 9.5px; font-weight: var(--kw, 700); letter-spacing: var(--kls, 0.14em); text-transform: uppercase; color: var(--green); margin-bottom: 7px; }
+  .spec .panel .num { font-family: var(--sans); font-size: 24px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin-bottom: 5px; }
+  .spec .panel .num small { font-size: 14px; color: var(--soft); font-weight: 500; margin-left: 2px; }
+  .spec .panel .eq { font-family: var(--serif); font-size: 14px; line-height: 1.35; }
+  .spec .panel .bar-row { display: flex; gap: 6px; align-items: flex-end; height: 44px; margin-top: 10px; }
+  .spec .panel .bar { flex: 1; background: var(--data); border-radius: 3px 3px 1px 1px; }
+
+  .spec .ui { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+  .spec .b1 { font-family: var(--sans); font-size: 12px; font-weight: 700; padding: 11px 20px; border-radius: var(--rb); background: var(--btn1-bg); color: var(--btn1-ink); }
+  .spec .b2 { font-family: var(--sans); font-size: 12px; font-weight: 700; padding: 11px 20px; border-radius: var(--rb); background: var(--card); color: var(--green); border: var(--cb, none); box-shadow: var(--sh, none); }
+  .spec .chip { font-family: var(--sans); font-size: 11.5px; padding: 6px 13px; border-radius: 999px; background: var(--chip); color: var(--ink); }
+
+  .spec .swatches { display: flex; gap: 7px; margin-top: 18px; }
+  .spec .sw { flex: 1; height: 34px; border-radius: 7px; position: relative; border: 1px solid rgba(127,127,127,0.18); }
+  .spec .sw span { position: absolute; left: 7px; bottom: -17px; font-family: var(--sans); font-size: 8.5px; letter-spacing: 0.04em; color: var(--faint); white-space: nowrap; }
+  .spec .swatches { margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <span class="tag">DESIGN LANGUAGES · HERITAGE SAGE</span>
+  <h1>Ten design languages, one anchor</h1>
+  <p class="lede">Every system below is anchored in <b>Heritage Sage #5B8268</b> with a serif for titles and a sans for labels, data, and UI. None of them borrow the warm-cream / Fraunces / italic-accent / terracotta house style — backgrounds are neutral, green-tinted, white, or deep pine; accents stay in the green–slate–ink family. Each specimen card renders in its own tokens. See them applied in <b>community-overview-10-design-languages.html</b> and <b>host-journey-10-design-languages.html</b>.</p>
+</div>
+<div class="anchor-row">
+  <div class="anchor-chip"></div>
+  <div class="t"><b>Heritage Sage #5B8268</b> — the constant. Each language tints, deepens, or brightens it for AA contrast, but it stays recognizably the brand green.</div>
+</div>
+
+<div class="grid">
+
+  <!-- 1 HERITAGE -->
+  <div class="lang">
+    <div class="spec" style="--serif:'Source Serif 4',serif; --sans:'Public Sans',sans-serif; --bg:#FAFBF8; --card:#FFFFFF; --ink:#222B25; --soft:#59635C; --faint:#87908A; --chip:#E9EFE9; --green:#41604C; --data:#5E7E96; --r:12px; --rb:999px; --sh:0 1px 6px rgba(34,43,37,0.09); --btn1-bg:#41604C; --btn1-ink:#fff;">
+      <div class="kick">01 · Heritage</div>
+      <div class="title">The dependable default</div>
+      <div class="sub">Quiet paper-white with a faint green cast, a sturdy text serif, and a civic sans. Closest in spirit to the current mocks — minus every warm note.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#FAFBF8"><span>bg FAFBF8</span></div>
+        <div class="sw" style="background:#FFFFFF"><span>card FFFFFF</span></div>
+        <div class="sw" style="background:#222B25"><span>ink 222B25</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#41604C"><span>deep 41604C</span></div>
+        <div class="sw" style="background:#5E7E96"><span>data 5E7E96</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">See what's offered</span><span class="b2">Offer something</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">01</span><b>Heritage</b> · Source Serif 4 / Public Sans · radius 12 · soft shadows. For when the answer is "evolve, don't reinvent."</div>
+  </div>
+
+  <!-- 2 FIELD GUIDE -->
+  <div class="lang">
+    <div class="spec" style="--serif:'Lora',serif; --sans:'Karla',sans-serif; --bg:#F3F5EF; --card:#FCFDFA; --ink:#2A322B; --soft:#5C665D; --faint:#86908A; --chip:#E5EAE0; --green:#44614D; --data:#6B8F71; --r:6px; --rb:6px; --cb:1px solid rgba(42,50,43,0.22); --sh:none; --btn1-bg:#44614D; --btn1-ink:#fff; --kls:0.12em;">
+      <div class="kick">02 · Field Guide</div>
+      <div class="title">A naturalist's notebook</div>
+      <div class="sub">Ruled ink borders instead of shadows, a bookish serif, a humanist sans. Feels like an almanac you'd keep in the truck.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#F3F5EF"><span>bg F3F5EF</span></div>
+        <div class="sw" style="background:#FCFDFA"><span>card FCFDFA</span></div>
+        <div class="sw" style="background:#2A322B"><span>ink 2A322B</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#44614D"><span>deep 44614D</span></div>
+        <div class="sw" style="background:#6B8F71"><span>data 6B8F71</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">See what's offered</span><span class="b2">Offer something</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">02</span><b>Field Guide</b> · Lora / Karla · radius 6 · ink rules, no shadows. Honest, hand-kept, a little analog.</div>
+  </div>
+
+  <!-- 3 APOTHECARY -->
+  <div class="lang">
+    <div class="spec" style="--serif:'Cormorant Garamond',serif; --sans:'Jost',sans-serif; --bg:#FFFFFF; --card:#FFFFFF; --ink:#1F241F; --soft:#61665F; --faint:#8E938C; --chip:#F0F2EE; --green:#4A6B56; --data:#1F241F; --r:2px; --rb:2px; --cb:1px solid rgba(31,36,31,0.16); --sh:none; --btn1-bg:#4A6B56; --btn1-ink:#fff; --kls:0.22em; --kw:600; --tw:500;">
+      <div class="kick">03 · Apothecary</div>
+      <div class="title" style="font-size:31px">Minimal, measured, premium</div>
+      <div class="sub">Pure white, square corners, hairlines, wide-tracked uppercase labels, and a tall elegant serif. The sage reads as a tincture label.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#FFFFFF"><span>bg FFFFFF</span></div>
+        <div class="sw" style="background:#F0F2EE"><span>chip F0F2EE</span></div>
+        <div class="sw" style="background:#1F241F"><span>ink 1F241F</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#4A6B56"><span>deep 4A6B56</span></div>
+        <div class="sw" style="background:#1F241F"><span>data 1F241F</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">SEE WHAT'S OFFERED</span><span class="b2">OFFER SOMETHING</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">03</span><b>Apothecary</b> · Cormorant Garamond / Jost · radius 0–2 · hairlines only. Most premium read; test the serif at small sizes.</div>
+  </div>
+
+  <!-- 4 FOREST FLOOR -->
+  <div class="lang">
+    <div class="spec" style="--serif:'Bitter',serif; --sans:'Hanken Grotesk',sans-serif; --bg:#16211A; --card:#1F2D23; --ink:#E9F0EA; --soft:#ABBBAF; --faint:#7C8B80; --chip:#28392D; --green:#8FB89B; --data:#7CA6CC; --r:18px; --rb:999px; --sh:0 10px 30px rgba(0,0,0,0.35); --btn1-bg:#8FB89B; --btn1-ink:#14201A;">
+      <div class="kick">04 · Forest Floor</div>
+      <div class="title">The dark one</div>
+      <div class="sub">Deep pine surfaces, mist-white text, sage brightened to glow. The only full dark mode in the set — calm at 9pm on a porch.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#16211A"><span>bg 16211A</span></div>
+        <div class="sw" style="background:#1F2D23"><span>card 1F2D23</span></div>
+        <div class="sw" style="background:#E9F0EA"><span>text E9F0EA</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#8FB89B"><span>bright 8FB89B</span></div>
+        <div class="sw" style="background:#7CA6CC"><span>data 7CA6CC</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">See what's offered</span><span class="b2">Offer something</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">04</span><b>Forest Floor</b> · Bitter / Hanken Grotesk · radius 18 · deep shadows. Dark mode as a brand statement, not an afterthought.</div>
+  </div>
+
+  <!-- 5 PRINTMAKER -->
+  <div class="lang">
+    <div class="spec" style="--serif:'Spectral',serif; --sans:'IBM Plex Sans',sans-serif; --bg:#F8F8F5; --card:#FFFFFF; --ink:#191C1A; --soft:#4F564F; --faint:#82877F; --chip:#EBECE6; --green:#3D5C49; --data:#44606E; --r:3px; --rb:3px; --cb:1px solid rgba(25,28,26,0.28); --sh:none; --btn1-bg:#191C1A; --btn1-ink:#fff; --kls:0.16em; --kw:700;">
+      <div class="kick">05 · Printmaker</div>
+      <div class="title">Editorial broadsheet</div>
+      <div class="sub">Neutral newsprint grey, crisp black rules, a literary serif, and a typesetter's sans. The data feels reported, not gamified.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#F8F8F5"><span>bg F8F8F5</span></div>
+        <div class="sw" style="background:#FFFFFF"><span>card FFFFFF</span></div>
+        <div class="sw" style="background:#191C1A"><span>ink 191C1A</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#3D5C49"><span>deep 3D5C49</span></div>
+        <div class="sw" style="background:#44606E"><span>data 44606E</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">See what's offered</span><span class="b2">Offer something</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">05</span><b>Printmaker</b> · Spectral / IBM Plex Sans · radius 3 · black ink buttons, sage for meaning only. Highest-contrast, most serious.</div>
+  </div>
+
+  <!-- 6 SCANDI LARDER -->
+  <div class="lang">
+    <div class="spec" style="--serif:'Literata',serif; --sans:'Work Sans',sans-serif; --bg:#EFF2EE; --card:#FFFFFF; --ink:#2C3530; --soft:#67716A; --faint:#929B94; --chip:#E3E9E3; --green:#4C6E59; --data:#7C99AC; --r:22px; --rb:999px; --sh:0 8px 26px rgba(44,53,48,0.10); --btn1-bg:#4C6E59; --btn1-ink:#fff; --kls:0.12em; --kw:600;">
+      <div class="kick">06 · Scandi Larder</div>
+      <div class="title">Soft, domestic, calm</div>
+      <div class="sub">Cool grey-green air, pillowy corners, diffuse shadows, dusty-blue data. The friendliest of the ten without getting cute.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#EFF2EE"><span>bg EFF2EE</span></div>
+        <div class="sw" style="background:#FFFFFF"><span>card FFFFFF</span></div>
+        <div class="sw" style="background:#2C3530"><span>ink 2C3530</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#4C6E59"><span>deep 4C6E59</span></div>
+        <div class="sw" style="background:#7C99AC"><span>data 7C99AC</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">See what's offered</span><span class="b2">Offer something</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">06</span><b>Scandi Larder</b> · Literata / Work Sans · radius 22 · pillowy shadows. Domestic warmth achieved with shape, not cream.</div>
+  </div>
+
+  <!-- 7 TRAILHEAD -->
+  <div class="lang">
+    <div class="spec" style="--serif:'Zilla Slab',serif; --sans:'Archivo',sans-serif; --bg:#F1F2ED; --card:#FBFCF8; --ink:#20261F; --soft:#555E54; --faint:#848C82; --chip:#E4E7DC; --green:#3F6147; --data:#4E7A8C; --r:10px; --rb:10px; --cb:1.5px solid rgba(32,38,31,0.35); --sh:0 2px 0 rgba(32,38,31,0.16); --btn1-bg:#3F6147; --btn1-ink:#fff; --kls:0.18em; --kw:700;">
+      <div class="kick">07 · Trailhead</div>
+      <div class="title">Utilitarian outdoors</div>
+      <div class="sub">A slab serif with boots on, chunky borders, hard little shadows. Signage at the start of a trail — built for gloves and gear.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#F1F2ED"><span>bg F1F2ED</span></div>
+        <div class="sw" style="background:#FBFCF8"><span>card FBFCF8</span></div>
+        <div class="sw" style="background:#20261F"><span>ink 20261F</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#3F6147"><span>deep 3F6147</span></div>
+        <div class="sw" style="background:#4E7A8C"><span>data 4E7A8C</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">See what's offered</span><span class="b2">Offer something</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">07</span><b>Trailhead</b> · Zilla Slab / Archivo · radius 10 · 1.5px borders, hard offset shadows. Best fit for the Boulder/backcountry crowd.</div>
+  </div>
+
+  <!-- 8 CONSERVATORY -->
+  <div class="lang">
+    <div class="spec" style="--serif:'EB Garamond',serif; --sans:'Figtree',sans-serif; --bg:#EDF3EE; --card:#FFFFFF; --ink:#1F3428; --soft:#4E6557; --faint:#7E948A; --chip:#DFEAE1; --green:#3F6650; --data:#6E94B8; --r:16px; --rb:999px; --sh:0 4px 18px rgba(31,52,40,0.08); --btn1-bg:#3F6650; --btn1-ink:#fff; --kls:0.2em; --kw:600; --tw:500;">
+      <div class="kick">08 · Conservatory</div>
+      <div class="title" style="font-size:30px">Botanical and airy</div>
+      <div class="sub">Pale celadon air, deep viridian ink, a classical serif at light weight. The greenhouse version of the brand — graceful, unhurried.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#EDF3EE"><span>bg EDF3EE</span></div>
+        <div class="sw" style="background:#FFFFFF"><span>card FFFFFF</span></div>
+        <div class="sw" style="background:#1F3428"><span>ink 1F3428</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#3F6650"><span>deep 3F6650</span></div>
+        <div class="sw" style="background:#6E94B8"><span>data 6E94B8</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">See what's offered</span><span class="b2">Offer something</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">08</span><b>Conservatory</b> · EB Garamond / Figtree · radius 16 · airy shadows. The most "green-forward" light theme; ink is itself a deep green.</div>
+  </div>
+
+  <!-- 9 CIVIC LEDGER -->
+  <div class="lang">
+    <div class="spec" style="--serif:'Frank Ruhl Libre',serif; --sans:'Inter',sans-serif; --bg:#FBFCFA; --card:#FFFFFF; --ink:#18211C; --soft:#525C55; --faint:#828B84; --chip:#ECEFEA; --green:#3C5A49; --data:#34597A; --r:8px; --rb:8px; --cb:1px solid rgba(24,33,28,0.14); --sh:0 1px 3px rgba(24,33,28,0.07); --btn1-bg:#3C5A49; --btn1-ink:#fff; --kls:0.12em;">
+      <div class="kick">09 · Civic Ledger</div>
+      <div class="title">Numbers you can trust</div>
+      <div class="sub">Understated near-white, crisp 1px borders, navy for data, tabular numerals doing the talking. A credit union, not a startup.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#FBFCFA"><span>bg FBFCFA</span></div>
+        <div class="sw" style="background:#FFFFFF"><span>card FFFFFF</span></div>
+        <div class="sw" style="background:#18211C"><span>ink 18211C</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#3C5A49"><span>deep 3C5A49</span></div>
+        <div class="sw" style="background:#34597A"><span>data 34597A</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">See what's offered</span><span class="b2">Offer something</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">09</span><b>Civic Ledger</b> · Frank Ruhl Libre / Inter · radius 8 · border + whisper shadow. Strongest fit for the reconcile-to-the-minute metrics story.</div>
+  </div>
+
+  <!-- 10 GALLERY -->
+  <div class="lang">
+    <div class="spec" style="--serif:'DM Serif Display',serif; --sans:'Manrope',sans-serif; --bg:#F4F4F2; --card:#FFFFFF; --ink:#181A18; --soft:#5B5E5A; --faint:#8B8E8A; --chip:#E9E9E5; --green:#43654F; --data:#181A18; --r:20px; --rb:999px; --sh:0 12px 36px rgba(24,26,24,0.10); --btn1-bg:#181A18; --btn1-ink:#fff; --kls:0.24em; --kw:700; --tw:400;">
+      <div class="kick">10 · Gallery</div>
+      <div class="title" style="font-size:30px">Monochrome plus one green</div>
+      <div class="sub">Neutral gallery grey, big confident display serif, black ink everywhere — and sage as the single permitted color. Fashion-house restraint.</div>
+      <div class="swatches">
+        <div class="sw" style="background:#F4F4F2"><span>bg F4F4F2</span></div>
+        <div class="sw" style="background:#FFFFFF"><span>card FFFFFF</span></div>
+        <div class="sw" style="background:#181A18"><span>ink 181A18</span></div>
+        <div class="sw" style="background:#5B8268"><span>sage 5B8268</span></div>
+        <div class="sw" style="background:#43654F"><span>deep 43654F</span></div>
+        <div class="sw" style="background:#181A18"><span>data 181A18</span></div>
+      </div>
+      <div class="row">
+        <div class="panel"><div class="k">Time together</div><div class="num">349<small>hr</small></div><div class="eq">More than three years of Sunday dinners.</div></div>
+        <div class="panel"><div class="k">By month</div><div class="bar-row"><div class="bar" style="height:8%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:86%"></div><div class="bar" style="height:100%"></div><div class="bar" style="height:58%"></div></div></div>
+      </div>
+      <div class="ui"><span class="b1">See what's offered</span><span class="b2">Offer something</span><span class="chip">Cooking</span><span class="chip">Outdoor</span></div>
+    </div>
+    <div class="meta"><span class="no">10</span><b>Gallery</b> · DM Serif Display / Manrope · radius 20 · large soft shadows. The boldest departure; sage earns attention by being the only color.</div>
+  </div>
+
+</div>
+
+</body>
+</html>

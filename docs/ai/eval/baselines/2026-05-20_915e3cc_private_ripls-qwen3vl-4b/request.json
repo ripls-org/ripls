@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "suite": "TestRequestPrompt",
+  "run": {
+    "timestamp_utc": "2026-05-20T02:08:07Z",
+    "git_commit": "915e3ccec2",
+    "git_branch": "private_llm",
+    "label": "private_ripls-qwen3vl-4b"
+  },
+  "goldens_file": "request_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "private",
+      "model": "ripls-qwen3vl-4b",
+      "pass_rate": 0.8,
+      "threshold": 0.85,
+      "passed": false,
+      "median_latency_ms": 4946,
+      "p95_latency_ms": 4946,
+      "field_pass_rates": {
+        "min_confidence": 1,
+        "search_keywords_general_matches": 0,
+        "search_keywords_must_contain": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 1
+      },
+      "invocation_failures": [
+        "borrow_drill_weekend",
+        "help_moving_saturday",
+        "pressure_washer_borrow",
+        "tent_next_weekend",
+        "math_tutor_kid",
+        "projector_movie_night",
+        "ladder_deck_painting",
+        "deck_repair_advice",
+        "dog_walker_single",
+        "babysitter_weekend",
+        "bike_pump_home"
+      ]
+    }
+  ]
+}

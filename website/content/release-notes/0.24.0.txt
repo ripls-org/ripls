@@ -1,0 +1,26 @@
+Release 0.24.0
+
+
+New Features
+
+- Chat: edit, delete, and inline reply: Long-pressing a message now opens an action menu alongside the existing reaction picker. You can edit or delete your own messages, and reply to any message with a WhatsApp/Signal-style quoted block in the bubble. Edits leave a visible “edited” marker; deletes are soft and propagate live to other participants. Server-side, two new RPCs (EditMessage, DeleteMessage) enforce author-only authorization and emit live stream events so open chat streams update in place without a refresh (#2253, #2263)
+
+- Gear-linked contributions: When adding a contribution to an event or request need, you can now link a specific piece of gear — either by searching your library (with semantic search) or creating it on the spot from a photo. Linked gear appears as a chip alongside the contributor’s name. The event and request needs/contributions compose surfaces have also been unified behind a single shared modal stack so both flows feel consistent (#2228, #2254, #2262)
+
+- Event share-links now join the community automatically: Authenticated users who follow an event share-link to a community they aren’t yet a member of were previously blocked with permission errors when trying to load the event or RSVP. The app now runs an idempotent AcceptInvitationLink join before showing the event content, on both the web landing path and the /invite branch used by Android and iOS. Existing members and new users are unaffected (#2237, #2239)
+
+Bug Fixes
+
+- Duplicate push notifications: Users in more than one community that shared the same item (gear, event, request) received one push notification per community instead of one total. The notification subscriber now deduplicates per recipient on (request_id, event_type, item_id, user_id), suppressing sibling fan-out copies while preserving delivery for genuinely distinct actions (#2088, #2261)
+
+- Fulfillment helper search limited to one community: When marking a request fulfilled, the helper search and the pre-populated contributor list were scoped to a single community even when the request was shared with multiple communities — contributors from other communities were invisible. The search now fans out across all communities the request is shared with, deduplicates by user ID, and pre-populates AddRequestContribution contributors alongside offerers (#2255, #2259)
+
+Reliability & Infrastructure
+
+- Server backfill shutdown race: Startup backfill jobs (share_link, community_cascade, community_conversation, impact_backfill, workshop_generation) were logging one ERROR per unprocessed row when the server shut down mid-loop, flooding the ops alert channel. Jobs now detect context cancellation and the sql: database is closed sentinel at the top of every per-row loop and exit cleanly with a single INFO line (#2258)
+
+- Flutter Web end-to-end test harness: A Playwright Test harness (e2e/) now runs against the real Flutter Web bundle on mobile-Chromium and WebKit in CI. It includes Connect-ES codegen, seed primitives (users, communities, experiences), pre-navigation auth injection, and multi-client specs that verify real-time propagation — e.g., a participant’s RSVP appearing on the host’s screen via the live CommunityEventStream without any reload (#2162, #2241, #2243, #2252)
+
+- CI concurrency groups and workflow linting: Heavy CI workflows now cancel superseded same-ref runs on rapid pushes, cutting runner contention. A new Lint Workflows gate runs actionlint + yamllint against all GitHub Actions files on every change under .github/, catching schema errors, undefined expression contexts, and bad job-dependency references before they land (#2264, #2265, #2269)
+
+- Runner image stabilization: Chrome and the Firebase CLI are now baked into the self-hosted runner image so CI jobs no longer mutate the shared runner at runtime. A layering fix ensures Chrome’s libasound2 dependency no longer cascades to remove the Temurin JDK, which was silently breaking Android builds on any runner that had previously run a web-smoke job (#2249, #2250, #2251)

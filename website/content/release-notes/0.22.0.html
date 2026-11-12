@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.22.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.22.0">Release 0.22.0</h1>
+            <p class="release-date">May 20, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Redesigned Workshop</strong>: The Workshop tab mirrors
+the user profile screen structure — community identity block, “known
+for” topic chips, three impact rows (time shared / money saved / CO₂
+avoided), an Available Now rail, and a “Three ways to keep it going”
+lean-card stack. Community and user profile widgets are now shared so
+both surfaces stay in sync (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1999">#1999</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2010">#2010</a>)</p></li>
+<li><p><strong>“Known for” detail screen</strong>: Tapping a “known for”
+chip on the Workshop or a user profile opens a category detail screen
+listing the gear, events, and requests behind it, along with a Top
+Contributors row on the community surface. Attending an event or helping
+fulfill a request now earns the chip on your profile — borrowing alone
+does not (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2031">#2031</a>)</p></li>
+<li><p><strong>Richer impact equivalences</strong>: The Workshop and
+user profile impact metrics now surface cited, tiered comparisons — time
+together draws from Holt-Lunstad loneliness research, money saved
+compares to median paycheck milestones, and CO₂ avoided maps to EPA/EIA
+daily-life equivalents. Each tier shows a source link and is available
+in both English and Spanish (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2033">#2033</a>)</p></li>
+<li><p><strong>Personalized search suggestions</strong>: The search
+panel now shows a top-down layout of Quick Search, Your Communities
+(avatar carousel), Interests, and Recents. People are now a first-class
+search result — round avatar, name as title, tap to open their profile.
+Community and topic browsing stays stationary in the input position; a
+trailing X replaces the avatar during active search (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2036">#2036</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2059">#2059</a>)</p></li>
+<li><p><strong>Polymorphic share links</strong>: All shareable entities
+— communities, gear, transfers, requests, and events — now produce
+compact 8-character shortcodes from a single unified table. An
+event-aware in-app deep-link landing screen handles event shortcodes for
+logged-in users; the legacy community-invite flow continues to work
+unchanged during the deprecation window (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2048">#2048</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2060">#2060</a>)</p></li>
+<li><p><strong>Community creation in glass modal</strong>: The community
+creation flow now uses the same frosted-glass surface as gear, event,
+and request creation. Camera mode bleeds to the sheet edges; text mode
+uses the standard drag-handle layout. Four previously hardcoded strings
+are now localized in English and Spanish (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1976">#1976</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2047">#2047</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>“+” button showed location settings dialog after
+refusal</strong>: Tapping the create button after permanently refusing
+location permission immediately surfaced an “Open Settings” alert before
+the modal appeared. The alert is now suppressed from the create button;
+the system permission prompt on a user’s first refusal is preserved (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2002">#2002</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2006">#2006</a>)</p></li>
+<li><p><strong>Couldn’t start a discussion on own gear</strong>: The
+chat conversation was never created at share time, so the chat tab was
+silent. The conversation is now auto-created on the first visit to the
+chat tab; repeated opens are idempotent (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2003">#2003</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2008">#2008</a>)</p></li>
+<li><p><strong>Dark theme painted over event offer text boxes</strong>:
+In dark mode, Flutter’s default filled input decoration painted a
+near-black box over the cream pill used in event offer and need sheets,
+making text invisible (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2004">#2004</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2009">#2009</a>)</p></li>
+<li><p><strong>Workshop cards and nudges opened old create
+modal</strong>: “Three ways to keep it going” cards, nudge stories, and
+several other secondary surfaces still routed to the legacy single-type
+create modals even after unified create launched. All 21 affected call
+sites now open the unified modal when the flag is on (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2005">#2005</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1993">#1993</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2007">#2007</a>)</p></li>
+<li><p><strong>Manage Members invite FAB not working</strong>: The
+“Invite Someone” button on the Manage Members screen was broken after
+the navigation restructure because it looked up a community that was
+always null. It now looks up the community by the ID already on the
+screen (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2000">#2000</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2021">#2021</a>)</p></li>
+<li><p><strong>Invite picker showed a toggle instead of a
+radio</strong>: The community picker in single-select invite mode
+rendered a switch toggle, implying the row could be deselected. It now
+shows a decorative radio indicator, and screen readers announce rows as
+radio buttons (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2001">#2001</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2022">#2022</a>)</p></li>
+<li><p><strong>Could not set location on a newly created event</strong>:
+Event owners were unable to edit the location on events created with a
+TBD location because an empty string ID was treated as absent. The owner
+check now runs correctly and the map no longer falls back to Austin (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1991">#1991</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2014">#2014</a>)</p></li>
+<li><p><strong>Request need suggestions hidden by keyboard</strong>: On
+smaller screens, the suggestions strip was obscured by the virtual
+keyboard when composing a request. Suggestions are now positioned above
+the keyboard inset (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1992">#1992</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1998">#1998</a>)</p></li>
+<li><p><strong>Location map flashed to Austin then stayed
+there</strong>: The location picker map would sometimes land on Austin
+instead of the user’s area because GPS coordinates resolved before the
+Mapbox map fired its creation callback; the pending position is now
+replayed as soon as the map is ready (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2027">#2027</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2028">#2028</a>)</p></li>
+<li><p><strong>Community avatar flashed to initials on every
+rebuild</strong>: Community avatars in the Workshop carousel and Manage
+Members list briefly showed the initials placeholder on each parent
+rebuild. Switching to a Riverpod-cached URL provider eliminates the
+rebuild cycle (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2044">#2044</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2046">#2046</a>)</p></li>
+<li><p><strong>Android directions app didn’t open</strong>: Android 11+
+package visibility rules caused <code>canLaunchUrl</code> to return
+false even when a maps app was installed, producing a “Could not open
+directions app” toast. The fix adds the required
+<code>&lt;queries&gt;</code> entries to <code>AndroidManifest.xml</code>
+and hardens the URL fallback for devices without Google Maps (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1958">#1958</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1985">#1985</a>)</p></li>
+<li><p><strong>Login and invite screens looked bad in dark
+mode</strong>: Auth screen cards used hardcoded Material blue and grey
+instead of theme-aware colors, leaving them bright and off-brand in dark
+mode. Cards now use <code>AppColors</code> getters and the Heritage Sage
+accent (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1965">#1965</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1984">#1984</a>)</p></li>
+<li><p><strong>Small create and feed polish</strong> (PR <a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1998">#1998</a>):</p>
+<ul>
+<li>Camera coaching carousel now leads with event flyers (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1986">#1986</a>)</li>
+<li>Creation modal input now defaults to a capital first letter (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1990">#1990</a>)</li>
+<li>User’s own items now appear in all user-profile views (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1996">#1996</a>)</li>
+</ul></li>
+</ul>
+<h2 id="reliability-infrastructure">Reliability &amp;
+Infrastructure</h2>
+<ul>
+<li><p><strong>AI classifier now reads image bytes</strong>: Image-mode
+unified-create classification was previously defaulting to “gear”
+because the model was asked to classify a photo it never received. Image
+bytes now flow to the classifier on every provider; 100 % accuracy
+across 38 test cases (gear, event, request, and ambiguous images) on all
+three providers (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1939">#1939</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2015">#2015</a>)</p></li>
+<li><p><strong>High-resolution images in URL mode</strong>: Pasting a
+product URL into unified create now retrieves the full-resolution master
+image instead of the small og:image preview. The extractor checks
+JSON-LD Product.image first, rewrites e-commerce CDN URL tokens (Amazon,
+Shopify, Etsy, Target), and picks the largest in-cap srcset candidate as
+a fallback (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1917">#1917</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2035">#2035</a>)</p></li>
+<li><p><strong>Request inbox N+1 eliminated</strong>:
+<code>ListMyRequests</code> and <code>ListRequests</code> were issuing
+~65 database queries per call from per-item conversation enrichment. A
+new batched helper drops that to ~9; a CI assertion now blocks N+1
+regressions at ≤ 12 queries (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1806">#1806</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2030">#2030</a>)</p></li>
+<li><p><strong>Server credentials via file paths</strong>: Server API
+keys and database passwords are now passed via file paths instead of
+command-line flags, eliminating credential exposure in
+<code>/proc/&lt;pid&gt;/cmdline</code> and <code>ps</code> output (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1885">#1885</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2026">#2026</a>)</p></li>
+<li><p><strong>Localization parity CI gate</strong>: A new CI check
+fails the build if any English string key is missing from the Spanish
+ARB or vice-versa. 14 Workshop strings that were untranslated are now
+available in Spanish (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1972">#1972</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2029">#2029</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.21.1.html">0.21.1</a> &mdash; May 16,
+2026</li>
+                <li><a href="0.21.0.html">0.21.0</a> &mdash; May 15,
+2026</li>
+                <li><a href="0.20.1.html">0.20.1</a> &mdash; May 9,
+2026</li>
+                <li><a href="0.20.0.html">0.20.0</a> &mdash; May 9,
+2026</li>
+                <li><a href="0.19.2.html">0.19.2</a> &mdash; May 6,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

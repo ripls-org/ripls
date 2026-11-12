@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.16.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.16.0">Release 0.16.0</h1>
+            <p class="release-date">April 20, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Watchlist &amp; Timeless Inbox</strong>: A new watchlist
+system replaces the chronological inbox. Items you own, borrow, RSVP to,
+or offer on are automatically watched, with unread badges surfacing new
+activity. Swipe to dismiss or manually watch/unwatch items. An access
+ring shows participant avatars at a glance (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1102">#1102</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1151">#1151</a>)</p></li>
+<li><p><strong>Unified Content Views</strong>: Gear, request, and
+experience screens now share a consistent swipeable layout with
+tab-based navigation. Content actions (lend, borrow, RSVP, offer) are
+integrated directly into each view instead of separate sheets (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1102">#1102</a>)</p></li>
+<li><p><strong>Access Circles</strong>: A new access ring widget shows
+who has access to an item — participants, community members, and pending
+invitees — with a unified sharing sheet for managing access across gear,
+requests, and experiences (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1102">#1102</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>“Be the first to borrow” on own items</strong>: The
+borrow prompt no longer appears on items you own (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1163">#1163</a>)</p></li>
+<li><p><strong>Community member count showing 0</strong>: Communities
+with members were displaying “0 members” due to a count query bug (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1161">#1161</a>)</p></li>
+<li><p><strong>Inbox showing stale loan status</strong>: Inbox items
+displayed “on loan” when only interest had been expressed, not an actual
+loan (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1164">#1164</a>)</p></li>
+<li><p><strong>Duplicate request creation</strong>: Sharing a request
+with multiple communities was creating duplicate request objects instead
+of reusing the same request (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1169">#1169</a>)</p></li>
+<li><p><strong>FCM invalid-token noise</strong>: Push notification
+failures from stale device tokens were logged at ERROR level and
+triggering Cloud Monitoring alerts. Invalid-token responses (including
+“Request contains an invalid argument”) are now classified correctly and
+cleaned up silently (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1165">#1165</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1166">#1166</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1167">#1167</a>)</p></li>
+<li><p><strong>Location permission not prompted on Android</strong>: A
+timing race on first cold-start meant the location permission popup was
+never shown. The prompt is now deferred until user gesture (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1174">#1174</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1182">#1182</a>)</p></li>
+<li><p><strong>Dangling community join rows on delete</strong>: Deleting
+gear, requests, or experiences did not cascade to their community
+sharing rows, leaving orphaned references. Soft-delete metadata now
+propagates to all join rows, and a startup backfill cleans up
+pre-existing orphans (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1185">#1185</a>)</p></li>
+<li><p><strong>NOT_FOUND lookups logged at ERROR</strong>:
+Missing-entity lookups were spamming Cloud Monitoring alerts. These are
+now logged at an appropriate level (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1184">#1184</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1187">#1187</a>)</p></li>
+</ul>
+<h2 id="improvements">Improvements</h2>
+<ul>
+<li><p><strong>GPS proximity bias for search</strong>: Location
+autocomplete results are now biased toward the user’s current GPS
+position for more relevant suggestions (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1143">#1143</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1158">#1158</a>)</p></li>
+<li><p><strong>Deduplicated feeds and search</strong>: Items shared to
+multiple communities no longer appear multiple times in search results
+and community feeds (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1102">#1102</a>)</p></li>
+<li><p><strong>Simplified navigation</strong>: Removed unimplemented
+sidebar sections and streamlined the main navigation with unread count
+on the bottom nav bar (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1102">#1102</a>)</p></li>
+<li><p><strong>Proto conventions documentation</strong>: Added
+comprehensive documentation for API/models proto conventions with
+automated sync checks (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1144">#1144</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1172">#1172</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.15.0.html">0.15.0</a> &mdash; April 16,
+2026</li>
+                <li><a href="0.14.0.html">0.14.0</a> &mdash; April 15,
+2026</li>
+                <li><a href="0.13.1.html">0.13.1</a> &mdash; April 14,
+2026</li>
+                <li><a href="0.13.0.html">0.13.0</a> &mdash; April 13,
+2026</li>
+                <li><a href="0.12.2.html">0.12.2</a> &mdash; April 13,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.28.3 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.28.3">Release 0.28.3</h1>
+            <p class="release-date">August 2, 2026</p>
+<p>Chat locale correctness and internal tech-debt cleanup.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>Chat Messages Now Locale-Aware</strong>: System chat
+messages were embedding English text directly into template parameters —
+Spanish viewers saw strings like “Someone confirmó la hora: Wed, Jan 1 ·
+9:00 AM” rather than fully localized output. Unknown actors are now
+represented by an empty param that the client substitutes with the
+locale-appropriate word for “Someone”, and scheduled-time changes travel
+as a raw unix timestamp + UTC offset so the client formats the time in
+the viewer’s locale (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2844">#2844</a>)</li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>RSVP Field Cleanup</strong>: The legacy string-typed
+<code>intention</code> and <code>attended</code> fields on
+<code>ExperienceRSVP</code> are removed; the integer enum columns
+(<code>intention_enum</code>, <code>attended_enum</code>) are renamed
+into their place with a boot-time migration. Eight production query
+sites that were passing string values — which would have caused
+PostgreSQL errors once the columns became INTEGER — are corrected. Net
+−381 lines (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2832">#2832</a>)</p></li>
+<li><p><strong>Post-Soak Removals</strong>:
+<code>GetPortfolioInboxView</code> (replaced in v0.28.2 by
+<code>GetDirectoryPeople</code>) and the server-rendered copy fields
+deprecated in #2827 are deleted after their client migrations shipped in
+v0.28.2. Net −1,367 lines. The proto soak policy is tightened from “two
+release cycles” to “one shipped release + ~24 h” — the interval that
+actually covers the rollout overlap (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2834">#2834</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2835">#2835</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.28.2.html">0.28.2</a> &mdash; July 31,
+2026</li>
+                <li><a href="0.28.1.html">0.28.1</a> &mdash; July 30,
+2026</li>
+                <li><a href="0.28.0.html">0.28.0</a> &mdash; July 28,
+2026</li>
+                <li><a href="0.27.0.html">0.27.0</a> &mdash; July 17,
+2026</li>
+                <li><a href="0.26.4.html">0.26.4</a> &mdash; July 9,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

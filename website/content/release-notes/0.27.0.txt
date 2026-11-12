@@ -1,0 +1,40 @@
+Release 0.27.0
+
+
+Requests morph into loans, gear contributions to events become trackable loans, and a comprehensive journey-polish pass across every walkthrough surface.
+
+Features
+
+- Request-to-Loan: A helper can now fulfill a borrow-style request with their actual item. From the request, they tap “I have one to lend,” create a new listing or pick existing gear, and a loan starts — the request morphs into the loan with full handoff, return reminders, and the item’s own conversation. The request’s impact rolls up every child transfer’s savings, and the committed impact now matches the preview (previously the two computations ran separately and could diverge at the moment of commitment) (#2702, #2275)
+
+- Event Gear Loans: Bringing gear to an event now creates a real loan for the event’s duration rather than a note in the chat. The gear contribution is linked to the event and the loan lifecycle follows it — the item is returned when the event wraps, with the handoff beat visible in the brunch walkthrough (#2708)
+
+Bug Fixes
+
+- Offer Visibility on Requests: Offers-to-help are now surfaced on the request card for both sides. The helper sees confirmation after offering (not just an “Account created” toast), and the requester’s card shows offerer avatars and count. A guest’s auto-fired offer after phone registration is confirmed from server truth (#2701)
+
+- Guest RSVP Row Stayed Stale: After completing a phone-OTP RSVP, the event view showed “You haven’t replied yet” on the terminal frame. The handoff-RSVP refetch now re-keys correctly so “You — Going” appears immediately (#2727)
+
+- Completed Giveaway 403: Recipients and community members received a permission error when revisiting an item after a giveaway completed. Archived shares now count toward read access (#2695)
+
+- Cross-Community Event Completion: RecordAttendance returned 404 for attendees who RSVPed via a different community than the one the host used to complete the event. Attendance is now resolved across all of the event’s communities (#2690)
+
+- Completion Quick-Add Double-Attribution: After a phone-invited guest registered, their claimed placeholder still appeared in the completion modal’s quick-add grid alongside their real account. Claimed provisionals are now excluded from that search (#2699)
+
+- Gear Lend/Give Toggle Had No Effect: Toggling Lend vs. Give when creating gear from a photo was decorative — every item was shared FOR_LOAN regardless. The toggle choice now carries through to the first share (#2687)
+
+- $0 Gear Value on Photo Create: The full gear detection result was not persisted on save, leaving some photo-created items with a $0 estimate (#2702)
+
+- App Stability: Fixed a ProviderScope setState crash by upgrading to flutter_riverpod 3.3.2 (#2688)
+
+Internal
+
+- User Journey Walkthroughs: A hermetic video pipeline renders end-to-end walkthroughs from a fabricated cast. Four walkthroughs are live: events (brunch), requests (lawn mower), gear sharing (kitchen food), and a multi-helper campus yard-day supply drive (#2684, #2686, #2687, #2703)
+
+- Journey Polish: Frame-by-frame reel review produced ~120 findings across all five walkthrough surfaces, deduplicated into 8 P0s and 11 workstreams — vocabulary, formatting, live-state correctness, guest flow parity, needs-claim visibility, and RSVP display (#2724)
+
+- Calendar Suggestion Threshold: One-off calendar suggestions are suppressed; at least two similar past events are now required before a suggestion is offered (#2674)
+
+- Feedback Screenshot URL Durability: Feedback screenshots now use a dedicated, non-rotating signing key so URLs remain valid for their full stated expiry (previously they rotated out within ~2 weeks). A backfill tool re-signs screenshots in all existing user-feedback issues (#2549)
+
+- CI Stability: Fixed a Go Tests flake where testcontainer image pulls failed on self-hosted runners; images are now pre-warmed on the host daemon before the test run (#2709)

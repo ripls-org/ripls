@@ -1,0 +1,10 @@
+# robots.txt for the Ripls marketing site.
+#
+# The canonical host is https://ripls.org. The alias hosts (www.ripls.org,
+# type2fun.org, www.type2fun.org) 301-redirect to it (see
+# website/config/default.conf), so a crawler fetching their /robots.txt is
+# redirected here and this file is authoritative for all of them.
+User-agent: *
+Allow: /
+
+Sitemap: https://ripls.org/sitemap.xml

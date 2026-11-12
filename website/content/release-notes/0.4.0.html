@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.4.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="ripls-0.4.0-release-notes">Ripls 0.4.0 Release Notes</h1>
+            <p class="release-date">February 20, 2026</p>
+<h2 id="new-features">New Features</h2>
+<h3 id="redesigned-request-workflow">Redesigned Request Workflow</h3>
+<p>Requests now follow the same clear, step-by-step timeline used by
+loans and giveaways. The request age is prominently displayed to
+encourage quick responses. Potential helpers can read an AI-generated
+conversation summary before deciding to jump in. When the request is
+fulfilled, the requester reviews an editable AI summary and confirms who
+actually helped – both of which feed into impact tracking. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/739">#739</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/711">#711</a>)</p>
+<h3 id="redesigned-experience-workflow">Redesigned Experience
+Workflow</h3>
+<p>Experiences now use the same timeline approach as loans, giveaways,
+and requests. Organizers move through Planning, Wrap Up, and Complete
+phases. Participants can propose alternative times and vote on them;
+only the organizer can finalize. Completion includes an editable
+AI-generated summary and attendee verification before recording impact.
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/746">#746</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/666">#666</a>)</p>
+<h3 id="expanded-impact-analytics">Expanded Impact Analytics</h3>
+<p>The community impact tab now lets you drill into each metric
+dimension – money saved, CO2 prevented, and time recovered – with rich
+detail views. Each view includes cumulative trend charts,
+savings-by-source breakdowns, contributing factor cards with sparklines,
+top shared items, top contributors, and community comparisons with radar
+charts. Filter by time period (all time, 1 year, 3 months, or 4 weeks)
+to see trends. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/748">#748</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/741">#741</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/695">#695</a>)</p>
+<h3 id="community-events-and-help-lists">Community Events and Help
+Lists</h3>
+<p>New dedicated screens for browsing all events and fulfilled help
+requests within a community, accessible from the community impact tab.
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/748">#748</a>)</p>
+<h2 id="improvements">Improvements</h2>
+<ul>
+<li><p><strong>Provenance tracking</strong>: All AI-generated and
+computed values (item descriptions, carbon estimates, value estimates)
+now carry origin metadata tracking who produced the value, which
+algorithm version was used, and confidence levels. Your manual edits are
+marked as user-sourced and will never be overwritten by AI
+re-estimation. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/743">#743</a>)</p></li>
+<li><p><strong>Smarter backfill</strong>: The impact backfill system is
+now provenance-aware – it respects user edits, detects stale AI values,
+and prefers source URLs and images over text for gear enrichment. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/740">#740</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/743">#743</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/737">#737</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Attendance recording crash fixed</strong>: Fixed a crash
+when recording event attendance caused by a missing operation name. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/738">#738</a>)</p></li>
+<li><p><strong>Gear detail view stability</strong>: Fixed a potential
+crash when navigating away from the gear detail view while data is still
+loading. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/738">#738</a>)</p></li>
+<li><p><strong>Feedback reliability</strong>: Added explicit detection
+and logging when GitHub access fails, preventing silent feedback
+submission failures. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/738">#738</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/710">#710</a>)</p></li>
+<li><p><strong>Data compatibility preserved</strong>: Reserved old
+protocol buffer field numbers to prevent data corruption when reading
+records created before the provenance migration. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/745">#745</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.3.0.html">0.3.0</a> &mdash; February 13,
+2026</li>
+                <li><a href="0.2.0.html">0.2.0</a> &mdash; February 5,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

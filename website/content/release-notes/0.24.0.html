@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.24.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.24.0">Release 0.24.0</h1>
+            <p class="release-date">June 1, 2026</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Chat: edit, delete, and inline reply</strong>:
+Long-pressing a message now opens an action menu alongside the existing
+reaction picker. You can edit or delete your own messages, and reply to
+any message with a WhatsApp/Signal-style quoted block in the bubble.
+Edits leave a visible “edited” marker; deletes are soft and propagate
+live to other participants. Server-side, two new RPCs
+(<code>EditMessage</code>, <code>DeleteMessage</code>) enforce
+author-only authorization and emit live stream events so open chat
+streams update in place without a refresh (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2253">#2253</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2263">#2263</a>)</p></li>
+<li><p><strong>Gear-linked contributions</strong>: When adding a
+contribution to an event or request need, you can now link a specific
+piece of gear — either by searching your library (with semantic search)
+or creating it on the spot from a photo. Linked gear appears as a chip
+alongside the contributor’s name. The event and request
+needs/contributions compose surfaces have also been unified behind a
+single shared modal stack so both flows feel consistent (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2228">#2228</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2254">#2254</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2262">#2262</a>)</p></li>
+<li><p><strong>Event share-links now join the community
+automatically</strong>: Authenticated users who follow an event
+share-link to a community they aren’t yet a member of were previously
+blocked with permission errors when trying to load the event or RSVP.
+The app now runs an idempotent <code>AcceptInvitationLink</code> join
+before showing the event content, on both the web landing path and the
+<code>/invite</code> branch used by Android and iOS. Existing members
+and new users are unaffected (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2237">#2237</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2239">#2239</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Duplicate push notifications</strong>: Users in more than
+one community that shared the same item (gear, event, request) received
+one push notification per community instead of one total. The
+notification subscriber now deduplicates per recipient on
+<code>(request_id, event_type, item_id, user_id)</code>, suppressing
+sibling fan-out copies while preserving delivery for genuinely distinct
+actions (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2088">#2088</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2261">#2261</a>)</p></li>
+<li><p><strong>Fulfillment helper search limited to one
+community</strong>: When marking a request fulfilled, the helper search
+and the pre-populated contributor list were scoped to a single community
+even when the request was shared with multiple communities —
+contributors from other communities were invisible. The search now fans
+out across all communities the request is shared with, deduplicates by
+user ID, and pre-populates <code>AddRequestContribution</code>
+contributors alongside offerers (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2255">#2255</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2259">#2259</a>)</p></li>
+</ul>
+<h2 id="reliability-infrastructure">Reliability &amp;
+Infrastructure</h2>
+<ul>
+<li><p><strong>Server backfill shutdown race</strong>: Startup backfill
+jobs (<code>share_link</code>, <code>community_cascade</code>,
+<code>community_conversation</code>, <code>impact_backfill</code>,
+<code>workshop_generation</code>) were logging one ERROR per unprocessed
+row when the server shut down mid-loop, flooding the ops alert channel.
+Jobs now detect context cancellation and the
+<code>sql: database is closed</code> sentinel at the top of every
+per-row loop and exit cleanly with a single INFO line (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2258">#2258</a>)</p></li>
+<li><p><strong>Flutter Web end-to-end test harness</strong>: A
+Playwright Test harness (<code>e2e/</code>) now runs against the real
+Flutter Web bundle on mobile-Chromium and WebKit in CI. It includes
+Connect-ES codegen, seed primitives (users, communities, experiences),
+pre-navigation auth injection, and multi-client specs that verify
+real-time propagation — e.g., a participant’s RSVP appearing on the
+host’s screen via the live <code>CommunityEventStream</code> without any
+reload (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2162">#2162</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2241">#2241</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2243">#2243</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2252">#2252</a>)</p></li>
+<li><p><strong>CI concurrency groups and workflow linting</strong>:
+Heavy CI workflows now cancel superseded same-ref runs on rapid pushes,
+cutting runner contention. A new <code>Lint Workflows</code> gate runs
+<code>actionlint</code> + <code>yamllint</code> against all GitHub
+Actions files on every change under <code>.github/</code>, catching
+schema errors, undefined expression contexts, and bad job-dependency
+references before they land (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2264">#2264</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2265">#2265</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2269">#2269</a>)</p></li>
+<li><p><strong>Runner image stabilization</strong>: Chrome and the
+Firebase CLI are now baked into the self-hosted runner image so CI jobs
+no longer mutate the shared runner at runtime. A layering fix ensures
+Chrome’s <code>libasound2</code> dependency no longer cascades to remove
+the Temurin JDK, which was silently breaking Android builds on any
+runner that had previously run a web-smoke job (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2249">#2249</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2250">#2250</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2251">#2251</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.23.2.html">0.23.2</a> &mdash; May 29,
+2026</li>
+                <li><a href="0.23.1.html">0.23.1</a> &mdash; May 29,
+2026</li>
+                <li><a href="0.23.0.html">0.23.0</a> &mdash; May 28,
+2026</li>
+                <li><a href="0.22.0.html">0.22.0</a> &mdash; May 20,
+2026</li>
+                <li><a href="0.21.1.html">0.21.1</a> &mdash; May 16,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

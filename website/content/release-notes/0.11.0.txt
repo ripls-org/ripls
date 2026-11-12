@@ -1,0 +1,21 @@
+Release 0.11.0
+
+
+Social metrics, media management, and infrastructure improvements for closed beta.
+
+Features
+
+- Social Metrics on Items: Experiences and requests now display social attribute dimensions (tie strength, reciprocity, novelty, vulnerability, modality) with real-time impact metric updates as owners adjust values (#1058)
+- Media Management: Redesigned media screen with photo upload, download (individual and batch), long-press reordering of thumbnails, deletion of individual media items, and attribution bars for third-party and user-uploaded media (#1076, #1032)
+- Smart Nudge Cards: “Start your first loan” card now navigates to the Discover tab, and all nudge cards (loans, experiences, requests) suppress automatically when the user already has an in-flight activity of that type (#1057, #1066)
+- Media Strip in Chat: Photo strip moved from the item header to the chat area, and experiences now auto-RSVP the creator (#1058)
+
+Bug Fixes
+
+- Cache Invalidation: Fixed glob pattern matching so bare prefix keys (e.g., request:my) are correctly invalidated after mutations — eliminates stale request lists after submitting a new request (#1064, #1068)
+
+Infrastructure
+
+- Always-On Servers: Dev and prod Cloud Run instances now run with min_instances=1 and cpu_idle=false, eliminating cold starts and enabling background goroutines to run between requests (#1073, #1075)
+- GitHub Actions Node.js 24: Updated 9 GitHub Actions to versions compatible with the Node.js 24 runner ahead of the June deadline (#1053)
+- Dev Setup Docs: Added Git LFS, Flutter VS Code extension, and Android Studio to the setup prerequisites (#1065)

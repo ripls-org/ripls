@@ -1,0 +1,42 @@
+Release 0.26.0
+
+
+Phone-first sharing pivot. Share gear and events directly with specific contacts via SMS/RCS, add a phone to an existing account, and inline email registration into the phone auth screen. Several user-reported time display bugs fixed.
+
+Features
+
+- Share with Specific People: Gear and requests can now be shared directly with individual contacts (not just whole communities). The item detail view shows a “Shared with” card listing invited individuals, and the roster updates live as people RSVP or are added (#2492)
+
+- RSVP Auto-Join: Event RSVPs automatically promote the attendee into the per-item community so they receive ongoing updates (#2548)
+
+- Add Phone to Existing Account: Users who registered with email or a social login can now attach a verified phone number from the profile edit screen without creating a second account (#2596)
+
+- Inline Email Registration: Email sign-up is now available directly on the phone auth screen — no more navigating to a separate register screen (#2595)
+
+- Welcome SMS/RCS on First Registration: New phone-registered users receive a welcome message on first join, with RCS delivery where available (#2492)
+
+- Real-Time Roster and RSVP Updates: Open gear/event screens now refresh their roster and RSVP counts live without a manual reload (#2531)
+
+Bug Fixes
+
+- Spurious “Poll Ended” Banner: Fixed event chat showing a “poll ended” message after a host directly set a time or location without running a poll (#2598)
+
+- Time Displayed in UTC in Chat Log: Fixed poll time-change log entries displaying in UTC instead of the event’s local timezone on Android (#2599)
+
+- Event Link Preview Showed Wrong Time and Day: Fixed the event SSR landing page and OG link previews (used in iMessage/WhatsApp unfurls) rendering event times in UTC — including showing the wrong day of week for non-UTC timezones (#2621)
+
+- Returning Member Phone Login: Fixed a returning member’s phone number incorrectly rejected instead of logging them in during phone-first flows (#2492)
+
+- Notifications Sent to Whole Community on Completion: Fixed experience completion notifications being broadcast to the whole community rather than only to RSVPs
+
+- SMS Skipped for Undialable Numbers: Fixed a Twilio 21211 error by detecting and skipping off-app SMS to numbers that cannot receive messages
+
+Infrastructure
+
+- Log-Based SLI/SLO Metrics: Replaced the Prometheus pipeline with Cloud Logging-based metrics, dashboards, and alerting — eliminating the /metrics endpoint and its auth-token wiring (#1613, #1614)
+
+- SMS Delivery Status Callbacks: Server now receives and logs Twilio outbound delivery status callbacks for improved SMS observability (#2569)
+
+- Parallelized E2E Test Suite: Web end-to-end tests now run with per-worker server and database isolation, significantly reducing CI wall time (#2588)
+
+- Nightly Doc Freshness Ratchet: Documentation freshness checks moved from per-PR to a nightly schedule, reducing CI load and false positives during active development

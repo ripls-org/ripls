@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.30.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.30.0">Release 0.30.0</h1>
+            <p class="release-date">August 15, 2026</p>
+<p>Adaptive desktop layouts, a calendar fix for landscape viewports, a
+request-writer race fix, and registration hardening.</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><strong>Ripls Works on Desktop</strong>: The web app now reads as
+designed at any viewport width, not as a phone layout stretched
+sideways. Width caps keep every content surface inside a comfortable
+reading column on wide screens, bottom sheets are centered and
+width-capped, and the Plans calendar switches to a two-pane
+grid-beside-detail layout at expanded widths. The changes are
+constraint-first: on phone-shaped viewports the layout is
+pixel-identical to before (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2912">#2912</a>)</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Calendar Now Usable in Landscape</strong>: The month grid
+sized itself from width alone, so at landscape browser aspect ratios
+(roughly 1.1:1 width-to-height and wider) it consumed the entire
+viewport, hid the day-detail panel, and left no way to scroll back — the
+calendar was effectively gone. The grid now derives its cell size from
+both axes and takes the smaller, so it fits any viewport and stays
+readable. Also fixed the same sizing bug in the shared calendar and
+workshop calendar panels (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2908">#2908</a>)</p></li>
+<li><p><strong>Cancelled Requests No Longer Resurrect</strong>: A race
+between <code>SubmitRequest</code>’s async writers (suggestion chips,
+stock imagery) and a concurrent <code>CancelRequest</code> or
+<code>UpdateRequest</code> could silently revert the user’s change. Each
+goroutine read a stale snapshot and wrote it back whole, overwriting
+whatever happened in between. The fix wraps each async write in a
+serialized database transaction with a row lock so concurrent mutations
+are never lost (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2900">#2900</a>)</p></li>
+<li><p><strong>Community Lifecycle Events Handled in Client</strong>:
+When a community was deleted, renamed, had ownership transferred, or a
+member rejoined within the grace window while the app was open, the
+realtime event hit an unhandled path in the client router and was
+silently dropped. All five community-lifecycle event types are now
+routed and cause the affected views to refresh their data (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2869">#2869</a>)</p></li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>Registration Requires Email Verification</strong>:
+<code>EmailRegister</code> no longer accepts a password field — a mailed
+one-time code is required to create an account in all environments. The
+set of accounts that hold a password hash can only shrink from here;
+existing password sign-ins continue to work (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2864">#2864</a>)</p></li>
+<li><p><strong>Deprecated Per-Community Stream Removed</strong>: The
+<code>StreamCommunityEvents</code> RPC deprecated in v0.29.1 is deleted.
+All clients on v0.29.1 or later use the per-user
+<code>StreamUserEvents</code> instead, and adoption has turned over (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2869">#2869</a>)</p></li>
+<li><p><strong>Flutter 3.47.0</strong>: Updated the Flutter SDK from
+3.44.8 to 3.47.0 (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2883">#2883</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.29.3.html">0.29.3</a> &mdash; August 13,
+2026</li>
+                <li><a href="0.29.2.html">0.29.2</a> &mdash; August 11,
+2026</li>
+                <li><a href="0.29.1.html">0.29.1</a> &mdash; August 9,
+2026</li>
+                <li><a href="0.29.0.html">0.29.0</a> &mdash; August 8,
+2026</li>
+                <li><a href="0.28.3.html">0.28.3</a> &mdash; August 2,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

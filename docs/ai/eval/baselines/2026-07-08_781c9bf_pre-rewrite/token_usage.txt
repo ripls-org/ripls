@@ -1,0 +1,9 @@
+Median live token usage per (operation, provider) from the pre-rewrite baseline run log.
+input_tokens includes the JSON-schema/tool overhead each provider adds on top of the prompt template.
+
+GenerateExperienceFromImageStreaming         anthropic  n=  2 med_in= 4858 med_out=  286
+GenerateExperienceFromTextStreaming          anthropic  n= 26 med_in= 3039 med_out=  257
+GenerateExperienceFromWebpageStreaming       anthropic  n=  2 med_in= 2956 med_out=  358
+GenerateGearFromTextStreaming                anthropic  n= 13 med_in= 2381 med_out=  243
+GenerateGearFromWebpageStreaming             anthropic  n=  3 med_in= 3177 med_out=  308
+GenerateRequestContentStreaming              anthropic  n= 12 med_in= 1890 med_out=  177

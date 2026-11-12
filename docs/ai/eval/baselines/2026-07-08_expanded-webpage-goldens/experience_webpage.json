@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "suite": "TestExperienceWebpagePrompt",
+  "run": {
+    "timestamp_utc": "2026-07-08T20:37:06Z",
+    "git_commit": "8611c0b80b",
+    "git_branch": "prompt_rewrite",
+    "label": "expanded-webpage-goldens"
+  },
+  "goldens_file": "experience_webpage_goldens.json",
+  "goldens_version": 2,
+  "pairs": [
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "pass_rate": 0.9821428571428571,
+      "threshold": 0.78,
+      "passed": true,
+      "median_latency_ms": 3392,
+      "p95_latency_ms": 5006,
+      "field_pass_rates": {
+        "date": 1,
+        "date_empty": 1,
+        "has_description": 1,
+        "location_query_contains": 1,
+        "location_query_empty": 0.5,
+        "max_confidence": 1,
+        "min_confidence": 1,
+        "time": 1,
+        "time_confidence_any_of": 1,
+        "title_contains": 1
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 18192,
+      "p95_latency_ms": 31575,
+      "field_pass_rates": {
+        "date": 1,
+        "date_empty": 1,
+        "has_description": 1,
+        "location_query_contains": 1,
+        "location_query_empty": 1,
+        "max_confidence": 1,
+        "min_confidence": 1,
+        "time": 1,
+        "time_confidence_any_of": 1,
+        "title_contains": 1
+      },
+      "invocation_failures": [
+        "festival_multiday",
+        "workshop_registration_deadline"
+      ]
+    },
+    {
+      "provider": "gemini",
+      "model": "vertexai/gemini-3.1-flash-lite",
+      "pass_rate": 1,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 1551,
+      "p95_latency_ms": 2899,
+      "field_pass_rates": {
+        "date": 1,
+        "date_empty": 1,
+        "has_description": 1,
+        "location_query_contains": 1,
+        "location_query_empty": 1,
+        "max_confidence": 1,
+        "min_confidence": 1,
+        "time": 1,
+        "time_confidence_any_of": 1,
+        "title_contains": 1
+      }
+    }
+  ]
+}

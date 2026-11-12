@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mock A — Editorial</title>
+<link rel="stylesheet" href="../../../website/content/css/tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    color: var(--color-text-primary);
+    background: var(--color-background);
+    padding-bottom: 96px;
+  }
+  .label { font-size: var(--font-size-meta); color: var(--color-text-tertiary);
+           text-align: center; padding: var(--space-3); font-style: italic; }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    height: 70vh;
+    min-height: 480px;
+    overflow: hidden;
+  }
+  .hero img {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+  }
+  .hero::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(26,21,18,0.85) 100%);
+  }
+  .hero-inner {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: var(--space-6) var(--space-5);
+    color: #FDFAF7; z-index: 2;
+  }
+  .kicker {
+    text-transform: uppercase; letter-spacing: 0.18em;
+    font-size: var(--font-size-micro); font-weight: 600;
+    color: rgba(253,250,247,0.85); margin-bottom: var(--space-2);
+  }
+  .hero h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(2.25rem, 7vw, 4rem);
+    line-height: 1.05; font-weight: 400; max-width: 16ch;
+  }
+
+  /* Body */
+  main { max-width: 640px; margin: 0 auto; padding: var(--space-6) var(--space-5); }
+  .meta-block { display: grid; gap: var(--space-3); margin-bottom: var(--space-6); }
+  .meta-row { display: flex; gap: var(--space-3); align-items: baseline;
+              padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-divider); }
+  .meta-label {
+    font-size: var(--font-size-micro); text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--color-text-tertiary);
+    width: 80px; flex-shrink: 0;
+  }
+  .meta-value { font-size: var(--font-size-body-large); color: var(--color-text-primary); }
+
+  /* Host card */
+  .host {
+    display: flex; gap: var(--space-3); align-items: center;
+    padding: var(--space-4); background: var(--color-surface);
+    border-radius: var(--radius-md); margin-bottom: var(--space-6);
+  }
+  .avatar {
+    width: 48px; height: 48px; border-radius: var(--radius-pill);
+    overflow: hidden; flex-shrink: 0; background: var(--color-surface);
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .host .avatar { width: 56px; height: 56px; }
+  .host-name { font-weight: 600; font-size: var(--font-size-body); }
+  .host-role { font-size: var(--font-size-meta); color: var(--color-text-secondary); }
+
+  /* Attendees */
+  .att-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: var(--space-3);
+  }
+  .att-title { font-family: var(--font-heading); font-size: var(--font-size-section); }
+  .att-count { color: var(--color-text-secondary); font-size: var(--font-size-meta); }
+  .att-strip { display: flex; gap: var(--space-3); overflow-x: auto;
+               padding-bottom: var(--space-3); }
+  .att { display: flex; flex-direction: column; align-items: center; min-width: 64px; gap: var(--space-2); }
+  .att .avatar { width: 56px; height: 56px; }
+  .att .name { font-size: var(--font-size-micro); color: var(--color-text-secondary); }
+
+  /* Sticky CTA bar */
+  .cta-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--color-card-background);
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-3) var(--space-4);
+    display: flex; gap: var(--space-2); justify-content: center;
+    box-shadow: var(--shadow-md);
+  }
+  .cta {
+    flex: 1; max-width: 200px;
+    padding: var(--space-3) var(--space-4); font-size: var(--font-size-body);
+    font-family: var(--font-body); font-weight: 600;
+    border: 1.5px solid var(--color-primary); background: transparent;
+    color: var(--color-primary); border-radius: var(--radius-md);
+    cursor: pointer;
+  }
+  .cta.primary { background: var(--color-primary); color: #FDFAF7; }
+  .cta[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+  /* Variant sections */
+  .variant {
+    max-width: 640px; margin: var(--space-6) auto;
+    border: 1px dashed var(--color-divider);
+    border-radius: var(--radius-md); padding: var(--space-5);
+  }
+  .variant h3 { font-family: var(--font-heading); font-size: var(--font-size-card);
+                margin-bottom: var(--space-3); color: var(--color-text-secondary); }
+  .banner {
+    padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm);
+    background: rgba(232,166,97,0.15); color: var(--color-warning);
+    font-size: var(--font-size-meta); margin-bottom: var(--space-3);
+    border-left: 3px solid var(--color-warning);
+  }
+</style>
+</head>
+<body>
+  <div class="label">Mock A — “Editorial” · full-bleed hero · serif headline · sticky footer CTAs</div>
+
+  <header class="hero">
+    <img src="../../../server/simulation/assets/experiences/exp_004.jpg" alt="">
+    <div class="hero-inner">
+      <div class="kicker">Two Oaks Block · Saturday</div>
+      <h1>Community Potluck Dinner</h1>
+    </div>
+  </header>
+
+  <main>
+    <div class="meta-block">
+      <div class="meta-row"><div class="meta-label">When</div>
+        <div class="meta-value">Saturday, May 24 · 6:00 PM</div></div>
+      <div class="meta-row"><div class="meta-label">Where</div>
+        <div class="meta-value">Two Oaks Community Center</div></div>
+      <div class="meta-row"><div class="meta-label">Community</div>
+        <div class="meta-value">Two Oaks Block · 18 of 32 members</div></div>
+    </div>
+
+    <div class="host">
+      <div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_010.jpg" alt=""></div>
+      <div>
+        <div class="host-name">Emma R.</div>
+        <div class="host-role">Hosting · bring a dish that serves 8</div>
+      </div>
+    </div>
+
+    <div class="att-header">
+      <div class="att-title">Going</div>
+      <div class="att-count">6 people</div>
+    </div>
+    <div class="att-strip">
+      <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_001.jpg" alt=""></div><div class="name">Marcus</div></div>
+      <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_005.jpg" alt=""></div><div class="name">Henry</div></div>
+      <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_012.jpg" alt=""></div><div class="name">Ian</div></div>
+      <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_018.jpg" alt=""></div><div class="name">Betty</div></div>
+      <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_025.jpg" alt=""></div><div class="name">Tom</div></div>
+      <div class="att"><div class="avatar"><img src="../../../server/simulation/assets/profiles/profile_030.jpg" alt=""></div><div class="name">Sarah</div></div>
+    </div>
+  </main>
+
+  <div class="variant">
+    <h3>At-capacity variant</h3>
+    <div class="banner" role="status">
+      Can't RSVP because the hosting community is full
+      (32&nbsp;of&nbsp;32&nbsp;members). Ask your inviter for options.
+    </div>
+    <p style="color:var(--color-text-secondary); font-size:var(--font-size-meta);">
+      The Yes / Maybe / No buttons are hidden entirely in this state — only the
+      message above renders where the CTA bar would be.
+    </p>
+  </div>
+
+  <div class="variant">
+    <h3>Empty-attendee variant</h3>
+    <p style="color:var(--color-text-secondary); font-size:var(--font-size-meta);">
+      Be the first to RSVP. The attendee strip is hidden until at least one guest has responded.
+    </p>
+  </div>
+
+  <nav class="cta-bar" aria-label="RSVP">
+    <button class="cta primary" aria-label="Coming soon — RSVP available shortly" disabled>Yes, I'll come</button>
+    <button class="cta" aria-label="Coming soon" disabled>Maybe</button>
+    <button class="cta" aria-label="Coming soon" disabled>Can't make it</button>
+  </nav>
+</body>
+</html>

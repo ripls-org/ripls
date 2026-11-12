@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.28.2 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.28.2">Release 0.28.2</h1>
+            <p class="release-date">July 31, 2026</p>
+<p>Nudge notification delivery, locale-aware in-app copy across four
+surfaces, and enum storage correctness.</p>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Nudge Notifications Not Delivering</strong>: Three nudge
+RPCs — poll voter nudges and uncovered-need claimers — were comparing
+RSVP intention against the fully-prefixed enum name
+(<code>"RSVP_INTENTION_YES"</code>) while every writer stores the bare
+value (<code>"YES"</code>). The mismatch caused all three nudges to
+match zero recipients and send no notifications for as long as the code
+existed. Fixed and covered by a test that fails against the old
+comparison (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2820">#2820</a>)</p></li>
+<li><p><strong>In-App Copy Now Locale-Aware</strong>: Four UI surfaces
+were rendering server-composed English strings regardless of the device
+locale. All four now derive their labels client-side from typed proto
+fields and format in the viewer’s locale via <code>intl</code>:</p>
+<ul>
+<li><strong>Needs-you queue</strong> — decision reason, due date, and
+message preview from typed <code>HomeDecisionReason</code> enum and
+<code>due_at_unix_sec</code> (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2827">#2827</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2836">#2836</a>)</li>
+<li><strong>Experience chat time params</strong> — scheduled-time
+changes now send a structured instant + timezone offset; clients render
+via <code>DateFormat</code> in the viewer’s locale; a latent bug where
+system-message updates dropped
+<code>templateKey</code>/<code>templateParams</code> (causing stale
+templates to re-render) is also fixed (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2837">#2837</a>)</li>
+<li><strong>Impact metric detail</strong> — source breakdown and
+recent-activity labels now use the typed <code>ImpactSourceType</code>
+enum; a live string-matching contract
+(<code>_sourceOrder = ['Loans', 'Giveaways', …]</code>) that would have
+silently broken screen ordering on a label rename is replaced with
+enum-keyed aggregation (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2838">#2838</a>)</li>
+<li><strong>Plans-tab calendar</strong> — role lines, obligation titles,
+and time labels now render from typed status enum and raw timestamps
+with ICU plurals for attendance counts (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2839">#2839</a>)</li>
+</ul></li>
+<li><p><strong>Enum Columns Stored as INTEGER</strong>: The protosql
+layer was creating enum flat columns as <code>TEXT</code> and populating
+them with decimal digit strings (<code>"1"</code> instead of
+<code>1</code>). This caused integer-literal comparisons in queries to
+fail (PostgreSQL error 42883) and made any ordering lexicographic rather
+than numeric. An idempotent <code>migrateEnumColumnsToInteger</code>
+step converts legacy TEXT columns at startup; rolling deploys are safe
+in both directions (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2840">#2840</a>)</p></li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>SQL Construction Safety</strong>: All SQL identifiers now
+flow through a validating <code>quoteIdent</code> helper;
+<code>check-sql</code>, a new CI gate, catches raw identifier splices
+that <code>gosec</code> cannot see through interface indirection. LIKE
+metacharacters in search terms are escaped (previously <code>%</code>
+matched all rows), and caller-supplied <code>LIMIT</code> values are
+clamped. A dotted-path quoting bug that had silently prevented
+<code>stock_image</code> embeddings from ever backfilling is also fixed
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2795">#2795</a>)</p></li>
+<li><p><strong>Dart Analyzer Strictness</strong>:
+<code>strict-casts</code>, <code>strict-raw-types</code>, and 22 SDK
+lint rules enabled across 833 non-generated Dart files. A real defect
+found during the sweep: <code>expressInterest</code> was throwing bare
+<code>String</code>s instead of classified <code>UserError</code>s,
+destroying stack traces (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2794">#2794</a>)</p></li>
+<li><p><strong>Proto Wire-Breaking Gate</strong>:
+<code>buf breaking</code> is now wired into CI at <code>WIRE</code>
+level, catching field-number reuse and type changes. Proto deprecation
+policy (two-release wait for API fields, same-release removal for
+models) is documented in <code>docs/proto_conventions.md</code> (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2828">#2828</a>)</p></li>
+<li><p><strong>RSVP Enums and Tech-Debt Cleanup</strong>:
+<code>ExperienceRSVP.intention</code>/<code>attended</code> migrated
+from strings to enums with an idempotent boot backfill; legacy portfolio
+inbox (six RPCs with no callers) deleted; deprecated entity-card fields
+from #2012 removed; <code>goconst</code> enabled at zero findings after
+fixing the three underlying defects it was pointing at (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2829">#2829</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2820">#2820</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2020">#2020</a>)</p></li>
+<li><p><strong>Lint Ratchet</strong>: <code>funlen</code>,
+<code>cyclop</code>, and <code>dupl</code> thresholds tightened after
+refactoring <code>fetchAll</code> (671 → ~50 lines per section) and
+<code>generateFeedItems</code>; query-count guards added to the
+portfolio and feed hot paths to catch N+1 regressions without changing
+response bytes; <code>InboxItem</code> model deleted (was a two-field
+wrapper; fields moved directly onto <code>ConversationState</code>) (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2816">#2816</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2814">#2814</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.28.1.html">0.28.1</a> &mdash; July 30,
+2026</li>
+                <li><a href="0.28.0.html">0.28.0</a> &mdash; July 28,
+2026</li>
+                <li><a href="0.27.0.html">0.27.0</a> &mdash; July 17,
+2026</li>
+                <li><a href="0.26.4.html">0.26.4</a> &mdash; July 9,
+2026</li>
+                <li><a href="0.26.3.html">0.26.3</a> &mdash; July 7,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

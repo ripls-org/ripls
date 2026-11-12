@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.3.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="ripls-0.3.0-release-notes">Ripls 0.3.0 Release Notes</h1>
+            <p class="release-date">February 13, 2026</p>
+<h2 id="new-features">New Features</h2>
+<h3 id="impact-metrics">Impact Metrics</h3>
+<p>See the real-world impact of sharing. Every loan, giveaway, request,
+and experience now calculates estimated cost savings, carbon emissions
+prevented, and time saved. Impact metrics appear on community
+dashboards, individual items, and user profiles – and you can tap any
+metric to see how it was calculated. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/720">#720</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/693">#693</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/698">#698</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/699">#699</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/708">#708</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/730">#730</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/722">#722</a>)</p>
+<h3 id="redesigned-loan-and-giveaway-workflows">Redesigned Loan and
+Giveaway Workflows</h3>
+<p>Borrowing and giving away items now have clear, step-by-step flows:
+schedule a pickup time, confirm handoff, and see your impact when it’s
+done. Both parties can see what the other person sees at each step, and
+a chat button is always available. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/721">#721</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/725">#725</a>)</p>
+<h3 id="stories">Stories</h3>
+<p>Completed loans, giveaways, requests, and experiences now generate
+story cards that appear in the community feed, celebrating what your
+community accomplished. Archived items are accessible through their
+stories. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/689">#689</a>)</p>
+<h3 id="add-gear-from-a-url">Add Gear from a URL</h3>
+<p>Paste a product URL when adding gear and the app will automatically
+pull the name, description, photos, and estimated value from the page.
+(<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/694">#694</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/664">#664</a>)</p>
+<h3 id="improved-invite-links">Improved Invite Links</h3>
+<p>Invite links now use short, memorable codes
+(e.g. <code>ripls.app/go/qkLCXDLP</code>) instead of long UUIDs. Shared
+links show a branded preview with community info in messaging apps via
+OpenGraph metadata. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/697">#697</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/690">#690</a>)</p>
+<h3 id="discovery-search-improvements">Discovery Search
+Improvements</h3>
+<p>Search results now properly filter between loans, giveaways,
+requests, and experiences. Results are sorted by relevance with better
+coverage across all item types, and tapping a community metric opens a
+filtered item list. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/732">#732</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/733">#733</a>)</p>
+<h3 id="profile-redesign">Profile Redesign</h3>
+<p>User profiles now show your personal impact metrics (items shared,
+money saved, emissions prevented) alongside your activity, matching the
+community dashboard layout. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/731">#731</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/699">#699</a>)</p>
+<h2 id="improvements">Improvements</h2>
+<ul>
+<li><p><strong>Feedback system upgraded</strong>: Bug reports from the
+app are now filed via a GitHub App instead of a personal access token,
+improving security and reliability. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/712">#712</a>)</p></li>
+<li><p><strong>Faster test runs</strong>: Local Go tests now complete in
+60-90 seconds (down from 7 minutes) by gating live AI API calls behind a
+build tag. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/706">#706</a>)</p></li>
+<li><p><strong>Skills system removed</strong>: The experimental skills
+feature has been fully removed in favor of the new impact metrics
+system. This eliminated ~5,000 lines of code. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/703">#703</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/705">#705</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/724">#724</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/723">#723</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/669">#669</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/654">#654</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>Unread message count fixed</strong>: Reading a message no
+longer decrements the unread count by 2x. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/713">#713</a>,
+fixes <a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/709">#709</a>)</p></li>
+<li><p><strong>Server process cleanup</strong>: Fixed orphaned server
+processes accumulating during development and testing, each consuming
+100+ MB of memory. Ctrl+C now performs a clean shutdown. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/704">#704</a>)</p></li>
+<li><p><strong>Test container cleanup</strong>: Old test containers now
+remove their associated volumes, reclaiming disk space. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/691">#691</a>)</p></li>
+<li><p><strong>HTTPS for ripls.app</strong>: Fixed certificate
+provisioning for the ripls.app domain. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/700">#700</a>)</p></li>
+<li><p><strong>Stock imagery reliability</strong>: Switched primary
+stock image provider from Pexels (which was blocking requests) to
+Unsplash. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/701">#701</a>)</p></li>
+<li><p><strong>Stale cache after transfers</strong>: Community stats and
+gear metrics now refresh immediately after completing a loan or
+giveaway. (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/703">#703</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.2.0.html">0.2.0</a> &mdash; February 5,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

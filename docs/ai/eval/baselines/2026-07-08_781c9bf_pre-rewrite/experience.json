@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "suite": "TestExperiencePrompt",
+  "run": {
+    "timestamp_utc": "2026-07-08T15:02:20Z",
+    "git_commit": "781c9bf1a9",
+    "git_branch": "prompt_rewrite",
+    "label": "pre-rewrite"
+  },
+  "goldens_file": "experience_goldens.json",
+  "goldens_version": 1,
+  "pairs": [
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "pass_rate": 0.9915254237288136,
+      "threshold": 0.78,
+      "passed": true,
+      "median_latency_ms": 2304,
+      "p95_latency_ms": 7256,
+      "field_pass_rates": {
+        "date": 1,
+        "location_query": 1,
+        "location_query_contains": 1,
+        "mentioned_names_set": 1,
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "time": 1,
+        "time_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 0.6666666666666666
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "pass_rate": 0.9915254237288136,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 17736,
+      "p95_latency_ms": 26432,
+      "field_pass_rates": {
+        "date": 1,
+        "location_query": 1,
+        "location_query_contains": 1,
+        "mentioned_names_set": 1,
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "time": 1,
+        "time_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 0.6666666666666666
+      }
+    },
+    {
+      "provider": "gemini",
+      "model": "vertexai/gemini-3.1-flash-lite",
+      "pass_rate": 0.9912280701754386,
+      "threshold": 0.85,
+      "passed": true,
+      "median_latency_ms": 1374,
+      "p95_latency_ms": 6041,
+      "field_pass_rates": {
+        "date": 1,
+        "location_query": 1,
+        "location_query_contains": 1,
+        "mentioned_names_set": 1,
+        "min_confidence": 1,
+        "search_keywords_general_matches": 1,
+        "search_keywords_must_contain": 1,
+        "time": 1,
+        "time_confidence": 1,
+        "title_contains": 1,
+        "value_estimate_usd": 0.6666666666666666
+      },
+      "invocation_failures": [
+        "potluck_sunday_evening"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+Release 0.19.0
+
+
+New Features
+
+- Community-wide chat: Each community now has a single perpetual chat conversation that every member can see in their inbox. Community chats appear alongside DMs and gear-scoped chats in the multi-community inbox, and the conversation supports media attachments (#1637, #1646, #1660)
+
+- New-member notifications: When a new person joins a community, existing members get a push notification (“Alex joined Bay Area Tools”) so they can welcome them in. Controlled by a new per-community “New members” toggle on the notification preferences screen (#1639)
+
+- Auth screens lead with phone and Google: Sign-up and login now surface phone and Google as the primary options, with email/password demoted behind an expander. The invitation landing screen has been merged into the register screen so invited users see their hero context inline rather than going through a separate welcome step (#1640, #1649)
+
+- Single-select community sidebar: The sidebar’s multi-select model has been replaced with single-select, simplifying the navigation state and matching how the rest of the app scopes by active community (#1629, #1631)
+
+Bug Fixes
+
+- Transfer list 500 when a referenced gear was deleted: A user with even one transfer pointing to a soft-deleted gear couldn’t load any transfer list — every page hit a 500. buildTransfers now includes soft-deleted gear so transfer history stays viewable after the gear is deleted (#1641, #1642)
+
+- Duplicate-email registrations created shadow accounts: Registering with an email that already existed (with different casing or whitespace) created a duplicate user row that fragmented the user’s data. Registration now normalizes emails and rejects duplicates (#1636, #1638)
+
+- Removed the unary AI generation path: The legacy non-streaming Gen* RPCs and the ENABLE_GEN_STREAMING flag are gone — every generation flow streams now. Cleans up the dual-path branching that was left behind from the streaming rollout (#1260, #1634)
+
+- Cloud Run image attribute fight: Terraform and the deploy workflow were each rewriting the Cloud Run service’s container image, causing intermittent prod deploy failures. Terraform now ignores the image attribute so the deploy workflow owns it (#1628)
+
+Reliability & Safety
+
+- Community soft-delete scaffolding (Phase 1): Server-side groundwork for the upcoming community delete + 30-day restore feature. Adds Community.owner_user_id, the deleted-member snapshot, and CommunityUser.deleted; backfills owner_user_id = creator_id and adds a UNIQUE (community_id, user_id) constraint on community_user; and gates read paths, notification dispatchers, and background-job writes on whether the community is active. None of this is user-visible yet — clients can’t produce a deleted community in this release — but it lets Phase 2 land safely (#1619, #1621, #1622, #1623, #1630, #1632, #1633, #1643, #1644, #1645, #1652)
+
+Developer Experience
+
+- Auto-assign PR author on open: PRs are now automatically assigned to their author so they show up in the right “your PRs” filters without manual triage (#1617)
+
+- Community delete & leave design doc: Full design for the community soft-delete feature — owner-leave with handoff, sole-member-leave-as-delete, 30-day rejoin window, restore by any snapshot member — lives in docs/community_delete_and_leave.md (#1616)

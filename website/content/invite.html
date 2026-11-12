@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join Ripls</title>
+
+  <script>
+    fetch('/favicon-links.html')
+      .then(response => response.text())
+      .then(html => document.head.insertAdjacentHTML('beforeend', html));
+  </script>
+
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="stylesheet" href="css/deeplink.css">
+</head>
+<body>
+  <header>
+    <img src="assets/logo.png" alt="Ripls Logo" class="logo-image">
+    <div class="logo-text">ripls</div>
+  </header>
+
+  <main class="deeplink-container">
+    <div class="deeplink-card">
+      <h1>You've Been Invited!</h1>
+      <p>
+        Join your community on Ripls to share and borrow items with neighbors.
+      </p>
+
+      <div class="buttons">
+        <button class="btn btn-primary" onclick="openApp()">
+          Open Ripls App
+        </button>
+      </div>
+
+      <div id="status" class="status hidden"></div>
+
+      <div id="app-buttons" class="buttons">
+        <div class="store-links">
+          <a
+            id="testflight-link"
+            href="https://testflight.apple.com/join/gFSEbHaY"
+            target="_blank"
+            rel="noopener"
+            class="store-btn"
+          >
+            <svg class="store-btn-icon" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            <span class="store-btn-text">
+              <span class="store-btn-label">Join Beta on</span>
+              <span class="store-btn-store">TestFlight</span>
+            </span>
+          </a>
+          <a
+            id="play-store-link"
+            href="https://play.google.com/store/apps/details?id=org.ripls.app"
+            target="_blank"
+            rel="noopener"
+            class="store-btn"
+          >
+            <svg class="store-btn-icon" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+              <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+            </svg>
+            <span class="store-btn-text">
+              <span class="store-btn-label">Get it on</span>
+              <span class="store-btn-store">Google Play</span>
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <div id="reopen-cta" class="buttons hidden">
+        <a id="reopen-link" href="#" class="btn btn-secondary">
+          Already installed? Tap here to open in Ripls
+        </a>
+      </div>
+
+      <div id="invite-code-display" class="invite-code hidden">
+        <p class="invite-code-label">Your invite code</p>
+        <p class="invite-code-value" id="invite-code-value"></p>
+        <p class="invite-code-hint">You can also enter this code manually in the app</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Type2Fun Foundation, PBC · 2025</p>
+      <p><a href="/privacy-policy.html">Privacy Policy</a></p>
+    </div>
+  </footer>
+
+  <script>
+    // Extract short code from /go/CODE path or legacy ?token= query param
+    const urlParams = new URLSearchParams(window.location.search);
+    const pathMatch = window.location.pathname.match(/^\/go\/([^/?]+)/);
+    const code = pathMatch ? pathMatch[1] : urlParams.get("token");
+
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isMobile = isIOS || isAndroid;
+
+    function buildDeepLinkUrl() {
+      if (!code) return null;
+      // Build deep link with code as query param, forward other params
+      const params = new URLSearchParams(urlParams);
+      params.set("token", code);
+      return `ripls://invite?${params.toString()}`;
+    }
+
+    // Encode referrer into the Play Store URL so the app can recover the
+    // invite code after install via the Install Referrer API.
+    function buildPlayStoreUrl() {
+      const base = "https://play.google.com/store/apps/details?id=org.ripls.app";
+      if (!code) return base;
+      // Build referrer string with invite code and any item-specific params.
+      const parts = ["utm_source=ripls", "utm_content=" + encodeURIComponent(code)];
+      const gearId = urlParams.get("gear_id");
+      const requestId = urlParams.get("request_id");
+      const experienceId = urlParams.get("experience_id");
+      if (gearId) parts.push("gear_id=" + encodeURIComponent(gearId));
+      if (requestId) parts.push("request_id=" + encodeURIComponent(requestId));
+      if (experienceId) parts.push("experience_id=" + encodeURIComponent(experienceId));
+      const referrer = encodeURIComponent(parts.join("&"));
+      return base + "&referrer=" + referrer;
+    }
+
+    // On iOS, copy the deep link URL to clipboard before the user leaves for
+    // the App Store. The app reads UIPasteboard on first launch to recover
+    // the invite context (iOS 16+ shows a paste permission banner).
+    function copyDeepLinkToClipboard() {
+      const deepLink = buildDeepLinkUrl();
+      if (!deepLink || !navigator.clipboard) return;
+      navigator.clipboard.writeText(deepLink).catch(function() {
+        // Clipboard write can fail silently (e.g. non-HTTPS, permissions).
+        // The re-tap and manual code fallbacks still work.
+      });
+    }
+
+    function showStatus(text, isError) {
+      var status = document.getElementById("status");
+      status.textContent = text;
+      status.classList.remove("hidden");
+      if (isError) {
+        status.classList.add("error");
+      }
+    }
+
+    function openApp() {
+      const deepLink = buildDeepLinkUrl();
+      if (!deepLink) return;
+
+      window.location.href = deepLink;
+      showStatus("Opening app...");
+
+      setTimeout(function() {
+        showStatus("Don't have the app? Download it below:");
+        showPostInstallHelpers();
+      }, 2000);
+    }
+
+    function showPostInstallHelpers() {
+      if (!code) return;
+
+      // Show the "Already installed? Tap here" CTA (Universal Links re-tap)
+      var reopenCta = document.getElementById("reopen-cta");
+      var reopenLink = document.getElementById("reopen-link");
+      var reopenUrl = "https://ripls.app/go/" + encodeURIComponent(code);
+      var search = urlParams.toString();
+      if (search) reopenUrl += "?" + search;
+      reopenLink.href = reopenUrl;
+      reopenCta.classList.remove("hidden");
+
+      // Show the invite code for manual entry
+      document.getElementById("invite-code-value").textContent = code;
+      document.getElementById("invite-code-display").classList.remove("hidden");
+    }
+
+    // Show only the relevant store link on mobile
+    if (isIOS) {
+      document.getElementById("play-store-link").style.display = "none";
+    } else if (isAndroid) {
+      document.getElementById("testflight-link").style.display = "none";
+    }
+
+    if (code) {
+      // Set the Play Store link with referrer for Install Referrer API
+      document.getElementById("play-store-link").href = buildPlayStoreUrl();
+
+      // Copy deep link to clipboard on iOS before user leaves for App Store
+      if (isIOS) {
+        var testflightLink = document.getElementById("testflight-link");
+        testflightLink.addEventListener("click", copyDeepLinkToClipboard);
+      }
+
+      if (isMobile) {
+        openApp();
+      } else {
+        showStatus("To accept this invitation, download the Ripls app:");
+        showPostInstallHelpers();
+      }
+    } else {
+      showStatus("Invalid invitation link. Please check the link and try again.", true);
+    }
+  </script>
+</body>
+</html>

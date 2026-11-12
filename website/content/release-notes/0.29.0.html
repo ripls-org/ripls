@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.29.0 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.29.0">Release 0.29.0</h1>
+            <p class="release-date">August 8, 2026</p>
+<p>Passwordless email sign-in, plan-again shortcuts for recurring
+events, and a group-page Invite action.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li><p><strong>Passwordless Email Sign-In</strong>: Email accounts now
+authenticate with a one-time code delivered to your inbox — the same
+flow phone numbers have always used. The six-digit code expires in 10
+minutes and is single-use. Existing password holders still have a “Use
+my password instead” fallback during the transition; passwords will be
+removed in a follow-up release once the soak completes. The change also
+closes the email-shadowing gap where an unverified address could absorb
+a pending identity — <code>promoteProvisionalByEmail</code> now gates on
+a verified-at timestamp (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2571">#2571</a>)</p></li>
+<li><p><strong>Schedule the Next One</strong>: A wrapped event’s
+Who’s-in card now carries a <strong>Schedule the next one</strong> chip
+for the host. Tapping it opens a pre-filled draft that inherits the
+guest list and, for weekly events, suggests the next same-weekday slot
+at the same wall-clock hour in the event’s own timezone — so a 6:30 am
+run stays 6:30 am across a DST boundary (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2860">#2860</a>)</p></li>
+<li><p><strong>Invite from the Group Page</strong>: The group page in
+the People tab now has a dedicated <strong>Invite</strong> button
+alongside Message, Plans, and Library. Previously every invite path hung
+off the feed card or Settings (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/2860">#2860</a>)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>Embedding Write Race</strong>: The vector-embedding
+goroutine could run its <code>UPDATE</code> before the surrounding
+<code>INSERT</code> transaction was visible on the connection pool,
+silently writing to a row that didn’t exist yet and leaving the gear
+item without a search embedding. The goroutine is now deferred until
+after its parent transaction commits, and the done-channel carries the
+error so a failed write surfaces immediately in tests (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2847">#2847</a>)</li>
+</ul>
+<h2 id="internal">Internal</h2>
+<ul>
+<li><p><strong>Email Delivery Metrics</strong>: The server now receives
+and verifies Mailgun delivery webhook events, enabling true
+time-to-inbox measurement for the first time. Three log-based metrics
+ship with it: <code>email_code_age</code> (issue-to-verify latency — a
+proxy that includes human typing time), <code>email_code_failures</code>
+by reason, and <code>email_signins_by_credential</code> (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2862">#2862</a>)</p></li>
+<li><p><strong>CI Reliability</strong>: Live AI provider health-check
+integration tests now skip when the vendor is unreachable from the
+runner (timeout / connection error) rather than failing the required Go
+Tests gate. Auth, parsing, and response-shape regressions still fail
+loudly (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/2865">#2865</a>)</p></li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.28.3.html">0.28.3</a> &mdash; August 2,
+2026</li>
+                <li><a href="0.28.2.html">0.28.2</a> &mdash; July 31,
+2026</li>
+                <li><a href="0.28.1.html">0.28.1</a> &mdash; July 30,
+2026</li>
+                <li><a href="0.28.0.html">0.28.0</a> &mdash; July 28,
+2026</li>
+                <li><a href="0.27.0.html">0.27.0</a> &mdash; July 17,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

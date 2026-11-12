@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.9.2 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.9.2">Release 0.9.2</h1>
+            <p class="release-date">April 3, 2026</p>
+<p>Metrics overhaul and bug fixes. Redesigned portfolio and community
+impact metrics, improved gear-from-URL error handling, and refreshed the
+user profile screen.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Redesigned Portfolio Metrics</strong>: New secondary metrics
+for portfolio including meal and trip comparisons, CO2 savings, and
+consistent formatting across inventory and community views (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1007">#1007</a>)</li>
+<li><strong>Community Impact Metrics</strong>: Updated community CO2
+prompts to be event-based with detailed per-community breakdowns (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1007">#1007</a>)</li>
+<li><strong>Internationalization for Metrics</strong>: Added i18n
+support for all impact metric strings (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1007">#1007</a>)</li>
+</ul>
+<h2 id="ux-improvements">UX Improvements</h2>
+<ul>
+<li><strong>Refreshed User Profile Screen</strong>: Cleaned up the user
+screen layout and improved the zero-state experience (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1009">#1009</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1018">#1018</a>)</li>
+<li><strong>Improved URL Fetch Error Messages</strong>: Gear-from-URL
+failures now show typed, localized error messages instead of generic
+errors, with in-modal error overlays replacing disruptive snackbars (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1010">#1010</a>)</li>
+<li><strong>Giveaway Feed Visibility</strong>: Giveaways now always
+appear in the feed and portfolio, with active giveaways correctly
+distinguished from loans (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1013">#1013</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1015">#1015</a>)</li>
+<li><strong>Disabled Onboarding Screens</strong>: Temporarily removed
+onboarding flow to streamline first-launch experience (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/983">#983</a>)</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li>Fixed avatar display issue on profile screen (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1014">#1014</a>)</li>
+<li>Fixed ServiceException handling to preserve Connect error codes
+instead of parsing message strings (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1010">#1010</a>)</li>
+<li>Fixed portfolio incorrectly showing active giveaway openings as
+loans (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1013">#1013</a>)</li>
+</ul>
+<h2 id="infrastructure">Infrastructure</h2>
+<ul>
+<li><strong>FCM Auth Retry</strong>: Added automatic retry with
+re-authentication when FCM token expires, and downgraded per-device
+notification failure logs from Error to Warn (<a
+href="https://github.com/Type2Fun-Foundation/ripls/issues/1004">#1004</a>,
+<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1006">#1006</a>)</li>
+<li><strong>Web Fetch Hardening</strong>: Added browser User-Agent
+headers, cookie jar support, and typed FetchError kinds for
+gear-from-URL scraping (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1010">#1010</a>)</li>
+<li>Added retailer URL integration test suite with 28 sites baseline (<a
+href="https://github.com/Type2Fun-Foundation/ripls/pull/1010">#1010</a>)</li>
+</ul>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.9.1.html">0.9.1</a> &mdash; April 2,
+2026</li>
+                <li><a href="0.9.0.html">0.9.0</a> &mdash; April 1,
+2026</li>
+                <li><a href="0.8.0.html">0.8.0</a> &mdash; March 20,
+2026</li>
+                <li><a href="0.7.0.html">0.7.0</a> &mdash; March 16,
+2026</li>
+                <li><a href="0.6.0.html">0.6.0</a> &mdash; March 7,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>
