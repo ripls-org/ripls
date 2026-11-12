@@ -59,10 +59,9 @@ dependencies:
   intl: ^0.20.1
   keyboard_actions: ^4.2.0
   logging: ^1.2.0
-  mapbox_maps_flutter: 2.19.1
   mime: ^2.0.0
   package_info_plus: ^10.1.0
-  play_install_referrer: ^0.5.0
+  play_install_referrer: ^0.6.0
   protobuf: ^4.2.0
   qr_flutter: ^4.1.0
   reorderable_grid_view: ^2.2.8

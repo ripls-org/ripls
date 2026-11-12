@@ -131,9 +131,36 @@ const DefaultBoundRadiusM = 50_000
 // the wrong-state cases while keeping legitimate edge-of-radius results.
 const BoundRadiusExpansionFactor = 1.5
 
-// Compile-time assertions that the bundled provider implementations
-// satisfy Provider. Add new implementations to this list as they land.
-var (
-	_ Provider = (*MapboxClient)(nil)
-	_ Provider = (*GoogleMapsClient)(nil)
-)
+// PlaceResult represents a single place search result from a geocoding
+// provider. Fields are provider-agnostic; ExternalID + ExternalProvider
+// together form a stable identifier that can be used for deduplication.
+type PlaceResult struct {
+	Name        string
+	FullAddress string
+	Type        string // POI, Address, City, Locality, Place
+	Coordinates struct {
+		Longitude float64
+		Latitude  float64
+	}
+	Confidence float64 // 0.0-1.0 score based on result relevance
+
+	// External identifier for cross-session deduplication.
+	// ExternalID is opaque; its meaning depends on ExternalProvider
+	// (e.g., a Places API place id when ExternalProvider is "google_maps").
+	// Rows saved before the Google cutover (#2188) carry "mapbox".
+	ExternalID       string
+	ExternalProvider string // e.g. "google_maps"; empty if no stable ID was available
+
+	// Administrative hierarchy extracted from the provider's context data.
+	// Any of these may be empty if the provider didn't return them for
+	// this particular result.
+	Locality           string // e.g., "Boulder"
+	RegionCode         string // e.g., "CO" or "US-CO"
+	PostalCode         string // e.g., "80302"
+	Neighborhood       string // e.g., "Capitol Hill"
+	County             string // e.g., "Boulder County"
+	AdministrativeArea string // e.g., "Colorado"
+}
+
+// Compile-time assertion that the bundled provider satisfies Provider.
+var _ Provider = (*GoogleMapsClient)(nil)

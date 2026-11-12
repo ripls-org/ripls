@@ -1,0 +1,17 @@
+// Dev build configuration
+// Used for debug and profile builds
+
+PRODUCT_BUNDLE_IDENTIFIER = org.ripls.app.dev
+DISPLAY_NAME = Ripls Dev
+
+// Apple Developer Team that signs local device builds. It lives here rather
+// than in project.pbxproj because it is account identity, not project
+// structure (#2953); Dev.example.xcconfig is the template for other
+// deployments. Release builds do not read it:
+// `fastlane ios release` calls update_code_signing_settings with
+// ENV["APPLE_TEAM_ID"], which rewrites the project at build time.
+DEVELOPMENT_TEAM = 2HL54765FF
+
+// Google Sign-In OAuth client IDs (ripls-dev)
+GOOGLE_IOS_CLIENT_ID = 685679309377-1kqtpujbbu2j7dap23iottj0ho1und6j.apps.googleusercontent.com
+GOOGLE_IOS_REVERSED_CLIENT_ID = com.googleusercontent.apps.685679309377-1kqtpujbbu2j7dap23iottj0ho1und6j

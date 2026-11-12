@@ -53,7 +53,7 @@ The ripls server is a Go-based HTTP/JSON API built on Connect-Go (gRPC-compatibl
                          │
 ┌────────────────────────▼────────────────────────────────────┐
 │              External Dependencies                          │
-│  PostgreSQL, Firebase, GCS, Mapbox, Mailgun, Vertex AI, ... │
+│  PostgreSQL, Firebase, GCS, Google Maps, Mailgun, Vertex AI │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -76,7 +76,7 @@ The ripls server is a Go-based HTTP/JSON API built on Connect-Go (gRPC-compatibl
 - `server/auth/`: User management, JWT tokens, OIDC
 - `server/notifications/`: Push notifications (FCM) plus off-app channels (email, SMS)
 - `server/email/`: Email delivery (Mailgun)
-- `server/location/`: Geolocation services (Mapbox)
+- `server/location/`: Geocoding and place search (Google Maps Platform)
 - `server/ai/`: AI providers for image analysis (Gemini/Vertex AI)
 - `server/weather/`: Per-day weather providers for the Home calendar (Open-Meteo)
 - `server/jobs/`: Background job scheduling
@@ -109,7 +109,7 @@ The ripls server is a Go-based HTTP/JSON API built on Connect-Go (gRPC-compatibl
 - `storage.ProtoSQLStorage`: Database access used by all services
 - `auth.UserManager`: User CRUD operations
 - `notifications.Service`: Push notification delivery
-- `location.MapboxClient`: Geocoding and mapping
+- `location.Provider` (`location.GoogleMapsClient`): Geocoding and place search
 - `github.Client`: GitHub API operations with App authentication
 
 **Pattern to follow:**
@@ -547,7 +547,7 @@ func New(
 
 - Storage: Always required
 - Auth: Middleware provides context-based auth
-- External clients: Mapbox, GCS bucket, email
+- External clients: location provider (Google Maps), GCS bucket, email
 
 **Benefits:**
 
@@ -917,7 +917,7 @@ Two endpoints provide health visibility:
 
 Dependencies register health checkers at startup:
 - **Core**: Database (PostgreSQL ping + pool stats), Storage (GCS/local), Email (Mailgun domain verification)
-- **Optional**: AI providers (Anthropic, OpenAI, Gemini), Location (Mapbox token validation), Stock imagery (Unsplash, Pexels)
+- **Optional**: AI providers (Anthropic, OpenAI, Gemini), Location (Google Maps Geocoding API probe, cached), Stock imagery (Unsplash, Pexels)
 
 ### Cloud Monitoring Integration
 
@@ -934,7 +934,11 @@ Terraform-managed monitoring infrastructure (`terraform/modules/monitoring/`) pr
 - **Protocol Buffers:** `proto/ripls/api/` and `proto/ripls/models/`
 - **Code Generation:** See `CLAUDE.md` for `npm run generate` instructions
 - **Storage Layer:** `server/storage/protosql.go` implementation details
-- **Deployment:** `terraform/README.md` for infrastructure
+- **Deployment:** the server and its PostgreSQL run as Docker Compose stacks on
+  the self-hosted host mimir, deployed by CI over SSH — see
+  `infra/server/README.md`. `terraform/README.md` covers the Google Cloud and
+  Cloudflare resources around it (secrets, media bucket, monitoring, DNS). The
+  server ran on Cloud Run with Cloud SQL until #3079.
 
 ---
 

@@ -19,9 +19,8 @@ import UIKit
   // Google Maps SDK init bridge (#2188). Dart calls
   // 'org.ripls.app/google_maps_init#provideAPIKey' with the
   // --dart-define value before runApp; we forward it to
-  // GMSServices.provideAPIKey before any GMSMapView can mount. Same
-  // secret-flow shape as MAPBOX_ACCESS_TOKEN (--dart-define → Dart →
-  // native SDK). Setting up the channel in didInitializeImplicitFlutterEngine
+  // GMSServices.provideAPIKey before any GMSMapView can mount.
+  // Setting up the channel in didInitializeImplicitFlutterEngine
   // (rather than didFinishLaunchingWithOptions) guarantees the
   // engineBridge.binaryMessenger is ready.
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {

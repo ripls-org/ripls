@@ -64,9 +64,7 @@ type Config struct {
 	FeedbackSignerPrivateKey     string
 	GitHubRepoOwner              string
 	GitHubRepoName               string
-	MapboxAccessToken            string
 	GoogleMapsAPIKeyServer       string
-	MapProvider                  string
 	EmbeddingModelPath           string
 	EmbeddingVocabPath           string
 	WaitlistNotifyEmail          string
@@ -159,11 +157,8 @@ func Parse() (*Config, error) {
 	feedbackSignerKeyFile := flag.String("feedback-signer-key-file", "", "Path to a file containing the service-account JSON key for signing durable feedback screenshot URLs (mutually exclusive with -feedback-signer-key)")
 	githubRepoOwner := flag.String("github-repo-owner", "", "GitHub repository owner that receives user-feedback issues")
 	githubRepoName := flag.String("github-repo-name", "ripls", "GitHub repository name")
-	mapboxAccessToken := flag.String("mapbox-access-token", "", "Mapbox API access token for geocoding (if empty disabled)")
-	mapboxAccessTokenFile := flag.String("mapbox-access-token-file", "", "Path to a file containing the Mapbox access token (mutually exclusive with -mapbox-access-token)")
-	googleMapsAPIKeyServer := flag.String("google-maps-api-key-server", "", "Google Maps Platform API key for the server-side location provider (#2188). Restricted to Places API (New) + Geocoding API; client SDK keys are distinct. Empty disables the Google client; Phase 3+ wires it through location.Provider.")
+	googleMapsAPIKeyServer := flag.String("google-maps-api-key-server", "", "Google Maps Platform API key for server-side geocoding and place search. Restricted to Places API (New) + Geocoding API; client SDK keys are distinct. Required outside dev mode.")
 	googleMapsAPIKeyServerFile := flag.String("google-maps-api-key-server-file", "", "Path to a file containing the server-side Google Maps API key (mutually exclusive with -google-maps-api-key-server)")
-	mapProvider := flag.String("map-provider", "mapbox", "Active location provider for geocoding + place search (#2188): 'mapbox' or 'google'. The selected provider's credential flag (--mapbox-access-token / --google-maps-api-key-server) must be non-empty.")
 	embeddingModelPath := flag.String("embedding-model-path", "", "Path to local ONNX embedding model file")
 	embeddingVocabPath := flag.String("embedding-vocab-path", "", "Path to embedding model vocabulary file (vocab.txt)")
 	waitlistNotifyEmail := flag.String("waitlist-notify-email", "", "Email address to receive waitlist signup notifications. Empty disables the notification.")
@@ -227,9 +222,7 @@ func Parse() (*Config, error) {
 		FeedbackSignerKey:            *feedbackSignerKey,
 		GitHubRepoOwner:              *githubRepoOwner,
 		GitHubRepoName:               *githubRepoName,
-		MapboxAccessToken:            *mapboxAccessToken,
 		GoogleMapsAPIKeyServer:       *googleMapsAPIKeyServer,
-		MapProvider:                  *mapProvider,
 		EmbeddingModelPath:           *embeddingModelPath,
 		EmbeddingVocabPath:           *embeddingVocabPath,
 		WaitlistNotifyEmail:          *waitlistNotifyEmail,
@@ -263,7 +256,6 @@ func Parse() (*Config, error) {
 		{"pixabay-api-key", &cfg.PixabayAPIKey, pixabayAPIKeyFile},
 		{"github-app-private-key", &cfg.GitHubAppPrivateKey, githubAppPrivateKeyFile},
 		{"feedback-signer-key", &cfg.FeedbackSignerKey, feedbackSignerKeyFile},
-		{"mapbox-access-token", &cfg.MapboxAccessToken, mapboxAccessTokenFile},
 		{"google-maps-api-key-server", &cfg.GoogleMapsAPIKeyServer, googleMapsAPIKeyServerFile},
 		{"jwt-signing-secret", &cfg.JWTSigningSecret, jwtSigningSecretFile},
 	}
@@ -342,14 +334,6 @@ func (cfg *Config) finalize(secrets []secretFile, dbPasswordFile string) error {
 
 	if err := auth.ValidateSigningSecret([]byte(cfg.JWTSigningSecret)); err != nil {
 		return fmt.Errorf("--jwt-signing-secret is required and must be at least 32 bytes: %w", err)
-	}
-
-	// --map-provider must be one of the known providers. Credential
-	// availability is checked later, after Secret Manager fetches resolve.
-	switch cfg.MapProvider {
-	case "mapbox", "google":
-	default:
-		return fmt.Errorf("--map-provider must be 'mapbox' or 'google'; got %q", cfg.MapProvider)
 	}
 
 	// Resolve and validate CORS origins. In dev mode an empty list defaults to

@@ -4,9 +4,9 @@ import (
 	api "go.ripls.org/ripls/server/gen/ripls/api"
 )
 
-// ToGeocodedLocation converts a Mapbox PlaceResult into the api.GeocodedLocation
+// ToGeocodedLocation converts a PlaceResult into the api.GeocodedLocation
 // proto returned to clients. displayName is used for the Name field — callers
-// pass p.Name by default, or override (for example, when Mapbox matches as
+// pass p.Name by default, or override (for example, when the provider matches as
 // "Address", the p.Name is just the street address and callers prefer a
 // JSON-LD place name or FullAddress instead).
 //

@@ -12,11 +12,6 @@ output "uptime_check_name" {
   value       = one(google_monitoring_uptime_check_config.health_check[*].name)
 }
 
-output "uptime_checker_service_account" {
-  description = "Email of the service account used for uptime checks"
-  value       = google_service_account.uptime_checker.email
-}
-
 output "alert_policy_ids" {
   description = "Map of alert policy names to their IDs"
   value = {

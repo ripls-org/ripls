@@ -162,3 +162,11 @@ design/sentinel_map.json
 # website/content/contrast-review/ so the staging deploy publishes it.
 docs/concepts/theme/contrast-*.html
 docs/concepts/theme/contrast-*/
+
+# Manufacturer product images for the gear-image eval. Not ours to publish
+# (#3228); `npm run eval:fetch-images` downloads them from each case's
+# source_url.
+server/test_data/manual/
+
+# Local benchmark output.
+benchmark_results/

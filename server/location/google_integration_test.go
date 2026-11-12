@@ -16,8 +16,7 @@ import (
 )
 
 // requireGoogleKey returns the GOOGLE_MAPS_API_KEY env var or skips the
-// test if not set. Keep the helper name distinct from getEnvOrSkip used
-// by the Mapbox file (they share the package).
+// test if not set.
 func requireGoogleKey(t *testing.T) string {
 	t.Helper()
 	key := os.Getenv("GOOGLE_MAPS_API_KEY")

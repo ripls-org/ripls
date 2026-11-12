@@ -1,0 +1,30 @@
+name: Manually Deploy a Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+        default: "dev"
+
+jobs:
+  build-and-deploy:
+    # Instance-only (docs/infra/dependency_automation.md).
+    if: vars.INSTANCE_PIPELINES == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build_and_deploy_container.yaml
+    with:
+      environment: ${{ inputs.environment }}
+      deploy: true
+    secrets:
+      GCP_SERVICE_ACCOUNT_KEY_DEV: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+      GCP_SERVICE_ACCOUNT_KEY_PROD: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_PROD }}
+      MIMIR_DEPLOY_SSH_KEY: ${{ secrets.MIMIR_DEPLOY_SSH_KEY }}
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}

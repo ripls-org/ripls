@@ -28,7 +28,7 @@ final _log = Logger('LocationPollFinalizedModal');
 ///
 /// Read-only "It's a plan." view shown once a location has been locked in.
 /// Surfaces the winning spot with a sage-tinted card (name + address +
-/// "N of M chose this spot" footer), an interactive Mapbox map centered
+/// "N of M chose this spot" footer), an interactive map centered
 /// on the chosen spot, a faint pill row of the other (non-winning)
 /// proposals for context, and a "Get directions" primary CTA. Owners
 /// also get a "Change" secondary action that opens a menu to either
@@ -605,7 +605,7 @@ class _FinalSpotAddress extends ConsumerWidget {
   }
 }
 
-/// Interactive Mapbox preview centered on the experience's confirmed
+/// Interactive map preview centered on the experience's confirmed
 /// location. Prefers explicit lat/lng (already loaded by the experience
 /// view-model) over an async lookup so the map updates in lockstep with
 /// the experience's locationId.

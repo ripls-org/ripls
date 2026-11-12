@@ -1,0 +1,75 @@
+# Dev server stack on mimir: https://server-dev.ripls.org and https://dev.ripls.app
+# through Caddy (the mimir repo's stacks/ripls_server_dev/caddy.snippet).
+#
+# The project name must equal this directory's name, or `docker compose down`
+# run from here silently matches nothing, and mimir's dump-databases.sh keys its
+# /srv/sites/<name> output off the same directory name.
+#
+# .env here is a symlink to /etc/nas/stack-env/ripls_server_dev.env, which holds
+# DB_PASSWORD.
+name: ripls_server_dev
+
+services:
+  postgres:
+    extends:
+      file: ../common.yaml
+      service: postgres
+    environment:
+      POSTGRES_USER: ripls
+      POSTGRES_DB: ripls
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - /var/lib/nas/ripls_server_dev/db:/var/lib/postgresql/data
+    # To the logs service below. The tag is what fluent-bit routes on;
+    # fluentd-async means a container never blocks or fails on the shipper,
+    # its logs buffer until the shipper is up.
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+        fluentd-async: "true"
+        tag: postgres
+
+  logs:
+    extends:
+      file: ../common.yaml
+      service: logs
+    ports:
+      - "127.0.0.1:24224:24224"
+    volumes:
+      - /etc/nas/ripls-server-dev-sa.json:/run/gcp/sa.json:ro
+      - /var/lib/nas/ripls_server_dev/fluent-bit:/var/lib/fluent-bit
+    environment:
+      GCP_PROJECT: ripls-dev
+      LOG_JOB: server-dev
+      RIPLS_ENV: dev
+
+  server:
+    extends:
+      file: ../common.yaml
+      service: server
+    # Moved between builds by deploy.sh; never pulled.
+    image: ripls-server:dev
+    pull_policy: never
+    ports:
+      - "18793:8080"
+    volumes:
+      - /etc/nas/ripls-server-dev-sa.json:/run/gcp/sa.json:ro
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      GOOGLE_CLOUD_PROJECT: ripls-dev
+      GCS_MEDIA_BUCKET: ripls-media-dev
+      GOOGLE_CLIENT_ID: 937892531321-shvr2m51jmdbqqjaml4f5ueic3esmbr3.apps.googleusercontent.com
+      ENABLE_DEV_MODE: "true"
+      INVITE_LINK_HOSTNAME: dev.ripls.app
+      ANDROID_PACKAGE_ID: org.ripls.app.dev
+      CORS_ALLOWED_ORIGINS: "https://dev.ripls.app,https://server-dev.ripls.org,http://localhost:*"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+        fluentd-async: "true"
+        tag: server
+    depends_on:
+      postgres:
+        condition: service_healthy

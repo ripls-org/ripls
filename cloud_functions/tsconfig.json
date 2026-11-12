@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2020",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "rootDir": "src",
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "lib": ["es2020"],
+    "types": ["node"]
+  },
+  "compileOnSave": true,
+  "include": ["src/**/*"],
+  "exclude": ["src/**/__tests__/**", "lib/**", "node_modules"]
+}

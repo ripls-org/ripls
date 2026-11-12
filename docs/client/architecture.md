@@ -249,7 +249,7 @@ class UserRepository {
 **There are no "controllers" in the presentation layer.** Use the correct pattern:
 
 - **ViewModels ([Notifiers](https://riverpod.dev/docs/providers/notifier_provider)):** Business logic, state management
-- **Helpers/Utils:** Pure utility functions (e.g., `DiscoverMapHelper` for [Mapbox](https://www.mapbox.com/) lifecycle)
+- **Helpers/Utils:** Pure utility functions (e.g., `DiscoverMapHelper` for [Google Maps](https://pub.dev/packages/google_maps_flutter) state)
 
 ```dart
 // ✅ CORRECT: ViewModel for business logic

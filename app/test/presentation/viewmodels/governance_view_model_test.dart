@@ -6,8 +6,8 @@ import 'package:ripls/data/gen/ripls/api/community_service.pb.dart';
 import 'package:ripls/data/gen/ripls/api/location_service.pb.dart';
 import 'package:ripls/data/repositories/community_repository.dart';
 import 'package:ripls/presentation/viewmodels/governance_view_model.dart';
+import 'package:ripls/services/location_search_service.dart';
 import 'package:ripls/services/location_service.dart';
-import 'package:ripls/services/mapbox_location_service.dart';
 import 'package:ripls/services/providers.dart';
 
 @GenerateMocks([CommunityRepository, LocationService])

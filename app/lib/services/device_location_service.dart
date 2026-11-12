@@ -53,7 +53,7 @@ class LocationRequestResult {
 /// fetching. Branches on [LocationIntent] so callers that only need proximity
 /// biasing get a fast (possibly cached) fix, while callers that will display
 /// the position in the UI get a fresh high-accuracy fix. No dependency on
-/// any map provider (Mapbox, Google, etc.).
+/// any map provider.
 class DeviceLocationService {
   /// Guards against concurrent permission requests.
   ///

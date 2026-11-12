@@ -393,13 +393,13 @@ Production uses GitHub App authentication configured via GCP Secret Manager and 
    - Installed on the target repository; the installation ID is deployment-specific
    - Private key stored in GCP Secret Manager as base64-encoded PEM: `github-app-private-key-base64`
 
-2. **Environment Variables** (via Cloud Run):
-   - `GITHUB_APP_ID` - The App ID for this deployment
-   - `GITHUB_INSTALLATION_ID` - The installation ID for this deployment
-   - `GITHUB_APP_PRIVATE_KEY` - Mounted from GCP Secret Manager (base64-encoded PEM); the Dockerfile passes it as `--github-app-private-key` and the server decodes it at startup
+2. **Container configuration:**
+   - `GITHUB_APP_ID` - The App ID for this deployment (environment variable)
+   - `GITHUB_INSTALLATION_ID` - The installation ID for this deployment (environment variable)
+   - Private key - `server/entrypoint.sh` fetches `github-app-private-key-base64` from Secret Manager at startup and passes it as `--github-app-private-key-file`; the server decodes the base64 PEM
 
 3. **Deployment:**
-   - Terraform automatically configures these values
+   - The two IDs are set in the deployment's compose files (`infra/server/common.yaml`)
    - No manual token rotation required
    - Installation tokens auto-generate with 1-hour validity
 

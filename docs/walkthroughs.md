@@ -73,7 +73,6 @@ local-only, never rendered to `website/content/walkthroughs/`.
 | Reel | Spec | Scenes |
 |---|---|---|
 | `onboarding` | `e2e/tests/walkthroughs/onboarding.spec.ts` | 1 — app-less phone-first guest onboarding (epic #2492) |
-| `events` | `e2e/tests/walkthroughs/events.spec.ts` | 7 — host creates+shares · guest joins by phone · host plans needs · chat rallies the crew · friends claim needs · day-of photos stream in · wrap-up with impact preview, closing on the confirmed roster |
 | `gear` | `e2e/tests/walkthroughs/gear.spec.ts` | 6 — shared-food giveaways (#2687): photo→listing creates (image mode) · multi-community share · single claim · contested claim decided in the item chat · recipient selection · handoffs |
 | `requests` | `e2e/tests/walkthroughs/requests.spec.ts` | 5 — lawn-mower request (#2686): typed sentence→request (text mode) + community share + link copy · appless guest offers via SSR landing + phone OTP · thanks in the request's thread (live reply) · Mark Fulfilled with helper confirm + impact · closing impact view |
 | `classroom` | `e2e/tests/walkthroughs/classroom.spec.ts` | 4 — teacher's classroom supply drive (#2703): a sentence that names the whole supply list → the request born with all five pieces as claimable needs (create extracts them, #2731) + community share + link copy · parents deliver mostly by GIVING items (giveaway offers) with one LENDING a whiteboard, landing on the teacher's view with Giving/Lending tags · appless parent joins from the WhatsApp group by phone OTP and grabs the last piece · Mark Fulfilled DELIVERS the confirmed gifts (giveaways complete, loan goes active — the #2703 server fix) and closes on the impact |
@@ -272,9 +271,13 @@ instead of producing a silently wrong video.
 - **Stock set** (top level): Unsplash-fetched hero/avatar/item images +
   `manifest.json` attribution; regenerate with
   `e2e/scripts/fetch_walkthrough_fixtures.mjs` (idempotent).
-- **Real-content packs** (subdirectories, e.g. `brunch/`): extracted from one
-  real prod event. Each pack contains the images (recompressed: avatars
-  320px, photos 1280px long side), `content.json` (the scrubbed
+- **Real-content packs**: extracted from one real prod event. **None are
+  committed.** This repository is public (#3228), and consent to appear in a
+  private repo is not consent to appear in a public one. The last pack,
+  `brunch/`, was deleted along with the `events` reel built on it. The
+  rules below apply to any pack kept outside the repo. Each pack contains
+  the images (recompressed: avatars 320px, photos 1280px long side),
+  `content.json` (the scrubbed
   "screenplay": cast, needs, message script with cadence offsets), and
   `manifest.json` (provenance: source experience id, export date, per-file
   `gs://` origin, and the **consent statement**).
@@ -310,7 +313,7 @@ every journey the pipeline exercises.
    the lexicographic scene order and garbles the clip filenames. Em-dashes
    and other non-ASCII in titles end up in directory/file names — don't.
 2. Create `e2e/tests/walkthroughs/<reel>.spec.ts` following
-   `events.spec.ts`: serial mode, module-level world state, one scene
+   `runclub.spec.ts`: serial mode, module-level world state, one scene
    per test via `openScene`, off-camera RPC seeding (add seed helpers to
    `e2e/lib/seed/` if a surface lacks one), a light server-side assertion
    per scene.

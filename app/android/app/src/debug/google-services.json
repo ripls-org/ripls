@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "685679309377",
+    "project_id": "ripls-dev",
+    "storage_bucket": "ripls-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:685679309377:android:7fa6903c4dfbc64eaa4cc0",
+        "android_client_info": {
+          "package_name": "org.ripls.app.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "685679309377-cfmurc5ihoo7pfl5b2nlpph06ra9i702.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7Px9Olxkj6GAIQTyApXkNryv1GQQI-pw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "685679309377-cfmurc5ihoo7pfl5b2nlpph06ra9i702.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "685679309377-1kqtpujbbu2j7dap23iottj0ho1und6j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.ripls.app.dev"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

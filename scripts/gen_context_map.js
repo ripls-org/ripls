@@ -52,7 +52,7 @@ const LENS_VOCAB = [
 ];
 
 // Skills that may consider a doc. `skills` defaults to all of these when unset.
-const SKILL_VOCAB = ['issue', 'audit', 'triage', 'reviews'];
+const SKILL_VOCAB = ['issue', 'audit', 'reviews'];
 
 // Allowed keys inside the `context:` block (typos like `lenses:` must fail).
 const ALLOWED_KEYS = new Set([
@@ -68,14 +68,6 @@ const EXCLUDED_PREFIXES = [
   'docs/crashlytics/',
   'docs/reviews/reports/',
   'docs/evals/',
-  // Instance-specific guidance that stays in this repo when the product code is
-  // published (#2953): business strategy, runbooks for our own hosts and
-  // accounts, and store-account state. Excluding it here is what lets
-  // docs/llms.txt stay byte-identical between this repo and the public one —
-  // the export is a pure path filter, so an index that differed would have to
-  // be regenerated during export, and a regenerated file is untested
-  // divergence. See docs/issues/2953-open-source-release.md → Correction 3.
-  'docs/private/',
 ];
 
 // Individual files that are exempt (the spec doc about this very system).

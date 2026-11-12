@@ -42,7 +42,7 @@ go run ./server/cmd/eval-seed-from-urls \
 
 Per URL, the tool fetches the page, extracts product metadata from Schema.org Product JSON-LD (with OpenGraph fallback), and prints the extracted title / brand / model / weight / price / image to the terminal. The operator then accepts as-is (`a`), edits any field (`e`), skips (`s`), or quits-and-saves (`q`). Accepted cases are appended to `-out-cases` immediately and the hero image is downloaded into `-out-images/`, so Ctrl-C is recoverable — re-run with the same arguments and the tool resumes by skipping already-accepted URLs.
 
-Review `/tmp/proposed-cases.json`, then append accepted entries to `testdata/gear_image_goldens.json` and commit the corresponding files under `server/test_data/manual/`.
+Review `/tmp/proposed-cases.json`, then append accepted entries to `testdata/gear_image_goldens.json`. Keep each case's `source_url`. The downloaded images are **not** committed: `server/test_data/manual/` is gitignored because the images belong to the manufacturers. On a fresh clone, `npm run eval:fetch-images` downloads them again from those pages. Image-mode cases whose file is missing are skipped.
 
 The extractor handles Schema.org Product JSON-LD (`name`, `brand`, `model`/`mpn`, `weight` with QuantitativeValue, `offers` with USD price, `image`, `description`) and falls back to OpenGraph and `<meta>` tags. Internal-SKU-shaped `model` values (alphanumeric soup with no spaces, like `DCD771C2`) get filtered out at finalize-time so we don't assert on strings vision models won't reproduce.
 

@@ -2,9 +2,9 @@
 # Doc-context metadata for docs/llms.txt — update when this doc changes.
 # How it works + schema: docs/context_map.md
 context:
-  description: Client geospatial system — Discover map, location picker, and profile locations; provider-agnostic geocoding behind LocationSearchService (Mapbox/Google), Haversine distance, avatar markers, and intent-driven GPS.
-  globs: [app/lib/services/location_search_service.dart, app/lib/services/mapbox_location_service.dart, app/lib/services/google_location_search_service.dart, app/lib/services/device_location_service.dart, app/lib/core/utils/discover_map_helper.dart, app/lib/core/utils/map_avatar_renderer.dart, app/lib/presentation/widgets/location/**, app/lib/data/repositories/location_repository.dart]
-  triggers: [geospatial, map, location, geocoding, discover, gps, marker, mapbox, google-maps, haversine, place-search]
+  description: Client geospatial system — Discover map, location picker, and profile locations; geocoding via Google Maps Platform behind the LocationSearchService abstraction, Haversine distance, avatar markers, and intent-driven GPS.
+  globs: [app/lib/services/location_search_service.dart, app/lib/services/google_location_search_service.dart, app/lib/services/device_location_service.dart, app/lib/core/utils/discover_map_helper.dart, app/lib/core/utils/map_avatar_renderer.dart, app/lib/presentation/widgets/location/**, app/lib/data/repositories/location_repository.dart]
+  triggers: [geospatial, map, location, geocoding, discover, gps, marker, google-maps, haversine, place-search]
   lens: [client, domain]
   domain: client
 freshness:
@@ -45,7 +45,7 @@ The Ripls Client provides comprehensive geospatial functionality using the [goog
 2. **Location Picker:** Shared full-screen modal for selecting and editing locations across all creation flows (gear, requests, experiences)
 3. **Profile Locations:** User's saved places (home, work, etc.) for reuse across items and personal reference
 
-Geocoding and place search are provider-agnostic behind the [LocationSearchService](../app/lib/services/location_search_service.dart) abstraction. Two implementations ship today — [MapboxLocationService](../app/lib/services/mapbox_location_service.dart) (legacy default) and [GoogleLocationSearchService](../app/lib/services/google_location_search_service.dart) (#2188). The active provider is selected at build time via the `MAP_PROVIDER` `--dart-define` (`'mapbox'` or `'google'`). The map widget itself is always Google Maps, independent of the geocoding provider.
+Geocoding and place search sit behind the [LocationSearchService](../app/lib/services/location_search_service.dart) abstraction. The only implementation is [GoogleLocationSearchService](../app/lib/services/google_location_search_service.dart), which calls Google Maps Platform (#2188). The map widget is Google Maps as well. (Mapbox was the original geocoder and map widget; it was kept as a rollback path after the #2188 cutover and has since been removed.)
 
 The system combines client-side and server-side geospatial capabilities: client-side distance calculations (Haversine formula) for real-time UI, server-side spatial filtering for proximity queries, proximity-biased search, AI-powered location extraction, and fallback handling for unavailable GPS services.
 
@@ -55,11 +55,11 @@ The system combines client-side and server-side geospatial capabilities: client-
 
 **Map State Isolation:** [DiscoverMapHelper](../app/lib/core/utils/discover_map_helper.dart) encapsulates all map-related state (controller, markers, selection, style, sheet-driven padding) so screen logic stays free of Google-SDK details.
 
-**Avatar / Thumbnail Markers:** Markers are pre-rendered as circular PNG bitmaps via [MapAvatarRenderer](../app/lib/core/utils/map_avatar_renderer.dart) (gear thumbnails, user avatars, or initials fallback) and attached as `BitmapDescriptor.bytes`. The pre-migration Mapbox "ripple" marker design has been deferred — see `docs/ai/map.md` for the motivation.
+**Avatar / Thumbnail Markers:** Markers are pre-rendered as circular PNG bitmaps via [MapAvatarRenderer](../app/lib/core/utils/map_avatar_renderer.dart) (gear thumbnails, user avatars, or initials fallback) and attached as `BitmapDescriptor.bytes`. The pre-migration (Mapbox-era) "ripple" marker design has been deferred — see `docs/ai/map.md` for the motivation.
 
-**Provider-Agnostic Geocoding:** Viewmodels and widgets depend only on the [LocationSearchService](../app/lib/services/location_search_service.dart) interface and the [LocationRepository](../app/lib/data/repositories/location_repository.dart) that wraps it. Swapping providers is a single Riverpod-binding change in [location_providers.dart](../app/lib/services/providers/location_providers.dart).
+**Provider-Agnostic Geocoding:** Viewmodels and widgets depend only on the [LocationSearchService](../app/lib/services/location_search_service.dart) interface and the [LocationRepository](../app/lib/data/repositories/location_repository.dart) that wraps it. Swapping providers would be a single Riverpod-binding change in [location_providers.dart](../app/lib/services/providers/location_providers.dart).
 
-**Session Tokens for Billing:** On Google, every picker session mints one UUID session token and threads it through every autocomplete keystroke plus the final Place Details call. This collapses the per-session bill into a single $5/1k Place Details charge. Mapbox ignores the token; the abstraction tolerates either behavior.
+**Session Tokens for Billing:** Every picker session mints one UUID session token and threads it through every autocomplete keystroke plus the final Place Details call. This collapses the per-session bill into a single $5/1k Place Details charge.
 
 **Intent-Driven GPS Accuracy:** [DeviceLocationService](../app/lib/services/device_location_service.dart) splits requests by [LocationIntent](../app/lib/services/device_location_service.dart) (`proximityBias` for search ranking, `precisePin` for UI display) so background callers get fast OS-cached fixes while UI-facing callers always get a fresh high-accuracy fix.
 
@@ -139,7 +139,7 @@ User taps overlay → navigation to Gear / Request / Experience screen
 
 **Key Points:**
 - Marker `onTap` callbacks are captured into each `Marker` at `buildMarkers` time, so the screen must call `buildMarkers` whenever the callback or items change.
-- The Mapbox 1.35× selected-marker scale has no direct Google equivalent — selection is communicated by the gallery overlay below the map instead. `_selectedItemId` is tracked for a future scaled-`BitmapDescriptor` implementation.
+- The pre-migration Mapbox 1.35× selected-marker scale has no direct Google equivalent — selection is communicated by the gallery overlay below the map instead. `_selectedItemId` is tracked for a future scaled-`BitmapDescriptor` implementation.
 - Camera moves apply `DiscoverMapHelper.padding` (driven by `setBottomPadding`) so focused items land above the bottom sheet, not behind it.
 - Tapping empty map area clears the selection and toggles the bottom navigation.
 
@@ -173,31 +173,24 @@ User taps overlay → navigation to Gear / Request / Experience screen
 
 **Files:**
 - Abstraction: [app/lib/services/location_search_service.dart](../app/lib/services/location_search_service.dart)
-- Mapbox impl: [app/lib/services/mapbox_location_service.dart](../app/lib/services/mapbox_location_service.dart)
 - Google impl: [app/lib/services/google_location_search_service.dart](../app/lib/services/google_location_search_service.dart)
 - Binding: [app/lib/services/providers/location_providers.dart](../app/lib/services/providers/location_providers.dart)
 
 **Interface methods:**
 - `searchAddresses(query, {proximity, sessionToken})` — POIs, addresses, places, localities.
 - `searchGeographicAreas(query, {proximity, sessionToken})` — admin-area-only results (locality, district, region, country). Always fully populated.
-- `resolveSuggestion(suggestion, {sessionToken})` — fetches missing coordinate + admin fields. No-op on Mapbox (which returns full results inline); a Place Details (New) call on Google.
+- `resolveSuggestion(suggestion, {sessionToken})` — fetches missing coordinate + admin fields via a Place Details (New) call. A suggestion that isn't a Google place id, or already carries a coordinate (e.g. `searchGeographicAreas` results), is returned unchanged.
 - `reverseGeocode(latitude, longitude)` — single best-match for a coordinate.
 
-**Provider selection:** [locationSearchServiceProvider](../app/lib/services/providers/location_providers.dart) switches on `Environment.mapProvider` (`MAP_PROVIDER` `--dart-define`, default `'mapbox'`). An empty matching credential surfaces as an error at first call rather than at app start.
+**Binding:** [locationSearchServiceProvider](../app/lib/services/providers/location_providers.dart) always returns `GoogleLocationSearchService` — there is no build-time provider switch. An empty `GOOGLE_MAPS_PLACES_KEY` surfaces as an error at first call rather than at app start.
 
-**`LocationResult` DTO:** Provider-neutral. Carries `name`, `fullName`, `type`, lat/lon, address components, plus an opaque `externalPlaceId` and the matching `externalPlaceProvider` (`'mapbox'` / `'google_maps'`) for cross-session deduplication on save.
+**`LocationResult` DTO:** Provider-neutral. Carries `name`, `fullName`, `type`, lat/lon, address components, plus an opaque `externalPlaceId` and the matching `externalPlaceProvider` (`'google_maps'`) for cross-session deduplication on save. Locations saved before the #2188 cutover may still carry `'mapbox'`.
 
-**Google-specific behavior:**
+**Google Maps behavior:**
 - **Autocomplete + Details split.** Google's Places Autocomplete (New) returns only display text and a place id; the coordinate and admin hierarchy are fetched lazily by `resolveSuggestion` via Place Details (New). The field mask is pinned to the cheap "Basic" SKU — see the matching server constant in `server/location/google.go`.
 - **Plus Code filtering.** Plus-Code-only reverse-geocode and area results are dropped — they're opaque strings users can't act on (#2188).
 - **`result_type` biasing** prefers real addresses over nearby businesses on the reverse-geocode path.
 - **Two API keys.** The map widget reads the per-platform `GOOGLE_MAPS_API_KEY` (application-restricted, wired into Android manifest / iOS `GMSServices.provideAPIKey` / web JS loader). The REST geocoder reads `GOOGLE_MAPS_PLACES_KEY` (API-restricted, no per-platform restrictions). Do **not** cross the keys — application restrictions don't validate on the REST path.
-
-**Mapbox-specific behavior:**
-- Search Box API (`/search/searchbox/v1/forward`) for forward search with proximity bias.
-- Geocoding API (`/search/geocode/v6/reverse`) for reverse.
-- `resolveSuggestion` is a pass-through — results are already complete.
-- `sessionToken` is silently ignored.
 
 ### Layer 3: LocationService & LocationRepository (RPC + Caching)
 
@@ -293,7 +286,7 @@ The system extracts locations from natural-language input across all creation fl
 
 1. User provides input with an optional location reference (e.g., "hiking tomorrow morning at Chautauqua").
 2. AI extracts the location query string ("Chautauqua").
-3. Server geocodes via the configured provider (Mapbox or Google) through `server/location/`.
+3. Server geocodes via Google Maps Platform through `server/location/`.
 4. Server returns a `GeocodedLocation` (coordinates, name, address components) in the preview response.
 5. Client caches the geocoded data in preview state.
 6. The location picker displays the geocoded location without a save.
@@ -353,7 +346,7 @@ The proximity RPCs use two-phase filtering via `QueryByProximityForCommunity` in
 
 ### Provider Library
 
-The server abstracts geocoding behind `location.Provider` in [server/location/provider.go](../server/location/provider.go) with two implementations: `MapboxClient` and `GoogleMapsClient`. Both are wired through the same `ForwardGeocode` / `ReverseGeocode` / `SearchPlaces` surface so the client choice (`MAP_PROVIDER`) and the server choice can be configured independently.
+The server abstracts geocoding behind `location.Provider` in [server/location/provider.go](../server/location/provider.go) (`ForwardGeocode` / `ReverseGeocode` / `SearchPlaces` / `CheckHealth`). The only implementation is `GoogleMapsClient` in [server/location/google.go](../server/location/google.go), constructed in `server/wiring.go` from `--google-maps-api-key-server`. The key is required outside dev mode; in dev mode (e2e, integration tests) the server runs without a location provider and consuming services nil-guard it.
 
 **Why both client and server distance?**
 - **Client-side (Haversine):** Real-time distance display, instant sorting without server round-trips, works offline.
@@ -432,10 +425,10 @@ The server abstracts geocoding behind `location.Provider` in [server/location/pr
 
 ## Architecture Strengths
 
-1. **Provider-agnostic geocoding** behind `LocationSearchService` — swap Mapbox / Google with one Riverpod binding (#2188).
+1. **Provider-agnostic geocoding** behind `LocationSearchService` — callers never touch `GoogleLocationSearchService` directly, so a provider swap is one Riverpod binding (#2188).
 2. **Intent-driven GPS** in `DeviceLocationService` — fast OS-cached fix for proximity bias, fresh high-accuracy fix for UI display.
 3. **Single Google API key per role** — `GOOGLE_MAPS_API_KEY` for the per-platform map widget; `GOOGLE_MAPS_PLACES_KEY` for the REST geocoder. No cross-platform restriction headaches.
-4. **Session-token billing on Google** — a picker session collapses to one billable Place Details charge regardless of keystroke count.
+4. **Session-token billing** — a picker session collapses to one billable Place Details charge regardless of keystroke count.
 5. **Avatar / thumbnail markers** — items are visually identifiable on the map without an extra tap.
 6. **Sheet-aware camera padding** — focused items land above the bottom sheet, not behind it.
 7. **No prompt on mount** (#1174) — permission asked only on user gesture.
@@ -482,8 +475,7 @@ The server abstracts geocoding behind `location.Provider` in [server/location/pr
 *Core services & utilities:*
 - [device_location_service.dart](../app/lib/services/device_location_service.dart) — GPS (provider-agnostic)
 - [location_search_service.dart](../app/lib/services/location_search_service.dart) — geocoder abstraction
-- [mapbox_location_service.dart](../app/lib/services/mapbox_location_service.dart) — Mapbox implementation (legacy default)
-- [google_location_search_service.dart](../app/lib/services/google_location_search_service.dart) — Google implementation (#2188)
+- [google_location_search_service.dart](../app/lib/services/google_location_search_service.dart) — Google Maps Platform implementation (#2188)
 - [location_service.dart](../app/lib/services/location_service.dart) — RPC client
 - [location_repository.dart](../app/lib/data/repositories/location_repository.dart) — caching layer
 - [location_providers.dart](../app/lib/services/providers/location_providers.dart) — Riverpod bindings
@@ -493,8 +485,7 @@ The server abstracts geocoding behind `location.Provider` in [server/location/pr
 **Server-Side:**
 - [service.go](../server/services/location/service.go) — `LocationService` RPC implementation
 - [provider.go](../server/location/provider.go) — geocoder abstraction
-- [mapbox.go](../server/location/mapbox.go) — Mapbox implementation
-- [google.go](../server/location/google.go) — Google implementation
+- [google.go](../server/location/google.go) — Google Maps Platform implementation (`GoogleMapsClient`)
 
 **Proto definitions:**
 - [location.proto](../proto/ripls/models/location.proto) — `Location` storage model
@@ -506,21 +497,17 @@ The server abstracts geocoding behind `location.Provider` in [server/location/pr
 | ---------------------------- | ------------------------------------------------------ | -------------------------------------------------------------- |
 | `GOOGLE_MAPS_API_KEY`        | Native map widget (Android manifest / iOS / web JS)    | Application-restricted per platform. Not for REST calls.       |
 | `GOOGLE_MAPS_PLACES_KEY`     | `GoogleLocationSearchService` REST                     | API-restricted (Places New + Geocoding). No app restrictions.  |
-| `MAPBOX_ACCESS_TOKEN`        | `MapboxLocationService` (and the legacy map widget)    | Required when `MAP_PROVIDER=mapbox`.                           |
-| `MAP_PROVIDER`               | `locationSearchServiceProvider`                        | `'mapbox'` (default) or `'google'`. Selects the geocoder only. |
 
 ### External Dependencies
 
 **Map widget:**
 - [google_maps_flutter](https://pub.dev/packages/google_maps_flutter) — official Google Maps Flutter plugin
-- [mapbox_maps_flutter](https://pub.dev/packages/mapbox_maps_flutter) — legacy, still pinned (only `MapboxOptions.setAccessToken` is referenced from `main.dart`)
 
 **Geolocation:**
 - [geolocator](https://pub.dev/packages/geolocator) — cross-platform GPS, permissions, last-known fix
 
 **Provider APIs:**
 - **Google:** Places API (New) — Autocomplete + Place Details; Geocoding API — area search + reverse.
-- **Mapbox:** Search Box API — forward search; Geocoding API v6 — reverse.
 
 ---
 
@@ -597,7 +584,7 @@ The bottom sheet drives `_mapHelper.setBottomPadding(screenHeight * sheetSize)` 
 
 ### Pattern 5: Provider-aware test setup
 
-When a test depends on geocoding, override `locationSearchServiceProvider` with a fake — never construct `GoogleLocationSearchService` / `MapboxLocationService` directly. The two providers behave differently around `resolveSuggestion`, so a fake-based test stays portable across both.
+When a test depends on geocoding, override `locationSearchServiceProvider` with a fake — never construct `GoogleLocationSearchService` directly (it calls the network). A fake also lets the test control whether `resolveSuggestion` is a pass-through or fills in fields.
 
 ---
 
@@ -725,7 +712,7 @@ The system provides reusable UI components for consistent location management ac
 
 **Recent Changes:**
 - Migrated the map widget from `mapbox_maps_flutter` to `google_maps_flutter`. The pre-existing ripple-marker aesthetic and 1.35× selected-marker scale are deferred — markers are now circular avatar / thumbnail bitmaps rendered via [MapAvatarRenderer](../app/lib/core/utils/map_avatar_renderer.dart).
-- Introduced the provider-agnostic [LocationSearchService](../app/lib/services/location_search_service.dart) with Mapbox and Google implementations selected at build time by `MAP_PROVIDER` (#2188).
+- Introduced the provider-agnostic [LocationSearchService](../app/lib/services/location_search_service.dart) with Mapbox and Google implementations selected at build time by `MAP_PROVIDER` (#2188). The Mapbox implementation, the `MAP_PROVIDER` / `MAPBOX_ACCESS_TOKEN` defines, and the `mapbox_maps_flutter` plugin have since been removed; Google is the only provider.
 - Split GPS access into the provider-agnostic [DeviceLocationService](../app/lib/services/device_location_service.dart) with `LocationIntent` for accuracy / staleness tradeoffs (#1175).
 - Discover screen is now a full-screen map plus a draggable bottom sheet (no list/map toggle). The fallback camera is the contiguous US (39.5, -98.5, zoom 2.5).
 - No-prompt-on-mount (#1174): the first user gesture is the only permission-prompt site on Discover.

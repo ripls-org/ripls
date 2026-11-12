@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "507242812633",
+    "project_id": "ripls-prod",
+    "storage_bucket": "ripls-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:507242812633:android:a05915607f6b03cdf81ac8",
+        "android_client_info": {
+          "package_name": "org.ripls.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "507242812633-be7tldrn8bjg619va64q4bb5kdfe88hq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.ripls.app",
+            "certificate_hash": "3b4364a3cdbb3eb6eb0245ab07c0329e9bd990d9"
+          }
+        },
+        {
+          "client_id": "507242812633-lrllptifabcv1tok5lh8e2svdpku1ia2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.ripls.app",
+            "certificate_hash": "606c8df0f4e5d59072a97d82a454396379e3b0dc"
+          }
+        },
+        {
+          "client_id": "507242812633-4v6q4h50h4ksshoui4o6vg5e18jcvsbj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeggNlCW3SzdIdiiLIZ43ETJ7Y4gziGl8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "507242812633-4v6q4h50h4ksshoui4o6vg5e18jcvsbj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "507242812633-6csqvj9ik536jmnr0ep6sm24cttd5ik4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.ripls.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

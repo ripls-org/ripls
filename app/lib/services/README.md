@@ -26,7 +26,7 @@ Services do **not** cache, aggregate, or apply business logic. That belongs in r
 | `media_service.dart` | Media upload and retrieval |
 | `search_service.dart` | Cross-entity search |
 | `user_service.dart` | User profile management |
-| `location_service.dart`, `mapbox_location_service.dart` | Geocoding and place search |
+| `location_service.dart`, `google_location_search_service.dart` | Geocoding and place search |
 | `chat_service.dart` | Messaging |
 | `feed_service.dart` | Community feed |
 | `impact_service.dart` | Impact metrics |

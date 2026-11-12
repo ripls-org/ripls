@@ -42,7 +42,7 @@ The server's observability strategy is built on four pillars:
 
 ## Part 1: Structured Logging (Implemented)
 
-The server uses structured JSON logging built on Go's standard `log/slog` package. Every log entry is machine-parseable, includes request correlation IDs, masks sensitive data, and follows consistent field naming conventions. In production on Cloud Run, these logs are automatically indexed by Google Cloud Logging.
+The server uses structured JSON logging built on Go's standard `log/slog` package. Every log entry is machine-parseable, includes request correlation IDs, masks sensitive data, and follows consistent field naming conventions. In production a log shipper on the host (Fluent Bit) writes these logs to Google Cloud Logging, where they are indexed.
 
 ### Design Principles
 
@@ -186,7 +186,7 @@ Entity-specific fields follow patterns: `gear_id`, `community_id`, `transfer_id`
 `target_request_id`. Note that `models.Request` entity IDs use `target_request_id` (not `request_id`) to
 avoid collision with the HTTP correlation key injected by `LoggerWithContext`.
 
-External service calls include: `external_service` (e.g., "mapbox", "openai"), `provider`, `model`.
+External service calls include: `external_service` (e.g., "google_maps", "twilio"), `provider`, `model`.
 
 ### Request ID glossary
 
@@ -432,8 +432,8 @@ healthService.RegisterFuncCached("email", healthsvc.DefaultExternalTTL, emailSer
 if aiProvider != nil {
     healthService.RegisterFuncCached("ai", healthsvc.DefaultExternalTTL, aiProvider.CheckHealth)
 }
-if cfg.mapboxAccessToken != "" {
-    healthService.RegisterFuncCached("mapbox", healthsvc.DefaultExternalTTL, mapboxClient.CheckHealth)
+if cfg.GoogleMapsAPIKeyServer != "" {
+    healthService.RegisterFuncCached("google_maps", healthsvc.DefaultExternalTTL, googleMapsClient.CheckHealth)
 }
 // Note: stock imagery is intentionally NOT registered. Its CheckHealth
 // hits the Pexels API on every probe and would exhaust the 200 req/hour
@@ -465,8 +465,7 @@ if cfg.mapboxAccessToken != "" {
 - Fallback: Returns a single composite status; healthy if the primary or any fallback is healthy (at-least-one-healthy rule). Per-leaf failures emit WARN-level `dependency_leaf_unhealthy` logs without triggering the health alert.
 - Mock: Always healthy (for testing)
 
-**Location (Mapbox / Google Maps)** - `server/location/{mapbox,google}.go`:
-- Mapbox: Validates access token via free /tokens/v2 endpoint
+**Location (Google Maps)** - `server/location/google.go`:
 - Google Maps: Forward-geocodes a fixed known-good address — a **billable**
   Geocoding API call, which is why the checker registers TTL-cached (#2809)
 - Returns backend type
@@ -532,10 +531,10 @@ Environment: Production
 OVERALL STATUS: HEALTHY
 
 Dependency Health (Last 24h):
-  Database:  100% uptime, avg latency 12ms
-  GCS:       100% uptime, avg latency 45ms
-  Mailgun:   100% uptime, avg latency 89ms
-  Mapbox:    99.8% uptime, avg latency 156ms (2 timeouts)
+  Database:    100% uptime, avg latency 12ms
+  GCS:         100% uptime, avg latency 45ms
+  Mailgun:     100% uptime, avg latency 89ms
+  Google Maps: 99.8% uptime, avg latency 156ms (2 timeouts)
 ```
 
 #### 2. Error Analysis
@@ -599,7 +598,7 @@ RECOMMENDATIONS:
   - Review slow queries during peak hours
   - Current pool: 10 connections, consider 20
 
-[MEDIUM] Mapbox latency elevated (avg 156ms vs baseline 100ms)
+[MEDIUM] Google Maps latency elevated (avg 156ms vs baseline 100ms)
   - Monitor for continued degradation
   - No action required yet
 
@@ -781,8 +780,9 @@ by log-based filters, not the `/health` path drawn above — see
 ### Uptime Checks
 
 Cloud Monitoring uptime checks call the `/health` endpoint from Google's
-infrastructure **in prod only** (gated by the monitoring module's
-`enable_uptime_check` variable):
+infrastructure wherever the monitoring module's `enable_uptime_check` variable
+is set — in both environments since the server moved to an always-on host
+(#3078):
 
 - **Frequency:** Every 5 minutes (the USA region group probes from 3
   locations, so `/health` is hit roughly every 100 seconds — the reason
@@ -791,20 +791,23 @@ infrastructure **in prod only** (gated by the monitoring module's
 - **Regions:** USA (configurable)
 - **Success criteria:** HTTP 2xx response
 
-Dev has no uptime check: continuous probing would keep the scale-to-zero dev
-service warm 24/7 (#2809). Dev relies on the log-based alerts below, which are
-silent while dev is idle and active whenever it is exercised.
+Dev's uptime check was off while dev ran on Cloud Run, because continuous
+probing kept the scale-to-zero service warm 24/7 (#2809); on the always-on
+host that cost is gone and the check is back on.
 
 ### Log-Based Metrics
 
-Custom metrics are created from Cloud Run logs. The main ones:
+Custom metrics are created from the server's logs in Cloud Logging (which
+stream depends on `log_source` — see
+[Self-Hosted Servers](#self-hosted-servers-log_source)). The main ones:
 
 **1. Health Check Failures** (`health_check_failures_{environment}`)
 - Counts health check completions where `healthy=false`
 - Triggers when the server is running but dependencies are failing
 
 **2. Container Crashes** (`container_crashes_{environment}`)
-- Counts container deaths from the Cloud Run *system* log stream
+- Counts container deaths: from the Cloud Run *system* log stream, or from the
+  host's crash reports when self-hosted
 - See [Crash & Process-Exit Detection](#crash--process-exit-detection-issue-2490)
 
 **3. Serving Failures** (`serving_failures_{environment}`)
@@ -820,9 +823,9 @@ single ERROR log already trips "Server Error Logged".)
 
 Latency, traffic, DB, and Go-runtime time series extracted from existing
 structured log lines. This replaced the abandoned Prometheus pipeline
-(PR #1612): Cloud Monitoring has no Prometheus remote-write endpoint
-reachable from Cloud Run, and every needed value already rides on a log
-line. Defined in `terraform/modules/monitoring/log_metrics.tf`:
+(PR #1612): Cloud Monitoring had no Prometheus remote-write endpoint
+reachable from Cloud Run, where the server then ran, and every needed value
+already rides on a log line. Defined in `terraform/modules/monitoring/log_metrics.tf`:
 
 | Metric | Source log line | Kind | Labels |
 |---|---|---|---|
@@ -860,7 +863,7 @@ Interpretation notes:
   answer "how many slow queries, and how slow", **not** "overall DB P95".
 - Log-based metrics cannot be gauges, so the pool and runtime metrics are
   distributions of sampled values. Chart and alert with percentile
-  aligners (P99 ≈ worst Cloud Run instance).
+  aligners (P99 ≈ worst instance).
 - The periodic stats lines are emitted at INFO by the `server/statslog`
   ticker goroutines (`StartPoolStatsLogger`, every 15s; `StartRuntimeStatsLogger`,
   every 30s), started from `server/main.go` at boot. The message strings,
@@ -887,7 +890,7 @@ drift apart.
 | "Is the server slow? Which RPC?" | **RPC Latency** | P95 by RPC (SLO in title), P50/P99 |
 | "Are requests failing? Client or server errors?" | **RPC Traffic & Errors** | 5xx fraction (SLO in title), request rate, 4xx vs 5xx split |
 | "Is the DB the bottleneck?" | **DB Health** | Per-request DB time P95 (uncensored), pool utilization, slow-query rate/P95 by kind |
-| "Leak or memory pressure?" | **Go Runtime** | Goroutines (climb = leak), heap vs Cloud Run limit, GC pause |
+| "Leak or memory pressure?" | **Go Runtime** | Goroutines (climb = leak), heap vs the container memory limit, GC pause |
 
 Dashboard URLs are per-deployment — the UUIDs belong to the project the
 module was applied to, and change if a dashboard resource is destroyed and
@@ -979,7 +982,8 @@ This prevents alert fatigue during extended outages while providing specific det
 ### Crash & Process-Exit Detection (issue #2490)
 
 Every log-based metric and alert in the sections above filters the **application**
-log stream (`resource.type="cloud_run_revision"` + `jsonPayload`). That stream is
+log stream (`jsonPayload` entries of the resource type `log_source` selects:
+`generic_task` self-hosted, `cloud_run_revision` on Cloud Run). That stream is
 silent when the process dies *hard* — an OOM kill, a non-zero exit from a fatal
 startup `os.Exit(1)`, or an unrecovered panic (Go exits with code 2) all happen
 without the server writing an application error log. Before #2490 the only signal
@@ -991,9 +995,12 @@ Two CRITICAL alerts close that gap by reading the crash signal directly. They ar
 always on in both environments (a crash is never routine) and route to the same
 channels as every other alert.
 
-**1. `Server Process Crash`** — reads the Cloud Run **system** log stream
-(`run.googleapis.com/varlog/system`), the ground truth that the container actually
-died. It matches:
+**1. `Server Process Crash`** — reads the ground truth that the container
+actually died. Self-hosted (this deployment's mode since #3078), that is the
+host's `"server container exited"` report — see
+[Self-Hosted Servers](#self-hosted-servers-log_source). With
+`log_source = "cloud_run"` it reads the Cloud Run **system** log stream
+(`run.googleapis.com/varlog/system`) instead, matching:
 
 - `Container called exit(N)` where **N ≠ 0** (a graceful SIGTERM shutdown exits 0
   and is excluded, so deploys and min-instance recycles do **not** page)
@@ -1024,10 +1031,14 @@ match the request-scoped `panic recovered` log from `middleware.PanicRecovery`
 
 ### Self-Hosted Servers (`log_source`)
 
-Everything above assumes Cloud Run supplies the logs. The monitoring module also
-serves a server running anywhere else: set its `log_source` variable to
-`"self_hosted"` (the default is `"cloud_run"`) and every log-based metric, alert,
-SLO and dashboard reads a different stream. Nothing else in the module changes,
+Where the sections above name Cloud Run streams, they describe the module's
+default mode, `log_source = "cloud_run"`. The module also serves a server
+running anywhere else: set `log_source` to `"self_hosted"` and every log-based
+metric, alert, SLO and dashboard reads a different stream. Both environments of
+this deployment run that way since the server moved to a self-hosted Docker
+host (#3078; Cloud Run was decommissioned in #3079) — see
+[`infra/server/README.md`](../../infra/server/README.md) for the host's log
+shipper and crash reporter. Nothing else in the module changes,
 and switching is an in-place update: no metric is recreated, so its history
 carries over.
 
@@ -1087,8 +1098,11 @@ module "monitoring" {
   project_id   = var.project_id
   region       = var.region
   environment  = var.environment
-  service_name = module.containers.service_name
-  service_url  = module.containers.service_url
+  service_name = "server"                     # the log shipper's job label
+  service_url  = "https://server.example.org" # public hostname the uptime check probes
+
+  log_source          = "self_hosted"
+  enable_uptime_check = true
 
   alert_email_addresses = ["alerts@example.com"]
 
@@ -1102,7 +1116,7 @@ module "monitoring" {
 Alert emails include:
 - Severity level (CRITICAL/ERROR) in subject
 - Service name and environment
-- Direct links to Cloud Run logs and metrics
+- Direct links to Cloud Logging queries and the Cloud console
 - Troubleshooting steps in documentation
 
 ### Unified-create stream (`StreamGenUnifiedCreate`)
@@ -1232,52 +1246,52 @@ Crashlytics velocity alert fires; the `claude-fix` gating above is a
 To change: Firebase Console → Crashlytics → Settings → Velocity Alerts.
 Document the new threshold and rationale here on change.
 
-#### GitHub authentication: shared App with the feedback service
+#### GitHub authentication: a dedicated alerts App
 
-The Cloud Function reuses the same GitHub App that
-[`server/services/feedback/`](../../server/services/feedback/) authenticates
-with (set up by `tescobar` in 2025; see commits `abc4d4e2b`,
-`ca02b2a3c`). Coordinates from `terraform/environments/{dev,prod}/main.tf`:
+The Cloud Functions authenticate as their own GitHub App, `ripls-alerts-bot`,
+separate from the App the feedback service
+([`server/services/feedback/`](../../server/services/feedback/)) uses. The
+split keeps user-supplied feedback content away from the identity
+`claude_plan_issue.yaml` allowlists to trigger Claude planning; the
+trust-boundary reasoning is in the header of `cloud_functions/src/githubAuth.ts`.
 
-| Field           | Where it comes from                              |
-|-----------------|--------------------------------------------------|
-| App ID          | `github_app_id` in `terraform/environments/{dev,prod}/main.tf` |
-| Installation ID | `github_installation_id`, same file              |
-| Private key     | Secret Manager: `github-app-private-key-base64`  |
+| Field           | Where it comes from                                         |
+|-----------------|-------------------------------------------------------------|
+| App ID          | `GITHUB_APP_ID` in `cloud_functions/src/githubAuth.ts`      |
+| Installation ID | `GITHUB_INSTALLATION_ID`, same file                         |
+| Private key     | Secret Manager: `github-app-alerts-private-key-base64`      |
 
-Leaving any of the three unset disables the integration rather than failing the
-service — see `AppConfig.IsComplete` in `server/github/client.go`.
+The functions bind the secret via
+`defineSecret('github-app-alerts-private-key-base64')`. Octokit's
+`createAppAuth` mints short-lived installation tokens at invocation time — no
+long-lived credentials at runtime.
 
-The Cloud Function reads the same Secret Manager secret via
-`defineSecret('github-app-private-key-base64')`. Octokit's `createAppAuth`
-mints short-lived installation tokens at invocation time — no long-lived
-credentials at runtime.
-
-One rotation surface for both runtimes. To rotate the App private key:
+Only the functions read this key, so rotating it does not touch the server. To
+rotate:
 
 ```bash
-# 1. Regenerate the private key in GitHub: App settings → Generate a
-#    private key. Downloads a .pem.
-# 2. Base64-encode (matches the Go server's expected format):
+# 1. Generate a new private key in the alerts App's GitHub settings.
+#    Downloads a .pem.
+# 2. Base64-encode it on one line (the same encoding the Go server uses for
+#    its own App key):
 base64 -i downloaded-key.pem -o /tmp/key.b64
 
-# 3. Push a new version to Secret Manager in both projects:
-gcloud secrets versions add github-app-private-key-base64 \
+# 3. Push a new version to Secret Manager in the project the functions run in:
+gcloud secrets versions add github-app-alerts-private-key-base64 \
   --data-file=/tmp/key.b64 --project="$PROD_PROJECT"
-gcloud secrets versions add github-app-private-key-base64 \
-  --data-file=/tmp/key.b64 --project="$DEV_PROJECT"
+rm /tmp/key.b64
 
-# 4. Redeploy / restart so the new version binds:
-#    - Cloud Function: firebase deploy --only functions:ripls-alerts --project prod
-#    - Cloud Run server: next deploy picks it up automatically.
+# 4. Redeploy so the new version binds:
+firebase deploy --only functions:ripls-alerts --project prod
 
 # 5. Revoke the old key in the GitHub App settings.
 ```
 
 The Cloud Functions runtime SA (default
 `<project-number>-compute@developer.gserviceaccount.com` unless overridden)
-needs `roles/secretmanager.secretAccessor` on this secret in every project
-where the alert function runs.
+needs `roles/secretmanager.secretAccessor` on this secret, and the deploying SA
+needs `secretAccessor` plus `secretmanager.viewer` to bind it; both are granted
+in the prod environment's Terraform.
 
 #### Emergency disable
 
@@ -1379,7 +1393,9 @@ by the agent unless listed as trusted for planning, so the auto-filer's
 - [x] MockProvider health check (returns healthy)
 
 **Completed - Location Services:**
-- [x] Mapbox health check (free token validation endpoint)
+- [x] Mapbox health check (free token validation endpoint) — since removed
+  with the Mapbox client; the Google Maps checker in
+  `server/location/google.go` replaced it (#2188)
 
 **Completed - Stock Imagery Providers:**
 - [x] Unsplash health check (minimal search with per_page=1)
@@ -1396,7 +1412,7 @@ by the agent unless listed as trusted for planning, so the auto-filer's
 - `server/ai/provider_loadbalanced.go` - Implemented CheckHealth
 - `server/ai/provider_fallback.go` - Implemented CheckHealth
 - `server/ai/provider_mock.go` - Implemented CheckHealth
-- `server/location/mapbox.go` - Added CheckHealth method
+- `server/location/mapbox.go` - Added CheckHealth method (file since removed)
 - `server/media/stock_imagery_provider.go` - Added CheckHealth to interface
 - `server/media/unsplash_provider.go` - Implemented CheckHealth
 - `server/media/pexels_provider.go` - Implemented CheckHealth

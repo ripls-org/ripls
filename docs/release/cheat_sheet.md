@@ -6,7 +6,7 @@ context:
   globs: [.github/workflows/release_cut.yaml, .github/workflows/release_finalize.yaml, app/pubspec.yaml, docs/release/notes/**]
   triggers: [release, cut-release, prod-deploy, version-bump, release-notes, semantic-version]
   lens: [infra]
-  skills: [issue, audit, triage]
+  skills: [issue, audit]
   domain: release
 freshness:
   verified_commit: "ad3b0cdb0"

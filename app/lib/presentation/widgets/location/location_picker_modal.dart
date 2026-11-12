@@ -157,8 +157,8 @@ class _LocationPickerViewState extends ConsumerState<LocationPickerView> {
       unawaited(ref.read(locationPickerProvider.notifier).loadSavedLocations());
 
       // Initialize default camera position if no initial location provided.
-      // This ensures the map shows the user's area instead of the Mapbox
-      // global default (downtown Austin). Treat an empty initialLocationId
+      // This ensures the map shows the user's area instead of the global
+      // default (downtown Austin). Treat an empty initialLocationId
       // the same as null — proto3's default for unset IDs (e.g. an
       // experience whose location is TBD) is "", not null. See #1991.
       if (!hasSavedLocationId(widget.initialLocationId) &&
@@ -277,8 +277,6 @@ class _LocationPickerViewState extends ConsumerState<LocationPickerView> {
     // Show the picked suggestion immediately (Google Autocomplete returns
     // only displayName + placeId — no coords yet), then resolve to a
     // hydrated LocationResult and update once Place Details returns.
-    // Mapbox returns full results inline, so resolveSuggestion is a
-    // no-op pass-through there.
     setState(() {
       _selectedLocation = locationResult;
       _selectedChipId = null;

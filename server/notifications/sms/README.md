@@ -3,7 +3,7 @@
 Thin Twilio REST client for platform-originated text messages, plus inbound
 webhook signature validation. No SDK — a single authenticated `POST` to the
 Messages API and an HMAC-SHA1 check are the entire Twilio surface the platform
-needs, so this mirrors the `server/location` Mapbox/Google thin clients rather
+needs, so this mirrors the `server/location` Google Maps thin client rather
 than pulling `twilio-go` (which carries deprecated transitive deps and typed
 clients for Voice/Verify/Lookups we don't use).
 

@@ -150,7 +150,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 #   LOG_SOURCE_LOCATION - "true" enables --log-source-location
 #   INVITE_LINK_HOSTNAME - --invite-link-hostname
 #   CORS_ALLOWED_ORIGINS - --cors-allowed-origins
-#   MAP_PROVIDER - --map-provider
 #   MAILGUN_DOMAIN, MAILGUN_FROM_ADDRESS, MAILGUN_POSTAL_ADDRESS
 #   OFF_APP_EMAIL_ENABLED, PLATFORM_SMS_ENABLED ("true")
 #   ACTIVITY_DIGEST_* - daily and weekly digest schedule and recipient

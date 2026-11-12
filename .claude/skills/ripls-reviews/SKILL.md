@@ -1,12 +1,12 @@
 ---
 name: ripls-reviews
-description: Run all code review prompts in docs/reviews/ in parallel, write reports, and auto-file the highest-impact findings as GitHub issues for triage. Use when the user types /ripls-reviews or asks to "run reviews", "run all reviews".
+description: Run all code review prompts in docs/reviews/ in parallel, write reports, and auto-file the highest-impact findings as GitHub issues. Use when the user types /ripls-reviews or asks to "run reviews", "run all reviews".
 ---
 
 Run all review prompts from `docs/reviews/` in parallel, each producing a
 report in `docs/reviews/reports/`. Then parse each report's "Issues to File"
 section and create GitHub issues for the highest-impact findings so they flow
-into the backlog for `/ripls-triage` to prioritize.
+into the backlog for a maintainer to prioritize.
 
 ## Phase 1 — Spawn review agents
 
@@ -103,7 +103,7 @@ existing open issues by fingerprint, and creates new issues via `gh`.
    - Adds `auto-filed` and `review:<name>` labels (any suggested labels not
      already present in the repo are dropped and reported in the summary
      so you can decide whether to create them).
-   - Does NOT set Priority — `/ripls-triage` owns that.
+   - Does NOT set Priority — a maintainer sets it when reviewing the issue.
 
 ## Phase 4 — Summarize
 
@@ -115,8 +115,8 @@ existing open issues by fingerprint, and creates new issues via `gh`.
     - **Issues deduped:** count and list of fingerprints that matched
       existing open issues.
     - **Issues failed:** count with errors.
-    - **Next step:** suggest running `/ripls-triage` to prioritize the
-      newly-filed issues.
+    - **Next step:** suggest reviewing the newly-filed issues and setting
+      their priority.
 
 ## Edge cases
 
@@ -130,7 +130,7 @@ existing open issues by fingerprint, and creates new issues via `gh`.
   the user to authenticate and re-run with `--file-issues` (or just re-run).
   The reports themselves are still valuable on their own.
 - **Issue Types not enabled on the repo:** filing still succeeds; type just
-  isn't set. `/ripls-triage` handles type assignment.
+  isn't set; the Type hint in the body is there for whoever reviews it.
 - **A review writes "_None this run._" under Issues to File:** that's a
   valid healthy outcome. Note it in the summary so the user knows the
   review ran cleanly.

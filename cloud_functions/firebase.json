@@ -1,0 +1,17 @@
+{
+  "functions": [
+    {
+      "source": ".",
+      "codebase": "ripls-alerts",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "src/**/__tests__/**",
+        "*.md"
+      ],
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+    }
+  ]
+}

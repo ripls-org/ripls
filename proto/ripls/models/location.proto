@@ -99,7 +99,7 @@ message Location {
     // real-world place.
     optional string external_place_id = 7;
 
-    // The provider that issued external_place_id (e.g., "mapbox", "google").
+    // Opaque tag for the provider that issued external_place_id.
     // Empty string means no external provider identifier is available for
     // this location; dedup falls back to coordinate proximity.
     optional string external_place_provider = 8;

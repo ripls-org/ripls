@@ -23,7 +23,7 @@
 #
 #   - No Secret Manager fetches. The integration-test pattern proves
 #     that --dev-mode + --notification-provider=test (the default) +
-#     a permissive map-provider config is enough to exercise every
+#     no Google Maps key is enough to exercise every
 #     RPC path the e2e specs hit (registration, share-link mint,
 #     experience save/share, RSVP, etc.).
 #   - No live third parties. --mock-ai-provider and

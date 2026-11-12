@@ -26,7 +26,7 @@ The path is visible in `ps`; the value is not.
 
 This package is the minimal piece of plumbing that lets `server/main.go`
 accept either form. The bytes live in a tmpfs file written by
-`server/entrypoint.sh` (Cloud Run) or
+`server/entrypoint.sh` (the server container) or
 `scripts/run_server_with_sm_secrets.sh` (local dev), and the server reads
 the file at startup.
 

@@ -428,7 +428,7 @@ in the same PR.
 > **You can run this locally — including from an AI coding agent.** A working
 > `gcloud` login (CLI auth + ADC) is part of the standard local dev setup and is
 > **generally always available on a Ripls dev machine**, so the secret fetches in
-> `build:web:e2e` (Mapbox / Firebase / Maps) Just Work — don't assume otherwise
+> `build:web:e2e` (Firebase / Google Maps) Just Work — don't assume otherwise
 > and skip the run. If a fetch *does* fail, the fix is to re-auth
 > (`gcloud auth login` + `gcloud auth application-default login`), not to give up
 > on running e2e. Verify with `gcloud auth list` and
@@ -438,7 +438,7 @@ Prerequisites:
 
 - Node ≥ 20.
 - `gcloud` auth (CLI + ADC) — standard local setup; needed by `build:web:e2e`
-  to fetch Mapbox / Firebase / Maps secrets. See the note above.
+  to fetch Firebase / Google Maps secrets. See the note above.
 - Postgres reachable on `localhost:5432`. **`npm run db:start` idempotently
   provisions the e2e DB** (`ripls_e2e_proof`) on the shared local container
   (`scripts/ensure_e2e_db.sh`) — run it once and forget it. CI doesn't use it:

@@ -86,9 +86,9 @@ lenses.)
 
 ### `skills`
 
-`issue` · `audit` · `triage` · `reviews` — the doc-driven skills. Use this to
-keep a doc out of an irrelevant skill (e.g. `personas.md` is `[issue, triage]`,
-not `audit`; the review prompts are `[audit, triage, reviews]`, not `issue`).
+`issue` · `audit` · `reviews` — the doc-driven skills. Use this to keep a doc
+out of an irrelevant skill (e.g. `community_health.md` is `[issue]`, not
+`audit`; the review prompts are `[audit, reviews]`, not `issue`).
 
 ## How selection works
 

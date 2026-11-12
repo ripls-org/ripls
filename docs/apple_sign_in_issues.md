@@ -6,7 +6,7 @@ context:
   globs: [app/lib/services/oidc_service.dart, server/auth/**]
   triggers: [apple-sign-in, oidc, sign-in-with-apple, id-token, authentication]
   lens: [client, security]
-  skills: [issue, audit, triage]
+  skills: [issue, audit]
   domain: auth
 freshness:
   verified_commit: "9fdddc4d0"

@@ -203,7 +203,7 @@ modelled. Anything *not* in this list that the two flows do differently
 should be treated as drift.
 
 1. **Auxiliary content on the Finalized modal.** Location's
-   `_FinalSpotCard` is followed by an interactive Mapbox map and the
+   `_FinalSpotCard` is followed by an interactive Google map and the
    primary CTA is **Get directions**. Time's `_WinnerCard` has no map;
    the primary CTA is **Add to calendar**. The supporting action
    reflects the dominant follow-up for the concept.

@@ -6,7 +6,7 @@ context:
   globs: [.github/workflows/release_app.yaml, app/fastlane/**, app/pubspec.yaml]
   triggers: [release, fastlane, match, testflight, play-console, code-signing, git-tag, build-number]
   lens: [infra]
-  skills: [issue, audit, triage]
+  skills: [issue, audit]
   domain: release
 freshness:
   verified_commit: "9fdddc4d0"

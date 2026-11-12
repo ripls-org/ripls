@@ -68,8 +68,12 @@ func stopServer(cmd *exec.Cmd) {
 	// Send SIGTERM for graceful shutdown.
 	_ = cmd.Process.Signal(syscall.SIGTERM)
 	// Wait briefly for clean exit; force kill if it hangs.
-	done := make(chan error, 1)
-	go func() { done <- cmd.Wait() }()
+	// The exit status is irrelevant here: SIGTERM or Kill makes it non-nil.
+	done := make(chan struct{})
+	go func() {
+		_ = cmd.Wait()
+		close(done)
+	}()
 	select {
 	case <-done:
 	case <-time.After(5 * time.Second):

@@ -54,7 +54,7 @@ resource "google_monitoring_alert_policy" "rpc_error_rate" {
       **Failing RPC:** see the `rpc_method` label on this incident.
 
       **Triage:**
-      1. Error logs for the RPC (add the method name to the query): https://console.cloud.google.com/logs/query;query=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22${var.service_name}%22%0Aseverity%3E%3DERROR?project=${var.project_id}
+      1. Error logs for the RPC (add the method name to the query): ${local.logs_query_url}%0Aseverity%3E%3DERROR?project=${var.project_id}
       2. Compare with the per-RPC latency and traffic dashboards — a deploy,
          a dependency outage, and a traffic spike look different there.
       3. The "Server Error Logged" alert may fire alongside this one; they
@@ -159,7 +159,7 @@ resource "google_monitoring_alert_policy" "rpc_p95_latency" {
          (db_request_duration) and slow-query rate tell you whether the time
          is going to Postgres.
       2. Check the Go runtime dashboard for GC pressure or a goroutine climb.
-      3. Recent deploy? Compare revisions: https://console.cloud.google.com/run/detail/${var.region}/${var.service_name}/revisions?project=${var.project_id}
+      3. Recent deploy? Check ${local.deploy_history}
       4. If only this RPC is slow and it calls an external provider (AI,
          geocoding, email), check that dependency's health.
     EOT

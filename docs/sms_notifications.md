@@ -99,7 +99,7 @@ SMS has **no `UserDevice` row**, so it does not fit the
 we need is one authenticated `POST` plus an HMAC-SHA1 signature check, and the
 SDK pulls deprecated transitive dependencies and typed clients for products
 (Voice/Verify/Lookups) we don't use. The decision mirrors the existing
-`server/location` Mapbox/Google thin clients. **No Twilio type escapes the
+`server/location` Google Maps thin client. **No Twilio type escapes the
 `sms` package** — swapping providers (or adopting the SDK later) is contained
 there.
 

@@ -1,0 +1,78 @@
+name: Run End-to-End Tests on Dev
+
+on:
+  # Run on schedule (nightly at 2 AM UTC)
+  schedule:
+    - cron: "0 2 * * *"
+
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: "Server URL to test against (default: dev environment)"
+        required: false
+        default: "https://server-dev.ripls.org"
+
+  # Allow calling as a reusable workflow
+  workflow_call:
+    inputs:
+      server_url:
+        description: "Server URL to test against (default: dev environment)"
+        required: false
+        type: string
+        default: "https://server-dev.ripls.org"
+    secrets:
+      # Required so callers pass authenticated BSR access through — proto codegen
+      # pulls remote Dart/TS plugins from buf.build and is rate-limited without it.
+      BUF_TOKEN:
+        required: true
+
+env:
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+jobs:
+  e2e-tests:
+    # Instance-only (docs/infra/dependency_automation.md).
+    if: vars.INSTANCE_PIPELINES == 'true'
+    runs-on: self-hosted-linux
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      - name: Install gotestfmt
+        run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@v2.5.0
+
+      - name: Run end-to-end tests
+        env:
+          E2E_SERVER_URL: ${{ github.event.inputs.server_url || 'https://server-dev.ripls.org' }}
+        run: |
+          set -o pipefail
+          ( cd server && go test -v -json -timeout 10m -run TestEndToEnd ) \
+            | stdbuf -oL tee test-output.json \
+            | gotestfmt --hide=empty-packages,successful-tests
+
+      - name: Upload raw test output
+        # Only needed to debug failures; skip the upload on green runs to
+        # conserve the org's Actions storage quota.
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: go-test-output-e2e
+          path: test-output.json
+          retention-days: 7
+
+      - name: Annotate failing tests on PR diff
+        if: failure()
+        shell: bash
+        run: python3 .github/scripts/annotate_go_test_failures.py test-output.json

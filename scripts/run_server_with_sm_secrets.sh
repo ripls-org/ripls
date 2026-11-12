@@ -80,7 +80,6 @@ REQUIRED_SECRETS=(
   unsplash-access-key
   pexels-api-key
   pixabay-api-key
-  mapbox-access-token
   jwt-signing-secret
   github-app-private-key-base64
 )
@@ -132,7 +131,6 @@ exec "$SERVER_BIN" \
   --unsplash-access-key-file="$TMPDIR/unsplash-access-key" \
   --pexels-api-key-file="$TMPDIR/pexels-api-key" \
   --pixabay-api-key-file="$TMPDIR/pixabay-api-key" \
-  --mapbox-access-token-file="$TMPDIR/mapbox-access-token" \
   --google-maps-api-key-server-file="$TMPDIR/google-maps-api-key-server" \
   --jwt-signing-secret-file="$TMPDIR/jwt-signing-secret" \
   --github-app-private-key-file="$TMPDIR/github-app-private-key-base64"

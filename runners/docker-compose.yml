@@ -1,0 +1,176 @@
+# GitHub Actions self-hosted runners for mimir.
+#
+# Deploy:
+#   1. Edit this file in the repo
+#   2. ./sync.sh (or ./sync.sh --rebuild)
+#   3. Host needs a .env with ACCESS_TOKEN=ghp_... at the deploy path
+#
+# The fleet lives at /opt/runners on the host, which also fixes the compose
+# project name: `docker compose -p` must match the DIRECTORY name, so the
+# project is `runners`. Getting that wrong makes `down` a silent no-op.
+#
+# Persistent storage layout under /var/cache/nas/github-runner/:
+#
+#   shared/                     caches safe to share across all runners
+#     go-mod/                   Go module cache (content-addressed, append-only)
+#     go-build/                 Go build cache (content-addressed)
+#     pub-cache/                Dart/Flutter pub cache (immutable per version)
+#     npm/                      npm cacache (designed for concurrent access)
+#     gradle-files/             Gradle modules-2/files-2.1 (immutable artifacts)
+#
+#   runner-N/                   per-runner state, must NOT be shared
+#     work/                     job checkout + workspace
+#     gradle/                   Gradle daemon, locks, version-specific dirs
+#
+# Mount order is significant: the per-runner ~/.gradle bind mount must appear
+# BEFORE the deeper shared gradle-files mount, otherwise Docker shadows the
+# nested mount. The five shared mounts share content across all 5 runners.
+
+x-runner-common: &runner-common
+  # Shared local image tag (no registry). Built into mimir's daemon by the
+  # build_runner_image CI workflow (`docker build` over the mounted socket) or by
+  # `sync.sh --rebuild` (manual); recreate_runners.sh rolls the fleet onto it
+  # with `up -d --no-build`. The build: block below is the manual-build path; its
+  # args are interpolated from the environment (sync.sh sources versions.env).
+  # See runners/README.md.
+  image: ripls-runner:latest
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      GO_VERSION: ${GO_VERSION}
+      NODE_MAJOR: ${NODE_MAJOR}
+      FLUTTER_VERSION: ${FLUTTER_VERSION}
+      JAVA_VERSION: ${JAVA_VERSION}
+      NDK_VERSION: ${NDK_VERSION}
+      ONNXRUNTIME_VERSION: ${ONNXRUNTIME_VERSION}
+      GOLANGCI_LINT_VERSION: ${GOLANGCI_LINT_VERSION}
+      GOFUMPT_VERSION: ${GOFUMPT_VERSION}
+  restart: unless-stopped
+  devices:
+    - "/dev/kvm:/dev/kvm"
+  environment: &runner-env
+    # Registered at org level so private agent repos (Type2Fun-Foundation/
+    # ripls-agent, #2970) share the fleet. Jobs reach these runners through the
+    # org's Default runner group, which is closed to public repos: the open-source
+    # mirror can never schedule a job here. Org scope needs a PAT with
+    # `admin:org` (see .env.example).
+    RUNNER_SCOPE: org
+    ORG_NAME: Type2Fun-Foundation
+    ACCESS_TOKEN: ${ACCESS_TOKEN}
+    # `unraid` was carried here until the host moved to Ubuntu. No workflow ever
+    # selected on it and actionlint never declared it, so it was dead config
+    # describing a platform that no longer exists — dropped rather than renamed.
+    LABELS: self-hosted-linux,linux
+    DISABLE_AUTO_UPDATE: "true"
+    # Reach testcontainers over the host's IPv4 bridge address.
+    #
+    # Runners mount /var/run/docker.sock, so a testcontainer is created on the
+    # HOST daemon and reached through a published port — the topology this
+    # setting exists for. testcontainers asks Docker where to connect and, since
+    # the 2026-08-29 upgrade to Docker 29, gets the default bridge's IPv6
+    # gateway (fd17::1) because Docker 29 enables IPv6 on that bridge by
+    # default. These containers are IPv4-only, so every DB-backed test died with
+    # "dial tcp [fd17::1]:32768: connect: network is unreachable" — 1,925 of
+    # them in one run. It only worked before because Docker happened to return
+    # the IPv4 gateway.
+    #
+    # Verified from inside a runner against a published probe container:
+    # 172.17.0.1 reachable, fd17::1 not.
+    #
+    # Deliberately set here rather than in a workflow: GitHub-hosted runners
+    # need no override and must not inherit one.
+    TESTCONTAINERS_HOST_OVERRIDE: 172.17.0.1
+
+services:
+  github-runner-1:
+    <<: *runner-common
+    container_name: github-runner-1
+    environment:
+      <<: *runner-env
+      RUNNER_NAME: mimir-runner-1
+      RUNNER_WORKDIR: /tmp/runner/work
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/cache/nas/github-runner/runner-1/work:/tmp/runner/work
+      - /var/cache/nas/github-runner/runner-1/gradle:/root/.gradle
+      - /var/cache/nas/github-runner/shared/go-mod:/root/go/pkg/mod
+      - /var/cache/nas/github-runner/shared/go-build:/root/.cache/go-build
+      - /var/cache/nas/github-runner/shared/pub-cache:/root/.pub-cache
+      - /var/cache/nas/github-runner/shared/npm:/root/.npm
+      - /var/cache/nas/github-runner/shared/gradle-files:/root/.gradle/caches/modules-2/files-2.1
+
+  github-runner-2:
+    <<: *runner-common
+    container_name: github-runner-2
+    environment:
+      <<: *runner-env
+      RUNNER_NAME: mimir-runner-2
+      RUNNER_WORKDIR: /tmp/runner/work
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/cache/nas/github-runner/runner-2/work:/tmp/runner/work
+      - /var/cache/nas/github-runner/runner-2/gradle:/root/.gradle
+      - /var/cache/nas/github-runner/shared/go-mod:/root/go/pkg/mod
+      - /var/cache/nas/github-runner/shared/go-build:/root/.cache/go-build
+      - /var/cache/nas/github-runner/shared/pub-cache:/root/.pub-cache
+      - /var/cache/nas/github-runner/shared/npm:/root/.npm
+      - /var/cache/nas/github-runner/shared/gradle-files:/root/.gradle/caches/modules-2/files-2.1
+
+  github-runner-3:
+    <<: *runner-common
+    container_name: github-runner-3
+    environment:
+      <<: *runner-env
+      RUNNER_NAME: mimir-runner-3
+      RUNNER_WORKDIR: /tmp/runner/work
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/cache/nas/github-runner/runner-3/work:/tmp/runner/work
+      - /var/cache/nas/github-runner/runner-3/gradle:/root/.gradle
+      - /var/cache/nas/github-runner/shared/go-mod:/root/go/pkg/mod
+      - /var/cache/nas/github-runner/shared/go-build:/root/.cache/go-build
+      - /var/cache/nas/github-runner/shared/pub-cache:/root/.pub-cache
+      - /var/cache/nas/github-runner/shared/npm:/root/.npm
+      - /var/cache/nas/github-runner/shared/gradle-files:/root/.gradle/caches/modules-2/files-2.1
+
+  github-runner-4:
+    <<: *runner-common
+    container_name: github-runner-4
+    environment:
+      <<: *runner-env
+      # Extra `android-builder` label (runner-4 + runner-5 only) caps concurrent
+      # Android Release Builds at 2: each Gradle daemon uses ~8-11GiB (-Xmx8G +
+      # 4G metaspace), so >2 at once pressures mimir RAM. The workflow's runs-on
+      # requires this label, so extra builds QUEUE for a free one (no cancellation).
+      LABELS: self-hosted-linux,linux,android-builder
+      RUNNER_NAME: mimir-runner-4
+      RUNNER_WORKDIR: /tmp/runner/work
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/cache/nas/github-runner/runner-4/work:/tmp/runner/work
+      - /var/cache/nas/github-runner/runner-4/gradle:/root/.gradle
+      - /var/cache/nas/github-runner/shared/go-mod:/root/go/pkg/mod
+      - /var/cache/nas/github-runner/shared/go-build:/root/.cache/go-build
+      - /var/cache/nas/github-runner/shared/pub-cache:/root/.pub-cache
+      - /var/cache/nas/github-runner/shared/npm:/root/.npm
+      - /var/cache/nas/github-runner/shared/gradle-files:/root/.gradle/caches/modules-2/files-2.1
+
+  github-runner-5:
+    <<: *runner-common
+    container_name: github-runner-5
+    environment:
+      <<: *runner-env
+      # See runner-4: this is the 2nd of the two `android-builder`-labeled runners.
+      LABELS: self-hosted-linux,linux,android-builder
+      RUNNER_NAME: mimir-runner-5
+      RUNNER_WORKDIR: /tmp/runner/work
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/cache/nas/github-runner/runner-5/work:/tmp/runner/work
+      - /var/cache/nas/github-runner/runner-5/gradle:/root/.gradle
+      - /var/cache/nas/github-runner/shared/go-mod:/root/go/pkg/mod
+      - /var/cache/nas/github-runner/shared/go-build:/root/.cache/go-build
+      - /var/cache/nas/github-runner/shared/pub-cache:/root/.pub-cache
+      - /var/cache/nas/github-runner/shared/npm:/root/.npm
+      - /var/cache/nas/github-runner/shared/gradle-files:/root/.gradle/caches/modules-2/files-2.1

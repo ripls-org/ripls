@@ -33,8 +33,8 @@ Each configuration file contains:
 - `ENABLE_NOTIFICATIONS` - Enable/disable push notifications (true/false)
 - `GOOGLE_CLIENT_ID` - Google OAuth Client ID for OIDC authentication
 
-**Mapbox token is NOT in these files** (#1768/#1770). It lives in
-Secret Manager and the build wrappers inject it via `--dart-define` —
+**Google Maps keys are NOT in these files** (#1768/#1770). They live in
+Secret Manager and the build wrappers inject them via `--dart-define` —
 see "Running the app" below.
 
 # To run the app from VSCode:
@@ -78,8 +78,8 @@ Choose one of the environment files:
 **Step 2: Run with device selection**
 
 The npm wrappers in `package.json` are the standard entry points —
-they fetch the Mapbox token from Secret Manager via
-`scripts/fetch_secret.sh` and pass it through `--dart-define`. Run
+they fetch the Google Maps keys from Secret Manager via
+`scripts/fetch_secret.sh` and pass them through `--dart-define`. Run
 from the **project root**:
 
 ```bash
@@ -95,18 +95,22 @@ npm run start:app
 ```
 
 **Direct `flutter run` (rarely needed):** if you skip the wrapper, you
-must also fetch the Mapbox token yourself, otherwise maps render blank.
+must also fetch the Google Maps keys yourself, otherwise maps render blank
+and location search returns nothing. Android reads the map key from the
+`GOOGLE_MAPS_API_KEY` environment variable, so export it as well:
 
 ```bash
 cd app
+export GOOGLE_MAPS_API_KEY=$(../scripts/fetch_secret.sh dev google-maps-api-key-ios)  # -android for Android
 flutter run --dart-define-from-file=env.local.json \
-  --dart-define=MAPBOX_ACCESS_TOKEN=$(../scripts/fetch_secret.sh "$DEV_PROJECT" mapbox-access-token) \
+  --dart-define=GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY \
+  --dart-define=GOOGLE_MAPS_PLACES_KEY=$(../scripts/fetch_secret.sh dev google-maps-api-key-client-places) \
   -d <device-id>
 ```
 
 Prerequisite for either path: `gcloud auth application-default login`
 with an account that has `roles/secretmanager.secretAccessor` on the
-`mapbox-access-token` secret in the dev project.
+Google Maps key secrets in the dev project.
 
 **To run tests:**
 ```bash
@@ -139,7 +143,8 @@ This builds with development environment configuration from `env.dev.json`.
 ```bash
 cd app
 flutter build ios --release --dart-define-from-file=env.prod.json \
-  --dart-define=MAPBOX_ACCESS_TOKEN=$(../scripts/fetch_secret.sh "$PROD_PROJECT" mapbox-access-token)
+  --dart-define=GOOGLE_MAPS_API_KEY=$(../scripts/fetch_secret.sh prod google-maps-api-key-ios) \
+  --dart-define=GOOGLE_MAPS_PLACES_KEY=$(../scripts/fetch_secret.sh prod google-maps-api-key-client-places)
 ```
 
 **After building:**
@@ -163,11 +168,13 @@ npm run build:app:android:dev
 **Manual build:**
 ```bash
 cd app
+export GOOGLE_MAPS_API_KEY=$(../scripts/fetch_secret.sh prod google-maps-api-key-android)
+PLACES_KEY=$(../scripts/fetch_secret.sh prod google-maps-api-key-client-places)
 flutter build apk --release --dart-define-from-file=env.prod.json \
-  --dart-define=MAPBOX_ACCESS_TOKEN=$(../scripts/fetch_secret.sh "$PROD_PROJECT" mapbox-access-token)
+  --dart-define=GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY --dart-define=GOOGLE_MAPS_PLACES_KEY=$PLACES_KEY
 # Or for app bundle (recommended for Play Store):
 flutter build appbundle --release --dart-define-from-file=env.prod.json \
-  --dart-define=MAPBOX_ACCESS_TOKEN=$(../scripts/fetch_secret.sh "$PROD_PROJECT" mapbox-access-token)
+  --dart-define=GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY --dart-define=GOOGLE_MAPS_PLACES_KEY=$PLACES_KEY
 ```
 
 # To inspect the app from VSCode:
@@ -189,11 +196,12 @@ To connect to a different server, edit the appropriate environment configuration
 - `env.local.json` - Local development
 - `env.prod.json` - Production environment
 
-Or create a custom environment file and run (Mapbox still has to come
-from Secret Manager):
+Or create a custom environment file and run it with the same Google Maps
+defines as the direct `flutter run` example above:
 ```bash
 flutter run --dart-define-from-file=my-custom-env.json \
-  --dart-define=MAPBOX_ACCESS_TOKEN=$(../scripts/fetch_secret.sh "$DEV_PROJECT" mapbox-access-token)
+  --dart-define=GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY \
+  --dart-define=GOOGLE_MAPS_PLACES_KEY=$(../scripts/fetch_secret.sh dev google-maps-api-key-client-places)
 ```
 
 # Troubleshooting

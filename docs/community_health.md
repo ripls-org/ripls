@@ -6,7 +6,7 @@ context:
   globs: [server/services/community/**]
   triggers: [community-size, member-limit, member-cap, cohesion, community-health]
   lens: [product, domain]
-  skills: [issue, triage]
+  skills: [issue]
   domain: community
 freshness:
   verified_commit: "9fdddc4d0"

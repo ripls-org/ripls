@@ -81,7 +81,6 @@ EOF
     unsplash-access-key \
     pexels-api-key \
     pixabay-api-key \
-    mapbox-access-token \
     jwt-signing-secret \
     github-app-private-key=github-app-private-key-base64
 fi
@@ -130,7 +129,6 @@ set -- "$@" \
 [ "${LOG_SOURCE_LOCATION:-}" = "true" ]  && set -- "$@" -log-source-location
 [ -n "${INVITE_LINK_HOSTNAME:-}" ]       && set -- "$@" "-invite-link-hostname=$INVITE_LINK_HOSTNAME"
 [ -n "${CORS_ALLOWED_ORIGINS:-}" ]       && set -- "$@" "-cors-allowed-origins=$CORS_ALLOWED_ORIGINS"
-[ -n "${MAP_PROVIDER:-}" ]               && set -- "$@" "-map-provider=$MAP_PROVIDER"
 
 # Mailgun routing config (domain + from) stays in env vars — they are not
 # secrets. Only the API key is a credential.

@@ -1,0 +1,12 @@
+// Prod build configuration
+// Used for release builds
+
+PRODUCT_BUNDLE_IDENTIFIER = org.ripls.app
+DISPLAY_NAME = Ripls
+
+// See the note in Dev.xcconfig: account identity, kept out of project.pbxproj.
+DEVELOPMENT_TEAM = 2HL54765FF
+
+// Google Sign-In OAuth client IDs (ripls-prod)
+GOOGLE_IOS_CLIENT_ID = 507242812633-6csqvj9ik536jmnr0ep6sm24cttd5ik4.apps.googleusercontent.com
+GOOGLE_IOS_REVERSED_CLIENT_ID = com.googleusercontent.apps.507242812633-6csqvj9ik536jmnr0ep6sm24cttd5ik4

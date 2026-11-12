@@ -1,10 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ripls/core/config/environment.dart';
 import 'package:ripls/data/repositories/location_repository.dart';
 import 'package:ripls/services/google_location_search_service.dart';
 import 'package:ripls/services/location_search_service.dart';
 import 'package:ripls/services/location_service.dart';
-import 'package:ripls/services/mapbox_location_service.dart';
 import 'package:ripls/services/providers/auth_providers.dart';
 import 'package:ripls/services/providers/cache_providers.dart';
 
@@ -21,22 +19,14 @@ final locationServiceProvider = Provider<LocationService>((ref) {
   );
 });
 
-/// Provider for LocationSearchService (geocoding + place-search against a
-/// third-party provider). Selected at compile time via
-/// `Environment.mapProvider` (`MAP_PROVIDER` --dart-define): 'mapbox'
-/// (default) or 'google' (#2188).
+/// Provider for LocationSearchService (geocoding + place-search against
+/// Google Maps Platform, #2188).
 ///
 /// Consumed only by LocationRepository — viewmodels and widgets access
 /// search via repository methods, not via this provider directly
 /// (`docs/client/architecture.md`).
 final locationSearchServiceProvider = Provider<LocationSearchService>((ref) {
-  switch (Environment.mapProvider) {
-    case 'google':
-      return GoogleLocationSearchService();
-    case 'mapbox':
-    default:
-      return MapboxLocationService();
-  }
+  return GoogleLocationSearchService();
 });
 
 /// Provider for LocationRepository

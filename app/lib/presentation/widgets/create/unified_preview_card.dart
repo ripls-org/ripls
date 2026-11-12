@@ -79,7 +79,7 @@ class UnifiedPreviewCard extends ConsumerWidget {
     Future<void> openLocationPicker() async {
       // Route through the helper so a saved `locationId` is pre-loaded into a
       // `GeocodedLocation` BEFORE the modal mounts. Without this the modal
-      // starts with the Austin fallback and Mapbox drops the catch-up camera
+      // starts with the Austin fallback and the map drops the catch-up camera
       // command issued during native map init — see
       // docs/client/geospatial.md §Shared Location Components.
       //

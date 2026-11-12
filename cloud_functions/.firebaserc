@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "ripls-prod",
+    "dev": "ripls-dev",
+    "prod": "ripls-prod"
+  }
+}

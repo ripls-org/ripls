@@ -16,7 +16,6 @@ func validConfig() *Config {
 		DBURL:              "postgres://user:pass@localhost:5432/testdb",
 		InviteLinkHostname: "test.example.com",
 		JWTSigningSecret:   "test-jwt-signing-secret-not-real-32-or-more-bytes-required",
-		MapProvider:        "mapbox",
 		DevMode:            true,
 	}
 }
@@ -98,15 +97,6 @@ func TestFinalizeRequiresLongJWTSecret(t *testing.T) {
 	err := cfg.finalize(nil, "")
 	if err == nil || !strings.Contains(err.Error(), "--jwt-signing-secret") {
 		t.Errorf("finalize with short JWT secret = %v; want length error", err)
-	}
-}
-
-func TestFinalizeRejectsUnknownMapProvider(t *testing.T) {
-	cfg := validConfig()
-	cfg.MapProvider = "osm"
-	err := cfg.finalize(nil, "")
-	if err == nil || !strings.Contains(err.Error(), "--map-provider") {
-		t.Errorf("finalize with unknown map provider = %v; want enum error", err)
 	}
 }
 

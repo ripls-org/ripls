@@ -149,53 +149,25 @@ func wireServices(ctx context.Context, cfg *config.Config, logger *logging.Logge
 	// Create service instances
 	userManager := auth.NewUserManager(sqlStorage)
 
-	// Location providers (#2188): construct any client whose credential
-	// is present so its CheckHealth registers during a cutover window;
-	// the active provider used by services is picked from --map-provider.
-	// Both location probes are cached: the Google Maps probe issues a
-	// billable Geocoding API request, so running it per uptime probe turned
-	// monitoring frequency into 45% of the GCP bill (#2809).
-	mapboxClient := locationpkg.NewMapboxClient(cfg.MapboxAccessToken)
-	if cfg.MapboxAccessToken != "" {
-		healthService.RegisterFuncCached("mapbox", healthsvc.DefaultExternalTTL, mapboxClient.CheckHealth)
-	}
-	var googleMapsClient *locationpkg.GoogleMapsClient
-	if cfg.GoogleMapsAPIKeyServer != "" {
-		googleMapsClient = locationpkg.NewGoogleMapsClient(cfg.GoogleMapsAPIKeyServer)
-		healthService.RegisterFuncCached("google_maps", healthsvc.DefaultExternalTTL, googleMapsClient.CheckHealth)
-	}
-
-	// Resolve the active provider per --map-provider. The selected
-	// provider's credential must be present in production — otherwise the
-	// server would silently degrade every geocoding-dependent flow. In
-	// dev-mode (e2e + integration tests), missing credentials are allowed
-	// and the services that consume locationProvider already nil-guard.
+	// Location provider: Google Maps Platform (#2188). The key must be
+	// present in production — otherwise the server would silently degrade
+	// every geocoding-dependent flow. In dev-mode (e2e + integration tests),
+	// a missing key is allowed and the services that consume
+	// locationProvider already nil-guard. The health probe is cached: it
+	// issues a billable Geocoding API request, so running it per uptime
+	// probe turned monitoring frequency into 45% of the GCP bill (#2809).
 	var locationProvider locationpkg.Provider
-	switch cfg.MapProvider {
-	case "mapbox":
-		if cfg.MapboxAccessToken == "" {
-			if !cfg.DevMode {
-				logger.Error("--map-provider=mapbox requires --mapbox-access-token (or --mapbox-access-token-file) to be non-empty")
-				return nil, fmt.Errorf("map provider misconfigured")
-			}
-			logger.Warn("--map-provider=mapbox but no token supplied; running without a location provider (dev-mode)")
-		} else {
-			locationProvider = mapboxClient
+	if cfg.GoogleMapsAPIKeyServer != "" {
+		googleMapsClient := locationpkg.NewGoogleMapsClient(cfg.GoogleMapsAPIKeyServer)
+		healthService.RegisterFuncCached("google_maps", healthsvc.DefaultExternalTTL, googleMapsClient.CheckHealth)
+		locationProvider = googleMapsClient
+	} else {
+		if !cfg.DevMode {
+			logger.Error("--google-maps-api-key-server (or --google-maps-api-key-server-file) is required outside dev mode")
+			return nil, fmt.Errorf("location provider misconfigured")
 		}
-	case "google":
-		if googleMapsClient == nil {
-			if !cfg.DevMode {
-				logger.Error("--map-provider=google requires --google-maps-api-key-server (or --google-maps-api-key-server-file) to be non-empty")
-				return nil, fmt.Errorf("map provider misconfigured")
-			}
-			logger.Warn("--map-provider=google but no key supplied; running without a location provider (dev-mode)")
-		} else {
-			locationProvider = googleMapsClient
-		}
+		logger.Warn("no Google Maps key supplied; running without a location provider (dev-mode)")
 	}
-	logger.Info("location provider selected",
-		"map_provider", cfg.MapProvider,
-		"has_provider", locationProvider != nil)
 
 	// Stock imagery (Unsplash→Pexels) and video (Pexels→Pixabay) provider
 	// chains, semantic-cache wrapped; nil when no keys are configured.

@@ -14,4 +14,4 @@ These widgets let users search for and select a location (pickup point, event ve
 
 ## When to add here vs. elsewhere
 
-Location UI belongs here. Geocoding API calls and location service logic live in `services/mapbox_location_service.dart`. Location formatting utilities are in `core/utils/location_formatter.dart`.
+Location UI belongs here. Geocoding API calls and location service logic live in `services/google_location_search_service.dart`. Location formatting utilities are in `core/utils/location_formatter.dart`.

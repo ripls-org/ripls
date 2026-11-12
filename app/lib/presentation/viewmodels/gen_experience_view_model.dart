@@ -626,7 +626,7 @@ class GenExperienceNotifier extends Notifier<GenExperienceState>
       return null;
     }
     // Coordinates are the only field required to save a location. A
-    // POI-only Mapbox match (e.g. a park) can carry empty name/postal/
+    // POI-only geocoder match (e.g. a park) can carry empty name/postal/
     // locality and the AI preview displays it via address lines — refusing
     // to save in that case would silently drop the predicted spot and the
     // shared experience would land as TBD.

@@ -2,10 +2,10 @@
 # Doc-context metadata for docs/llms.txt — update when this doc changes.
 # How it works + schema: docs/context_map.md
 context:
-  description: How /ripls-reviews and triage turn review findings into GitHub issues — required metadata, labels, issue type, dedup, and format.
-  triggers: [issue-filing, labels, metadata, triage, github-issue]
+  description: How /ripls-reviews turns review findings into GitHub issues — required metadata, labels, issue type, dedup, and format.
+  triggers: [issue-filing, labels, metadata, github-issue]
   lens: [conventions]
-  skills: [reviews, triage]
+  skills: [reviews]
 freshness:
   verified_commit: "9fdddc4d0"
   verified_on: "2026-06-09"
@@ -14,8 +14,8 @@ freshness:
 
 This spec is followed by every review prompt in `docs/reviews/` and executed by
 the `ripls-reviews` skill. Its purpose: turn the highest-impact findings from
-each review into GitHub issues so they flow into the backlog and get prioritized
-by `/ripls-triage`.
+each review into GitHub issues so they flow into the backlog, where a maintainer
+prioritizes them.
 
 ## What gets filed
 
@@ -92,8 +92,8 @@ Field rules:
 - **Recommendation**: actionable. If a tooling change can prevent recurrence
   (linter rule, CI check), recommend that.
 - **Suggested labels**: omit unless the review surfaces one obviously useful.
-  The triage skill will assign Priority and Issue Type later; don't try to
-  pre-empt it. Don't include labels like `P0`–`P4` — the Project field owns
+  A maintainer assigns Priority and Issue Type later; don't try to pre-empt
+  that. Don't include labels like `P0`–`P4` — the Project field owns
   that.
 
 ## How the skill files issues
@@ -117,10 +117,10 @@ The `ripls-reviews` skill, after all reviews complete, parses each report's
    - **Labels**: `auto-filed`, `review:<review_name>`, plus any suggested
      labels from the finding.
    - **Issue Type**: not set at filing time. The finding's `Type` field is
-     recorded as a "Type hint" in the issue body; `/ripls-triage` assigns the
+     recorded as a "Type hint" in the issue body; a maintainer assigns the
      GitHub Issue Type later.
-3. **Does not** assign Priority — that's `/ripls-triage`'s job. Issues land
-   on the board untriaged and get picked up next triage cycle.
+3. **Does not** assign Priority. Issues land on the board without one, and a
+   maintainer sets it when reviewing them.
 
 ## Notes for review authors
 

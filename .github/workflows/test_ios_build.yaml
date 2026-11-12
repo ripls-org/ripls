@@ -1,0 +1,159 @@
+name: Test iOS Build
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "proto/**"
+      - "versions.env"
+      - ".github/workflows/test_ios_build.yaml"
+  # No path filter on PRs: this is a required check, so it must report on every
+  # PR. The `changes` job gates the real build — a PR that doesn't touch native
+  # iOS code skips the build, which reports success and satisfies the required
+  # check (GitHub-recommended pattern; #2287). Gating stays scoped to app/ios/**
+  # so only iOS-touching PRs need the self-hosted Mac (tinker). Caught Swift/
+  # Xcode errors before merge per #2231.
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+jobs:
+  changes:
+    name: Detect iOS changes
+    # Instance-only (docs/infra/dependency_automation.md).
+    if: github.event_name == 'pull_request' && vars.INSTANCE_PIPELINES == 'true'
+    runs-on: self-hosted-linux
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'app/ios/**'
+              # A pub dependency change can add/drop/version iOS plugin pods
+              # without touching app/ios/**, drifting Podfile.lock — so a pub-only
+              # PR must run build-ios too, or the "Verify Podfile.lock" guard is
+              # skipped and the drift merges undetected (e.g. flutter_typeahead v6
+              # dropping flutter_keyboard_visibility, #2386).
+              - 'app/pubspec.yaml'
+              - 'app/pubspec.lock'
+              # Same drift from a different input: the `Flutter` pod's SPEC
+              # CHECKSUM tracks the SDK version, so a FLUTTER_VERSION bump needs
+              # a committed `pod install` too. Without this, a baked-tool bump
+              # skips build-ios, satisfies the required check, auto-merges, and
+              # every later main build fails the Podfile.lock guard (#2883 →
+              # #2920). Filters match paths, not variables, so the other
+              # versions.env keys pay a ~4min Mac build they don't need — a few
+              # PRs a month, cheaper than a broken main.
+              - 'versions.env'
+              - '.github/workflows/test_ios_build.yaml'
+
+  build-ios:
+    needs: [changes]
+    # Push/dispatch: always run. PR: run only when native iOS paths changed;
+    # otherwise the job skips and reports success, satisfying the required check.
+    # Only iOS-touching PRs are gated on tinker (the self-hosted Mac) being up.
+    if: ${{ always() && vars.INSTANCE_PIPELINES == 'true' && (github.event_name != 'pull_request' || needs.changes.outputs.relevant == 'true') }}
+    runs-on: self-hosted-mac
+    # Includes queue time — if the runner is offline, this will cancel
+    # rather than queue indefinitely.
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Source the Flutter pin from versions.env (the single source of truth)
+      # into $GITHUB_ENV so the next step's subosito install matches CI/runners.
+      # $GITHUB_WORKSPACE is the repo root regardless of this job's app/ cwd.
+      - name: Load toolchain versions
+        run: |
+          set -a
+          . "$GITHUB_WORKSPACE/versions.env"
+          set +a
+          echo "FLUTTER_VERSION=$FLUTTER_VERSION" >> "$GITHUB_ENV"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      # Flutter 3.44 enables Swift Package Manager for iOS by default, which
+      # generates SPM integration on top of this project's CocoaPods setup and
+      # crashes the runner's Xcode during package resolution. The project is
+      # CocoaPods-based (committed Podfile, no SPM refs in the Xcode project),
+      # so keep iOS on CocoaPods.
+      - name: Use CocoaPods, not Swift Package Manager
+        run: flutter config --no-enable-swift-package-manager
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Clean Xcode DerivedData (self-hosted runner)
+        run: rm -rf ~/Library/Developer/Xcode/DerivedData/Runner-*
+
+      - name: Generate Proto Code
+        uses: ./.github/actions/generate-proto-code
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate Freezed and Mockito code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Setup Ruby (self-hosted)
+        run: |
+          # Use homebrew Ruby on self-hosted Mac
+          echo "/opt/homebrew/opt/ruby/bin" >> $GITHUB_PATH
+          echo "/opt/homebrew/lib/ruby/gems/3.4.0/bin" >> $GITHUB_PATH
+          export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+          ruby --version
+          gem install bundler --no-document --user-install
+
+      - name: Install Fastlane dependencies
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle install
+
+      - name: Install CocoaPods dependencies
+        # --repo-update so the runner's cached spec repo learns about pod
+        # versions newer than its last warm-up (e.g. a Firebase SDK bump from a
+        # Flutter plugin upgrade); plain `pod install` fails on a stale repo.
+        run: cd ios && pod install --repo-update
+        working-directory: app
+
+      # Catch a plugin bump that changed the resolved pod set but wasn't
+      # accompanied by a committed `pod install` — the exact #2288 surprise
+      # (Flutter 3.44 -> Firebase pods 12.9.0 -> 12.14.0). Fail the PR here
+      # rather than at a later iOS build.
+      - name: Verify Podfile.lock is up to date
+        working-directory: app
+        run: |
+          if ! git diff --quiet ios/Podfile.lock; then
+            echo "::error::app/ios/Podfile.lock changed after 'pod install'. A Flutter plugin bump likely needs a committed pod update — run 'cd app/ios && pod install --repo-update' and commit the result."
+            git diff ios/Podfile.lock
+            exit 1
+          fi
+
+      - name: Build iOS release (unsigned)
+        run: bundle exec fastlane ios build_only

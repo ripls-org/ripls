@@ -1,0 +1,184 @@
+name: Build and Deploy Docker Image
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Target environment (dev, prod)"
+        required: false
+        type: string
+        default: "dev"
+      deploy:
+        description: "Whether to deploy to mimir after building"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      GCP_SERVICE_ACCOUNT_KEY_DEV:
+        required: true
+      GCP_SERVICE_ACCOUNT_KEY_PROD:
+        required: false
+      # SSH key whose authorized_keys entry on mimir forces
+      # /opt/ripls/server/deploy.sh; required when deploy is true.
+      MIMIR_DEPLOY_SSH_KEY:
+        required: false
+      # Proto Dart codegen pulls remote plugins from buf.build; without this the
+      # build hits BSR rate limits. Required so callers pass it through.
+      BUF_TOKEN:
+        required: true
+
+jobs:
+  build:
+    runs-on: self-hosted-linux
+    permissions:
+      contents: read
+      packages: write
+    env:
+      # Job-wide so EVERY codegen invocation is authenticated against buf.build —
+      # both the explicit "Generate proto Dart code" step and the Flutter web
+      # build, which re-runs generate:proto:dart internally via the build:web
+      # script. A per-step env on the first one alone left the web build
+      # unauthenticated (caught by scripts/buf_generate.sh's CI guard).
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Ensure Git LFS files are pulled
+        run: |
+          git lfs install --local
+          git lfs pull
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # Source the toolchain pins from versions.env into $GITHUB_ENV so the
+      # image is built with the same Go/ONNX versions as the rest of CI,
+      # instead of relying on the Dockerfile ARG defaults.
+      - name: Load toolchain versions
+        run: |
+          set -a
+          . versions.env
+          set +a
+          echo "GO_VERSION=$GO_VERSION" >> "$GITHUB_ENV"
+          echo "ONNXRUNTIME_VERSION=$ONNXRUNTIME_VERSION" >> "$GITHUB_ENV"
+
+      - name: Set environment variables
+        id: env
+        run: |
+          if [ "${{ inputs.environment }}" == "prod" ]; then
+            echo "PROJECT_ID=ripls-prod" >> "$GITHUB_OUTPUT"
+          else
+            echo "PROJECT_ID=ripls-dev" >> "$GITHUB_OUTPUT"
+          fi
+          # The name mimir's deploy.sh expects; it keeps the newest ten per
+          # environment.
+          echo "IMAGE=ripls-server:${{ inputs.environment }}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      # The Flutter Web build below shells out to scripts/fetch_secret.sh,
+      # which calls `gcloud secrets versions access` for the Google Maps keys
+      # and firebase-web-api-key.
+      - name: Authenticate to Google Cloud (dev)
+        if: inputs.environment != 'prod'
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+
+      - name: Authenticate to Google Cloud (prod)
+        if: inputs.environment == 'prod'
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_PROD }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+
+      # Build the Flutter Web bundle and stage it at
+      # server/services/web/app_assets/ before `docker build` runs. The
+      # Dockerfile's `COPY server ./server` picks up whatever is in that
+      # directory, and the server's `//go:embed app_assets` directive
+      # bakes it into the binary. Without this step the deployed binary
+      # serves only placeholder.html and every Flutter route 404s.
+      # Mirrors the equivalent steps in test_web_e2e.yaml.
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate proto Dart code
+        run: npm run generate:proto:dart
+
+      - name: Install Flutter dependencies
+        run: cd app && flutter pub get
+
+      - name: Generate freezed and mockito code
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build Flutter Web bundle
+        # build:web:dev uses --profile + env.dev.json + dev-project secrets;
+        # build:web:prod uses --release + env.prod.json + prod-project secrets.
+        # The matching service account was selected by the auth step above.
+        #
+        # The npm scripts name the environment ("dev"/"prod") and resolve the
+        # project through scripts/gcp_project.sh, so the id has to reach them
+        # here — locally that comes from .env.local (#2953).
+        env:
+          GCP_PROJECT_DEV: ${{ steps.env.outputs.PROJECT_ID }}
+          GCP_PROJECT_PROD: ${{ steps.env.outputs.PROJECT_ID }}
+        run: |
+          if [ "${{ inputs.environment }}" == "prod" ]; then
+            npm run build:web:prod
+          else
+            npm run build:web:dev
+          fi
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v7
+        env:
+          # Suppress the auto-uploaded build-record artifact (*.dockerbuild)
+          # that otherwise accumulates in Actions storage on every build.
+          DOCKER_BUILD_SUMMARY: 'false'
+          DOCKER_BUILD_RECORD_UPLOAD: 'false'
+        with:
+          context: .
+          # mimir has no registry: the runner mounts the host's Docker socket,
+          # so loading puts the image straight into the daemon mimir runs.
+          load: ${{ inputs.deploy }}
+          tags: ${{ steps.env.outputs.IMAGE }}
+          build-args: |
+            GO_VERSION=${{ env.GO_VERSION }}
+            ONNXRUNTIME_VERSION=${{ env.ONNXRUNTIME_VERSION }}
+          cache-from: type=local,src=/tmp/docker-cache
+          cache-to: type=local,dest=/tmp/docker-cache,mode=min
+
+      - name: Check the image loaded
+        if: inputs.deploy
+        run: docker image inspect "${{ steps.env.outputs.IMAGE }}" --format 'loaded {{.Id}}'
+
+      # Runs deploy.sh on the host over SSH: it retags ripls-server:<env>, waits
+      # for /readyz and rolls back on failure. The key can do nothing else.
+      # mimir serves the traffic, so a failure here fails the job.
+      - name: Deploy to mimir
+        if: inputs.deploy
+        env:
+          SSH_KEY: ${{ secrets.MIMIR_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ vars.MIMIR_SSH_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ vars.MIMIR_DEPLOY_HOST }}
+        run: |
+          if [ -z "$SSH_KEY" ] || [ -z "$KNOWN_HOSTS" ] || [ -z "$DEPLOY_HOST" ]; then
+            echo "::error::MIMIR_DEPLOY_SSH_KEY, vars.MIMIR_SSH_KNOWN_HOSTS and vars.MIMIR_DEPLOY_HOST must all be set"
+            exit 1
+          fi
+          dir=$(mktemp -d)
+          trap 'rm -rf "$dir"' EXIT
+          umask 077
+          printf '%s\n' "$SSH_KEY" > "$dir/key"
+          printf '%s\n' "$KNOWN_HOSTS" > "$dir/known_hosts"
+          ssh -i "$dir/key" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" \
+            "root@$DEPLOY_HOST" "${{ inputs.environment }} ${{ inputs.environment }}-${GITHUB_SHA::7}" \
+            || { echo "::warning::mimir ${{ inputs.environment }} deploy failed (see the log above)"; exit 1; }

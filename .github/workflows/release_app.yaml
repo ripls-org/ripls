@@ -1,0 +1,355 @@
+name: Release App
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Platform to build"
+        required: false
+        type: choice
+        options:
+          - both
+          - ios
+          - android
+          - none
+        default: "both"
+      create_release:
+        description: "Create GitHub release (use with platform=none to retry after partial build failure)"
+        required: false
+        type: boolean
+        default: false
+
+# Prevent concurrent releases
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────────────
+  # Validate: Ensure tag is on main branch (tag push only)
+  # ────────────────────────────────────────────────────────────────────────────
+  validate-branch:
+    # Any run on a tag, including Release Finalize's dispatch on the tag it
+    # just pushed (a GITHUB_TOKEN tag push triggers nothing by itself).
+    # Instance-only (docs/infra/dependency_automation.md): every job below
+    # needs this one or `prepare`, so gating both gates the workflow.
+    if: ${{ startsWith(github.ref, 'refs/tags/') && vars.INSTANCE_PIPELINES == 'true' }}
+    runs-on: self-hosted-linux
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag is on main branch
+        run: |
+          # Get the commit SHA that the tag points to
+          TAG_COMMIT=$(git rev-parse HEAD)
+          echo "Tag points to commit: $TAG_COMMIT"
+
+          # Check if this commit is on the main branch
+          if git branch -r --contains "$TAG_COMMIT" | grep -q "origin/main"; then
+            echo "Tag is on main branch"
+          else
+            echo "::error::Release tags must be created on the main branch. This tag points to a commit that is not on main."
+            echo "To fix: checkout main, pull latest, then create and push your tag."
+            exit 1
+          fi
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Prepare: Extract version info
+  # ────────────────────────────────────────────────────────────────────────────
+  prepare:
+    needs: [validate-branch]
+    if: ${{ always() && vars.INSTANCE_PIPELINES == 'true' && (needs.validate-branch.result == 'success' || (github.event_name == 'workflow_dispatch' && needs.validate-branch.result == 'skipped')) }}
+    runs-on: self-hosted-linux
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build_number: ${{ steps.version.outputs.build_number }}
+      full_version: ${{ steps.version.outputs.full_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # Full history for commit count
+
+      - name: Extract version info
+        id: version
+        run: |
+          # Get base version from pubspec.yaml
+          BASE_VERSION=$(grep '^version:' app/pubspec.yaml | sed 's/version: //' | tr -d ' ' | cut -d'+' -f1)
+
+          # Calculate build number from git commit count
+          BUILD_NUMBER=$(git rev-list --count HEAD)
+
+          # Full version string
+          FULL_VERSION="${BASE_VERSION}+${BUILD_NUMBER}"
+
+          echo "version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+          echo "full_version=$FULL_VERSION" >> $GITHUB_OUTPUT
+
+          echo "Version: $BASE_VERSION"
+          echo "Build: $BUILD_NUMBER"
+          echo "Full: $FULL_VERSION"
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Build iOS and upload to TestFlight
+  # ────────────────────────────────────────────────────────────────────────────
+  build-ios:
+    if: ${{ always() && needs.prepare.result == 'success' && (github.event_name == 'push' || inputs.platform == 'both' || inputs.platform == 'ios') }}
+    needs: [validate-branch, prepare]
+    runs-on: self-hosted-mac
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Source the Flutter pin from versions.env (the single source of truth)
+      # into $GITHUB_ENV so the next step's subosito install matches CI/runners.
+      # $GITHUB_WORKSPACE is the repo root regardless of this job's app/ cwd.
+      - name: Load toolchain versions
+        run: |
+          set -a
+          . "$GITHUB_WORKSPACE/versions.env"
+          set +a
+          echo "FLUTTER_VERSION=$FLUTTER_VERSION" >> "$GITHUB_ENV"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      # Flutter 3.44 enables Swift Package Manager for iOS by default, which
+      # generates SPM integration on top of this project's CocoaPods setup and
+      # crashes the runner's Xcode during package resolution. The project is
+      # CocoaPods-based (committed Podfile, no SPM refs in the Xcode project),
+      # so keep iOS on CocoaPods.
+      - name: Use CocoaPods, not Swift Package Manager
+        run: flutter config --no-enable-swift-package-manager
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Clean Xcode DerivedData (self-hosted runner)
+        run: rm -rf ~/Library/Developer/Xcode/DerivedData/Runner-*
+
+      - name: Generate Proto Code
+        uses: ./.github/actions/generate-proto-code
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate Freezed and Mockito code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Setup Ruby (self-hosted)
+        run: |
+          # Use homebrew Ruby on self-hosted Mac
+          echo "/opt/homebrew/opt/ruby/bin" >> $GITHUB_PATH
+          echo "/opt/homebrew/lib/ruby/gems/3.4.0/bin" >> $GITHUB_PATH
+          export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+          ruby --version
+          gem install bundler --no-document --user-install
+
+      - name: Install Fastlane dependencies
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle install
+
+      - name: Install CocoaPods dependencies
+        # --repo-update so the runner's cached spec repo learns about pod
+        # versions newer than its last warm-up (e.g. a Firebase SDK bump from a
+        # Flutter plugin upgrade); plain `pod install` fails on a stale repo.
+        run: cd ios && pod install --repo-update
+        working-directory: app
+
+      - name: Authenticate to Google Cloud (Secret Manager)
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_PROD }}
+
+      - name: Fetch Google Maps secrets from Secret Manager
+        id: secrets
+        uses: google-github-actions/get-secretmanager-secrets@v3
+        with:
+          secrets: |-
+            GOOGLE_MAPS_API_KEY:ripls-prod/google-maps-api-key-ios
+            GOOGLE_MAPS_PLACES_KEY:ripls-prod/google-maps-api-key-client-places
+
+      # Refuse to ship without the Maps SDK key (#2188) or the client-side
+      # Places key (#2246). The SDK key initializes the iOS Maps SDK (blank
+      # map if empty); the Places key backs location autocomplete/geocoding
+      # (empty search box if empty).
+      - name: Verify Google Maps API keys present
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ steps.secrets.outputs.GOOGLE_MAPS_API_KEY }}
+          GOOGLE_MAPS_PLACES_KEY: ${{ steps.secrets.outputs.GOOGLE_MAPS_PLACES_KEY }}
+        run: |
+          if [ -z "$GOOGLE_MAPS_API_KEY" ]; then
+            echo "::error::google-maps-api-key-ios resolved empty — refusing to ship an iOS app without Maps functionality (#2188)."
+            exit 1
+          fi
+          if [ -z "$GOOGLE_MAPS_PLACES_KEY" ]; then
+            echo "::error::google-maps-api-key-client-places resolved empty — refusing to ship an iOS app without location search (#2246)."
+            exit 1
+          fi
+          echo "Google Maps SDK + Places keys present (lengths ${#GOOGLE_MAPS_API_KEY}, ${#GOOGLE_MAPS_PLACES_KEY})."
+
+      - name: Build and upload to TestFlight
+        timeout-minutes: 45
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ steps.secrets.outputs.GOOGLE_MAPS_API_KEY }}
+          GOOGLE_MAPS_PLACES_KEY: ${{ steps.secrets.outputs.GOOGLE_MAPS_PLACES_KEY }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTH }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_KEY_CONTENT }}
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "120"
+        run: bundle exec fastlane ios release
+
+      - name: Restore local keychain (self-hosted cleanup)
+        if: always()
+        run: |
+          # Delete the temporary keychain created by setup_ci
+          bundle exec fastlane run delete_keychain name:fastlane_tmp_keychain-db || true
+          # Restore the default keychain to the login keychain
+          security default-keychain -s ~/Library/Keychains/login.keychain-db || true
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Build Android and upload to Play Store
+  # ────────────────────────────────────────────────────────────────────────────
+  build-android:
+    if: ${{ always() && needs.prepare.result == 'success' && (github.event_name == 'push' || inputs.platform == 'both' || inputs.platform == 'android') }}
+    needs: [validate-branch, prepare]
+    runs-on: self-hosted-linux
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate Freezed and Mockito code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Install Fastlane dependencies
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle install
+
+      - name: Setup Android signing
+        run: |
+          # Decode keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+
+          # Create key.properties
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=release.keystore
+          EOF
+
+      - name: Authenticate to Google Cloud (Secret Manager)
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_PROD }}
+
+      - name: Fetch Google Maps secrets from Secret Manager
+        id: secrets
+        uses: google-github-actions/get-secretmanager-secrets@v3
+        with:
+          secrets: |-
+            GOOGLE_MAPS_API_KEY:ripls-prod/google-maps-api-key-android
+            GOOGLE_MAPS_PLACES_KEY:ripls-prod/google-maps-api-key-client-places
+
+      # Refuse to ship without the Maps SDK key (#2188) or the client-side
+      # Places key (#2246). The SDK key feeds the Android Maps SDK via the
+      # manifest meta-data (build.gradle.kts fills it from the
+      # GOOGLE_MAPS_API_KEY env var); the Places key backs location
+      # autocomplete/geocoding. An empty SDK key yields a blank map; an
+      # empty Places key yields a non-functional search box.
+      - name: Verify Google Maps API keys present
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ steps.secrets.outputs.GOOGLE_MAPS_API_KEY }}
+          GOOGLE_MAPS_PLACES_KEY: ${{ steps.secrets.outputs.GOOGLE_MAPS_PLACES_KEY }}
+        run: |
+          if [ -z "$GOOGLE_MAPS_API_KEY" ]; then
+            echo "::error::google-maps-api-key-android resolved empty — refusing to ship an Android app without Maps functionality (#2188)."
+            exit 1
+          fi
+          if [ -z "$GOOGLE_MAPS_PLACES_KEY" ]; then
+            echo "::error::google-maps-api-key-client-places resolved empty — refusing to ship an Android app without location search (#2246)."
+            exit 1
+          fi
+          echo "Google Maps SDK + Places keys present (lengths ${#GOOGLE_MAPS_API_KEY}, ${#GOOGLE_MAPS_PLACES_KEY})."
+
+      - name: Build and upload to Play Store
+        timeout-minutes: 30
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ steps.secrets.outputs.GOOGLE_MAPS_API_KEY }}
+          GOOGLE_MAPS_PLACES_KEY: ${{ steps.secrets.outputs.GOOGLE_MAPS_PLACES_KEY }}
+          PLAY_STORE_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+          GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false"
+        run: bundle exec fastlane android release
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Create GitHub Release
+  # - On tag push: runs only if both builds succeeded
+  # - On manual dispatch: runs only if create_release input is true and no
+  #   requested build failed (platform=none skips both, for a retry)
+  # ────────────────────────────────────────────────────────────────────────────
+  create-release:
+    if: |
+      always() &&
+      needs.prepare.result == 'success' &&
+      (
+        (github.event_name == 'push' && needs.build-ios.result == 'success' && needs.build-android.result == 'success') ||
+        (github.event_name == 'workflow_dispatch' && inputs.create_release &&
+          !contains(fromJSON('["failure","cancelled"]'), needs.build-ios.result) &&
+          !contains(fromJSON('["failure","cancelled"]'), needs.build-android.result))
+      )
+    needs: [prepare, build-ios, build-android]
+    runs-on: self-hosted-linux
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: v${{ needs.prepare.outputs.version }} (Build ${{ needs.prepare.outputs.build_number }})
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true

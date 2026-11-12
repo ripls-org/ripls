@@ -1,0 +1,84 @@
+# Service definitions shared by the server stacks on mimir. Each environment's
+# ripls_server_<env>/docker-compose.yaml extends these and adds what differs:
+# project name, image tag, port, data paths, identity and settings.
+services:
+  postgres:
+    # Pinned by digest: a database upgrade is a deliberate act, never a side
+    # effect of a pull. mimir's update-docker-stacks also holds database
+    # images, but it only walks /opt/nas/stacks and never sees these stacks.
+    image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
+    restart: unless-stopped
+    shm_size: 256mb
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    restart: unless-stopped
+    mem_limit: 2g
+    # The server drains in-flight requests for up to 10s on SIGTERM, then
+    # cleans up. Docker's default 10s grace would SIGKILL it mid-drain (exit
+    # 137, reported as a crash), so give it room to exit on its own.
+    stop_grace_period: 30s
+    # The entrypoint decodes credentials into /tmp; a tmpfs keeps them off disk.
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "-O", "/dev/null", "http://localhost:8080/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # First boot against an empty database runs the whole schema setup.
+      start_period: 120s
+      start_interval: 2s
+    environment:
+      # The key for the environment's ripls-server-mimir service account, bind
+      # mounted by each environment's file. Read by the entrypoint's
+      # fetch-secrets for Secret Manager, and by the server for GCS, Vertex AI
+      # and FCM.
+      GOOGLE_APPLICATION_CREDENTIALS: /run/gcp/sa.json
+      DB_HOST: postgres
+      DB_USER: ripls
+      DB_NAME: ripls
+      # Container-to-container on the stack's own network.
+      DB_SSLMODE: disable
+      NOTIFICATION_PROVIDER: fcm
+      LOG_SOURCE_LOCATION: "true"
+      GITHUB_APP_ID: "2840389"
+      GITHUB_INSTALLATION_ID: "109363272"
+      GITHUB_REPO_OWNER: Type2Fun-Foundation
+      GITHUB_REPO_NAME: ripls
+      WAITLIST_NOTIFY_EMAIL: support@ripls.org
+      MAILGUN_DOMAIN: ripls.app
+      MAILGUN_FROM_ADDRESS: "Ripls <noreply@ripls.app>"
+      MAILGUN_POSTAL_ADDRESS: "Type2Fun Foundation, PBC · 2957 11th Street, Boulder, CO 80304"
+      OFF_APP_EMAIL_ENABLED: "true"
+      PLATFORM_SMS_ENABLED: "true"
+      ACTIVITY_DIGEST_NOTIFY_EMAIL: ops@ripls.org
+      ACTIVITY_DIGEST_TIMEZONE: America/Denver
+      # The deployment's identity on landings and in email (server/branding).
+      # Empty renders nothing, so these must be set; keep in step with the
+      # `branding` map in terraform/environments. ANDROID_PACKAGE_ID differs by
+      # environment and lives in each environment's file.
+      LEGAL_ENTITY_NAME: Type2Fun Foundation
+      SUPPORT_EMAIL: support@ripls.org
+      PRIVACY_POLICY_URL: https://ripls.org/privacy-policy.html
+      PLAY_STORE_URL: https://play.google.com/store/apps/details?id=org.ripls.app
+      BOT_USER_AGENT: "RiplsBot/1.0 (+https://ripls.org/bot)"
+
+  # Ships the stack's logs to Cloud Logging (fluent-bit/fluent-bit.yaml). The
+  # server and Postgres send to it through Docker's fluentd logging driver on a
+  # loopback-only port; `docker compose logs` still works, because Docker keeps
+  # a local copy alongside any logging driver.
+  logs:
+    image: fluent/fluent-bit:5.1.2@sha256:d792375ca8e53be72fc25716c28f291f32c6fc6f4f31d12d0d14bc78cefe9226
+    restart: unless-stopped
+    mem_limit: 256m
+    command: ["-c", "/etc/ripls-fluent-bit/fluent-bit.yaml"]
+    volumes:
+      - ./fluent-bit:/etc/ripls-fluent-bit:ro
+      # The host's crash reports (container-events.sh).
+      - /var/log/ripls:/var/log/ripls:ro

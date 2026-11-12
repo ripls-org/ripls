@@ -11,15 +11,15 @@ Two kinds of content live here:
   images with attribution in `manifest.json`. Regenerate missing files with
   `e2e/scripts/fetch_walkthrough_fixtures.mjs` (idempotent; delete a file to
   refresh it).
-- **Real-content packs** (subdirectories, e.g. `brunch/`): images +
-  screenplay (`content.json`) extracted from one real prod event by
-  `server/cmd/walkthrough-export`. Each pack's `manifest.json` records
+- **Real-content packs**: images + screenplay (`content.json`) extracted
+  from one real prod event by `server/cmd/walkthrough-export`. **None are
+  committed**, because the repo is public (#3228). Each pack's `manifest.json` records
   provenance (source experience, per-file `gs://` origin) and the **consent
   statement** for the people pictured.
 
 Rules for real-content packs: consent recorded before commit; scrubbed
 content only (first names, no contact details, no street addresses — the
 extractor enforces the floor, human review is the backstop); raw exports
-never enter git; the repo is private and every pack is marked
-`purgeIfRepoGoesPublic` — purge packs from history before any repo
-visibility change.
+never enter git; every pack is marked `purgeIfRepoGoesPublic`. Consent
+given for a private repo does not cover this public one, so packs stay out
+of it.

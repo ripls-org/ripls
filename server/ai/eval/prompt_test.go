@@ -20,8 +20,11 @@ package eval
 
 import (
 	"context"
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"go.ripls.org/ripls/server/ai"
@@ -31,6 +34,23 @@ import (
 // server/test_data/ (where the binary image fixtures live). Image-mode
 // prompt tests resolve relative file names here.
 const testDataDir = "../../test_data"
+
+// readCaseImage reads an image-mode case's file from testDataDir. The
+// manufacturer images under manual/ are gitignored and fetched on demand
+// (npm run eval:fetch-images), so a missing one skips the case instead of
+// failing it; any other missing or unreadable file is still fatal.
+func readCaseImage(t *testing.T, imageFile string) []byte {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join(testDataDir, imageFile))
+	if err == nil {
+		return data
+	}
+	if errors.Is(err, fs.ErrNotExist) && strings.HasPrefix(imageFile, "manual/") {
+		t.Skipf("%s not fetched; run `npm run eval:fetch-images`", imageFile)
+	}
+	t.Fatalf("read %s: %v", imageFile, err)
+	return nil
+}
 
 // TestExperiencePrompt runs the Experience-generation goldens against
 // every credentialed (provider, model) pair.
@@ -315,10 +335,7 @@ func TestGearImagePrompt(t *testing.T) {
 			for _, c := range goldens.Cases {
 				c := c
 				t.Run(c.ID, func(t *testing.T) {
-					data, err := os.ReadFile(filepath.Join(testDataDir, c.ImageFile))
-					if err != nil {
-						t.Fatalf("read %s: %v", c.ImageFile, err)
-					}
+					data := readCaseImage(t, c.ImageFile)
 
 					det, err := timedCall(t, tally, c.ID, func() (*ai.GearDetection, error) {
 						return pm.Provider.DetectGearInImage(ctx, &ai.DetectionImage{
@@ -432,10 +449,7 @@ func TestExperienceImagePrompt(t *testing.T) {
 					region := firstNonEmpty(c.Region, goldens.Defaults.Region)
 					currentTime := firstNonEmpty(c.CurrentTime, goldens.Defaults.CurrentTime)
 
-					data, err := os.ReadFile(filepath.Join(testDataDir, c.ImageFile))
-					if err != nil {
-						t.Fatalf("read %s: %v", c.ImageFile, err)
-					}
+					data := readCaseImage(t, c.ImageFile)
 
 					gen, err := timedCall(t, tally, c.ID, func() (*ai.ExperienceGeneration, error) {
 						return pm.Provider.GenerateExperienceFromImage(ctx, &ai.DetectionImage{

@@ -81,8 +81,8 @@ func TestAssertFieldRoundTrip_Pointer(t *testing.T) {
 func TestAssertFieldRoundTrip_Slice(t *testing.T) {
 	var stored []string
 	AssertFieldRoundTrip(t, "address_lines",
-		[]string{"506 Monroe St", "Apt 4"},
-		func() error { stored = []string{"506 Monroe St", "Apt 4"}; return nil },
+		[]string{"123 Example St", "Apt 4"},
+		func() error { stored = []string{"123 Example St", "Apt 4"}; return nil },
 		func() ([]string, error) { return stored, nil },
 	)
 }

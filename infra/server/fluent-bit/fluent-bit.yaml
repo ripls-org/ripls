@@ -1,0 +1,68 @@
+# Log shipper for one server stack on mimir: the stack's `logs` service.
+#
+# Sends the server's and Postgres's logs, and the host's crash reports, to
+# Cloud Logging in the environment's project as generic_task entries with
+# job = the service name. That is the shape the monitoring module's
+# log_source = "self_hosted" reads (terraform/modules/monitoring), so every
+# log-based metric, alert, SLO and dashboard works as it did on Cloud Run.
+#
+# Per-environment values arrive as environment variables from the stack's
+# docker-compose.yaml: GCP_PROJECT, LOG_JOB, RIPLS_ENV.
+service:
+  flush: 5
+  log_level: info
+  # Buffer to disk, so a restart or a network outage delays logs rather than
+  # dropping them.
+  storage.path: /var/lib/fluent-bit/buffer
+  storage.sync: normal
+  storage.backlog.mem_limit: 16M
+
+parsers:
+  - name: json
+    format: json
+
+pipeline:
+  inputs:
+    # The server and Postgres log here through Docker's fluentd logging
+    # driver; each record's tag is its compose service name.
+    - name: forward
+      listen: 0.0.0.0
+      port: 24224
+      storage.type: filesystem
+
+    # One JSON line per server crash, appended by the host's container-exit
+    # watcher (container-events.sh).
+    - name: tail
+      tag: container-events
+      path: /var/log/ripls/${RIPLS_ENV}-container-events.jsonl
+      parser: json
+      db: /var/lib/fluent-bit/tail.db
+      storage.type: filesystem
+
+  filters:
+    # The driver wraps each line as {"log": "<line>", container_id, ...}. The
+    # server writes one JSON object per line: lift its fields to the top, so
+    # they land as jsonPayload.message, jsonPayload.rpc_method and so on,
+    # exactly where Cloud Run's agent put them. A line that is not JSON keeps
+    # its text in jsonPayload.log.
+    - name: parser
+      match: server
+      key_name: log
+      parser: json
+      reserve_data: on
+
+  outputs:
+    - name: stackdriver
+      match: "*"
+      google_service_credentials: /run/gcp/sa.json
+      export_to_project_id: ${GCP_PROJECT}
+      resource: generic_task
+      location: us-central1
+      namespace: mimir
+      job: ${LOG_JOB}
+      task_id: ${RIPLS_ENV}
+      # The server writes Cloud Logging severity names (INFO, WARNING, ...).
+      severity_key: severity
+      # Retry for as long as the disk buffer holds, not a fixed number of times.
+      retry_limit: no_limits
+      storage.total_limit_size: 1G

@@ -89,10 +89,6 @@ class Environment {
     return const String.fromEnvironment('SUPPORT_EMAIL', defaultValue: '');
   }
 
-  static String get mapboxAccessToken {
-    return const String.fromEnvironment('MAPBOX_ACCESS_TOKEN', defaultValue: '');
-  }
-
   /// When set (e.g. "127.0.0.1:9099"), Firebase Auth is routed through a local
   /// Auth Emulator instead of the real project. Set ONLY by the e2e web build
   /// (`--dart-define=AUTH_EMULATOR_HOST=…`) so Playwright can drive deterministic
@@ -125,14 +121,6 @@ class Environment {
       'GOOGLE_MAPS_PLACES_KEY',
       defaultValue: '',
     );
-  }
-
-  /// Active location provider for geocoding + place search (#2188).
-  /// Either 'mapbox' (default) or 'google'. The corresponding credential
-  /// must be populated; an empty credential plus the matching provider
-  /// is a configuration error that surfaces at first call.
-  static String get mapProvider {
-    return const String.fromEnvironment('MAP_PROVIDER', defaultValue: 'mapbox');
   }
 
   static bool get notificationsEnabled {

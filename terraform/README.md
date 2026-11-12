@@ -1,9 +1,22 @@
 # Terraform Infrastructure Configuration
 
-This directory contains Terraform configurations for deploying the gear-library
-service using a modular, environment-specific approach. While currently
-configured for Google Cloud Platform, the modular structure allows for
-adaptation to other cloud providers.
+This directory holds the Terraform for the Google Cloud and Cloudflare resources
+the server depends on. It does not run the server: the server and its Postgres
+run as Docker Compose stacks on a self-hosted machine (see
+[`infra/server/`](../infra/server/README.md)), deployed by CI over SSH. The
+server ran on Cloud Run with Cloud SQL until #3079 removed both, along with
+their VPC networking and the Artifact Registry repositories.
+
+What Terraform still manages:
+
+- the server's runtime identity — a service account whose key the host uses —
+  and its Secret Manager, Cloud Storage and project-role grants;
+- the media bucket (Cloud Storage), with `prevent_destroy`;
+- Cloud Monitoring: log-based metrics, alerts, SLOs, dashboards and the uptime
+  check, all reading the logs the host ships to Cloud Logging;
+- Cloudflare DNS records pointing the server and web-app hostnames at the host;
+- the GitHub Actions and Cloud Functions secret grants, required APIs, and the
+  billing budget.
 
 ## Directory Structure
 
@@ -12,62 +25,51 @@ terraform/
 ├── environments/          # Environment-specific configurations
 │   ├── dev/              # Development environment
 │   │   ├── main.tf       # Environment resource orchestration
+│   │   ├── outputs.tf
 │   │   └── variables.tf  # Environment-specific variable definitions
 │   └── prod/             # Production environment
-│       ├── main.tf       # Environment resource orchestration
-│       └── variables.tf  # Environment-specific variable definitions
+│       ├── main.tf
+│       ├── outputs.tf
+│       └── variables.tf
 └── modules/              # Reusable infrastructure modules
-    ├── containers/       # Application hosting module
-    │   ├── main.tf       # Container service resources
-    │   └── variables.tf  # Container module variables
-    └── storage/          # Database and networking module
-        ├── main.tf       # Database, networking, and connectivity
-        ├── variables.tf  # Storage module variables
-        └── outputs.tf    # Connection details and networking info
+    ├── media_bucket/     # Cloud Storage bucket for user-uploaded media
+    ├── monitoring/       # Log-based metrics, alerts, SLOs, dashboards, uptime check
+    └── server_identity/  # Server service account and its grants
 ```
 
 ## Architecture Overview
 
 ### Module Design Philosophy
 
-**Storage Module**: Provides managed database services with private networking.
-Outputs connection details for consumption by other modules. Handles database
-provisioning, user management, and secure networking setup.
+**Media Bucket Module**: The Cloud Storage bucket for user-uploaded media. It
+carries an unconditional `prevent_destroy`, so the bucket and its data outlive
+any change to how the server is hosted.
 
-**Containers Module**: Manages containerized application deployment with
-auto-scaling capabilities. Consumes database connection details from the storage
-module and configures the application environment.
+**Server Identity Module**: A service account for running the server outside
+Google Cloud, where there is no metadata server and the server authenticates
+with a key. It grants exactly what the server calls with its own identity:
+secretAccessor on each runtime secret, object access on the media bucket, and
+the Vertex AI, FCM and Cloud Logging roles. The key is created out of band so it
+never lands in Terraform state.
+
+**Monitoring Module**: Reads the server's own logs. Its `log_source` variable
+says whether they come from Cloud Run or from a self-hosted server whose log
+shipper writes them as `generic_task` entries; both environments use
+`self_hosted`.
 
 **Environment Orchestration**: Each environment directory composes modules with
 environment-specific parameters, allowing identical infrastructure patterns with
-different sizing and availability configurations.
-
-### Cloud Provider Considerations
-
-The current implementation uses Google Cloud Platform services, but the modular
-structure facilitates adaptation:
-
-- **Storage Module**: Uses Cloud SQL (PostgreSQL). Could be adapted for AWS RDS,
-  Azure Database, or other managed database services.
-- **Containers Module**: Uses Cloud Run. Could be adapted for AWS Fargate, Azure
-  Container Instances, or Kubernetes-based solutions.
-- **Networking**: Uses GCP VPC connectors. Other providers have equivalent
-  private networking solutions.
-
-Provider-specific details are contained within modules, while environment
-configurations remain largely provider-agnostic.
+different configurations.
 
 ## Configuration Approach
 
 ### Environment Separation
 
-**Development Environment**: Optimized for cost efficiency and rapid iteration.
-Uses minimal resource allocations and allows resource deletion for cost
-management.
+**Development Environment**: Its own project, secrets, bucket, DNS records and
+monitoring, so dev changes never touch prod resources.
 
-**Production Environment**: Configured for reliability and performance.
-Implements high availability, appropriate resource sizing, and protection
-mechanisms.
+**Production Environment**: The same shape, plus the account-level billing
+budget and the Cloud Functions secret grants, which live only in prod.
 
 ### Variable Management
 
@@ -77,11 +79,9 @@ environment variables, not committed to version control.
 
 ### Module Communication
 
-Modules communicate through Terraform's input/output system:
-
-- Storage module outputs connection details and networking configuration
-- Containers module accepts these outputs as input variables
-- Environment configurations orchestrate this data flow
+Modules communicate through Terraform's input/output system: the media bucket
+module outputs the bucket name, which the server identity module takes to scope
+its storage grants. Environment configurations orchestrate this data flow.
 
 ## Remote State
 
@@ -160,21 +160,19 @@ integration.
 
 ### Secret Management
 
-- Database passwords and sensitive configuration via variables
+- Secret values live in Secret Manager and are created out of band; Terraform
+  manages only the grants (and, for the feedback signer key, the empty secret
+  container), so no
+  secret value enters Terraform state
+- Service-account keys are likewise created out of band
 - `.tfvars` files excluded from version control
 - Environment variables for CI/CD authentication
 
-### Network Security
-
-- Database services deployed with private networking
-- Application-to-database communication via secure internal networks
-- Public access limited to application endpoints only
-
 ### Resource Management
 
-- Environment-specific resource sizing and availability
-- Development environments allow deletion for cost control
-- Production environments include appropriate protection mechanisms
+- Secret and storage grants are per secret and per bucket rather than
+  project-wide
+- The media bucket is protected with `prevent_destroy` in every environment
 
 This configuration provides a foundation for reliable, secure, and
 cost-effective infrastructure management while maintaining flexibility for

@@ -2,15 +2,15 @@
 # fetch_secret.sh — Print a Secret Manager secret value to stdout.
 #
 # Used by Flutter build wrappers (`npm run start:app:*`,
-# `npm run build:app:*`) to inject the Mapbox token via --dart-define,
+# `npm run build:app:*`) to inject the Google Maps keys via --dart-define,
 # and by scripts/run_server_with_sm_secrets.sh to inject server-side
 # credentials. Designed for the same single-secret fetch in any context —
 # keep it dumb and composable.
 #
 # Usage:
 #   ./scripts/fetch_secret.sh <project-id|dev|prod> <secret-name>
-#   ./scripts/fetch_secret.sh dev mapbox-access-token
-#   ./scripts/fetch_secret.sh my-project-prod mapbox-access-token
+#   ./scripts/fetch_secret.sh dev google-maps-api-key-web
+#   ./scripts/fetch_secret.sh my-project-prod google-maps-api-key-web
 #
 # "dev" and "prod" resolve through scripts/gcp_project.sh, so callers name the
 # environment rather than this deployment's project ids (#2953). A literal

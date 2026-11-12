@@ -231,9 +231,10 @@ section governs `.proto` file comments only — not READMEs or internal docs
 Describe what a message, field, or RPC *means*; never describe how the server
 produces it. Keep the following categories out of proto comments:
 
-- **Vendor and dependency names.** Mapbox, Pexels, GCS, Unsplash, Anthropic,
-  Gemini, OpenAI, etc. are implementation choices that can change without a
-  wire-format change. Use the capability ("geocoding", "stock image",
+- **Vendor and dependency names.** Google Maps, Pexels, GCS, Unsplash,
+  Anthropic, Gemini, OpenAI, etc. are implementation choices that can change
+  without a wire-format change (geocoding moved from Mapbox to Google Maps
+  in #2188 with no proto change). Use the capability ("geocoding", "stock image",
   "AI provider"), not the vendor. The same rule applies to enum value names
   (`GEN_STREAM_ERROR_CODE_MAPBOX_FAILED` → `GEN_STREAM_ERROR_CODE_GEOCODING_FAILED`).
 - **Transport plumbing.** Don't mention Connect, gRPC, HTTP status codes, or

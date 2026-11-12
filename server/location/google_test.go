@@ -11,6 +11,15 @@ import (
 	"go.ripls.org/ripls/server/gen/ripls/models"
 )
 
+// mockRoundTripper is a custom http.RoundTripper for testing.
+type mockRoundTripper struct {
+	roundTripFunc func(req *http.Request) (*http.Response, error)
+}
+
+func (m *mockRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	return m.roundTripFunc(req)
+}
+
 // newGoogleTestClient returns a *GoogleMapsClient whose HTTP transport
 // is the supplied roundTripFunc. Tests can inspect the outgoing requests
 // and craft per-endpoint responses.

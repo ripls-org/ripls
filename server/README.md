@@ -19,7 +19,7 @@ server/
 ├── ai/                        # AI provider integrations (Gemini, Vertex AI)
 ├── auth/                      # Authentication library (JWT, OIDC)
 ├── email/                     # Email service (Mailgun)
-├── location/                  # Location services (Mapbox, EXIF)
+├── location/                  # Geocoding provider (Google Maps)
 ├── notifications/             # Push notifications (FCM, noop)
 ├── services/                  # RPC service implementations
 │   ├── community/             # Community management
@@ -62,13 +62,15 @@ npm run start:server
   - `fcm`: Firebase Cloud Messaging for real push notifications. Uses
     Application Default Credentials. Locally, run `gcloud auth
     application-default login` once or set `GOOGLE_APPLICATION_CREDENTIALS`
-    to a key file path outside the repo. In Cloud Run the runtime service
-    account is picked up automatically.
+    to a key file path outside the repo. In the deployed containers,
+    `GOOGLE_APPLICATION_CREDENTIALS` names the server service account's key
+    (on a platform with a metadata server, the runtime service account is
+    picked up automatically instead).
 - `--firebase-project`: Firebase / GCP project ID for FCM and phone auth.
   Required locally (the SDK cannot infer it under
-  `gcloud auth application-default login`). In Cloud Run / GKE, leave empty
-  — the SDK reads `GOOGLE_CLOUD_PROJECT` from the environment (set by
-  Terraform) or the metadata server.
+  `gcloud auth application-default login`). In the deployed containers, leave
+  empty — the SDK reads `GOOGLE_CLOUD_PROJECT` from the environment (set in
+  each compose file under `infra/server/`) or the service-account key.
 - `--gemini-api-key`: Gemini API key for AI-powered features (optional)
 - `--vertex-ai-project`: GCP project ID for Vertex AI (alternative to gemini-api-key)
 - `--vertex-ai-location`: GCP location for Vertex AI (default: `us-central1`)
@@ -314,25 +316,31 @@ The storage layer automatically:
 
 ## Production Deployment
 
-The server is deployed using Docker and managed by Terraform. See:
+Both environments run the server image as Docker Compose stacks on a
+self-hosted host, next to their own PostgreSQL; CI builds the image and deploys
+it over SSH. (It ran on Cloud Run with Cloud SQL until #3079.) See:
 
-- [`../terraform/README.md`](../terraform/README.md) for infrastructure configuration
+- [`../infra/server/README.md`](../infra/server/README.md) for the stacks, deploys and rollback
+- [`../terraform/README.md`](../terraform/README.md) for the Google Cloud and Cloudflare resources around it
 - [`../Dockerfile`](../Dockerfile) for container build details
-- [`.github/workflows/build_docker_image.yaml`](../.github/workflows/build_docker_image.yaml) for CI/CD pipeline
+- [`../.github/workflows/build_and_deploy_container.yaml`](../.github/workflows/build_and_deploy_container.yaml) for the CI/CD pipeline
 
 ### Environment Variables
 
-When running in containers (Cloud Run, etc.), the server expects:
+When running in a container, the server expects:
 
-- `PORT`: HTTP port (set automatically by Cloud Run)
+- `PORT`: HTTP port (default `8080`)
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: PostgreSQL connection details
 - `ENABLE_DEV_MODE`: Set to `"true"` to enable development mode
 - `ENABLE_DEV_CLIENT`: Set to `"true"` to serve the web client
 - `GOOGLE_CLOUD_PROJECT`: GCP project ID for Vertex AI and Firebase
 - `GOOGLE_CLOUD_LOCATION`: GCP location for Vertex AI (e.g., `us-central1`)
 - `GCS_MEDIA_BUCKET`: GCS bucket name for media storage
-- `MAPBOX_ACCESS_TOKEN`: Mapbox access token for location services
+
+The Google Maps server key (`google-maps-api-key-server`, required outside
+dev mode) is not an environment variable: `server/entrypoint.sh` fetches it
+with the other secrets (see [`../docs/secrets.md`](../docs/secrets.md)).
 
 The Dockerfile's CMD constructs the appropriate command-line flags from these environment variables.
 
-**Note on Push Notifications:** In production, the server uses FCM with Application Default Credentials. The Cloud Run service account is granted `roles/firebase.admin` via Terraform to enable FCM access. See [`../docs/push_notifications.md`](../docs/push_notifications.md) for details.
+**Note on Push Notifications:** In production, the server uses FCM with Application Default Credentials. The server's service account (`terraform/modules/server_identity`) is granted `roles/firebasecloudmessaging.admin` via Terraform to enable FCM sends. See [`../docs/push_notifications.md`](../docs/push_notifications.md) for details.

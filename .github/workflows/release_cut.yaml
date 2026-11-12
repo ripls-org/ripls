@@ -1,0 +1,60 @@
+name: Cut Release
+
+# Dispatcher for the release-cut agent (#2970). The agent, in the private agent
+# repo (vars.AGENT_REPO), bumps app/pubspec.yaml on release/vX.Y.Z, writes the
+# release notes, regenerates the website HTML and opens a PR for human review.
+# Merging that PR triggers Release Finalize, which deploys to prod and tags
+# the release. This workflow holds no agent secrets.
+#
+# The run-name is part of the agent contract: the agent requires a recent
+# "agent-dispatch release-cut <bump>" run of this file, triggered by a user
+# with write access.
+
+run-name: agent-dispatch release-cut ${{ inputs.bump }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Release size"
+        required: true
+        type: choice
+        options:
+          - fix
+          - minor
+          - major
+        default: fix
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    # GitHub-hosted: the composite needs a sparse checkout, which must not run
+    # on a reused self-hosted workspace.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the agent bridge
+        env:
+          APP_ID: ${{ vars.AGENT_DISPATCH_APP_ID }}
+          AGENT_REPO: ${{ vars.AGENT_REPO }}
+        run: |
+          if [ -z "$APP_ID" ] || [ -z "$AGENT_REPO" ]; then
+            echo "::error::AGENT_DISPATCH_APP_ID and AGENT_REPO must be set to cut a release."
+            exit 1
+          fi
+
+      - name: Checkout dispatch action
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/actions/agent-dispatch
+          persist-credentials: false
+
+      - name: Dispatch to the agent
+        uses: ./.github/actions/agent-dispatch
+        with:
+          app-id: ${{ vars.AGENT_DISPATCH_APP_ID }}
+          private-key: ${{ secrets.AGENT_DISPATCH_PRIVATE_KEY }}
+          agent-repo: ${{ vars.AGENT_REPO }}
+          mode: release-cut
+          instruction: ${{ inputs.bump }}

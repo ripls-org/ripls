@@ -12,7 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:logging/logging.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:ripls/core/audio/audio_session_manager.dart';
 import 'package:ripls/core/config/environment.dart';
 import 'package:ripls/core/config/firebase_options_web.dart';
@@ -263,14 +262,8 @@ void main() async {
         return true;
       };
 
-      // Initialize Mapbox with access token (not supported on web)
-      if (!kIsWeb) {
-        MapboxOptions.setAccessToken(Environment.mapboxAccessToken);
-      }
-
-      // Initialize Google Maps SDK on iOS (#2188). Same secret-flow
-      // shape as Mapbox: --dart-define value → Dart → native SDK via
-      // platform channel. AppDelegate's didInitializeImplicitFlutterEngine
+      // Initialize Google Maps SDK on iOS (#2188): --dart-define value →
+      // Dart → native SDK via platform channel. AppDelegate's didInitializeImplicitFlutterEngine
       // registers the handler, which calls GMSServices.provideAPIKey.
       // Skipped on web (loaded via index.html script tag) and Android
       // (key is read from the manifest meta-data at process launch,

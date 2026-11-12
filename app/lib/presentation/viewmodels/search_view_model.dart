@@ -127,7 +127,7 @@ class SearchNotifier extends AsyncNotifier<SearchState> {
   /// so this timeout is a safety net — not the primary mitigation — for the
   /// rare case where both last-known is missing AND `getCurrentPosition()`
   /// hangs (e.g. right after device reboot, or residual lock contention with
-  /// the Mapbox map widget on iOS). If it fires, the search still completes
+  /// the map widget on iOS). If it fires, the search still completes
   /// using fallback coordinates rather than blocking forever.
   static const Duration _locationTimeout = Duration(seconds: 3);
 
@@ -165,7 +165,7 @@ class SearchNotifier extends AsyncNotifier<SearchState> {
       _log.info('Initial search: cache invalidated');
 
       // Fetch location with timeout. The Geolocator plugin can hang when the
-      // Mapbox map widget is concurrently requesting Core Location on iOS.
+      // map widget is concurrently requesting Core Location on iOS.
       // On timeout or error, fall back to default coordinates so the search
       // still fires rather than blocking indefinitely.
       Position? position;
@@ -561,7 +561,7 @@ class SearchNotifier extends AsyncNotifier<SearchState> {
     );
   }
 
-  /// Sets the Mapbox map style URI.
+  /// Sets the map style URI.
   ///
   /// UI-only — does not trigger a new search RPC.
   void setMapStyle(String styleUri) {

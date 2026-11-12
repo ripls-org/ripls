@@ -1,0 +1,11 @@
+# App identifiers
+app_identifier(ENV["APP_IDENTIFIER"] || "org.ripls.app")
+
+# Apple Developer Portal / App Store Connect
+# Only interactive runs on a dev machine read this; CI authenticates with the
+# App Store Connect API key. Set APPLE_ID to your own Apple ID.
+apple_id(ENV["APPLE_ID"])
+team_id(ENV["APPLE_TEAM_ID"] || "2HL54765FF")
+
+# For more information about the Appfile, see:
+# https://docs.fastlane.tools/advanced/#appfile

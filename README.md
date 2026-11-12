@@ -13,7 +13,7 @@ Platform for community building through sharing of goods and skills
 │   ├── ai/                       # AI provider integrations (Gemini, Vertex AI)
 │   ├── auth/                     # Authentication (JWT, OIDC)
 │   ├── email/                    # Email service (Mailgun)
-│   ├── location/                 # Location services (Mapbox, EXIF)
+│   ├── location/                 # Location services (Google Maps)
 │   ├── notifications/            # Push notifications (FCM, noop)
 │   ├── services/                 # RPC service implementations
 │   │   ├── community/            # Community management

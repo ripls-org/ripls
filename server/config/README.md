@@ -17,8 +17,8 @@ composition root in `server/main.go` wires into services.
 
 ## Invariants
 
-- **The flag surface is a deployment contract.** Cloud Run args,
-  `server/entrypoint.sh`, `scripts/run_server_with_sm_secrets.sh`, and the e2e
+- **The flag surface is a deployment contract.** Container args (docker
+  `command:`), `server/entrypoint.sh`, `scripts/run_server_with_sm_secrets.sh`, and the e2e
   harness all pass these flags by name — do not rename a flag or change a
   default without updating every caller (see `docs/secrets.md`).
 - `Parse` must be called exactly once: it registers on the process-global

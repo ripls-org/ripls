@@ -66,7 +66,7 @@ on these paths enables SSRF: an attacker can direct the server to fetch
 `http://169.254.169.254/` (cloud metadata), RFC1918 addresses, or loopback
 services.
 
-Trusted egress to known, hard-coded endpoints (Mapbox, Pexels/Unsplash/Pixabay
+Trusted egress to known, hard-coded endpoints (Google Maps, Pexels/Unsplash/Pixabay
 APIs, Gemini, GitHub) may use a plain `http.Client` — the SSRF guard adds
 overhead and can false-positive on CDNs with private relay hops.
 

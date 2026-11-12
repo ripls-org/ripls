@@ -144,7 +144,7 @@ def build_body(review_name: str, finding: dict) -> str:
 
 ---
 
-_Auto-filed by `/ripls-reviews`. Priority will be assigned by `/ripls-triage`._
+_Auto-filed by `/ripls-reviews`. Priority is set when a maintainer reviews it._
 
 <!-- review-fingerprint: {finding['fingerprint']} -->
 """

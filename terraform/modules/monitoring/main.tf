@@ -2,7 +2,7 @@
 # MONITORING MODULE
 # =============================================================================
 # This module creates Cloud Monitoring resources for the Ripls server:
-# - Uptime check with OIDC authentication (calls /health endpoint)
+# - Uptime check on the public /health endpoint
 # - Log-based metrics for per-RPC errors and health check failures
 # - Alert policies for uptime failures and elevated error rates
 # - Email notification channels
@@ -27,6 +27,25 @@ locals {
     ? "resource.type=\"generic_task\"\nresource.labels.job=\"${var.service_name}\""
     : "resource.type=\"cloud_run_revision\"\nresource.labels.service_name=\"${var.service_name}\""
   )
+
+  # Logs Explorer link to this service's entries, for alert runbooks. A
+  # runbook appends further filter lines, URL-encoded and each led by %0A.
+  logs_query_url = "https://console.cloud.google.com/logs/query;query=${urlencode(local.log_source_filter)}"
+
+  # Where a runbook sends someone to find recent deploys.
+  deploy_history = (
+    local.self_hosted
+    ? "the deploy workflow's recent runs; deploy.sh rolls back a deploy whose /readyz fails"
+    : "https://console.cloud.google.com/run/detail/${var.region}/${var.service_name}/revisions?project=${var.project_id}"
+  )
+
+  # The crash runbook's log link: the platform's system log on Cloud Run, the
+  # host's container-exit watcher self-hosted (see crash_filter_* below).
+  crash_logs_url = (
+    local.self_hosted
+    ? "${local.logs_query_url}%0AjsonPayload.message%3D%22server%20container%20exited%22?project=${var.project_id}"
+    : "${local.logs_query_url}%0AlogName%3D%22projects%2F${var.project_id}%2Flogs%2Frun.googleapis.com%252Fvarlog%252Fsystem%22?project=${var.project_id}"
+  )
 }
 
 # =============================================================================
@@ -40,33 +59,13 @@ resource "google_project_service" "monitoring" {
 }
 
 # =============================================================================
-# SERVICE ACCOUNT FOR UPTIME CHECKS
-# =============================================================================
-# Uptime checks need a service account to authenticate to Cloud Run via OIDC.
-resource "google_service_account" "uptime_checker" {
-  project      = var.project_id
-  account_id   = "uptime-checker-${var.environment}"
-  display_name = "Uptime Check Service Account (${var.environment})"
-  description  = "Service account used by Cloud Monitoring uptime checks to authenticate to Cloud Run"
-}
-
-# Grant the service account permission to invoke the Cloud Run service
-resource "google_cloud_run_v2_service_iam_member" "uptime_checker_invoker" {
-  project  = var.project_id
-  location = var.region
-  name     = var.service_name
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.uptime_checker.email}"
-}
-
-# =============================================================================
 # UPTIME CHECK
 # =============================================================================
-# Calls the /health endpoint every 5 minutes (by default) with OIDC auth.
+# Calls the public /health endpoint every 5 minutes (by default).
 # The check validates that:
 # 1. The server is reachable
 # 2. The health endpoint returns HTTP 200
-# Gated by var.enable_uptime_check — dev runs without it (#2809).
+# Gated by var.enable_uptime_check.
 resource "google_monitoring_uptime_check_config" "health_check" {
   count        = var.enable_uptime_check ? 1 : 0
   project      = var.project_id
@@ -94,7 +93,6 @@ resource "google_monitoring_uptime_check_config" "health_check" {
     }
   }
 
-  # Use OIDC authentication to invoke Cloud Run
   checker_type = "STATIC_IP_CHECKERS"
 
   selected_regions = var.uptime_check_regions
@@ -400,8 +398,8 @@ resource "google_monitoring_alert_policy" "uptime_failure" {
       **Endpoint:** ${var.service_url}${var.health_check_path}
 
       **Troubleshooting:**
-      1. Check Cloud Run logs: https://console.cloud.google.com/run/detail/${var.region}/${var.service_name}/logs?project=${var.project_id}
-      2. Verify the service is running: https://console.cloud.google.com/run/detail/${var.region}/${var.service_name}/revisions?project=${var.project_id}
+      1. Check the server's logs: ${local.logs_query_url}?project=${var.project_id}
+      2. Check recent deploys: ${local.deploy_history}
       3. Check health endpoint directly: curl ${var.service_url}${var.health_check_path}
     EOT
     mime_type = "text/markdown"
@@ -467,7 +465,7 @@ resource "google_monitoring_alert_policy" "health_check_unhealthy" {
 
       **Troubleshooting:**
       1. Check health endpoint for current status: curl ${var.service_url}${var.health_check_path} | jq
-      2. View dependency failure logs: https://console.cloud.google.com/logs/query;query=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22${var.service_name}%22%0AjsonPayload.message%3D%22dependency_health_check_failed%22?project=${var.project_id}
+      2. View dependency failure logs: ${local.logs_query_url}%0AjsonPayload.message%3D%22dependency_health_check_failed%22?project=${var.project_id}
       3. Review the specific backend's status and configuration
     EOT
     mime_type = "text/markdown"
@@ -529,7 +527,7 @@ resource "google_monitoring_alert_policy" "all_errors" {
       **Environment:** ${var.environment}
 
       **Investigate:**
-      1. View recent error logs: https://console.cloud.google.com/logs/query;query=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22${var.service_name}%22%0Aseverity%3E%3DERROR;timeRange=PT1H?project=${var.project_id}
+      1. View recent error logs: ${local.logs_query_url}%0Aseverity%3E%3DERROR;timeRange=PT1H?project=${var.project_id}
       2. Check request_id in logs for full trace
       3. Look for patterns: repeated errors, specific operations, or user actions
     EOT
@@ -587,11 +585,11 @@ resource "google_monitoring_alert_policy" "container_crash" {
       A repeated / re-firing alert here means a **crash loop**, not a one-off.
 
       **Triage:**
-      1. Read the crash and surrounding system logs — note the exit code or OOM line: https://console.cloud.google.com/logs/query;query=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22${var.service_name}%22%0AlogName%3D%22projects%2F${var.project_id}%2Flogs%2Frun.googleapis.com%252Fvarlog%252Fsystem%22?project=${var.project_id}
-      2. "Memory limit of ... exceeded" → memory pressure / OOM; raise the Cloud Run memory limit or fix the leak (see #1478).
+      1. Read the crash and surrounding logs — note the exit code or OOM line: ${local.crash_logs_url}
+      2. "Memory limit of ... exceeded" → memory pressure / OOM; raise the container's memory limit or fix the leak (see #1478).
       3. exit(1) → fatal startup error (the server os.Exit(1)s on failed secret/DB init); check the app error logs around the crash time.
       4. exit(2) → an unrecovered Go panic; find the stack trace in the app logs.
-      5. Revisions / instance history: https://console.cloud.google.com/run/detail/${var.region}/${var.service_name}/revisions?project=${var.project_id}
+      5. Recent deploys: ${local.deploy_history}
     EOT
     mime_type = "text/markdown"
   }
@@ -652,9 +650,9 @@ resource "google_monitoring_alert_policy" "serving_failure" {
       **Environment:** ${var.environment}
 
       **Triage:**
-      1. Find the panic / stack trace or serve error: https://console.cloud.google.com/logs/query;query=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22${var.service_name}%22%0AjsonPayload.message%3D%22panic%20in%20HTTP%20server%20goroutine%22?project=${var.project_id}
+      1. Find the panic / stack trace or serve error: ${local.logs_query_url}%0AjsonPayload.message%3D%22panic%20in%20HTTP%20server%20goroutine%22?project=${var.project_id}
       2. "server failed to bind listener" → port already in use / startup race; the process exits non-zero (also surfaces as Server Process Crash).
-      3. If an instance is wedged (alive but not serving), deploy a new revision to force a clean restart.
+      3. If an instance is wedged (alive but not serving), restart the server to force a clean start.
     EOT
     mime_type = "text/markdown"
   }
@@ -665,237 +663,5 @@ resource "google_monitoring_alert_policy" "serving_failure" {
     notification_rate_limit {
       period = "300s" # platform minimum for log-based policies
     }
-  }
-}
-
-# =============================================================================
-# CLOUD SQL DATABASE MONITORING
-# =============================================================================
-# These alerts monitor the Cloud SQL instance directly using GCP metrics.
-# They're only created if database_instance_id is provided.
-
-locals {
-  enable_database_monitoring = var.database_instance_id != ""
-  connection_threshold       = floor(var.database_max_connections * var.database_connection_threshold_percent / 100)
-}
-
-# Alert when database connections approach the limit
-resource "google_monitoring_alert_policy" "database_connections" {
-  count = local.enable_database_monitoring ? 1 : 0
-
-  project      = var.project_id
-  display_name = "Database Connections High - ${var.database_instance_id}"
-  combiner     = "OR"
-  severity     = "WARNING"
-
-  conditions {
-    display_name = "PostgreSQL connections exceed ${var.database_connection_threshold_percent}% of max"
-
-    condition_threshold {
-      filter          = "metric.type=\"cloudsql.googleapis.com/database/postgresql/num_backends\" AND resource.type=\"cloudsql_database\" AND resource.labels.database_id=\"${var.project_id}:${var.database_instance_id}\""
-      comparison      = "COMPARISON_GT"
-      threshold_value = local.connection_threshold
-      duration        = "60s"
-
-      aggregations {
-        alignment_period   = "60s"
-        per_series_aligner = "ALIGN_MEAN"
-      }
-
-      trigger {
-        count = 1
-      }
-    }
-  }
-
-  notification_channels = local.notification_channel_ids
-
-  documentation {
-    content   = <<-EOT
-      Database connections are high for ${var.database_instance_id}.
-
-      **Instance:** ${var.database_instance_id}
-      **Environment:** ${var.environment}
-      **Threshold:** ${local.connection_threshold} connections (${var.database_connection_threshold_percent}% of ${var.database_max_connections} max)
-
-      **Possible causes:**
-      - Traffic spike causing more concurrent database requests
-      - Connection leak in application code
-      - Long-running queries holding connections
-      - Multiple Cloud Run instances each opening connections
-
-      **Troubleshooting:**
-      1. Check health endpoint for current pool stats: curl ${var.service_url}/health | jq '.dependencies[] | select(.name=="database")'
-      2. View Cloud SQL metrics: https://console.cloud.google.com/sql/instances/${var.database_instance_id}/monitoring?project=${var.project_id}
-      3. Consider adding connection pool limits in the application
-      4. Consider upgrading to a larger Cloud SQL tier if this persists
-    EOT
-    mime_type = "text/markdown"
-  }
-
-  alert_strategy {
-    auto_close = "3600s" # Auto-close after 1 hour
-  }
-}
-
-# Alert when database CPU is high
-resource "google_monitoring_alert_policy" "database_cpu" {
-  count = local.enable_database_monitoring ? 1 : 0
-
-  project      = var.project_id
-  display_name = "Database CPU High - ${var.database_instance_id}"
-  combiner     = "OR"
-  severity     = "WARNING"
-
-  conditions {
-    display_name = "CPU utilization exceeds ${var.database_cpu_threshold_percent}%"
-
-    condition_threshold {
-      filter          = "metric.type=\"cloudsql.googleapis.com/database/cpu/utilization\" AND resource.type=\"cloudsql_database\" AND resource.labels.database_id=\"${var.project_id}:${var.database_instance_id}\""
-      comparison      = "COMPARISON_GT"
-      threshold_value = var.database_cpu_threshold_percent / 100
-      duration        = "300s" # 5 minutes sustained
-
-      aggregations {
-        alignment_period   = "60s"
-        per_series_aligner = "ALIGN_MEAN"
-      }
-
-      trigger {
-        count = 1
-      }
-    }
-  }
-
-  notification_channels = local.notification_channel_ids
-
-  documentation {
-    content   = <<-EOT
-      Database CPU utilization is high for ${var.database_instance_id}.
-
-      **Instance:** ${var.database_instance_id}
-      **Environment:** ${var.environment}
-      **Threshold:** ${var.database_cpu_threshold_percent}% sustained for 5 minutes
-
-      **Possible causes:**
-      - Heavy query load
-      - Inefficient queries (missing indexes, full table scans)
-      - Background maintenance (vacuum, analyze)
-
-      **Troubleshooting:**
-      1. Check Query Insights: https://console.cloud.google.com/sql/instances/${var.database_instance_id}/query-insights?project=${var.project_id}
-      2. Look for slow queries in Cloud SQL logs
-      3. Consider upgrading to a larger Cloud SQL tier
-    EOT
-    mime_type = "text/markdown"
-  }
-
-  alert_strategy {
-    auto_close = "3600s"
-  }
-}
-
-# Alert when database memory is high
-# Uses MQL to calculate total_usage / quota ratio dynamically, rather than
-# the broken utilization metric which always shows 100% on small instances.
-resource "google_monitoring_alert_policy" "database_memory" {
-  count = local.enable_database_monitoring ? 1 : 0
-
-  project      = var.project_id
-  display_name = "Database Memory High - ${var.database_instance_id}"
-  combiner     = "OR"
-  severity     = "WARNING"
-
-  conditions {
-    display_name = "Memory usage exceeds ${var.database_memory_threshold_percent}% of quota"
-
-    condition_prometheus_query_language {
-      query    = "sum(cloudsql_googleapis_com:database_memory_total_usage{database_id=\"${var.project_id}:${var.database_instance_id}\"}) / sum(cloudsql_googleapis_com:database_memory_quota{database_id=\"${var.project_id}:${var.database_instance_id}\"}) > ${var.database_memory_threshold_percent / 100}"
-      duration = "300s"
-    }
-  }
-
-  notification_channels = local.notification_channel_ids
-
-  documentation {
-    content   = <<-EOT
-      Database memory usage is high for ${var.database_instance_id}.
-
-      **Instance:** ${var.database_instance_id}
-      **Environment:** ${var.environment}
-      **Threshold:** ${var.database_memory_threshold_percent}% of memory quota
-
-      **Possible causes:**
-      - Large result sets being cached
-      - Many concurrent connections
-      - Memory-intensive queries
-
-      **Troubleshooting:**
-      1. View memory metrics: https://console.cloud.google.com/sql/instances/${var.database_instance_id}/monitoring?project=${var.project_id}
-      2. Check for queries with large result sets
-      3. Consider upgrading to a larger Cloud SQL tier
-    EOT
-    mime_type = "text/markdown"
-  }
-
-  alert_strategy {
-    auto_close = "3600s"
-  }
-}
-
-# Alert when database disk is filling up
-resource "google_monitoring_alert_policy" "database_disk" {
-  count = local.enable_database_monitoring ? 1 : 0
-
-  project      = var.project_id
-  display_name = "Database Disk High - ${var.database_instance_id}"
-  combiner     = "OR"
-  severity     = "WARNING"
-
-  conditions {
-    display_name = "Disk utilization exceeds ${var.database_disk_threshold_percent}%"
-
-    condition_threshold {
-      filter          = "metric.type=\"cloudsql.googleapis.com/database/disk/utilization\" AND resource.type=\"cloudsql_database\" AND resource.labels.database_id=\"${var.project_id}:${var.database_instance_id}\""
-      comparison      = "COMPARISON_GT"
-      threshold_value = var.database_disk_threshold_percent / 100
-      duration        = "300s"
-
-      aggregations {
-        alignment_period   = "60s"
-        per_series_aligner = "ALIGN_MEAN"
-      }
-
-      trigger {
-        count = 1
-      }
-    }
-  }
-
-  notification_channels = local.notification_channel_ids
-
-  documentation {
-    content   = <<-EOT
-      Database disk utilization is high for ${var.database_instance_id}.
-
-      **Instance:** ${var.database_instance_id}
-      **Environment:** ${var.environment}
-      **Threshold:** ${var.database_disk_threshold_percent}%
-
-      **Action required:**
-      - Cloud SQL has auto-resize enabled, but monitor for unexpected growth
-      - Review data retention policies
-      - Check for bloated tables that need VACUUM
-
-      **Troubleshooting:**
-      1. View disk metrics: https://console.cloud.google.com/sql/instances/${var.database_instance_id}/monitoring?project=${var.project_id}
-      2. Check table sizes in the database
-      3. Run VACUUM ANALYZE on large tables if needed
-    EOT
-    mime_type = "text/markdown"
-  }
-
-  alert_strategy {
-    auto_close = "3600s"
   }
 }

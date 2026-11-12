@@ -1,0 +1,127 @@
+name: Deploy Cloud Functions
+
+# Deploys the ripls-alerts Firebase Cloud Functions codebase to prod on push
+# to main when cloud_functions/ changes. Dev environment is not deployed by default
+# — Phase 4 of #1148+#1149 covers extending to dev.
+#
+# Authentication: Workload Identity Federation. GitHub Actions OIDC token is
+# exchanged for short-lived GCP credentials by impersonating the
+# cloud-functions-deployer@ripls-prod SA. No long-lived JSON keys involved
+# (org policy iam.disableServiceAccountKeyCreation forbids them anyway).
+#
+# WIF coordinates are not secrets — they are identity pointers, not
+# credentials — so they are hardcoded here. The trust relationship is
+# enforced server-side by the attribute-condition on the OIDC provider:
+# assertion.repository_owner=='Type2Fun-Foundation' AND the
+# attribute.repository binding scopes impersonation to this repo only.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloud_functions/**'
+      - '.github/workflows/deploy_cloud_functions.yaml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    # Instance-only (docs/infra/dependency_automation.md).
+    if: vars.INSTANCE_PIPELINES == 'true'
+    runs-on: self-hosted-linux
+    timeout-minutes: 15
+    environment: prod
+    permissions:
+      contents: read
+      id-token: write
+      issues: write  # "Notify on deploy failure" step files/updates a deploy-failure issue
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: cloud_functions/package-lock.json
+
+      - name: Install dependencies
+        working-directory: cloud_functions
+        run: npm ci
+
+      - name: TypeScript build
+        working-directory: cloud_functions
+        run: npm run build
+
+      - name: Vitest
+        working-directory: cloud_functions
+        run: npm test
+
+      - name: Authenticate to GCP via Workload Identity Federation
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: 'projects/507242812633/locations/global/workloadIdentityPools/github-actions/providers/github'
+          service_account: 'cloud-functions-deployer@ripls-prod.iam.gserviceaccount.com'
+
+      # Firebase CLI (firebase-tools@15) is baked into the self-hosted runner
+      # image (runners/Dockerfile) at /usr/bin/firebase — on PATH even after
+      # the setup-node step above, so no runtime `npm install -g` is needed.
+      # @15 (>=15.22.3) is required on Node 24: older node-fetch-based releases
+      # trip the Node 24.17.0 STS `Premature close` bug (firebase/firebase-tools#10726).
+
+      - name: Deploy functions to prod
+        working-directory: cloud_functions
+        # The auth action exports GOOGLE_APPLICATION_CREDENTIALS pointing at
+        # a short-lived federated token. Both gcloud and the firebase CLI
+        # honor this for non-interactive auth.
+        #
+        # --force: firebase-tools 15 sets up an Artifact Registry cleanup policy
+        # after deploying; in --non-interactive mode without --force it can't
+        # prompt and exits non-zero even though the functions deployed fine.
+        # --force auto-applies a sensible cleanup policy (also stops build-image
+        # accumulation costs) and is the correct posture for a CI deploy scoped
+        # to the ripls-alerts codebase via --only.
+        run: firebase deploy --only functions:ripls-alerts --project prod --non-interactive --force
+
+      # This workflow runs on push to main, i.e. AFTER a PR merges. Renovate
+      # auto-merges its dep PRs, so the post-merge push (and GitHub's
+      # actor-scoped failure email) is attributed to the bot, reaching no human
+      # — which is how a multi-week prod-deploy outage went unnoticed. File or
+      # append to a single deduped issue (label: deploy-failure) so a human is
+      # alerted regardless of which actor triggered the run.
+      - name: Notify on deploy failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
+          # The human this deployment routes bot PRs to; empty means no cc.
+          CC: ${{ vars.DEFAULT_RENOVATE_REVIEWER && format('cc @{0}', vars.DEFAULT_RENOVATE_REVIEWER) || '' }}
+        run: |
+          set -euo pipefail
+          LABEL="deploy-failure"
+          TITLE="🚨 Prod Cloud Functions deploy is failing"
+          # Ensure the dedup label exists (idempotent; --force won't error if present).
+          gh label create "$LABEL" --color B60205 \
+            --description "Prod Cloud Functions deploy pipeline failure" --force >/dev/null 2>&1 || true
+          BODY=$(printf '%s\n' \
+            "The \`Deploy Cloud Functions\` workflow failed on push to \`main\`." \
+            "" \
+            "- Run: ${RUN_URL}" \
+            "- Commit: \`${COMMIT_SHA}\`" \
+            "" \
+            "The prod \`ripls-alerts\` Cloud Functions are **not being updated** until this is fixed." \
+            "" \
+            "${CC}")
+          EXISTING=$(gh issue list --state open --label "$LABEL" --limit 1 --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+            echo "Appended to existing deploy-failure issue #$EXISTING"
+          else
+            gh issue create --title "$TITLE" --label "$LABEL" --body "$BODY"
+            echo "Opened a new deploy-failure issue"
+          fi

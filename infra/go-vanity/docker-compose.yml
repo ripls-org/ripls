@@ -1,0 +1,12 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: ripls_go_vanity
+    # 18791 is the staging-website container; 18792 is the next one free.
+    # Confirm with `docker ps` on mimir before first bring-up.
+    ports:
+      - "18792:80"
+    volumes:
+      - /mnt/user/media/sites/ripls_go_vanity/content:/srv/content:ro
+      - /mnt/user/media/sites/ripls_go_vanity/config:/etc/nginx/conf.d:ro
+    restart: always

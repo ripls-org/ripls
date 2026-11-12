@@ -8,7 +8,7 @@ import 'package:mockito/mockito.dart';
 import 'package:ripls/data/gen/ripls/api/location.pb.dart' show Location;
 import 'package:ripls/data/repositories/location_repository.dart';
 import 'package:ripls/presentation/viewmodels/location_picker_view_model.dart';
-import 'package:ripls/services/mapbox_location_service.dart';
+import 'package:ripls/services/location_search_service.dart';
 import 'package:ripls/services/providers.dart';
 
 import 'location_picker_view_model_test.mocks.dart';

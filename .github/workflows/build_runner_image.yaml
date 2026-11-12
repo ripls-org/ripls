@@ -1,0 +1,51 @@
+name: Build Runner Image
+
+# Rebuilds the self-hosted-linux runner image when its toolchain changes, with
+# NO container registry and NO host credential. The job runs on a self-hosted
+# runner, whose containers mount the host Docker socket, so `docker build` here
+# builds straight into mimir's local daemon — exactly where the runners run.
+# Tool versions come from versions.env via build-args (see #2287).
+#
+# This job only BUILDS + tags ripls-runner:latest. It does NOT recreate the
+# fleet (that would kill its own job): the host's scheduled recreate_runners.sh
+# does `docker compose up -d` to roll the runners onto the new image.
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "versions.env"
+      - "runners/Dockerfile"
+      - "runners/clean-entrypoint.sh"
+      - "scripts/build_runner_image.sh"
+      - ".github/workflows/build_runner_image.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Only the repo that owns the runner fleet builds its image (see
+    # docs/infra/dependency_automation.md, "Instance-only workflows").
+    if: vars.INSTANCE_PIPELINES == 'true'
+    runs-on: self-hosted-linux
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Build runner image into the host daemon
+        # Builds via the mounted /var/run/docker.sock, so ripls-runner:latest
+        # lands in mimir's local image store. No push, no registry. The shared
+        # script derives every build-arg from versions.env + the Dockerfile's
+        # ARGs, so this builder can't drift from the candidate builder (#2883).
+        run: bash scripts/build_runner_image.sh ripls-runner:latest

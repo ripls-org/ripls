@@ -43,7 +43,7 @@ bundle — it just `COPY server ./server`s the staged
 This is why the bundle build step lives in the workflow, not the
 `Dockerfile`: it lets us reuse the self-hosted runner's pre-installed
 Flutter SDK + pub cache, and lets `scripts/fetch_secret.sh` pull the
-matching Mapbox token and Firebase web API key from Secret Manager
+matching Google Maps keys and Firebase web API key from Secret Manager
 under the deploy SA's existing credentials. The image stays
 cloud-agnostic.
 
@@ -51,12 +51,14 @@ cloud-agnostic.
 
 Three variants mirror the mobile build scripts. Each passes the
 matching `env.{env}.json` via `--dart-define-from-file` and fetches
-the matching Mapbox token from Secret Manager. Local + dev builds
+the matching Google Maps keys (`google-maps-api-key-web`,
+`google-maps-api-key-client-places`) and `firebase-web-api-key`
+from Secret Manager. Local + dev builds
 use `--profile` (keeps Dart symbol names in stack traces for
 debuggability); prod uses `--release` (full obfuscation +
 optimization).
 
-| Script | env file | Mapbox secret project | Build mode | Use when |
+| Script | env file | Secret project | Build mode | Use when |
 |---|---|---|---|---|
 | `npm run build:web:local` (= default `build:web`) | `env.local.json` | dev project | `--profile` | Building against a local server on `localhost:8080` |
 | `npm run build:web:dev` | `env.dev.json` | dev project | `--profile` | Deploying to dev |
@@ -335,8 +337,7 @@ multithreaded one only when the page is cross-origin-isolated. We
 deliberately send **no** `COOP`/`COEP` headers, so it uses the
 single-threaded renderer — which works fully. Enabling
 cross-origin isolation (`COEP: require-corp`) would break every
-cross-origin subresource that doesn't send CORP/CORS headers — Mapbox
-tiles, Firebase, the media CDN, Google Maps — so the multithreaded
+cross-origin subresource that doesn't send CORP/CORS headers — Firebase, the media CDN, Google Maps — so the multithreaded
 renderer is a separate, deliberately-deferred optimization (tracked in
 #2671).
 
@@ -427,8 +428,8 @@ The project-identifying fields (`authDomain`, `projectId`,
 `firebase_options_web.dart`. The `apiKey` is **sourced from GCP
 Secret Manager** (`firebase-web-api-key` in the matching project)
 and injected at build time via `--dart-define=FIREBASE_WEB_API_KEY=…`,
-matching how Mapbox tokens flow through the build:app:* / build:web:*
-scripts. This keeps the rotation story consistent: rotate the secret
+matching how the Google Maps keys flow through the build:app:* /
+build:web:* scripts. This keeps the rotation story consistent: rotate the secret
 in Secret Manager, rebuild, no source change.
 
 **One-time setup per Firebase project**:
@@ -448,9 +449,9 @@ echo -n 'AIza…' | gcloud secrets versions add firebase-web-api-key \
 # above against the prod project, with the prod apiKey.
 ```
 
-The Mapbox token's `fetch_secret.sh ripls-{env} mapbox-access-token`
-plumbing in package.json gives the model for what the build scripts
-do here — same pattern, different secret name.
+The `build:web:*` scripts in package.json fetch it with
+`scripts/fetch_secret.sh {dev,prod} firebase-web-api-key` — the same
+pattern they use for the Google Maps keys.
 
 ## Firebase App Check
 
@@ -474,9 +475,11 @@ builds. For dev:
 ```bash
 flutter build web --wasm --release \
   --dart-define-from-file=env.dev.json \
-  --dart-define=MAPBOX_ACCESS_TOKEN=$(scripts/fetch_secret.sh "$DEV_PROJECT" mapbox-access-token)
+  --dart-define=GOOGLE_MAPS_API_KEY=$(scripts/fetch_secret.sh dev google-maps-api-key-web) \
+  --dart-define=GOOGLE_MAPS_PLACES_KEY=$(scripts/fetch_secret.sh dev google-maps-api-key-client-places) \
+  --dart-define=FIREBASE_WEB_API_KEY=$(scripts/fetch_secret.sh dev firebase-web-api-key)
 ```
 
 The `build:web:*` npm scripts wire these in — each fetches the matching
-Mapbox / Firebase / Maps secrets from Secret Manager and passes them as
+Firebase / Maps secrets from Secret Manager and passes them as
 `--dart-define`s (see the "Variants by target environment" table above).

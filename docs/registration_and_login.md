@@ -414,7 +414,7 @@ Firebase Phone Auth uses different verification mechanisms per platform. The cli
 
 Phone auth uses the same two Firebase projects (dev and prod) that are already configured for FCM push notifications, analytics, and crashlytics — no separate project. `scripts/gcp_project.sh` resolves either name to its id.
 
-**Shared Firebase app initialization:** The server initializes a single `firebase.App` instance (`server/firebase/app.go`) that is shared between FCM notifications and phone auth token validation. Both use the Cloud Run service account's Application Default Credentials. Firebase auth initialization is fatal — the server refuses to start if Firebase is unavailable (no silent degradation).
+**Shared Firebase app initialization:** The server initializes a single `firebase.App` instance (`server/firebase/app.go`) that is shared between FCM notifications and phone auth token validation. Both use the server service account's Application Default Credentials (in deployment, the key named by `GOOGLE_APPLICATION_CREDENTIALS`). Firebase auth initialization is fatal — the server refuses to start if Firebase is unavailable (no silent degradation).
 
 **Play Integrity API:** Enabled via Terraform (`google_project_service.playintegrity`) in both dev and prod GCP projects. Required for invisible phone verification on Android release builds. Without it, Android falls back to reCAPTCHA.
 

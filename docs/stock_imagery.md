@@ -122,11 +122,9 @@ To speed up testing and avoid using API quota, the dummy provider returns a real
 - `--pixabay-api-key`: Pixabay API key for fallback video provider (optional, independent quota)
 - At least one provider key is required for stock imagery to be enabled
 
-**Environment variables (Docker/Cloud Run):**
-
-- `PEXELS_API_KEY` → `--pexels-api-key`
-- `PIXABAY_API_KEY` → `--pixabay-api-key`
-- `UNSPLASH_ACCESS_KEY` → `--unsplash-access-key`
+**In the container:** `server/entrypoint.sh` fetches the `pexels-api-key`,
+`pixabay-api-key` and `unsplash-access-key` secrets at startup and passes each
+as the matching `--<name>-file` flag (see [`secrets.md`](secrets.md)).
 
 **Image provider order:**
 

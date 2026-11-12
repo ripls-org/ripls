@@ -1,0 +1,84 @@
+name: Cloud Functions Tests
+
+# CI for the ripls-alerts Firebase Cloud Functions codebase under
+# cloud_functions/. Runs on every PR and on push to main when
+# cloud_functions/ changes. Three steps: install (npm ci), tsc strict
+# build, vitest. No deploy — that lives in deploy_cloud_functions.yaml
+# and only runs on push to main.
+#
+# Runner label comes from vars.CI_RUNNER_LINUX like every other workflow here.
+# Node pinned to 20 to match the function runtime so behavior in CI matches
+# what runs in production.
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloud_functions/**'
+      - '.github/workflows/test_cloud_functions.yaml'
+  # No path filter on PRs: this is a required check, so it must report on every
+  # PR. The `changes` job gates the real work — a PR that doesn't touch
+  # cloud_functions skips the `test` job, which reports success and satisfies the
+  # required check (the GitHub-recommended pattern; #2287).
+  pull_request:
+    branches: [main]
+
+jobs:
+  changes:
+    name: Detect cloud_functions changes
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'cloud_functions/**'
+              - '.github/workflows/test_cloud_functions.yaml'
+
+  test:
+    name: Cloud Functions Tests
+    needs: [changes]
+    # Push/dispatch: always run. PR: run only when cloud_functions changed;
+    # otherwise the job skips and reports success, satisfying the required check.
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.relevant == 'true') }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: cloud_functions/package-lock.json
+
+      - name: Install dependencies
+        working-directory: cloud_functions
+        run: npm ci
+
+      - name: TypeScript build
+        working-directory: cloud_functions
+        run: npm run build
+
+      - name: Vitest
+        working-directory: cloud_functions
+        run: npm test

@@ -1,13 +1,13 @@
 //go:build benchmark
 
 // Real end-to-end benchmark measuring GenExperience wall-clock (AI call +
-// post-AI Mapbox geocoding + stock-media fetch) against live external
+// post-AI Google Maps geocoding + stock-media fetch) against live external
 // providers. Three test variants — one per AI provider — share an
 // identical body so numbers are directly comparable across providers.
 // Gated by the `benchmark` build tag so it never runs in CI or default
 // test suites — invoke explicitly.
 //
-// IMPORTANT: use the PROD Mapbox and Pexels keys so the measurement
+// IMPORTANT: use the PROD Google Maps and Pexels keys so the measurement
 // reflects real end-user quota / cache behavior. The AI provider keys can
 // stay on the dev project (just metered LLM usage).
 //
@@ -18,7 +18,7 @@
 //	export OPENAI_API_KEY="$(gcloud secrets versions access latest --secret=openai-api-key --project=$DEV)"
 //	export VERTEX_AI_PROJECT="$DEV"
 //	export VERTEX_AI_LOCATION="us-central1"
-//	export MAPBOX_ACCESS_TOKEN="$(gcloud secrets versions access latest --secret=mapbox-access-token --project=$PROD)"
+//	export GOOGLE_MAPS_API_KEY="$(gcloud secrets versions access latest --secret=google-maps-api-key-server --project=$PROD)"
 //	export PEXELS_API_KEY="$(gcloud secrets versions access latest --secret=pexels-api-key --project=$PROD)"
 //
 //	go test -tags=benchmark -v -count=1 -timeout 5m -run TestGenExperienceRealFanoutBenchmark ./server/services/experience/
@@ -120,10 +120,10 @@ func TestGenExperienceRealFanoutBenchmark_Gemini(t *testing.T) {
 func runFanoutBenchmark(t *testing.T, label string, provider ai.Provider) {
 	t.Helper()
 
-	mapboxKey := os.Getenv("MAPBOX_ACCESS_TOKEN")
+	mapsKey := os.Getenv("GOOGLE_MAPS_API_KEY")
 	pexelsKey := os.Getenv("PEXELS_API_KEY")
-	if mapboxKey == "" || pexelsKey == "" {
-		t.Skip("Requires MAPBOX_ACCESS_TOKEN and PEXELS_API_KEY")
+	if mapsKey == "" || pexelsKey == "" {
+		t.Skip("Requires GOOGLE_MAPS_API_KEY and PEXELS_API_KEY")
 	}
 
 	testStorage := setupTestStorage(t)
@@ -132,7 +132,7 @@ func runFanoutBenchmark(t *testing.T, label string, provider ai.Provider) {
 	bus := cebus.NewInProcessBus(testStorage, topic)
 	service := New(testStorage, testBucket, notifications.NewMockService(), bus)
 	service.SetAIProvider(provider)
-	service.SetLocationProvider(location.NewMapboxClient(mapboxKey))
+	service.SetLocationProvider(location.NewGoogleMapsClient(mapsKey))
 	pexelsClient := media.NewPexelsClient(pexelsKey)
 	pexelsProvider := media.NewPexelsProvider(pexelsClient, testStorage, testBucket)
 	service.SetStockImageryProvider(pexelsProvider)
@@ -142,12 +142,12 @@ func runFanoutBenchmark(t *testing.T, label string, provider ai.Provider) {
 	authCtx := createAuthenticatedContext("benchuser", "bench@test.com", models.Role_ROLE_USER)
 
 	// Prompt chosen to trigger both fan-out branches: non-USER_PRIMARY_LOCATION
-	// location (Mapbox hits) + search_keywords (stock-media hits).
+	// location (geocoding hits) + search_keywords (stock-media hits).
 	prompt := "hiking tomorrow morning at Chautauqua"
 	req := connect.NewRequest(&api.GenExperienceRequest{
 		Prompt:             &api.GenExperienceRequest_Text{Text: prompt},
 		CurrentTimeUnixSec: time.Date(2026, 4, 21, 9, 0, 0, 0, time.UTC).Unix(),
-		LatitudeDeg:        40.015, // Boulder, CO — biases Mapbox to local results
+		LatitudeDeg:        40.015, // Boulder, CO — biases geocoding to local results
 		LongitudeDeg:       -105.27,
 	})
 
@@ -175,7 +175,7 @@ func runFanoutBenchmark(t *testing.T, label string, provider ai.Provider) {
 		// comparable across runs. If either dropped, the median below would
 		// reflect serial + one branch, not serial + both.
 		if !hasGeo {
-			t.Errorf("[%s] sample %d: expected Mapbox geocoding to succeed", label, i+1)
+			t.Errorf("[%s] sample %d: expected geocoding to succeed", label, i+1)
 		}
 		if mediaCount == 0 {
 			t.Errorf("[%s] sample %d: expected stock-media fetch to produce at least one media_id", label, i+1)

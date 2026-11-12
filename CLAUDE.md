@@ -38,7 +38,7 @@ the client is written with Flutter / Dart.
 - `server/ai/`: AI provider integrations (Gemini, Vertex AI)
 - `server/auth/`: Authentication library (JWT, OIDC)
 - `server/email/`: Email service (Mailgun integration)
-- `server/location/`: Location services (Mapbox, EXIF parsing)
+- `server/location/`: Location services (Google Maps geocoding)
 - `server/notifications/`: Push notification providers (FCM, noop)
 - `server/services/`: RPC service implementations
   - `community/`: Community management

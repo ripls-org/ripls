@@ -6,7 +6,7 @@ context:
   globs: [server/entrypoint.sh, server/cmd/fetch-secrets/**, docker-compose.yaml, scripts/fetch_secret.sh, scripts/run_server_with_sm_secrets.sh, .gitleaks.toml, .gitleaksignore, .github/workflows/gitleaks-pr.yaml, .github/workflows/gitleaks-push.yaml]
   triggers: [secrets, api-keys, secret-manager, gitleaks, credentials, tokens, dart-define]
   lens: [infra, security]
-  skills: [issue, audit, triage]
+  skills: [issue, audit]
   domain: infra
 freshness:
   verified_commit: "402d4d9ff"
@@ -58,8 +58,8 @@ generic; pointing them at a different deployment is a matter of environment,
 not code.
 
 The database password may instead arrive as the `DB_PASSWORD` environment
-variable — Cloud Run mounts it through its native `value_source.secret_key_ref`,
-and a compose `env_file` works the same way. The entrypoint writes it to a file
+variable — a compose `env_file` sets it, as would a managed platform's secret
+reference (Cloud Run's `value_source.secret_key_ref`, for one). The entrypoint writes it to a file
 like any other credential and removes it from the environment it hands the
 server.
 

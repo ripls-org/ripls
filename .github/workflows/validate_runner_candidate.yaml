@@ -1,0 +1,183 @@
+name: Validate Runner Candidate
+
+# Pre-merge validation for "needs runner rebuild" Renovate PRs (baked-tool
+# bumps in versions.env / runners/Dockerfile). A baked-tool bump changes the
+# runner image, but the PR's own CI runs on the OLD image — so green CI does NOT
+# prove the NEW toolchain works (#2395). This workflow builds a candidate image
+# from the PR's versions.env and runs the toolchain-sensitive checks inside it,
+# so a Flutter/JDK/NDK/Node bump that breaks the build fails BEFORE merge.
+#
+# Reported as the required check "Validate Runner Candidate" so native
+# auto-merge waits for it (auto-merge only waits on REQUIRED checks — see
+# docs/infra/dependency_automation.md §4) and a human can't merge an unvalidated bump.
+# Required-check job-gating (skip -> success) keeps it green on PRs that don't
+# touch the runner image. See docs/infra/dependency_automation.md §3.
+#
+# Security (#2395 audit finding A): the validate job BUILDS and `docker run`s a
+# PR-controlled image on a self-hosted runner that mounts the host Docker
+# socket — i.e. it executes PR content on mimir. It is therefore gated to
+# Renovate-bot authors. A fork/human PR that touches versions.env skips the
+# heavy job (-> success) and relies on human review; it never auto-merges
+# (renovate_auto_approve.yaml gates on the bot author too).
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  # No path filter on PRs: this is a required check, so it must report on every
+  # PR. The `changes` job gates the real work — a PR that doesn't touch the
+  # runner image skips the `validate` job, which reports success and satisfies
+  # the required check (the path-scoped required-check pattern; #2287).
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detect runner-image changes
+    # Only the repo that owns the runner fleet validates candidates (see
+    # docs/infra/dependency_automation.md, "Instance-only workflows"). Skipping
+    # here skips the jobs below too.
+    if: github.event_name == 'pull_request' && vars.INSTANCE_PIPELINES == 'true'
+    runs-on: self-hosted-linux
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'versions.env'
+              - 'runners/Dockerfile'
+              - 'runners/clean-entrypoint.sh'
+              - 'scripts/build_runner_image.sh'
+              - 'scripts/runner_candidate_checks.sh'
+              - '.github/workflows/validate_runner_candidate.yaml'
+
+  validate:
+    name: Validate Runner Candidate
+    needs: [changes]
+    # Run only when the runner image changed AND the PR is Renovate-authored
+    # (security gate above). Otherwise the job skips and reports success,
+    # satisfying the required check. workflow_dispatch always runs (manual test
+    # of the checked-out ref).
+    if: >-
+      ${{ always() && vars.INSTANCE_PIPELINES == 'true' && (
+        github.event_name != 'pull_request' ||
+        (needs.changes.outputs.relevant == 'true' &&
+         (github.event.pull_request.user.login == 'renovate[bot]' ||
+          github.event.pull_request.user.login == 'ripls-renovate[bot]'))
+      ) }}
+    runs-on: self-hosted-linux
+    timeout-minutes: 60
+    env:
+      CANDIDATE_TAG: ripls-runner:pr-${{ github.event.pull_request.number || github.run_id }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      - name: Build candidate runner image from the PR's versions.env
+        # Builds via the mounted host socket into mimir's daemon, tagged per-PR
+        # so concurrent toolchain PRs don't collide. A failed build must fail the
+        # check — no `|| true` (#2395 audit finding C). The shared script feeds
+        # every Dockerfile ARG from the PR's versions.env, so this build can't
+        # miss a tool the production build bakes (#2883).
+        run: bash scripts/build_runner_image.sh "$CANDIDATE_TAG"
+
+      - name: Run candidate-image checks (Flutter test, Android build, Go compile)
+        # Exercise the NEW toolchain exactly as a production runner does: run the
+        # shared checks inside the freshly-built candidate image against this
+        # job's checkout. `--volumes-from "$(hostname)"` inherits this runner's
+        # mounts — workspace, shared caches, and the host docker.sock — at their
+        # in-container paths, so $PWD is valid and nested Android/Docker work
+        # behaves like the real fleet. (A plain `-v "$PWD":...` would fail: the
+        # host daemon resolves the source against the HOST filesystem, not this
+        # container's, so the runner's in-container workspace path doesn't exist
+        # there.) The candidate's baked SDKs at /opt/* and /usr/local/go are not
+        # shadowed by those mounts, so the NEW toolchain is what runs.
+        run: |
+          docker run --rm \
+            --volumes-from "$(hostname)" \
+            -w "$PWD" \
+            "$CANDIDATE_TAG" \
+            bash scripts/runner_candidate_checks.sh
+
+      - name: Remove the candidate image
+        # Always prune, even on a failed check — but in its own step so cleanup
+        # can't mask a non-zero check exit (#2395 audit finding C). Targeted
+        # removal only (no broad `docker image prune`): mimir's daemon is shared
+        # with other stacks.
+        if: always()
+        run: docker image rm -f "$CANDIDATE_TAG" 2>/dev/null || true
+
+  # The `validate` job's Renovate-author gate is a real security control — it
+  # builds and runs an image from the PR's own Dockerfile on mimir's daemon, so
+  # an arbitrary PR must not reach it. But the gate is expressed as a skip, and a
+  # skipped job reports SUCCESS to satisfy the required check. The result is a
+  # required check that goes green on a human-authored toolchain PR having
+  # validated nothing, which is indistinguishable from having validated it.
+  #
+  # Not hypothetical: PR #3010 raised ONNX Runtime in versions.env, this check
+  # reported success without building anything, and the real constraint (Go Tests
+  # runs on the CURRENT fleet, which still had the old runtime) only surfaced
+  # when the coupled binding bump was attempted in the same PR.
+  #
+  # So: keep the gate, remove the silence. This job never blocks — it exists to
+  # make the non-validation legible in the checks list and in the PR itself.
+  unvalidated-notice:
+    name: Runner image change NOT validated (human PR)
+    needs: [changes]
+    if: >-
+      ${{ github.event_name == 'pull_request' &&
+          needs.changes.outputs.relevant == 'true' &&
+          github.event.pull_request.user.login != 'renovate[bot]' &&
+          github.event.pull_request.user.login != 'ripls-renovate[bot]' }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Warn that no candidate image was built
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          echo "::warning::This PR changes the runner image (versions.env / runners/**) but 'Validate Runner Candidate' only runs on Renovate-authored PRs. No candidate image was built — its green tick does NOT mean the new toolchain works."
+
+          MARKER='<!-- runner-candidate-unvalidated -->'
+          # One comment per PR, not per push: the point is to be noticed once.
+          existing=$(gh pr view "$PR" --json comments \
+            --jq "[.comments[] | select(.body | contains(\"$MARKER\"))] | length")
+          if [ "$existing" -ne 0 ]; then
+            echo "notice already posted on #$PR"
+            exit 0
+          fi
+
+          cat > /tmp/notice.md <<'EOF'
+          <!-- runner-candidate-unvalidated -->
+          **Heads up: the runner image was not validated for this PR.**
+
+          `Validate Runner Candidate` only builds a candidate image for Renovate-authored PRs — it runs the PR's own Dockerfile on mimir, so it is deliberately not open to arbitrary PRs. On a human PR it skips and reports success, so its green tick here means *not checked*, not *checked and fine*.
+
+          If this PR changes a baked tool, remember that **`Go Tests` runs on the current runner fleet**, which only picks up a new `versions.env` toolchain after merge (`build_runner_image` rebuilds the image, then `recreate_runners` rolls the fleet). A change that raises what the code requires above what the running image provides fails CI however correct it is.
+
+          Land it in two steps: raise the runtime/tool first and confirm it is green on the *old* fleet too, let the fleet roll, then raise whatever depends on it. `docs/infra/dependency_automation.md` → ONNX Runtime has a worked example.
+          EOF
+          sed -i 's/^          //' /tmp/notice.md
+          gh pr comment "$PR" --body-file /tmp/notice.md

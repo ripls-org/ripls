@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>go.ripls.org/ripls</title>
+
+    <!--
+      The two tags below are the entire point of this site.
+
+      go-import tells the Go toolchain where the code for this module actually
+      lives. `go get go.ripls.org/ripls/...` fetches this page with ?go-get=1,
+      reads the tag, and clones from the URL in it. The module path therefore
+      names the PROJECT, not the forge — moving to a different host is an edit
+      to one line here, and not a single import statement changes.
+
+      go-source gives pkg.go.dev working "view source" links.
+
+      Keep the first field byte-identical to the `module` line in go.mod. They
+      are checked against each other by `npm run lint:go-vanity`.
+    -->
+    <meta name="go-import" content="go.ripls.org/ripls git https://github.com/ripls-org/ripls">
+    <meta
+      name="go-source"
+      content="go.ripls.org/ripls https://github.com/ripls-org/ripls https://github.com/ripls-org/ripls/tree/main{/dir} https://github.com/ripls-org/ripls/blob/main{/dir}/{file}#L{line}">
+
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+        margin: 0; padding: 3rem 1.5rem;
+        display: flex; justify-content: center;
+      }
+      main { max-width: 34rem; }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.9em;
+      }
+      pre {
+        padding: 0.75rem 1rem; border-radius: 6px;
+        overflow-x: auto;
+        background: rgba(127, 127, 127, 0.14);
+      }
+      h1 { font-size: 1.35rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1><code>go.ripls.org/ripls</code></h1>
+
+      <p>
+        The Go module path for Ripls. It exists so the import path names the
+        project rather than whichever host the source happens to sit on today.
+      </p>
+
+      <pre><code>go get go.ripls.org/ripls</code></pre>
+
+      <p>
+        Source:
+        <a href="https://github.com/ripls-org/ripls">github.com/ripls-org/ripls</a>
+        &middot;
+        Docs:
+        <a href="https://pkg.go.dev/go.ripls.org/ripls">pkg.go.dev</a>
+      </p>
+    </main>
+  </body>
+</html>

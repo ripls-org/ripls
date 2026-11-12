@@ -80,7 +80,7 @@ jobs:
               - '.github/workflows/test_web_e2e.yaml'
 
   # Unlike Go Tests, this suite cannot degrade: build:web:local fetches the
-  # Firebase web API key and the Mapbox token from Secret Manager, so without
+  # Firebase web API key and the Google Maps keys from Secret Manager, so without
   # credentials there is no web bundle to test. Skip the job rather than spend
   # 35 minutes arriving at that conclusion — which is also the position every
   # fork PR is in, since GitHub never passes secrets to one.
@@ -103,7 +103,7 @@ jobs:
             echo "gcp=true" >> "$GITHUB_OUTPUT"
           else
             echo "gcp=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=Web E2E skipped::GCP_SERVICE_ACCOUNT_KEY_DEV is unset, so the web bundle's Firebase and Mapbox keys cannot be fetched."
+            echo "::warning title=Web E2E skipped::GCP_SERVICE_ACCOUNT_KEY_DEV is unset, so the web bundle's Firebase and Google Maps keys cannot be fetched."
           fi
 
   e2e:
@@ -151,7 +151,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         # Same dev service-account the smoke workflow uses; needed for
-        # build:web:local's Firebase web API key + Mapbox token fetches.
+        # build:web:local's Firebase web API key + Google Maps key fetches.
         uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
@@ -209,7 +209,7 @@ jobs:
         # out the 2-context multi-client spec. The bundle is embedded into the
         # server binary via //go:embed at build time, so the server MUST be
         # (re)built after this — see the next step.
-        # build:web:e2e fetches the Mapbox token via scripts/fetch_secret.sh,
+        # build:web:e2e fetches its keys via scripts/fetch_secret.sh,
         # which now names the environment and resolves the project id through
         # scripts/gcp_project.sh (#2953). OSS-7 (#2959) converts this literal
         # to vars.GCP_PROJECT_DEV along with the rest of the workflow's project

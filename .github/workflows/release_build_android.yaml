@@ -1,0 +1,103 @@
+name: Android Release Build
+
+# Supersede in-progress runs on the same ref (rapid pushes / reruns) so they
+# don't stack on the shared self-hosted runners. See #2264.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "proto/**"
+      - ".github/workflows/release_build_android.yaml"
+  # No path filter on PRs: this is a required check, so it must report on every
+  # PR. The `changes` job gates the real work — a PR that doesn't touch app paths
+  # skips the build job, which reports success and satisfies the required check
+  # (the GitHub-recommended pattern for path-scoped required checks; #2287).
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# This job runs on self-hosted-linux and builds against the runner image's
+# baked Flutter (sourced from versions.env at image-build time), so it does not
+# pin or install Flutter itself — there is no FLUTTER_VERSION env here.
+env:
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+jobs:
+  changes:
+    name: Detect app changes
+    # Instance-only (docs/infra/dependency_automation.md).
+    if: github.event_name == 'pull_request' && vars.INSTANCE_PIPELINES == 'true'
+    runs-on: self-hosted-linux
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'app/**'
+              - 'proto/**'
+              - '.github/workflows/release_build_android.yaml'
+
+  release-build:
+    needs: [changes]
+    # Push/dispatch: always run. PR: run only when app paths changed; otherwise
+    # the job skips and reports success, satisfying the required check.
+    if: ${{ always() && vars.INSTANCE_PIPELINES == 'true' && (github.event_name != 'pull_request' || needs.changes.outputs.relevant == 'true') }}
+    # Pinned to the 2-runner `android-builder` pool (runners 9 + 10) so at most
+    # two Android builds run at once — each Gradle daemon uses ~8-11GiB, and >2
+    # concurrent pressures mimir RAM. Extra builds QUEUE for a free pool runner
+    # (GitHub waits for a matching runner; nothing is cancelled).
+    runs-on: [self-hosted-linux, android-builder]
+    # 35, not 20: a warm build finishes in ~8-9 min, but the runner image does
+    # NOT bake Gradle (only Flutter/JDK/NDK are) and the wrapper distribution is
+    # cached only per-runner under ~/.gradle/wrapper/dists. The first build after
+    # a Gradle bump therefore cold-starts on a runner — it downloads
+    # gradle-<ver>-all.zip (~200MB) and re-runs every version-keyed artifact
+    # transform — which pushed past the old 20-min limit (#2532). The prod
+    # release Android build (release_app.yaml) already allows 45 min; 35 gives a
+    # cold Gradle-bump build headroom while still catching a genuine hang.
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      # Intentionally no actions/setup-java here: this CI gate must exercise the
+      # same pre-installed JDK the prod release (release_app.yaml) relies on.
+      # Pulling a fresh JDK via setup-java would mask a broken image JDK and let
+      # it reach a release, since the release job has no setup-java fallback.
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate code from protos
+        run: npm run generate:proto
+
+      - name: Install Flutter dependencies
+        run: cd app && flutter pub get
+
+      - name: Generate freezed and mockito code
+        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Create local environment config
+        run: |
+          echo '{"ENVIRONMENT":"local","LOG_LEVEL":"INFO","ENABLE_NOTIFICATIONS":"true","GOOGLE_CLIENT_ID":"937892531321-shvr2m51jmdbqqjaml4f5ueic3esmbr3.apps.googleusercontent.com","CACHE_TTL_MINUTES":"5"}' > app/env.local.json
+
+      - name: Verify release build (R8/ProGuard)
+        run: |
+          cd app
+          flutter build apk --release --dart-define-from-file=env.local.json
+          echo "Release build with R8 succeeded"

@@ -111,15 +111,15 @@ message SaveLocationRequest {
     string name = 7;
 
     // Neighborhood name (e.g., "Capitol Hill", "SoHo").
-    // Optional - extracted from Mapbox context.
+    // Optional - from the geocoder's address hierarchy.
     string neighborhood = 8;
 
     // County or equivalent administrative division (e.g., "Boulder County").
-    // Optional - extracted from Mapbox context.
+    // Optional - from the geocoder's address hierarchy.
     string county = 9;
 
     // State/province/administrative area (e.g., "Colorado", "California").
-    // Optional - extracted from Mapbox context.
+    // Optional - from the geocoder's address hierarchy.
     string administrative_area = 10;
 
     // Provider-specific opaque identifier for this place (used for
@@ -129,7 +129,7 @@ message SaveLocationRequest {
     // Optional - if not provided, falls back to coordinate proximity matching.
     string external_place_id = 11;
 
-    // The provider that issued external_place_id (e.g., "mapbox", "google").
+    // Opaque tag for the provider that issued external_place_id.
     // Empty means no external identifier is available.
     string external_place_provider = 12;
 }
@@ -191,7 +191,7 @@ message GetLocationResponse {
     // Optional - may be empty if no external identifier was captured.
     string external_place_id = 12;
 
-    // The provider that issued external_place_id (e.g., "mapbox", "google").
+    // Opaque tag for the provider that issued external_place_id.
     // Optional - empty when no external identifier is available.
     string external_place_provider = 13;
 }
@@ -371,7 +371,7 @@ message CreateRegionFromAddressRequest {
     // Optional - may be empty.
     string administrative_area = 8;
 
-    // Preferred region type (client's best guess based on Mapbox feature type).
+    // Preferred region type (client's best guess based on the geocoder's place type).
     // One of: "neighborhood", "city", "county", "state"
     string preferred_region_type = 9;
 }

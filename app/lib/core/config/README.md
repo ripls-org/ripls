@@ -5,7 +5,7 @@ Build-time configuration and feature flags for the Ripls app.
 ## Key files
 
 - **environment.dart** — Static getters backed by `--dart-define-from-file`
-  environment variables (server URL, Mapbox token, cache TTL, feature flags).
+  environment variables (server URL, Google Maps keys, cache TTL, feature flags).
   Values are compile-time constants; changing them requires a rebuild.
 
 - **feature_flags.dart** — Riverpod `Provider<bool>` wrappers for each

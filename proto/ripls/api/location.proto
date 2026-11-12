@@ -27,7 +27,7 @@ message GeocodedLocation {
   // so the server can deduplicate against prior saves of the same place.
   string external_place_id = 8;
 
-  // The provider that issued external_place_id (e.g., "mapbox", "google").
+  // Opaque tag for the provider that issued external_place_id.
   // Empty when the geocoder didn't return a stable identifier.
   string external_place_provider = 9;
 

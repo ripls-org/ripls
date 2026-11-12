@@ -23,9 +23,9 @@ func setupTestService(t *testing.T) (*Service, *storage.ProtoSQLStorage, storage
 		t.Fatalf("Failed to initialize bucket storage: %v", err)
 	}
 
-	// Create a location provider backed by the Mapbox client (geocoding
-	// tests use a mock with custom transport).
-	provider := location.NewMapboxClient("test-access-token")
+	// A Google Maps client with a dummy key: these tests never reach the
+	// network.
+	provider := location.NewGoogleMapsClient("test-api-key")
 
 	// Create location service
 	service := New(sqlStorage, bucketStorage, provider)

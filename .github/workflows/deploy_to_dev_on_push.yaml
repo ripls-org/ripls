@@ -1,0 +1,44 @@
+name: Deploy to Dev
+
+on:
+  push:
+    branches: [main]
+
+# Only one dev deploy at a time, and the newest wins: the newest commit on main
+# is the only one this pipeline is trying to put on dev. An older run still
+# building is deploying something already superseded, and its e2e job would
+# test a server that no longer exists. Letting them queue instead would
+# serialise several ~20-minute builds to reach the same final state.
+#
+# Scoped to this workflow on purpose: sharing a group with deploy_manual.yaml
+# would let an automatic push cancel a deploy a human deliberately started.
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    # Instance-only (docs/infra/dependency_automation.md); e2e-tests needs
+    # this job, so it skips too.
+    if: vars.INSTANCE_PIPELINES == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build_and_deploy_container.yaml
+    with:
+      environment: dev
+      deploy: true
+    secrets:
+      GCP_SERVICE_ACCOUNT_KEY_DEV: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+      MIMIR_DEPLOY_SSH_KEY: ${{ secrets.MIMIR_DEPLOY_SSH_KEY }}
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+  e2e-tests:
+    needs: build-and-deploy
+    permissions:
+      contents: read
+    uses: ./.github/workflows/test_dev_e2e.yaml
+    with:
+      server_url: "https://server-dev.ripls.org"
+    secrets:
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}

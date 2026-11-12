@@ -37,8 +37,7 @@ sealed class LocationPickerState with _$LocationPickerState {
     @Default(false) bool isLoadingDefaultCamera,
     // Google Places session token bundling autocomplete + the eventual
     // Place Details call into one billable session. Minted in [build] and
-    // rotated after every [resolveSuggestion]. Ignored by providers that
-    // don't support session tokens (Mapbox).
+    // rotated after every [resolveSuggestion].
     String? sessionToken,
   }) = _LocationPickerState;
 
@@ -272,8 +271,8 @@ class LocationPickerNotifier extends Notifier<LocationPickerState> {
   /// components. After a successful resolve the session token is rotated
   /// so the next autocomplete + details pair forms its own session.
   ///
-  /// Returns the input verbatim for providers that don't lazy-load
-  /// details (Mapbox). Returns null when the upstream lookup fails.
+  /// Returns the input verbatim when it is already resolved. Returns null
+  /// when the upstream lookup fails.
   Future<LocationResult?> resolveSuggestion(LocationResult suggestion) async {
     try {
       final resolved = await _locationRepository.resolveSuggestion(

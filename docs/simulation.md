@@ -6,7 +6,7 @@ context:
   globs: [server/simulation/**, server/cmd/simulate/**]
   triggers: [simulation, simulate, load-test, persona, scenario, deterministic-timeline, dev-mode, simulation-clock]
   lens: [server, testing]
-  skills: [issue, audit, triage]
+  skills: [issue, audit]
   domain: infra
 freshness:
   verified_commit: "9fdddc4d0"

@@ -272,7 +272,7 @@ func (c *GoogleMapsClient) SearchPlaces(ctx context.Context, query string, proxi
 			continue
 		}
 		place := buildPlaceResultFromGoogleDetails(details)
-		// Confidence decreases with result position to match Mapbox.
+		// Confidence decreases with result position.
 		place.Confidence = 1.0 - (float64(i) * 0.1)
 		places = append(places, place)
 	}

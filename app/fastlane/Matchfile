@@ -1,0 +1,15 @@
+# Git repository for storing certificates
+git_url(ENV["MATCH_GIT_URL"] || "https://github.com/Type2Fun-Foundation/ripls-ios-certs.git")
+
+# Storage mode
+storage_mode("git")
+
+# App identifier(s)
+app_identifier(["org.ripls.app"])
+
+# Apple ID
+# Set APPLE_ID for interactive runs; CI uses the App Store Connect API key.
+username(ENV["APPLE_ID"])
+
+# Certificate types to manage
+type("appstore")  # For App Store / TestFlight distribution

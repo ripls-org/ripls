@@ -198,7 +198,7 @@ class LocationRepository {
   /// Resolves a [LocationResult] suggestion to a fully-populated record.
   /// Pass-through to the configured [LocationSearchService].
   ///
-  /// Mapbox returns the input unchanged; Google fetches Place Details.
+  /// Google fetches Place Details for a suggestion that lacks them.
   /// Pass the same [sessionToken] that produced the suggestion to keep
   /// the autocomplete + details pair on one billable session.
   Future<LocationResult?> resolveSuggestion(

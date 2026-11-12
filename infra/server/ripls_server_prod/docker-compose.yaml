@@ -1,0 +1,83 @@
+# Prod server stack on mimir: https://server.ripls.org and https://ripls.app
+# through Caddy (the mimir repo's stacks/ripls_server_prod/caddy.snippet).
+#
+# The project name must equal this directory's name, or `docker compose down`
+# run from here silently matches nothing, and mimir's dump-databases.sh keys its
+# /srv/sites/<name> output off the same directory name.
+#
+# .env here is a symlink to /etc/nas/stack-env/ripls_server_prod.env, which
+# holds DB_PASSWORD.
+name: ripls_server_prod
+
+services:
+  postgres:
+    extends:
+      file: ../common.yaml
+      service: postgres
+    environment:
+      POSTGRES_USER: ripls
+      POSTGRES_DB: ripls
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - /var/lib/nas/ripls_server_prod/db:/var/lib/postgresql/data
+    # Ahead of the CI runners (default 1024) when the host is contended.
+    cpu_shares: 2048
+    # To the logs service below. The tag is what fluent-bit routes on;
+    # fluentd-async means a container never blocks or fails on the shipper,
+    # its logs buffer until the shipper is up.
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24225
+        fluentd-async: "true"
+        tag: postgres
+
+  logs:
+    extends:
+      file: ../common.yaml
+      service: logs
+    ports:
+      - "127.0.0.1:24225:24224"
+    volumes:
+      - /etc/nas/ripls-server-prod-sa.json:/run/gcp/sa.json:ro
+      - /var/lib/nas/ripls_server_prod/fluent-bit:/var/lib/fluent-bit
+    environment:
+      GCP_PROJECT: ripls-prod
+      LOG_JOB: server
+      RIPLS_ENV: prod
+
+  server:
+    extends:
+      file: ../common.yaml
+      service: server
+    # Moved between builds by deploy.sh; never pulled.
+    image: ripls-server:prod
+    pull_policy: never
+    ports:
+      - "18794:8080"
+    volumes:
+      - /etc/nas/ripls-server-prod-sa.json:/run/gcp/sa.json:ro
+    cpu_shares: 2048
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      GOOGLE_CLOUD_PROJECT: ripls-prod
+      GCS_MEDIA_BUCKET: ripls-prod
+      GOOGLE_CLIENT_ID: 507242812633-4v6q4h50h4ksshoui4o6vg5e18jcvsbj.apps.googleusercontent.com
+      INVITE_LINK_HOSTNAME: ripls.app
+      ANDROID_PACKAGE_ID: org.ripls.app
+      CORS_ALLOWED_ORIGINS: "https://ripls.app,https://server.ripls.org,https://ripls.org,https://www.ripls.org,https://*.staging.ripls.org"
+      # Daily and weekly digests, as on Cloud Run before the cutover (#3078).
+      ACTIVITY_DIGEST_ENABLED: "true"
+      ACTIVITY_DIGEST_WEEKLY_ENABLED: "true"
+      ACTIVITY_DIGEST_SEND_HOUR: "5"
+      ACTIVITY_DIGEST_WEEKLY_WEEKDAY: Monday
+      ACTIVITY_DIGEST_WEEKLY_SEND_HOUR: "5"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24225
+        fluentd-async: "true"
+        tag: server
+    depends_on:
+      postgres:
+        condition: service_healthy

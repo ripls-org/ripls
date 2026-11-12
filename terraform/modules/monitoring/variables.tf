@@ -165,45 +165,6 @@ variable "enable_github_pubsub_channel" {
   default     = false
 }
 
-# =============================================================================
-# DATABASE MONITORING CONFIGURATION
-# =============================================================================
-
-variable "database_instance_id" {
-  description = "Cloud SQL instance ID for database monitoring (e.g., 'gear-db-dev'). Leave empty to disable database monitoring."
-  type        = string
-  default     = ""
-}
-
-variable "database_max_connections" {
-  description = "Maximum connections for the database instance. Used to calculate connection alert threshold."
-  type        = number
-  default     = 25 # db-f1-micro default
-}
-
-variable "database_connection_threshold_percent" {
-  description = "Alert when connections exceed this percentage of max_connections"
-  type        = number
-  default     = 80
-}
-
-variable "database_cpu_threshold_percent" {
-  description = "Alert when CPU utilization exceeds this percentage"
-  type        = number
-  default     = 80
-}
-
-variable "database_memory_threshold_percent" {
-  description = "Alert when memory utilization exceeds this percentage"
-  type        = number
-  default     = 80
-}
-
-variable "database_disk_threshold_percent" {
-  description = "Alert when disk utilization exceeds this percentage"
-  type        = number
-  default     = 80
-}
 variable "sms_delivery_failure_rate_threshold" {
   description = "Fraction of terminal SMS outcomes (0..1) that may be failed/undelivered before the delivery alert fires"
   type        = number

@@ -1,0 +1,119 @@
+name: Finalize Release
+
+# Fires when a release-cut PR is merged into main. Deploys server HEAD to prod,
+# then tags the merge commit (which triggers Release App for iOS + Android).
+# A release-cut PR is identified by the `<!-- ripls-release-cut: vX.Y.Z -->`
+# marker in its body, written by .github/workflows/release_cut.yaml.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: read
+  id-token: write
+
+concurrency:
+  group: release-finalize
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    # Instance-only (docs/infra/dependency_automation.md); the other jobs need
+    # this one's outputs, so they skip too.
+    if: github.event.pull_request.merged == true && vars.INSTANCE_PIPELINES == 'true'
+    runs-on: self-hosted-linux
+    outputs:
+      should_run: ${{ steps.parse.outputs.should_run }}
+      version: ${{ steps.parse.outputs.version }}
+      tag: ${{ steps.parse.outputs.tag }}
+      merge_sha: ${{ steps.parse.outputs.merge_sha }}
+    steps:
+      - id: parse
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+          TAG=$(printf '%s' "$BODY" \
+            | sed -n 's/.*<!-- ripls-release-cut: *\(v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\) *-->.*/\1/p' \
+            | head -1)
+          if [ -z "$TAG" ]; then
+            echo "::notice::PR body has no ripls-release-cut marker; not a release PR. Skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$MERGE_SHA" ]; then
+            echo "::error::Merged PR has no merge_commit_sha; cannot tag."
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "merge_sha=$MERGE_SHA" >> "$GITHUB_OUTPUT"
+          echo "Will finalize ${TAG} at ${MERGE_SHA}"
+
+  deploy_prod:
+    needs: discover
+    if: needs.discover.outputs.should_run == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build_and_deploy_container.yaml
+    with:
+      environment: prod
+      deploy: true
+    secrets:
+      GCP_SERVICE_ACCOUNT_KEY_DEV: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+      GCP_SERVICE_ACCOUNT_KEY_PROD: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_PROD }}
+      MIMIR_DEPLOY_SSH_KEY: ${{ secrets.MIMIR_DEPLOY_SSH_KEY }}
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+
+  tag_release:
+    needs: [discover, deploy_prod]
+    if: needs.discover.outputs.should_run == 'true'
+    runs-on: self-hosted-linux
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Checkout merge commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.discover.outputs.merge_sha }}
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push annotated tag
+        env:
+          TAG: ${{ needs.discover.outputs.tag }}
+          VERSION: ${{ needs.discover.outputs.version }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists on origin."
+            exit 1
+          fi
+          git tag -a "$TAG" -m "Release ${VERSION}"
+          git push origin "$TAG"
+
+      # A tag pushed with GITHUB_TOKEN triggers no workflows, so start Release
+      # App on the tag explicitly. On a tag ref the dispatch matches a tag
+      # push: tag-on-main check, both platforms, and the GitHub release only
+      # if both builds succeed.
+      - name: Start Release App
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.discover.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh workflow run release_app.yaml --ref "$TAG" -f platform=both -f create_release=true
+          echo "Pushed $TAG and started Release App on it."

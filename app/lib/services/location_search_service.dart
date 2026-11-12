@@ -1,8 +1,8 @@
 import 'package:geolocator/geolocator.dart';
 
 /// LocationSearchService is the client-side abstraction for geocoding and
-/// place-search operations against an external provider (Mapbox today,
-/// Google Maps next). Implementations wrap a single provider's HTTP API.
+/// place-search operations against an external provider (Google Maps
+/// Platform today). Implementations wrap a single provider's HTTP API.
 ///
 /// Callers must depend on this interface, not a concrete implementation.
 /// Per `docs/client/architecture.md`, this service is consumed only by
@@ -17,7 +17,7 @@ import 'package:geolocator/geolocator.dart';
 /// the search UI opens, thread it through every search call, pass the
 /// same token to [resolveSuggestion] when the user picks a result, and
 /// discard the token when the picker closes. Providers that don't
-/// recognise session tokens (Mapbox) ignore the parameter.
+/// recognise session tokens ignore the parameter.
 abstract class LocationSearchService {
   /// Searches for addresses, POIs, places, and localities matching [query].
   /// Returns up to ten suggestions sorted by relevance.
@@ -27,8 +27,8 @@ abstract class LocationSearchService {
   /// [LocationResult.externalPlaceId]. Callers must call
   /// [resolveSuggestion] before persisting or otherwise relying on the
   /// coordinate / address fields. Providers that always return full
-  /// results (Mapbox) populate every field up front, and
-  /// [resolveSuggestion] is a no-op pass-through there.
+  /// results populate every field up front, and [resolveSuggestion] is a
+  /// no-op pass-through there.
   Future<List<LocationResult>> searchAddresses(
     String query, {
     Position? proximity,
@@ -56,7 +56,7 @@ abstract class LocationSearchService {
   ///
   /// Providers that return incomplete suggestions (Google) fetch the
   /// remaining detail fields here; providers that return full results
-  /// (Mapbox) return the suggestion unchanged.
+  /// return the suggestion unchanged.
   ///
   /// Pass the same [sessionToken] used for the originating search to
   /// keep the autocomplete + details pair billable as a single session.
@@ -92,8 +92,8 @@ class LocationResult {
   /// used for cross-session deduplication when saving the location.
   final String externalPlaceId;
 
-  /// The geocoding provider that issued [externalPlaceId] (e.g., "mapbox",
-  /// "google"). Empty when [externalPlaceId] is empty.
+  /// The geocoding provider that issued [externalPlaceId] (e.g.,
+  /// "google_maps"). Empty when [externalPlaceId] is empty.
   final String externalPlaceProvider;
 
   const LocationResult({

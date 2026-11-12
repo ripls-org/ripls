@@ -26,8 +26,7 @@ sealed class GovernanceState with _$GovernanceState {
     UserError? error,
     // Google Places session token bundling autocomplete + the eventual
     // Place Details call into one billable session. Minted in [build] and
-    // rotated after every [resolveSuggestion]. Ignored by providers that
-    // don't support session tokens (Mapbox).
+    // rotated after every [resolveSuggestion].
     String? sessionToken,
   }) = _GovernanceState;
 
@@ -125,7 +124,7 @@ class GovernanceNotifier extends Notifier<GovernanceState>
       final communityRepository = ref.read(communityRepositoryProvider);
       final locationService = ref.read(locationServiceProvider);
 
-      // Step 1: Create region from Mapbox place details
+      // Step 1: Create region from the resolved place details
       final regionResponse = await locationService.createRegionFromAddress(
         latitudeDeg: location.latitude,
         longitudeDeg: location.longitude,
@@ -165,7 +164,7 @@ class GovernanceNotifier extends Notifier<GovernanceState>
   }
 
   /// Determines region type from the provider's feature-type taxonomy
-  /// (Mapbox today: neighborhood/place/locality/district/region).
+  /// (neighborhood/place/locality/district/region).
   String _determineRegionType(String featureType) {
     switch (featureType) {
       case 'neighborhood':
