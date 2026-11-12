@@ -32,7 +32,11 @@ emphasizing user-facing improvements.
 
 ## Steps
 
-1. Find the most recent release tag.
+1. Find the most recent release tag. If this history has none yet (the first
+   release after #3228's move to a new history), the previous release is the
+   last version in `docs/release/notes/release_dates.tsv`. Take the changes
+   from the start of this history, plus the old repo's PRs merged after that
+   release's date.
 2. Look at all changes since that tag: merged PRs, closed issues, and commit history.
 3. Separate significant new features from bug fixes.
 4. **Don't name reporters.** Release notes are published on the website and in the public repo, and a feedback issue's `## Submitted By` section carries the reporter's email. Never credit a reporter by name, handle or any part of that email.

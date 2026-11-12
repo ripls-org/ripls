@@ -1,6 +1,6 @@
 # AI Integration
 
-This directory provides AI/LLM capabilities for the Common Goods application, enabling features like automated gear detection from images, content generation, and conversation summarization.
+This directory provides AI/LLM capabilities for the Common Goods application, enabling features like automated gear detection from images, content generation, and structured inference (classification, time parsing).
 
 ## Architecture Overview
 
@@ -89,7 +89,6 @@ type Provider interface {
     DetectGearInImage(ctx context.Context, req *DetectionImage) (*GearDetections, error)
     GenerateCommunityContent(ctx context.Context, prompt string, region string) (*CommunityGeneration, error)
     GenerateRequestContent(ctx context.Context, prompt string, region string) (*RequestGeneration, error)
-    GenerateConversationSummary(ctx context.Context, messages []ConversationMessage, requestTitle string, requestDescription string) (*ConversationSummary, error)
     ClassifyUnifiedCreate(ctx context.Context, in UnifiedCreateClassifierInput) (*UnifiedCreateClassification, error)
     // ...
 }
@@ -240,7 +239,7 @@ go test -tags=integration ./server/ai/... -v -run TestProviderIntegration
 The `eval/` subpackage runs hand-crafted goldens against a live AI provider
 and gates on an aggregate per-field pass rate. It exists to catch prompt and
 schema regressions — and to give future prompt rewrites a quantitative
-pass/fail rather than anecdotal spot-checks. See [docs/issues/1157-genexperience-latency.md](../../docs/issues/1157-genexperience-latency.md) for the motivating context.
+pass/fail rather than anecdotal spot-checks. See the #1157 plan (archived) for the motivating context.
 
 Covers every input mode for each of the three user-facing generation types:
 
@@ -351,7 +350,7 @@ Sub-test names are namespaced as `Test{Suite}/{provider}/{model}/{case_id}`, so 
 2. Re-run the relevant `Test*Prompt` suite with the command above.
 3. Each `(provider, model)` pair logs its own per-field breakdown and aggregate pass rate, gated against its `modelThresholds` entry (or the default `0.85`). Sub-test failures attribute to `Test{Suite}/{provider}/{model}/{case_id}` so you can see which pair regressed.
 4. Template sizes are budget-capped by `TestPromptSizes` (`prompt_size_test.go`, default suite — no API key). If your change trips a budget, either trim the prompt or, if the growth is justified, raise the budget **in the same commit** with a passing eval run to point at. Growth is a per-call TTFT and cost tax — see the header comment in `prompts.go`.
-5. To keep a run for posterity, pass `-eval-report-out=docs/ai/eval/baselines/<date>_<shortsha>_<label>` and `-eval-report-label=<label>` — one directory per run, one JSON per suite. The #1265 rewrite runs under `docs/ai/eval/baselines/2026-07-08_*` are the convention to copy.
+5. To keep a run for posterity, pass `-eval-report-out=docs/ai/eval/baselines/<date>_<shortsha>_<label>` and `-eval-report-label=<label>` — one directory per run, one JSON per suite. The #1265 rewrite runs (2026-07-08, archived) are the convention to copy.
 
 **Adding a golden:**
 
@@ -388,8 +387,7 @@ aiProvider, err := initializeAIProvider(ctx, cfg)
 if aiProvider != nil {
     gearService.SetAIProvider(aiProvider)
     communityService.SetAIProvider(aiProvider)
-    chatService.SetAIProvider(aiProvider)
 }
 ```
 
-Services use the provider to implement AI-powered features like gear detection, content generation, and conversation summarization.
+Services use the provider to implement AI-powered features like gear detection, content generation, and structured inference.

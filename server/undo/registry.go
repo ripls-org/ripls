@@ -9,7 +9,7 @@
 // shipping a new state-changing action without thinking through its
 // undo story.
 //
-// See docs/ai/undo_plan.md §10.6 for the broader design.
+// See the undo plan's §10.6 (archived) for the broader design.
 package undo
 
 import (
@@ -106,7 +106,7 @@ type Entry struct {
 	// client-only entries, explains the natural inverse path. For
 	// retention-restore entries, references the soft-delete field and
 	// restore mechanism. For server-authoritative entries, references
-	// the relevant section of docs/ai/undo_plan.md.
+	// the relevant section of the undo plan (archived).
 	Rationale string
 
 	// ValidateUndoData is populated once the corresponding Undo* RPC is
@@ -157,7 +157,7 @@ var Registry = map[models.CommunityEventType]Entry{
 	models.CommunityEventType_COMMUNITY_EVENT_TYPE_TRANSFER_RECIPIENT_SELECTED: {
 		Class:     ClassificationServerSnackbar,
 		UndoRPC:   "UndoSelectRecipient",
-		Rationale: "State-machine loosening + chat retraction; see docs/ai/undo_plan.md §3.2.1.",
+		Rationale: "State-machine loosening + chat retraction; see plan §3.2.1.",
 	},
 	models.CommunityEventType_COMMUNITY_EVENT_TYPE_TRANSFER_ACTIVE: {
 		Class:     ClassificationServerSnackbar,

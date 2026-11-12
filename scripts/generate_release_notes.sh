@@ -45,10 +45,19 @@ done < <(printf '%s\n' "${SORTED_VERSIONS[@]}" | sort -V)
 SORTED_VERSIONS=("${SORTED_VERSIONS_TMP[@]}")
 unset SORTED_VERSIONS_TMP
 
-# Get release date from git tag (falls back to today's date)
+# Get release date: from release_dates.tsv, then the git tag, then today.
+# The file records the releases tagged in the history before #3228's move, whose
+# tags don't exist in this one; without it, every page would be re-dated to the
+# day it was regenerated. Later releases are tagged here, so need no entry.
+DATES_FILE="$NOTES_DIR/release_dates.tsv"
 get_release_date() {
     local ver="$1"
-    local tag_date
+    local recorded tag_date
+    recorded=$(awk -F'\t' -v v="$ver" '$1 == v { print $2 }' "$DATES_FILE" 2>/dev/null)
+    if [ -n "$recorded" ]; then
+        echo "$recorded"
+        return
+    fi
     tag_date=$(git tag -l "v${ver}" --format='%(creatordate:short)' 2>/dev/null)
     if [ -n "$tag_date" ]; then
         echo "$tag_date"

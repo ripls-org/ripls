@@ -33,21 +33,6 @@ function read(rel) {
   return fs.readFileSync(path.join(repoRoot, rel), 'utf8');
 }
 
-// Files that exist only in the private deploy repo. The open-source export
-// excludes the runner fleet and every deploy/release workflow (#2953), so the
-// mirrors they carry have nothing to check there — and this script is a
-// REQUIRED CI check, so reading them unconditionally crashed the public repo's
-// lint outright rather than degrading.
-const skippedPrivate = [];
-function readPrivate(rel) {
-  const abs = path.join(repoRoot, rel);
-  if (!fs.existsSync(abs)) {
-    skippedPrivate.push(rel);
-    return null;
-  }
-  return fs.readFileSync(abs, 'utf8');
-}
-
 // Parse versions.env (KEY=VALUE, ignoring comments/blanks).
 function parseVersionsEnv() {
   const out = {};
@@ -102,6 +87,7 @@ const accountedKeys = new Set([
   ...runnerBakedKeys,
   ...uncheckedKeys,
   'IOS_DEPLOYMENT_TARGET', // checked against the Podfile + Xcode project below.
+  'BUILD_NUMBER_OFFSET', // not a toolchain version; scripts/build_number.sh validates it.
 ]);
 for (const key of Object.keys(versions)) {
   if (!accountedKeys.has(key)) {
@@ -127,14 +113,12 @@ for (const m of mirrors) {
 }
 
 // Runner Dockerfile: each baked tool must be a bare `ARG VAR` (no literal).
-const runnerDockerfile = readPrivate('runners/Dockerfile');
-if (runnerDockerfile) {
-  for (const key of runnerBakedKeys) {
-    if (new RegExp(`(?:ENV|ARG)\\s+${key}\\s*=`).test(runnerDockerfile)) {
-      violations.push(`runners/Dockerfile: ${key} is assigned a literal — it must be a bare \`ARG ${key}\` supplied as a build arg from versions.env.`);
-    } else if (!new RegExp(`ARG\\s+${key}\\b`).test(runnerDockerfile)) {
-      violations.push(`runners/Dockerfile: missing \`ARG ${key}\` declaration — the build won't receive ${key} from versions.env.`);
-    }
+const runnerDockerfile = read('runners/Dockerfile');
+for (const key of runnerBakedKeys) {
+  if (new RegExp(`(?:ENV|ARG)\\s+${key}\\s*=`).test(runnerDockerfile)) {
+    violations.push(`runners/Dockerfile: ${key} is assigned a literal — it must be a bare \`ARG ${key}\` supplied as a build arg from versions.env.`);
+  } else if (!new RegExp(`ARG\\s+${key}\\b`).test(runnerDockerfile)) {
+    violations.push(`runners/Dockerfile: missing \`ARG ${key}\` declaration — the build won't receive ${key} from versions.env.`);
   }
 }
 
@@ -145,8 +129,7 @@ if (runnerDockerfile) {
 // scripts/build_runner_image.sh, which derives its build-args from the
 // Dockerfile's ARGs; compose keeps a hand-written list, so check that one.
 for (const wf of ['.github/workflows/build_runner_image.yaml', '.github/workflows/validate_runner_candidate.yaml']) {
-  const text = readPrivate(wf);
-  if (!text) continue;
+  const text = read(wf);
   if (!/scripts\/build_runner_image\.sh/.test(text)) {
     violations.push(`${wf}: builds the runner image without scripts/build_runner_image.sh — use the shared script so every versions.env build-arg is supplied.`);
   }
@@ -154,12 +137,10 @@ for (const wf of ['.github/workflows/build_runner_image.yaml', '.github/workflow
     violations.push(`${wf}: hand-rolls \`--build-arg\` for the runner image — that list drifts (#2883). Let scripts/build_runner_image.sh derive it.`);
   }
 }
-const runnerCompose = readPrivate('runners/docker-compose.yml');
-if (runnerCompose) {
-  for (const key of runnerBakedKeys) {
-    if (!new RegExp(`^\\s*${key}:\\s*\\$\\{${key}\\}`, 'm').test(runnerCompose)) {
-      violations.push(`runners/docker-compose.yml: build args must pass \`${key}: \${${key}}\` — the manual \`sync.sh --rebuild\` path would bake an empty ${key}.`);
-    }
+const runnerCompose = read('runners/docker-compose.yml');
+for (const key of runnerBakedKeys) {
+  if (!new RegExp(`^\\s*${key}:\\s*\\$\\{${key}\\}`, 'm').test(runnerCompose)) {
+    violations.push(`runners/docker-compose.yml: build args must pass \`${key}: \${${key}}\` — the manual \`sync.sh --rebuild\` path would bake an empty ${key}.`);
   }
 }
 
@@ -190,8 +171,7 @@ if (iosTarget !== undefined) {
 
 // Flutter workflows: FLUTTER_VERSION must be sourced, not pinned as a literal.
 for (const wf of flutterWorkflows) {
-  const text = readPrivate(wf.file);
-  if (!text) continue;
+  const text = read(wf.file);
   if (/FLUTTER_VERSION\s*:\s*['"]?[0-9]/.test(text)) {
     violations.push(`${wf.file}: FLUTTER_VERSION is pinned inline — it must be sourced from versions.env instead.`);
   }
@@ -205,15 +185,6 @@ if (violations.length > 0) {
   for (const v of violations) console.error(`  - ${v}`);
   console.error('\nversions.env is the source of truth. Bump it, then update the mirrors above.');
   process.exit(1);
-}
-
-if (skippedPrivate.length > 0) {
-  // Named rather than silent: "passed" should not be able to mean "checked
-  // almost nothing because the files were not there".
-  console.log(
-    `check_versions: skipped ${skippedPrivate.length} private-repo mirror(s) not present here ` +
-      `(${skippedPrivate.join(', ')}).`,
-  );
 }
 
 console.log(`check_versions passed: ${mirrors.length} source mirror(s) + runner/workflow consumers match versions.env.`);

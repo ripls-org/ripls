@@ -15,7 +15,7 @@ final _log = ObservableLogger.named('ChatNotificationManager');
 /// Android background isolate (data-only FCM delivery). Constructor takes
 /// plugin instances directly; no Riverpod / no `BuildContext` needed.
 ///
-/// See `docs/issues/1892-chat-notification-batching.md` for the broader design.
+/// See the #1892 plan (archived) for the broader design.
 class ChatNotificationManager {
   /// Notification channel ID used on Android for chat messages. Must match the
   /// channel registered at app startup (see `FCMService._initializeLocalNotifications`).

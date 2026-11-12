@@ -19,7 +19,7 @@ The Ripls Community Stories System automatically generates celebratory content f
 
 ## Architecture Principles
 
-**Template Generation:** Story copy is rendered from a fixed catalog of templates keyed by story type ([templates.go](../server/story/templates.go)). Each result carries a structured `template_key` plus params that the client resolves in the viewer's locale, alongside literal English strings retained for older clients (`TODO(#2159)`).
+**Template Generation:** Story copy is rendered from a fixed catalog of templates keyed by story type ([templates.go](../server/story/templates.go)). Each result carries a structured `template_key` plus params that the client resolves in the viewer's locale, alongside literal English strings kept as the fallback for older clients and unknown keys.
 
 Stories used to be written by an LLM, with templates as a fallback. #2936 removed that path: the facts a story describes — who, what, when, with whom — are already structured, and narrating them produced copy that read as generated, varied run to run for identical events, and could only ever be English because free prose has no catalog on either side of the [render boundary](server/l10n.md). `TestGenerateFromTemplate_EveryStoryTypeCarriesATemplateKey` guards the invariant that every story type resolves to a key.
 
@@ -35,7 +35,7 @@ Stories used to be written by an LLM, with templates as a fallback. #2936 remove
 
 **Multiple Participants:** Stories feature multiple users (not a single owner), celebrating collaborative community activities.
 
-**Deduplication:** Before inserting, `Generator.CreateStory` calls `StoryStorage.Exists(community_id, story_type, related_entity_id)` and skips creation if a matching story already exists. This is an application-level guard (not a DB unique constraint): the check matches the related entity ID against any of the `gear_id` / `loan_id` / `experience_id` / `request_id` columns, scoped to the same `community_id` + `story_type` and excluding soft-deleted rows. If the same event is ever re-handled, the lookup re-runs but does not produce a duplicate — the guard is what lets a future durable, at-least-once transport be dropped in without double-celebrating (see [#510](../docs/issues/510-community-event-pubsub-v2.md) G6).
+**Deduplication:** Before inserting, `Generator.CreateStory` calls `StoryStorage.Exists(community_id, story_type, related_entity_id)` and skips creation if a matching story already exists. This is an application-level guard (not a DB unique constraint): the check matches the related entity ID against any of the `gear_id` / `loan_id` / `experience_id` / `request_id` columns, scoped to the same `community_id` + `story_type` and excluding soft-deleted rows. If the same event is ever re-handled, the lookup re-runs but does not produce a duplicate — the guard is what lets a future durable, at-least-once transport be dropped in without double-celebrating (see the #510 plan's G6, archived).
 
 ## Story Generation Flow
 
@@ -160,7 +160,7 @@ All five accomplishment-story types are produced by the `story_subscriber` in re
 
 **Table:** `Story` (Proto-SQL pattern — table name matches the `Story` proto message name verbatim)
 
-**Key Fields:** See [story.proto](../proto/ripls/models/story.proto) for the complete `Story` message. Beyond identity and content, it carries the related-entity IDs used for navigation and dedup (`gear_id`, `loan_id`, `experience_id`, `request_id`), the impact metrics (`cost_saved_usd`, `time_saved_minutes`, `co2_saved_grams`), the optional `community_event_id` that wires the story-screen Undo link, an optional editorial `kicker`, and the structured `template_key` + `template_params` that let new clients re-render the title/description in the viewer's locale (legacy `title`/`description` stay populated as a fallback — see `TODO(#2159)`).
+**Key Fields:** See [story.proto](../proto/ripls/models/story.proto) for the complete `Story` message. Beyond identity and content, it carries the related-entity IDs used for navigation and dedup (`gear_id`, `loan_id`, `experience_id`, `request_id`), the impact metrics (`cost_saved_usd`, `time_saved_minutes`, `co2_saved_grams`), the optional `community_event_id` that wires the story-screen Undo link, an optional editorial `kicker`, and the structured `template_key` + `template_params` that let new clients re-render the title/description in the viewer's locale (legacy `title`/`description` stay populated permanently as the fallback).
 
 **Deduplication:** `StoryStorage.Exists(community_id, story_type, related_entity_id)` enforces uniqueness at the application layer (no DB unique constraint). It matches the related entity ID against any of the `gear_id` / `loan_id` / `experience_id` / `request_id` columns and ignores soft-deleted rows.
 
@@ -257,7 +257,7 @@ Params:       {borrowerName: "Alice", gearName: "Camping Gear", lenderName: "Bob
 ### ⚠️ Trade-offs
 
 1. **Fixed Phrasing:** A template catalog says the same thing every time. That is the point — but it does mean a new story type needs a new template plus its ARB entries, and `generateFromTemplate`'s `default:` arm emits no `template_key`, so a type added without one silently ships English to every viewer. `TestGenerateFromTemplate_EveryStoryTypeCarriesATemplateKey` is the guard.
-2. **At-Most-Once Delivery:** The in-process bus drops a dispatch if a subscriber's bounded ingress channel is full (backpressure), and a process crash before the subscriber goroutine runs loses the story — the `CommunityEvent` audit row survives, but the story is not regenerated. A durable transport with at-least-once retry is tracked in [#510](../docs/issues/510-community-event-pubsub-v2.md) (G6).
+2. **At-Most-Once Delivery:** The in-process bus drops a dispatch if a subscriber's bounded ingress channel is full (backpressure), and a process crash before the subscriber goroutine runs loses the story — the `CommunityEvent` audit row survives, but the story is not regenerated. A durable transport with at-least-once retry is tracked in #510 (G6).
 3. **No User Control:** Users cannot edit or delete system-generated stories (future: privacy preferences)
 4. **Fixed Participants:** Participant selection logic is hardcoded per story type (future: configurable rules)
 

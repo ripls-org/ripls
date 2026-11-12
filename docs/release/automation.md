@@ -62,7 +62,7 @@ For instructions on how to actually use the automation to create a release, see 
 | Build/Deploy Tool | Fastlane            | Free, open-source, handles signing complexity             |
 | Release Trigger   | Git tags (`v*.*.*`) | Clean audit trail, semantic versioning                    |
 | Version Source    | `pubspec.yaml`      | Single source of truth, contains `major.minor.patch` only |
-| Build Number      | Git commit count    | Automatic, monotonically increasing, reproducible         |
+| Build Number      | Git commit count + offset | Automatic, monotonically increasing, reproducible   |
 | Secrets Storage   | GitHub Secrets      | Secure, no external services required                     |
 
 ### Version Strategy
@@ -73,7 +73,9 @@ The version system separates semantic version from build number:
 - **Build number** (`347`): Automatically calculated from git commit count
 - **Full version** (`1.2.0+347`): Assembled at build time
 
-This means `pubspec.yaml` contains only the semantic version (no `+buildnumber` suffix). The build number is calculated in CI using `git rev-list --count HEAD`.
+This means `pubspec.yaml` contains only the semantic version (no `+buildnumber` suffix). The build number is `git rev-list --count HEAD` plus `BUILD_NUMBER_OFFSET` from `versions.env`, computed by `scripts/build_number.sh`. Both `release_app.yaml` and the Fastfile call that script.
+
+The offset is 0 until a move to a new git history (#3228). At the move, set it to more than the last uploaded build, so numbers keep increasing. Before building, each release lane compares its number with the store's latest. Equal means the build is already uploaded, so the lane skips. Lower fails the lane and names the offset to raise. Without that guard, the upload would be silently skipped on every release.
 
 ## Key Files
 

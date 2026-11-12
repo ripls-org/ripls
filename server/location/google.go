@@ -333,8 +333,8 @@ func (c *GoogleMapsClient) ReverseGeocode(ctx context.Context, geolocation *mode
 	}
 
 	// Drop Plus-Code-only results defensively even though result_type
-	// should already exclude them. See parity audit:
-	// docs/issues/2188-parity-audit.md "Required mitigations".
+	// should already exclude them. See the #2188 parity audit's
+	// "Required mitigations" (archived).
 	best := firstNonPlusCodeResult(result.Results)
 	if best == nil {
 		logger.WarnContext(ctx, "no usable reverse-geocode result",

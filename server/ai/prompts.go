@@ -1,8 +1,6 @@
 // prompts.go contains the content-generation (Gen*) prompt templates shared
-// across providers. Sibling files hold the rest: prompts_summaries.go
-// (conversation/experience summaries), prompts_story.go (celebratory
-// stories), prompts_unified.go (unified-create classifier),
-// prompts_hero_card.go, and prompts_impact_row.go.
+// across providers. The sibling prompts_unified.go holds the
+// unified-create classifier prompt.
 //
 // Editing guidance — prefer the most token-efficient phrasing:
 //   - Every added line increases TTFT and per-call cost on every Gen* request.
@@ -93,8 +91,8 @@ const locationExtractionRules = `LOCATION EXTRACTION:
 // tier showed 4–5 point pass-rate gains and a 12–25 point gain
 // specifically on model_contains, by curing a v1 anti-pattern where
 // vision was packing brand + model into the title field. ~35% shorter
-// than the prior version. See docs/issues/1777-baseline-2026-05-09.md
-// for context.
+// than the prior version. See the #1777 baseline (archived) for
+// context.
 func buildGearDetectionPrompt() string {
 	return `You analyze product images for a community sharing platform. Identify the SINGLE most prominent item and return structured info about it.
 

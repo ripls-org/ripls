@@ -11,11 +11,6 @@
  * that does not match the import path, and reports the module as unknown.
  * That is a failure nobody inside the project would ever hit.
  *
- * The page lives in infra/, which is private-bound and therefore absent from
- * the open-source export. When it is missing this check reports that and
- * passes, rather than failing a public checkout for the absence of a file it
- * is not supposed to have.
- *
  *   node scripts/check_go_vanity.js
  */
 
@@ -50,20 +45,9 @@ function goImportFromPage(html) {
 }
 
 function main() {
-  // Skip on the DIRECTORY, not the page. Keying the skip on the page meant a
-  // renamed or deleted page read as "public checkout" and passed silently —
-  // which is what happened when site/ became content/. Absent directory is a
-  // public checkout; present directory with no page is a broken one.
-  if (!fs.existsSync(SITE_DIR)) {
-    process.stdout.write(
-      'check_go_vanity: infra/go-vanity/ not present (private-bound); skipping\n',
-    );
-    return 0;
-  }
   if (!fs.existsSync(PAGE)) {
     process.stderr.write(
-      `check_go_vanity: ${path.relative(ROOT, SITE_DIR)} exists but ` +
-        `${path.relative(ROOT, PAGE)} is missing.\n` +
+      `check_go_vanity: ${path.relative(ROOT, PAGE)} is missing.\n` +
         '  The vanity host serves that file; without it `go get` gets a 500.\n',
     );
     return 1;

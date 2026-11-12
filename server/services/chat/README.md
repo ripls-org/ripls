@@ -1,6 +1,6 @@
 # services/chat
 
-The `chat` service implements the ChatService RPC interface: sending and listing messages, reactions, @mentions, streaming new events, conversation authorization, and AI-generated conversation summaries.
+The `chat` service implements the ChatService RPC interface: sending and listing messages, reactions, @mentions, streaming new events, and conversation authorization.
 
 ## Key files
 
@@ -10,7 +10,6 @@ The `chat` service implements the ChatService RPC interface: sending and listing
 - `streaming.go` — `StreamConversationEvents`: server-sent real-time message delivery; `StreamSubscriber` fan-out via `chat_event_bus`.
 - `stream_subscriber.go` — `chatStreamSubscriber` wires the chat bus to open SSE streams.
 - `reactions.go` — message reactions (add/remove).
-- `summary.go` — AI-generated conversation summaries.
 - `mention_handler.go` — parses and stores @mentions from message content.
 - `unread_counts.go` — `GetUnreadCounts` RPC.
 - `message_converters.go` — conversion between storage and API message types.
@@ -29,6 +28,6 @@ Every RPC that reads or mutates a `ChatConversation` or its `ChatMessage` childr
 
 ## When to add code here vs. elsewhere
 
-RPC handlers for chat belong here. Shared conversation primitives (topic mapping, system messages, unread count queries) belong in `server/chat`. AI provider calls for summarization are orchestrated from `summary.go` but the prompt and provider interface live in `server/ai`.
+RPC handlers for chat belong here. Shared conversation primitives (topic mapping, system messages, unread count queries) belong in `server/chat`.
 
 Push notifications for chat messages are not in this package. They are handled by `server/notifications/chat_subscriber`, which subscribes to `server/chat_event_bus` in `server/main.go`. The stream-checker and foreground-checker hooks (`HasActiveStream`, `IsUserInForeground`) are wired from this service into that subscriber after construction.

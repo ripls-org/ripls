@@ -1,5 +1,5 @@
 // Part of ExperienceService. Contains AI generation RPCs via mixin:
-// streamGenExperience, convertInformalTime, generateCompletionSummary.
+// streamGenExperience, convertInformalTime.
 part of '../experience_service.dart';
 
 mixin ExperienceGenMethods on ExperienceServiceBase {

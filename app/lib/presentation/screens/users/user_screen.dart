@@ -53,7 +53,7 @@ import 'package:ripls/services/providers.dart' show userRepositoryProvider;
 ///    Plans, each with plain-language subtext stating the
 ///    shared-communities scoping. Person metrics are
 ///    **target-aggregate** per the resolved decision in
-///    docs/issues/2568-directory-and-profiles.md; cold start gates the
+///    the #2568 plan (archived); cold start gates the
 ///    stat sections.
 ///
 /// The top chrome is the content-view pair: back on the left, and on a
@@ -356,11 +356,9 @@ class _UserScreenState extends ConsumerState<UserScreen>
       locale: Localizations.localeOf(context).toString(),
       decimalDigits: 0,
     ).format(dollars);
-    // TODO(#2568): there is no user-level "problems solved" total on
-    // UserImpactMetrics yet. costSavingsCount (the number of cost-saving
-    // transactions the user took part in) is the closest existing proxy;
-    // replace with a dedicated user problems-solved figure when one is
-    // exposed (see docs/issues/2568-directory-and-profiles.md, Decision 2).
+    // There is no user-level "problems solved" total on UserImpactMetrics.
+    // costSavingsCount (the number of cost-saving transactions the user
+    // took part in) is the closest existing proxy.
     final problems = metrics.costSavingsCount;
     // "Plans" — events the target has hosted; the closest existing
     // figure to a true plans-together count (see buildPayload in

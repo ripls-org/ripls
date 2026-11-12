@@ -17,7 +17,7 @@
 // storage so they can be unit-tested without spinning up the workshop
 // service.
 //
-// Per docs/issues/1579-workshop-tab.md the catalyst-pull is the one
+// Per the #1579 plan (archived) the catalyst-pull is the one
 // Workshop surface that does NOT reuse the nudge data model — it
 // produces a host-voiced direct message that routes through the chat
 // infrastructure rather than into the existing creation modals.

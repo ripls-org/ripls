@@ -526,7 +526,7 @@ func (s *Service) RevokeShareLink(
 // metadata that the client uses for post-accept navigation. Event
 // share links additionally require an RSVP write, which the client
 // fires separately via RSVPToExperience after this RPC succeeds (see
-// docs/issues/2050-web-rsvp-actions.md §D1).
+// the #2050 plan's §D1, archived).
 func requireAcceptableViaCommunityJoin(link *models.ShareLink) error {
 	if link.GetCommunityInviteId() == "" &&
 		link.GetGearId() == "" &&

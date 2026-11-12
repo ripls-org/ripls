@@ -14,7 +14,7 @@ freshness:
 
 **Status:** Draft — design review
 **Codename:** `unified-create`
-**Reference prototype:** `docs/concepts/create/bottom-drawer-standalone.html` (PR #1785)
+**Reference prototype:** the bottom-drawer concept mock (archived) (PR #1785)
 **Glass design foundation:** PR #1798 + PR #1854 (modals migrated to frosted glass; see
 `app/lib/presentation/widgets/modal/glass/`)
 **Out of scope:** Community creation (keeps existing `GenCommunity` flow), Loan creation
@@ -133,7 +133,7 @@ This contract is the model for `StreamGenUnifiedCreate`.
 
 ## UX overview
 
-The prototype (`bottom-drawer-standalone.html`) is the source of truth for visual
+The prototype (the bottom-drawer concept mock, archived) is the source of truth for visual
 behaviour. Summary of what we'll implement in Flutter:
 
 ### Stages
@@ -684,7 +684,7 @@ gear, event, and request creation flow with the new UX.
 | 13| Speculative pre-fetch in `StreamGenUnifiedCreate`                    | Begin per-type prompt before classifier completes when confidence threshold hit |
 | 14| Eval threshold gate for classifier accuracy                    | Build on `server/ai/eval/threshold_test.go` |
 | 15| Eval threshold gate for round-trip latency                     | Test that p95 stays ≤ target |
-| 16| Multi-provider classifier via the existing provider abstraction (#1907) | **Done.** Chose Option A from the plan (`docs/issues/1907-multi-provider-classifier.md`): added `ClassifyUnifiedCreate` to `ai.Provider`, implemented on Anthropic / Gemini / OpenAI, fallback + load-balancing inherited for free. Eval runner runs per-(provider, model) pair under `//go:build benchmark` via the shared `Test*Prompt` harness. Targeted `Provider` refactor (collapse short structured-output methods onto a shared primitive) deferred to a follow-up. |
+| 16| Multi-provider classifier via the existing provider abstraction (#1907) | **Done.** Chose Option A from the plan (the #1907 plan, archived): added `ClassifyUnifiedCreate` to `ai.Provider`, implemented on Anthropic / Gemini / OpenAI, fallback + load-balancing inherited for free. Eval runner runs per-(provider, model) pair under `//go:build benchmark` via the shared `Test*Prompt` harness. Targeted `Provider` refactor (collapse short structured-output methods onto a shared primitive) deferred to a follow-up. |
 
 **Validates:** Latency meets targets in [Goals](#goals) on prod-like load, and the classifier rides the same fallback path as every other AI surface.
 
@@ -743,7 +743,7 @@ start diverging in ways that benefit from a single canonical extraction.
 
 ## Related
 
-- `docs/concepts/create/bottom-drawer-standalone.html` — visual + interaction
+- The bottom-drawer concept mock (archived) — visual + interaction
   prototype
 - PR #1785 — concept introduction
 - PR #1798, PR #1854 — frosted-glass modal foundation

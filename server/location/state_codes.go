@@ -15,13 +15,9 @@ import "strings"
 // creates the state region with the full region_name; only the region_code
 // is left empty, which matches today's behavior for non-US callers.
 //
-// TODO(#2807): Backfill existing state regions that were written with an
-// empty region_code before this fix landed. State rows written before this
-// change have region_code="" because extractStateCode was a stub. After this
-// fix ships, new writes get the correct two-letter code but old rows remain
-// stale. The backfill also needs to rescope city region_name values from
-// "Boulder" to "Boulder, CO" for rows written when the state-code suffix
-// was silently dropped. See the issue for the target SQL and rate-limit notes.
+// State regions written while extractStateCode was a stub still have
+// region_code="", and their cities lack the ", CO"-style state suffix in
+// region_name. They are not backfilled; only new writes get the code.
 var stateCodeMap = map[string]string{
 	// 50 states
 	"alabama":        "AL",

@@ -20,7 +20,7 @@
 // (click + pressSequentially) because .fill() sets the a11y-proxy value without
 // reaching Flutter's TextEditingController. See docs/client/testing/semantics_identifiers.md.
 // IMPORTANT: the Flutter bundle is embedded in the Go server binary, so the
-// harness must rebuild tmp/server AFTER build:web:e2e (see 2492-web2-pivot-e2e.md).
+// harness must rebuild tmp/server AFTER build:web:e2e (see the #2492 web2-pivot e2e plan, archived).
 
 import { test, expect, type Browser } from '../../lib/fixtures.js';
 import { ExperienceService, RSVPIntention } from '../../gen/ripls/api/experience_service_pb.js';

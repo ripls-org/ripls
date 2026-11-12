@@ -762,12 +762,10 @@ message DraftImpactEstimateResponse {
   // The fully-stamped impact estimate with per-attribute provenance.
   ImpactEstimate impact = 1;
 
-  // Always absent. This carried free-form model reasoning alongside the
-  // AI inference; no client ever read it (#2936).
-  //
-  // TODO(#2936): #2938 deletes this field and reserves 2 once the
-  // release carrying #2936 has soaked — see docs/proto_conventions.md.
-  optional string llm_reasoning = 2 [deprecated = true];
+  // Field 2 (llm_reasoning) carried free-form model reasoning that no
+  // client read; deprecated in #2936, now removed.
+  reserved 2;
+  reserved "llm_reasoning";
 }
 
 // Request to recompute an impact estimate using caller-supplied input overrides.

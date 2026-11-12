@@ -33,7 +33,7 @@ import 'package:ripls/presentation/widgets/sharing/shared_with_card.dart';
 
 /// RequestReadShell is the redesigned read-mode layout for a request: a
 /// bottom-anchored editorial sheet over the full-bleed hero, mirroring
-/// `ExperienceReadShell` (docs/issues/2293). It replaces the old tabbed
+/// `ExperienceReadShell` (the #2293 plan, archived). It replaces the old tabbed
 /// Request/Discuss layout — the discussion lives in a card that morph-expands
 /// into the conversation, the WHERE fact card morph-expands into the location
 /// panel, and the WHO'S IN card morph-expands into the helpers panel.

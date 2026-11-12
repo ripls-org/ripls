@@ -474,8 +474,7 @@ func CascadeDeleteCommunityNotificationPreferencesByCommunityID(ctx context.Cont
 // is_revoked flag stays untouched — that's the user-facing manual
 // revoke; deletion vs revoke are distinct states.
 //
-// TODO(#2056): Remove this function and its call sites once the legacy
-// community_invitation_link table has been dropped. ShareLink rows are
+// community_invitation_link is the legacy table; ShareLink rows are
 // cascaded by CascadeDeleteShareLinksByCommunityID below.
 func CascadeDeleteCommunityInvitationLinkByCommunityID(ctx context.Context, storage *ProtoSQLStorage, communityID string, deletedMetadata *models.DeletedMetadata) error {
 	logger := logging.LoggerWithContext(ctx).With(
@@ -752,8 +751,7 @@ func CascadeRestoreCommunityNotificationPreferencesByCommunityID(ctx context.Con
 // CascadeRestoreCommunityGearByCommunityID. Does not touch
 // is_revoked — links manually revoked stay revoked.
 //
-// TODO(#2056): Remove this function and its call sites once the legacy
-// community_invitation_link table has been dropped. ShareLink rows are
+// community_invitation_link is the legacy table; ShareLink rows are
 // restored by CascadeRestoreShareLinksByCommunityID below.
 func CascadeRestoreCommunityInvitationLinkByCommunityID(ctx context.Context, storage *ProtoSQLStorage, communityID, communityDeletedBy string, communityDeletedAt int64) error {
 	logger := logging.LoggerWithContext(ctx).With(

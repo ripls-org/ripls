@@ -3,7 +3,6 @@ package chat
 import (
 	"sync"
 
-	"go.ripls.org/ripls/server/ai"
 	api "go.ripls.org/ripls/server/gen/ripls/api"
 	"go.ripls.org/ripls/server/gen/ripls/api/apiconnect"
 
@@ -22,7 +21,6 @@ type Service struct {
 	storage         *storage.ProtoSQLStorage
 	chatConvStorage *storage.ChatConversationStorage
 	bus             chat_event_bus.Publisher
-	aiProvider      ai.Provider
 
 	// In-memory stream registry for real-time message broadcasting.
 	streamsMu sync.RWMutex
@@ -44,11 +42,6 @@ func New(sqlStorage *storage.ProtoSQLStorage, bus chat_event_bus.Publisher) *Ser
 		streams:          make(map[string][]streamInfo),
 		userInForeground: make(map[string]bool),
 	}
-}
-
-// SetAIProvider sets the AI provider for conversation summarization.
-func (s *Service) SetAIProvider(provider ai.Provider) {
-	s.aiProvider = provider
 }
 
 // HasActiveStream is the exported stream-presence hook wired into the chat

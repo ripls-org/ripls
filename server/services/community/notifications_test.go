@@ -17,7 +17,7 @@ import (
 // setupTestServiceWithNotifications returns the standard test trio plus a
 // drain helper that blocks until in-flight bus dispatch completes. Replaces
 // the old per-call notificationDone channel pattern (G2 in
-// docs/issues/510-community-event-pubsub-v2.md).
+// the #510 plan, archived).
 func setupTestServiceWithNotifications(t *testing.T) (*Service, *storage.ProtoSQLStorage, *notifications.MockService, func()) {
 	testStorage := setupTestStorage(t)
 	mockNotif := notifications.NewMockService()

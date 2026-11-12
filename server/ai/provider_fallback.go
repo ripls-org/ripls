@@ -26,7 +26,6 @@ type MethodFallbacks struct {
 	GenerateRequestFromImage      []Provider
 	GenerateExperienceFromText    []Provider
 	GenerateExperienceFromImage   []Provider
-	GenerateConversationSummary   []Provider
 	ParseInformalTime             []Provider
 	GenerateExperienceSuggestions []Provider
 	InferSocialAttributes         []Provider
@@ -51,7 +50,6 @@ func (m *MethodFallbacks) byMethod() map[string][]Provider {
 		"GenerateRequestFromImage":      m.GenerateRequestFromImage,
 		"GenerateExperienceFromText":    m.GenerateExperienceFromText,
 		"GenerateExperienceFromImage":   m.GenerateExperienceFromImage,
-		"GenerateConversationSummary":   m.GenerateConversationSummary,
 		"ParseInformalTime":             m.ParseInformalTime,
 		"GenerateExperienceSuggestions": m.GenerateExperienceSuggestions,
 		"InferSocialAttributes":         m.InferSocialAttributes,
@@ -249,36 +247,6 @@ func (p *FallbackProvider) GenerateRequestFromImage(ctx context.Context, image *
 		p.getFallbacksForMethod("GenerateRequestFromImage"),
 		func(fb Provider) (*RequestGeneration, error) {
 			return fb.GenerateRequestFromImage(ctx, image, region)
-		},
-	)
-}
-
-// GenerateConversationSummary tries the primary provider, then fallbacks on any error.
-func (p *FallbackProvider) GenerateConversationSummary(ctx context.Context, messages []ConversationMessage, requestTitle, requestDescription string, style SummaryStyle) (*ConversationSummary, error) {
-	return withFallback(
-		ctx,
-		"GenerateConversationSummary",
-		func() (*ConversationSummary, error) {
-			return p.primary.GenerateConversationSummary(ctx, messages, requestTitle, requestDescription, style)
-		},
-		p.getFallbacksForMethod("GenerateConversationSummary"),
-		func(fb Provider) (*ConversationSummary, error) {
-			return fb.GenerateConversationSummary(ctx, messages, requestTitle, requestDescription, style)
-		},
-	)
-}
-
-// GenerateExperienceCompletionSummary tries the primary provider, then fallbacks on any error.
-func (p *FallbackProvider) GenerateExperienceCompletionSummary(ctx context.Context, messages []ConversationMessage, experienceTitle, experienceDescription string, attendeeNames []string) (*ConversationSummary, error) {
-	return withFallback(
-		ctx,
-		"GenerateExperienceCompletionSummary",
-		func() (*ConversationSummary, error) {
-			return p.primary.GenerateExperienceCompletionSummary(ctx, messages, experienceTitle, experienceDescription, attendeeNames)
-		},
-		p.getFallbacksForMethod("GenerateExperienceCompletionSummary"),
-		func(fb Provider) (*ConversationSummary, error) {
-			return fb.GenerateExperienceCompletionSummary(ctx, messages, experienceTitle, experienceDescription, attendeeNames)
 		},
 	)
 }

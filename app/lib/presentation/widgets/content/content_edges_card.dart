@@ -5,7 +5,7 @@ import 'package:ripls/presentation/widgets/content/content_edge_data.dart';
 
 /// ContentEdgesCard renders the contribution graph ("who's bringing what") on
 /// the redesigned content sheet (see
-/// docs/issues/2278-experience-content-redesign.md): an accent-tinted card with
+/// the #2278 plan, archived): an accent-tinted card with
 /// a tappable header, a divided list of participant [rows], and an optional
 /// [footer] slot for the viewer's "you-gap" action row.
 ///

@@ -13,7 +13,7 @@ freshness:
 ---
 # Phone-First Invite → Verify → RSVP Workflow
 
-The phone-first pivot (epic #2492; canonical plan `docs/issues/2492-phone-first-pivot.md`)
+The phone-first pivot (epic #2492; its canonical plan is archived)
 lets a person with **no Ripls account and no app** receive an invite to an item, respond on the
 **web**, verify ownership of their **phone**, and become a real member — all without installing the
 app. This doc describes that loop for **events** (the v1 scope, WEB-2) and is the source of truth the
@@ -63,7 +63,7 @@ phone-first Playwright e2e exercises.
 Exercised by the Playwright e2e (`e2e/tests/workflows/phone-rsvp-full-loop.spec.ts`) against the
 **Firebase Auth Emulator** (deterministic OTP) and a **deterministic in-process AI provider**
 (`--mock-ai-provider`, so the host can drive the real unified-create UI without a live LLM); see
-`docs/issues/2492-web2-pivot-e2e.md`.
+the #2492 web2-pivot e2e plan (archived).
 
 ### Preconditions
 

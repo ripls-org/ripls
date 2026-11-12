@@ -7,7 +7,7 @@ import (
 )
 
 // TestEveryEventTypeClassified is the load-bearing enforcement for the
-// generalized-undo feature (docs/ai/undo_plan.md §10.6). It fails when
+// generalized-undo feature (the undo plan's §10.6, archived). It fails when
 // any CommunityEventType enum value lacks an entry in Registry —
 // which is what we want when a contributor adds a new state-changing
 // event without thinking through its undo classification.

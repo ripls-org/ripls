@@ -15,8 +15,9 @@ import (
 // nudges for every (host, community) pair so a host opening the tab
 // sees content immediately rather than paying generation latency.
 //
-// Per docs/ai/workshop.md Decision 8, the job **does not enqueue push
-// notifications** — pre-warming the database is the whole point. The
+// Per Decision 8 of the Workshop design notes (archived), the job
+// **does not enqueue push notifications** — pre-warming the database is
+// the whole point. The
 // job consumes the workshop momentum subpackage directly rather than the
 // Workshop service to avoid pulling in the Connect handlers it doesn't
 // need.

@@ -19,7 +19,6 @@ import '../../../services/gear_service.dart';
 import '../../../services/post_creation_service.dart';
 import '../../../services/providers.dart';
 import '../../providers/screen_modal_provider.dart';
-import '../../viewmodels/gen_experience_view_model.dart' show ExperienceCreationResult;
 import '../../viewmodels/home_tab_view_model.dart'
     show homeNeedsYouCountProvider;
 import '../../viewmodels/home_view_model.dart';
@@ -118,20 +117,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           await openBlankCreateGear(context, ref);
         },
         onInviteExperience: () async {
-          // Capture the outer screen context before any async gaps, since
-          // the plus-button modal's builder context may be unmounted by the
-          // time MarkCompletedModal needs to be shown.
-          final screenContext = this.context;
-          final result = await ExperienceCreationModal.show(context);
-          if (!mounted) return;
-          if (result is ExperienceCreationResult && result.isPastEvent) {
-            // TODO(#2040): MarkCompletedModal needs a communityId. The pre-#1895
-            // path read it from selectedCommunity (always null after #1895). The
-            // creation flow should plumb the chosen community through
-            // ExperienceCreationResult so this works again. Until then, skip the
-            // post-create completion modal — the experience still creates.
-            if (!screenContext.mounted) return;
-          }
+          await ExperienceCreationModal.show(context);
         },
         onRequestSomething: () async {
           final communityState = ref.read(communitiesProvider);

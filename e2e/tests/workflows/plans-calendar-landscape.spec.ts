@@ -23,7 +23,7 @@
 // and clickable while their CanvasKit pixels are painted past the viewport
 // edge, so a passing click proves nothing about human reachability.
 //
-// See docs/client/calendar.md and docs/issues/2908-web-aspect-ratios.md.
+// See docs/client/calendar.md and the #2908 plan (archived).
 
 import { test, expect } from '../../lib/fixtures.js';
 import { installRequestIdOverride } from '../../lib/connect.js';

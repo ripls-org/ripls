@@ -110,7 +110,7 @@ func (g *Generator) CreateStory(ctx context.Context, req CreateStoryRequest) (*m
 // Every story renders from a structured template: the result carries a
 // template_key plus params the client resolves in the viewer's locale,
 // alongside literal English strings kept for older clients
-// (TODO(#2159) retires those once historical rows age out).
+// (and as the fallback for clients that don't recognize the key).
 func (g *Generator) generateContent(ctx context.Context, req CreateStoryRequest) templateResult {
 	logger := logging.LoggerWithContext(ctx).With(
 		"operation", "generateContent",

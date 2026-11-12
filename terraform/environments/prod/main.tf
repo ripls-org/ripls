@@ -136,7 +136,7 @@ locals {
 #   gcloud secrets versions add feedback-signer-key --data-file=/tmp/fb-signer.json \
 #     --project=<project>   # then: shred -u /tmp/fb-signer.json
 # Rotating/deleting the key invalidates every outstanding feedback URL — plan a
-# Phase 2 re-backfill when rotating (see docs/issues/2549-feedback-signed-url.md).
+# Phase 2 re-backfill when rotating (see the #2549 plan, archived).
 resource "google_service_account" "feedback_url_signer" {
   project      = var.project_id
   account_id   = "feedback-url-signer"

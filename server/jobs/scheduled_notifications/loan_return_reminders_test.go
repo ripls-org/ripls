@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/text/language"
+
 	"go.ripls.org/ripls/server/gen/ripls/models"
 )
 
@@ -353,7 +355,7 @@ func TestLoanReturnReminderDispatcher_Render(t *testing.T) {
 					},
 				},
 			}
-			notif, err := d.Render(ctx, row)
+			notif, err := d.Render(ctx, row, language.English)
 			if err != nil {
 				t.Fatalf("Render: %v", err)
 			}
@@ -405,7 +407,7 @@ func TestLoanReturnReminderDispatcher_RenderSkipsWhenAnchorMissing(t *testing.T)
 			},
 		},
 	}
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}
@@ -433,7 +435,7 @@ func TestLoanReturnReminderDispatcher_RenderSkipsWhenLoanNoLongerActive(t *testi
 			},
 		},
 	}
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}
@@ -465,7 +467,7 @@ func TestLoanReturnReminderDispatcher_RenderSkipsWhenPreferenceDisabled(t *testi
 			},
 		},
 	}
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}
@@ -494,7 +496,7 @@ func TestLoanReturnReminderDispatcher_PreferenceFetchErrorsFailOpen(t *testing.T
 			},
 		},
 	}
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render returned error: %v", err)
 	}

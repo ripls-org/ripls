@@ -10,7 +10,7 @@
 // Related crashes fixed:
 // - GearNotifier.loadGearDetails disposal crash
 // - ExperienceContentView disposal crash
-// See: docs/crashlytics/01292026/mitigation.md
+// See: the 2026-01-29 Crashlytics mitigation report (archived)
 
 import 'dart:async';
 

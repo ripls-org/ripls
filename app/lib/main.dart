@@ -100,7 +100,7 @@ void main() async {
       // Force the Flutter Web semantics tree to serialize to DOM on
       // every load, rather than waiting for assistive tech to be
       // detected. Two reasons: (1) accessibility — the a11y plan
-      // (docs/ai/accessibility_plan.md) wants this anyway so screen
+      // (the accessibility plan, archived) wants this anyway so screen
       // readers don't need a detection round-trip; (2) the e2e
       // Playwright harness (#2162) queries widgets via the
       // `flt-semantics-identifier` DOM attribute that this tree

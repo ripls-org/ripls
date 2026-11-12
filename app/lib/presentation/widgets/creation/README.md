@@ -175,6 +175,6 @@ When migrating a creation modal to use these components:
 
 ## See Also
 
-- [docs/ai/create2.md](../../../../../../docs/ai/create2.md) - Full migration plan
+- The create2 design notes (archived) - Full migration plan
 - [docs/client/modals.md](../../../../../../docs/client/modals.md) - Modal architecture
 - [docs/client/content.md](../../../../../../docs/client/content.md) - Content components

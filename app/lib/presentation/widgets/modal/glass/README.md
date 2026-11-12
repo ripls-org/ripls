@@ -37,12 +37,12 @@ bottom-sheet modal in the app composes from the widgets in this directory.
 
 Only when the same shape is needed across **two or more** glass modals.
 A modal-specific layout stays in the modal file — don't preemptively
-hoist patterns. See `docs/issues/1797-glass-modal-revamp.md` §Phase 1
+hoist patterns. See the #1797 plan's §Phase 1 (archived)
 for the original primitive set.
 
 
 ## Reference
 
-- Visual target: `docs/concepts/modals/time-modal.png`
+- Visual target: the time-modal concept mock (archived)
 - Design source: `docs/cowork/App Design/time-modal-standalone.html`
-- Plan: `docs/issues/1797-glass-modal-revamp.md`
+- Plan: the #1797 plan (archived)

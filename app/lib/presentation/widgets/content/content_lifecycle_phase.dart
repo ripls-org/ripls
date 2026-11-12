@@ -1,6 +1,6 @@
 /// ContentLifecyclePhase is the presentation-neutral lifecycle a content view
 /// moves through. It drives the hero treatment, chip copy, and CTA across the
-/// redesigned sheet-over-hero surface (see docs/issues/2278-experience-content-redesign.md).
+/// redesigned sheet-over-hero surface (see the #2278 plan, archived).
 ///
 /// It is deliberately decoupled from any proto enum: the experience (and, later,
 /// request) view-models derive it from their own state + the current time, and

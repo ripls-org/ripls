@@ -17,9 +17,10 @@ quiet-hours behavior, preference gating, and the per-item-type pattern
   reconciler's desired-state set against current storage and applies
   inserts / fire-at updates / hard-deletes.
 - `dispatch.go` — `Dispatch(ctx, storage, notif, dispatchers, limit)`:
-  pulls due rows, applies quiet hours, routes each row to the
-  matching `Dispatcher`, claims via atomic
-  `ClaimAndDeleteScheduledNotification`, and delivers.
+  pulls due rows, batch-loads their recipients' locales once per tick,
+  applies quiet hours, routes each row to the matching `Dispatcher`,
+  claims via atomic `ClaimAndDeleteScheduledNotification`, renders in
+  the recipient's locale, and delivers.
 - `quiet_hours.go` — timezone-aware `InQuietHours` helper used by the
   dispatcher to skip-and-wait between 22:00 and 07:00 local.
 - `experience_reminders.go` — concrete `Reconciler` + `Dispatcher` for

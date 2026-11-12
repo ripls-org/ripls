@@ -67,9 +67,9 @@ The feed appends the terminator and nothing else. `appendTerminator`
 `TestAppendTerminator_NoInterleavedNudges` pins that stored rows never surface
 between content items.
 
-`GetFeedRequest.debug_nudge_count` is deprecated and ignored — it asked the
-server to generate and prepend N fresh nudges for development, and there is
-nothing left to generate.
+`GetFeedRequest` field 4 (`debug_nudge_count`, which asked the server to
+generate and prepend N fresh nudges for development) is removed and reserved;
+there is nothing left to generate.
 
 ## Terminator Pool
 

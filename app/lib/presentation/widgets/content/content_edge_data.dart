@@ -1,5 +1,5 @@
 /// EdgeStatus is the participation state shown as a pill on a content edge row
-/// (see docs/issues/2278-experience-content-redesign.md). It is presentation-
+/// (see the #2278 plan, archived). It is presentation-
 /// neutral: the experience (and later request) view-model derives it, and
 /// [ContentEdgeRow] maps it to a colored pill + label.
 enum EdgeStatus {

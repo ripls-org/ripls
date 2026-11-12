@@ -200,7 +200,6 @@ func (s *Service) GenRequest(
 					Sources:    generation.ValueEstimate.Sources,
 				},
 			},
-			Category: "", // TODO(#2013): Add category detection to AI provider
 		}
 	}
 
@@ -327,7 +326,6 @@ func (s *Service) GenRequestFromMedia(
 					Sources:    generation.ValueEstimate.Sources,
 				},
 			},
-			Category: "", // TODO(#2013): Add category detection to AI provider
 		}
 	}
 
@@ -444,20 +442,4 @@ func (s *Service) findAndStoreStockImage(ctx context.Context, keywords []string)
 		"stock_image_id", stockImage.Id)
 
 	return mediaID, nil
-}
-
-// GenerateResolutionSummary is retired (#2936). It used to write the
-// requester's wrap-up in first person, thanking the people who helped.
-//
-// #992 removed the modal step that showed it; this removes the
-// generation behind it. The handler stays as an Unimplemented stub only
-// because the generated RequestServiceHandler interface still declares
-// the method; TODO(#2938): delete it and the RPC once the release
-// carrying #2936 has soaked, per docs/proto_conventions.md.
-func (s *Service) GenerateResolutionSummary(
-	_ context.Context,
-	_ *connect.Request[api.GenerateResolutionSummaryRequest],
-) (*connect.Response[api.GenerateResolutionSummaryResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented,
-		fmt.Errorf("resolution summaries are no longer generated"))
 }

@@ -15,7 +15,7 @@ import 'package:ripls/presentation/widgets/modal/glass/glass_sheet.dart';
 ///
 /// The canonical replacement for any flow that previously chained
 /// `showDatePicker` + `showTimePicker` (or their glass equivalents). The
-/// design and rationale live in [docs/issues/2124-combined-datetime-modal.md].
+/// design and rationale live in the #2124 plan (archived).
 ///
 /// Renders its own content (no sheet chrome) so it can be embedded inline on a
 /// screen *or* wrapped in a bottom sheet via [DateTimePickerModal.show].

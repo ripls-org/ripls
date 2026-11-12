@@ -14,7 +14,7 @@ import 'package:ripls/presentation/widgets/modal/glass/glass_pickers.dart';
 /// action rows ("Select a date", "Select a time", "Select duration") using
 /// the modal-glass palette. There is one styling for this form across the
 /// app — callers that don't have a glass surface still get the glass look
-/// (per docs/issues/1797-glass-modal-revamp.md: never fall back to Material
+/// (per the #1797 plan, archived: never fall back to Material
 /// default pickers, even when the parent surface is being redesigned
 /// separately).
 ///

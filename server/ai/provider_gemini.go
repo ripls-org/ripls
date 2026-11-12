@@ -176,52 +176,6 @@ func (p *GeminiProvider) GenerateRequestFromImage(ctx context.Context, image *De
 	return f.Result, f.Err
 }
 
-// GenerateConversationSummary creates a summary of a conversation using Gemini.
-func (p *GeminiProvider) GenerateConversationSummary(ctx context.Context, messages []ConversationMessage, requestTitle, requestDescription string, style SummaryStyle) (*ConversationSummary, error) {
-	if len(messages) == 0 {
-		return nil, fmt.Errorf("messages cannot be empty")
-	}
-	logger := logging.LoggerWithContext(ctx).With(
-		"provider", p.Name(),
-		"operation", "GenerateConversationSummary",
-		"model", p.model,
-		"style", style,
-	)
-	startTime := time.Now()
-	promptText := buildConversationSummaryPrompt(messages, requestTitle, requestDescription, style)
-	type outputSchema struct {
-		Summary string `json:"summary"`
-	}
-	result, err := geminiCallStructured[outputSchema](ctx, logger, startTime, p.g, p.model, p.temperature,
-		ai.WithMessages(ai.NewUserMessage(ai.NewTextPart(promptText))))
-	if err != nil {
-		return nil, err
-	}
-	logger.InfoContext(ctx, "gemini API call completed", "message_count", len(messages), "duration_ms", time.Since(startTime).Milliseconds())
-	return &ConversationSummary{Summary: result.Summary}, nil
-}
-
-// GenerateExperienceCompletionSummary creates a summary of how an experience went using Gemini.
-func (p *GeminiProvider) GenerateExperienceCompletionSummary(ctx context.Context, messages []ConversationMessage, experienceTitle, experienceDescription string, attendeeNames []string) (*ConversationSummary, error) {
-	logger := logging.LoggerWithContext(ctx).With(
-		"provider", p.Name(),
-		"operation", "GenerateExperienceCompletionSummary",
-		"model", p.model,
-	)
-	startTime := time.Now()
-	promptText := buildExperienceCompletionSummaryPrompt(messages, experienceTitle, experienceDescription, attendeeNames)
-	type outputSchema struct {
-		Summary string `json:"summary"`
-	}
-	result, err := geminiCallStructured[outputSchema](ctx, logger, startTime, p.g, p.model, p.temperature,
-		ai.WithMessages(ai.NewUserMessage(ai.NewTextPart(promptText))))
-	if err != nil {
-		return nil, err
-	}
-	logger.InfoContext(ctx, "gemini API call completed", "message_count", len(messages), "duration_ms", time.Since(startTime).Milliseconds())
-	return &ConversationSummary{Summary: result.Summary}, nil
-}
-
 // ParseInformalTime converts an informal time description to structured JSON using Gemini.
 // Returns the raw JSON string from the LLM for parsing by the caller.
 func (p *GeminiProvider) ParseInformalTime(ctx context.Context, informalDescription, currentTime, timezone string) (string, error) {

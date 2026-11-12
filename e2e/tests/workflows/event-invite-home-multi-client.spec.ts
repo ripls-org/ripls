@@ -21,9 +21,9 @@
 // not Playwright-queryable. The event's PRESENCE on home is asserted through
 // the web UI (the up-next row's a11y label is its title).
 //
-// TODO(#2531): the host-sees-the-change step uses an explicit reload because
-// the host's already-open page does not yet update live via
-// StreamUserEvents. Drop the reload once cross-client streaming is proven.
+// The host-sees-the-change step reloads, so it checks on-load correctness;
+// live no-reload delivery via StreamUserEvents is covered by
+// event-rsvp-streaming-multi-client.spec.ts.
 
 import { test, expect } from '../../lib/fixtures.js';
 import { installRequestIdOverride, createTestClient } from '../../lib/connect.js';
@@ -217,7 +217,7 @@ test('host invites individuals to an event; they see it on home; status syncs bo
     .toBe(HomeUpNextStatus.GOING);
 
   // ── 4. The host, after a reload, sees Bob in the roster ──────────
-  // TODO(#2531): reload stands in for live StreamUserEvents updates.
+  // Fresh load; live streaming is covered by event-rsvp-streaming-multi-client.spec.ts.
   {
     const ctx = await newRecordingContext(browser);
     await injectAuth(ctx, {

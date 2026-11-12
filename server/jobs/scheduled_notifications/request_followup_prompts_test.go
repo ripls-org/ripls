@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/text/language"
+
 	"go.ripls.org/ripls/server/clock"
 	"go.ripls.org/ripls/server/gen/ripls/models"
 	"go.ripls.org/ripls/server/storage"
@@ -273,7 +275,7 @@ func TestRequestFollowupDispatcherRender(t *testing.T) {
 			communities:  map[string]*models.Community{"c-1": community},
 		}
 		d := &RequestFollowupDispatcher{world: world}
-		notif, err := d.Render(ctx, makeRow("c-1"))
+		notif, err := d.Render(ctx, makeRow("c-1"), language.English)
 		if err != nil {
 			t.Fatalf("Render: %v", err)
 		}
@@ -302,7 +304,7 @@ func TestRequestFollowupDispatcherRender(t *testing.T) {
 			communities:  map[string]*models.Community{"c-1": community},
 		}
 		d := &RequestFollowupDispatcher{world: world}
-		notif, err := d.Render(ctx, makeRow("c-1"))
+		notif, err := d.Render(ctx, makeRow("c-1"), language.English)
 		if err != nil {
 			t.Fatalf("Render: %v", err)
 		}
@@ -322,7 +324,7 @@ func TestRequestFollowupDispatcherRender(t *testing.T) {
 			communities:  map[string]*models.Community{"c-1": community},
 		}
 		d := &RequestFollowupDispatcher{world: world}
-		notif, err := d.Render(ctx, makeRow("c-1"))
+		notif, err := d.Render(ctx, makeRow("c-1"), language.English)
 		if err != nil {
 			t.Fatalf("Render: %v", err)
 		}
@@ -340,7 +342,7 @@ func TestRequestFollowupDispatcherRender(t *testing.T) {
 			},
 		}
 		d := &RequestFollowupDispatcher{world: world}
-		notif, err := d.Render(ctx, makeRow("c-1"))
+		notif, err := d.Render(ctx, makeRow("c-1"), language.English)
 		if err != nil {
 			t.Fatalf("Render: %v", err)
 		}
@@ -356,7 +358,7 @@ func TestRequestFollowupDispatcherRender(t *testing.T) {
 			prefsErr:     fmt.Errorf("db error"),
 		}
 		d := &RequestFollowupDispatcher{world: world}
-		notif, err := d.Render(ctx, makeRow("c-1"))
+		notif, err := d.Render(ctx, makeRow("c-1"), language.English)
 		if err != nil {
 			t.Fatalf("Render: %v", err)
 		}
@@ -372,7 +374,7 @@ func TestRequestFollowupDispatcherRender(t *testing.T) {
 			prefs:        map[string]*models.CommunityNotificationPreferences{"u-req": {}},
 		}
 		d := &RequestFollowupDispatcher{world: world}
-		notif, err := d.Render(ctx, makeRow("c-1"))
+		notif, err := d.Render(ctx, makeRow("c-1"), language.English)
 		if err != nil {
 			t.Fatalf("Render: %v", err)
 		}
@@ -391,7 +393,7 @@ func TestRequestFollowupDispatcherRender(t *testing.T) {
 			communities:  map[string]*models.Community{"c-1": deletedCommunity},
 		}
 		d := &RequestFollowupDispatcher{world: world}
-		notif, err := d.Render(ctx, makeRow("c-1"))
+		notif, err := d.Render(ctx, makeRow("c-1"), language.English)
 		if err != nil {
 			t.Fatalf("Render: %v", err)
 		}
@@ -466,7 +468,7 @@ func TestRequestFollowupDispatcher_Render(t *testing.T) {
 		},
 	}
 
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}

@@ -11,8 +11,8 @@ import (
 // BaselineReportSchemaVersion is the current shape of the per-suite
 // JSON written under -eval-report-out. Bump when the schema changes in
 // a way that breaks consumers; v1 captures aggregate pass rates and
-// latency stats only (no per-case detail). See
-// docs/ai/eval/baselines/README.md for the field semantics.
+// latency stats only (no per-case detail). See the eval baselines
+// README (archived) for the field semantics.
 const BaselineReportSchemaVersion = 1
 
 // BaselineReport is the machine-readable record emitted per Test*Prompt

@@ -12,7 +12,7 @@ import 'package:ripls/presentation/widgets/content/content_lifecycle_phase.dart'
 const double kFarAwayThresholdMeters = 160000;
 
 /// Presentation derivations for the redesigned content view
-/// (docs/issues/2278-experience-content-redesign.md), layered onto
+/// (the #2278 plan, archived), layered onto
 /// [ExperienceState] as an extension so the core view-model file stays focused.
 /// Re-exported from `experience_view_model.dart`, so importers of the
 /// view-model get these for free.

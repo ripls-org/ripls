@@ -50,14 +50,10 @@ message GetFeedRequest {
   // Pagination: cursor for next page (from previous response).
   string page_token = 3;
 
-  // Always ignored. This asked the server to generate and prepend N fresh
-  // nudges so a developer could see nudge cards without scrolling past eight
-  // content items. Generic nudges are gone (#2936), so there is nothing to
-  // generate.
-  //
-  // TODO(#2936): #2938 deletes this field and reserves 4 once the release
-  // carrying #2936 has soaked — see docs/proto_conventions.md.
-  int32 debug_nudge_count = 4 [deprecated = true];
+  // Field 4 (debug_nudge_count) asked the server to prepend generated
+  // nudges; generic nudges were removed in #2936, then the field.
+  reserved 4;
+  reserved "debug_nudge_count";
 
   // Community IDs to get feed for. Returns the union of feed items across all
   // specified communities, deduplicated by item ID. The user must be a member

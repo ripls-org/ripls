@@ -18,7 +18,7 @@ import (
 
 // UndoSelectRecipient reverses a prior SelectRecipient action.
 //
-// Flow (see docs/ai/undo_plan.md §6 for the canonical version):
+// Flow (see the undo plan's §6, archived, for the canonical version):
 //  1. Load the CommunityEvent by id; validate exists, actor matches,
 //     event type is TRANSFER_RECIPIENT_SELECTED, not already undone.
 //  2. Load the transfer; drift-check that it is still in RECIPIENT_SELECTED.

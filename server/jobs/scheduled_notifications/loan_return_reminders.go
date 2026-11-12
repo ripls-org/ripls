@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/text/language"
+
 	"go.ripls.org/ripls/server/clock"
 	"go.ripls.org/ripls/server/gen/ripls/models"
 	"go.ripls.org/ripls/server/logging"
@@ -184,7 +186,7 @@ func (d *LoanReturnReminderDispatcher) QuietHoursPolicy(_ *models.ScheduledNotif
 // Render reads the current loan + gear and builds the Notification.
 // Returns (nil, nil) when the loan is gone, no longer active, or the
 // recipient has disabled loan-return reminders.
-func (d *LoanReturnReminderDispatcher) Render(ctx context.Context, row *models.ScheduledNotification) (*models.Notification, error) {
+func (d *LoanReturnReminderDispatcher) Render(ctx context.Context, row *models.ScheduledNotification, locale language.Tag) (*models.Notification, error) {
 	loanRow := row.GetLoan()
 	if loanRow == nil {
 		return nil, fmt.Errorf("row missing loan variant")
@@ -229,7 +231,7 @@ func (d *LoanReturnReminderDispatcher) Render(ctx context.Context, row *models.S
 	}
 	ownerName, _ := d.world.GetUserDisplayName(ctx, transfer.OwnerId)
 
-	return notification_content.SystemNotification(ctx, &models.CommunityEventPayload{
+	return notification_content.SystemNotification(ctx, locale, &models.CommunityEventPayload{
 		CommunityId: row.GetCommunityId(),
 		EventType:   loanReturnEventType(loanRow.OffsetSecondsFromAnchor),
 		GearId:      transfer.GearId,

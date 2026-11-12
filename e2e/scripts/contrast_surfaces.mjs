@@ -2,7 +2,7 @@
 //
 // Declarative on purpose: adding a surface should be a data change, not a code
 // change, because the matrix is expected to grow through Phase 2 of
-// docs/issues/2770-token-contrast-evaluation.md.
+// the #2770 plan (archived).
 //
 // The set is defined by one rule: every place a token is composited onto
 // something other than `background` or `surface` belongs here. Flat surfaces are

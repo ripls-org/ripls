@@ -349,7 +349,6 @@ func (s *Service) GenExperience(
 					Sources:    aiResponse.ValueEstimate.Sources,
 				},
 			},
-			Category: "", // TODO(#2013): Add category detection to AI provider
 		}
 	}
 

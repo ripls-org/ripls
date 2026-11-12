@@ -276,6 +276,54 @@ func TestService_NudgeLocationPollVoters(t *testing.T) {
 	})
 }
 
+// TestService_NudgeLocationPollVotersUsesRecipientLocale verifies the nudge
+// push renders in the recipient's preferred_language, not the organizer's
+// (#3276): the non-voter prefers Spanish and gets Spanish copy even though the
+// owner's request context carries no locale (English).
+func TestService_NudgeLocationPollVotersUsesRecipientLocale(t *testing.T) {
+	fx := setupLocationPollManageFixture(t)
+
+	user := &models.User{}
+	if err := fx.testStorage.GetByID(context.Background(), fx.nonVoterID, user); err != nil {
+		t.Fatalf("GetByID non-voter: %v", err)
+	}
+	es := "es"
+	user.PreferredLanguage = &es
+	if err := fx.testStorage.Update(context.Background(), user); err != nil {
+		t.Fatalf("Update non-voter preferred_language: %v", err)
+	}
+
+	mockNotify := notifications.NewMockService()
+	prev := fx.service.notificationService
+	fx.service.notificationService = mockNotify
+	t.Cleanup(func() { fx.service.notificationService = prev })
+
+	if _, err := fx.service.NudgeLocationPollVoters(fx.ownerCtx,
+		connect.NewRequest(&api.NudgeLocationPollVotersRequest{
+			ExperienceId: fx.expID,
+		})); err != nil {
+		t.Fatalf("NudgeLocationPollVoters failed: %v", err)
+	}
+
+	// Neither RSVP has voted yet, so both are nudged: the Spanish-preferring
+	// non-voter in Spanish, the voter (no stored preference) in English.
+	byUser := map[string]*models.Notification{}
+	for _, c := range mockNotify.GetCalls() {
+		byUser[c.UserID] = c.Notification
+	}
+	if len(byUser) != 2 {
+		t.Fatalf("nudged %d users, want 2", len(byUser))
+	}
+	if n := byUser[fx.nonVoterID]; n.Title != "¿Dónde nos vemos?" ||
+		n.Body != "Elige un lugar para Loc Manage Test Experience" {
+		t.Errorf("Spanish recipient push = (%q, %q), want Spanish copy", n.Title, n.Body)
+	}
+	if n := byUser[fx.voterID]; n.Title != "Where should we meet?" ||
+		n.Body != "Pick a place for Loc Manage Test Experience" {
+		t.Errorf("default recipient push = (%q, %q), want English copy", n.Title, n.Body)
+	}
+}
+
 // TestService_FlexibleVoteCountsAsReplied verifies that a FLEXIBLE
 // ("any spot works") vote marks the voter as having replied to the poll, so
 // the nudge set excludes them just as it does an explicit YES voter.

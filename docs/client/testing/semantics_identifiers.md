@@ -225,5 +225,5 @@ apply to `identifier:` — verified by the regex in
 
 - [`app/lib/presentation/widgets/accessibility/README.md`](../../../app/lib/presentation/widgets/accessibility/README.md) — primitives.
 - [`docs/client/accessibility.md`](../accessibility.md) — broader a11y discipline.
-- [`docs/issues/2162-web-e2e-harness.md`](../../issues/2162-web-e2e-harness.md) — the harness plan.
+- The #2162 plan (archived) — the harness plan.
 - [`e2e/README.md`](../../../e2e/README.md) — the harness itself.

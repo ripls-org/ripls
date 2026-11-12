@@ -478,11 +478,14 @@ Failed to load "...": Shell subprocess crashed with segmentation fault.
 
 It can also surface as `Bad state: Cannot add event while adding stream.` — the
 same crash, reported as a failed test instead of a dead device. Flutter 3.47.0's
-Dart VM profiler crashes `flutter_tester` at roughly 0.2% of process starts, and
-the file named is simply whichever tester was sampled at the wrong moment
-(issue #2933). Don't bisect it. CI works around this by running
-`scripts/disable_flutter_tester_profiler.sh` before the suite; run that script
-locally if you hit it on 3.47.x.
+Dart VM profiler crashed `flutter_tester` at roughly 0.2% of process starts, and
+the file named was simply whichever tester was sampled at the wrong moment
+(issue #2933). Don't bisect it. The Flutter version in `versions.env` no longer
+crashes (#3277), so if you see this, check your local Flutter matches
+(`npm run doctor:versions`).
+
+If you ran the old `disable_flutter_tester_profiler.sh` workaround locally, your
+SDK still has its shim: `flutter precache --force` restores the real tester.
 
 ## Test Coverage Goals
 
@@ -663,7 +666,7 @@ before driving the web bundle.
 ### Recommended Improvements
 
 1. **Coverage Improvements**
-   - [test_coverage_improvement_plan.md](../docs/ai/test_coverage_improvement_plan.md)
+   - The test coverage improvement plan (archived)
    - Add tests for error recovery and retry logic
    - Test concurrent operations and race conditions
    - Add cache invalidation test scenarios

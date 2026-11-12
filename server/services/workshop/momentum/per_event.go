@@ -14,7 +14,7 @@ import (
 
 // RecentEventLookbackDays is the default window for "recently
 // completed events" the per-event Hero card model walks. Mirrors the
-// 14-day window in docs/ai/workshop.md §3.1.
+// 14-day window in the Workshop design notes' §3.1 (archived).
 const RecentEventLookbackDays = 14
 
 // RecentlyCompletedEvents returns the set of completed experiences
@@ -254,8 +254,8 @@ func esmSignalDetectionForEvent(
 
 // recapFallbackDetection returns a generic "Schedule {event} again"
 // detection so every recently-completed event surfaces a Hero card —
-// even when no specific slot fires. Per docs/ai/workshop.md §3.1, the
-// per-event model guarantees there's always *something* per recent
+// even when no specific slot fires. Per the Workshop design notes'
+// §3.1 (archived), the per-event model guarantees there's always *something* per recent
 // event.
 //
 // Headline is action-shaped ("Schedule X again") and AtmosphereLine

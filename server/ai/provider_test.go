@@ -290,17 +290,6 @@ func runProviderValidationTests(t *testing.T, provider Provider) {
 			t.Errorf("Error = %v, want 'prompt cannot be empty'", err.Error())
 		}
 	})
-
-	t.Run("GenerateConversationSummary validation", func(t *testing.T) {
-		_, err := provider.GenerateConversationSummary(ctx, []ConversationMessage{}, "", "", SummaryStyleProgress)
-		if err == nil {
-			t.Error("Expected error for empty messages but got nil")
-			return
-		}
-		if err.Error() != "messages cannot be empty" {
-			t.Errorf("Error = %v, want 'messages cannot be empty'", err.Error())
-		}
-	})
 }
 
 // TestPromptBuilders tests the prompt building functions.
@@ -434,48 +423,6 @@ func TestPromptBuilders(t *testing.T) {
 		}
 		if !containsString(prompt, "Denver") {
 			t.Error("Expected prompt to contain region")
-		}
-	})
-
-	t.Run("buildConversationSummaryPrompt", func(t *testing.T) {
-		messages := []ConversationMessage{
-			{SenderName: "Alice", Text: "Hello", SentAtUnixSec: 1000},
-			{SenderName: "Bob", Text: "Hi there", SentAtUnixSec: 1001},
-		}
-		// Test progress style without request context
-		progressPrompt := buildConversationSummaryPrompt(messages, "", "", SummaryStyleProgress)
-		if progressPrompt == "" {
-			t.Error("Expected non-empty prompt")
-		}
-		if !containsString(progressPrompt, "Alice") {
-			t.Error("Expected prompt to contain sender name")
-		}
-		if !containsString(progressPrompt, "Hello") {
-			t.Error("Expected prompt to contain message text")
-		}
-		if !containsString(progressPrompt, "third person") {
-			t.Error("Expected progress prompt to mention third person")
-		}
-
-		// Test completion style
-		completionPrompt := buildConversationSummaryPrompt(messages, "", "", SummaryStyleCompletion)
-		if !containsString(completionPrompt, "first person") {
-			t.Error("Expected completion prompt to mention first person")
-		}
-		if !containsString(completionPrompt, "gratitude") {
-			t.Error("Expected completion prompt to mention gratitude")
-		}
-
-		// Test with request context
-		promptWithContext := buildConversationSummaryPrompt(messages, "Need camping tent", "Looking to borrow a tent for the weekend", SummaryStyleProgress)
-		if !containsString(promptWithContext, "REQUEST CONTEXT") {
-			t.Error("Expected prompt with context to include REQUEST CONTEXT section")
-		}
-		if !containsString(promptWithContext, "Need camping tent") {
-			t.Error("Expected prompt to contain request title")
-		}
-		if !containsString(promptWithContext, "Looking to borrow a tent for the weekend") {
-			t.Error("Expected prompt to contain request description")
 		}
 	})
 }

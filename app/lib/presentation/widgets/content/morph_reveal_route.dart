@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 /// revealed by a rounded rectangle that grows from [sourceRect] (a card's
 /// on-screen footprint) to fill the screen — the "tap a widget, it expands in
 /// place into the full content" morph from
-/// docs/issues/2280-pitching-in-expand.md.
+/// the #2280 plan (archived).
 ///
 /// The route is non-opaque so the previous screen keeps painting behind the
 /// growing panel; a scrim fades in to dim it (mirroring the mockup's dimmed

@@ -19,7 +19,7 @@ off-app email channel ([`docs/server/l10n.md`](server/l10n.md) defines the same
 client/server render boundary for both). It is provider-backed by Twilio and
 gated behind the `-platform-sms-enabled` feature flag, currently **off** (A2P +
 consent strategy approved; flips once the off-app email backup lands — see
-[`docs/issues/2492-sms-a2p-registration.md`](issues/2492-sms-a2p-registration.md)).
+the #2492 SMS A2P registration plan (archived)).
 
 > **Status.** Shipped (#2566). Secrets + Terraform grants applied in dev+prod;
 > **outbound delivery and inbound STOP/START/HELP both verified end-to-end
@@ -224,7 +224,7 @@ suggested-reply opt-out buttons, and Google Messages' built-in Unsubscribe
 button; the same Advanced-Opt-Out Messaging Service honors STOP cross-channel.
 Only when RCS **falls back to SMS** does the SMS footer cadence apply (the
 fallback message is an SMS). Detail:
-[`docs/issues/2492-rcs-business-messaging.md`](issues/2492-rcs-business-messaging.md).
+the #2492 RCS business messaging plan (archived).
 
 Sources: CTIA Messaging Principles & Best Practices (May 2023); Bandwidth "RCS
 for Business mobile user opt-out methods"; Google RBM Acceptable Use Policy.
@@ -279,7 +279,7 @@ add the entrypoint optional fetches, create the GSM secrets, then uncomment the
 Terraform `secretAccessor` grant (`terraform/environments/{dev,prod}/main.tf`).
 Granting IAM on a non-existent secret fails `terraform apply`. Full ops runbook,
 campaign copy, and the legal brief live in
-[`docs/issues/2492-sms-a2p-registration.md`](issues/2492-sms-a2p-registration.md).
+the #2492 SMS A2P registration plan (archived).
 
 ## A2P 10DLC campaign registration
 

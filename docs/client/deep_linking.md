@@ -48,8 +48,8 @@ The deep-link target (a specific gear / request / experience) lives on the
 the `/go/:code` redirect and the `/invite` handler carry only the `token`. Legacy
 `gear_id` / `request_id` / `experience_id` query params (from the removed
 `GetOrCreateInviteLink` shim) are no longer honored on the invite path (#2562).
-Residual parsing on the custom-scheme, deferred-deep-link, and registration paths
-is tracked by `TODO(#2644)`.
+The custom-scheme, deferred-deep-link, and registration paths no longer parse
+them either (#2644).
 
 ### Password Reset Links
 

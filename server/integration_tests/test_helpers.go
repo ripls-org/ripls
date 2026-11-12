@@ -974,7 +974,7 @@ func newTestCommunityService(t *testing.T, sqlStorage *storage.ProtoSQLStorage, 
 
 // drainCommunityEventBus waits for in-flight bus dispatch to complete, with a
 // 5s timeout. Used by tests as the replacement for the old `<-notifDone`
-// pattern (G2 in docs/issues/510-community-event-pubsub-v2.md).
+// pattern (G2 in the #510 plan, archived).
 func drainCommunityEventBus(t *testing.T, bus *cebus.InProcessBus) {
 	t.Helper()
 	drainCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

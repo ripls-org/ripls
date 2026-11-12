@@ -3,7 +3,7 @@
 // modules are split per signal source (crashlytics, gcp-alerts) and share
 // the upsertIssue helper.
 //
-// Design: docs/issues/1148-1149-alert-to-issue.md
+// Design: the #1148/#1149 plan (archived)
 
 export {
   crashlyticsVelocityAlert,

@@ -11,7 +11,7 @@ import 'package:ripls/core/theme/app_theme.dart';
 /// announce it as the modal heading — matching the existing `ModalHeader`
 /// accessibility contract.
 ///
-/// See docs/issues/1797-glass-modal-revamp.md.
+/// See the #1797 plan (archived).
 class GlassModalHeader extends StatelessWidget {
   /// Optional decorative icon shown in the circular badge. When null the badge
   /// is omitted entirely.

@@ -12,6 +12,7 @@ import (
 	"go.ripls.org/ripls/server/l10n"
 	"go.ripls.org/ripls/server/logging"
 	"go.ripls.org/ripls/server/notifications"
+	"go.ripls.org/ripls/server/notifications/notification_content"
 	"go.ripls.org/ripls/server/storage"
 )
 
@@ -150,7 +151,7 @@ func (s *Subscriber) Handle(ctx context.Context, evt *cebus.PublishedEvent) erro
 	// loop below does not run a query per recipient. Render the
 	// notification copy once per distinct locale and reuse it across
 	// every recipient sharing that locale.
-	localesByUser := loadRecipientLocales(ctx, s.storage, recipients)
+	localesByUser := notification_content.LoadRecipientLocales(ctx, s.storage, recipients)
 	notificationsByLocale := make(map[language.Tag]*models.Notification, 2)
 
 	streamCheck := s.loadStreamChecker()
@@ -249,41 +250,6 @@ func (s *Subscriber) Handle(ctx context.Context, evt *cebus.PublishedEvent) erro
 	}
 
 	return nil
-}
-
-// loadRecipientLocales returns a map of userID → resolved locale
-// tag for the given recipients. Reads User.preferred_language in a
-// single batched query; any user with an empty or unsupported tag
-// falls through to l10n.DefaultTag.
-func loadRecipientLocales(ctx context.Context, s *storage.ProtoSQLStorage, recipients []string) map[string]language.Tag {
-	out := make(map[string]language.Tag, len(recipients))
-	if len(recipients) == 0 {
-		return out
-	}
-
-	// Default everyone to DefaultTag up front so a failed batch read
-	// still produces a usable (English) notification for every
-	// recipient instead of dropping the entire fan-out.
-	for _, id := range recipients {
-		out[id] = l10n.DefaultTag
-	}
-
-	users, err := s.GetByIDs(ctx, recipients, &models.User{})
-	if err != nil {
-		logging.LoggerWithContext(ctx).WarnContext(ctx,
-			"failed to batch-load recipient users for locale resolution; defaulting to English",
-			"recipient_count", len(recipients), "error", err,
-		)
-		return out
-	}
-	for _, msg := range users {
-		u, ok := msg.(*models.User)
-		if !ok || u == nil {
-			continue
-		}
-		out[u.Id] = l10n.Normalize(u.GetPreferredLanguage())
-	}
-	return out
 }
 
 // loadStreamChecker returns the currently-registered stream-presence hook,

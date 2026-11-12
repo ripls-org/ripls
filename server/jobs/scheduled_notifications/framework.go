@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/text/language"
+
 	"go.ripls.org/ripls/server/gen/ripls/models"
 )
 
@@ -56,9 +58,11 @@ type Dispatcher interface {
 	QuietHoursPolicy(row *models.ScheduledNotification) QuietHoursPolicy
 
 	// Render builds the notification payload from current state of
-	// the anchored entity at dispatch time. May return (nil, nil) to
-	// skip without sending.
-	Render(ctx context.Context, row *models.ScheduledNotification) (*models.Notification, error)
+	// the anchored entity at dispatch time, with push copy in locale
+	// — the recipient's preferred language, resolved once per tick
+	// by the driver (#3276). May return (nil, nil) to skip without
+	// sending.
+	Render(ctx context.Context, row *models.ScheduledNotification, locale language.Tag) (*models.Notification, error)
 }
 
 // QuietHoursPolicy controls what the dispatcher driver does when a

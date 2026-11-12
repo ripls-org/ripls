@@ -805,7 +805,7 @@ Push notifications are sent for specific experience events to keep users informe
 | Experience completed (`EXPERIENCE_COMPLETED`) | Yes/Maybe RSVPs minus actor | "Event Completed" / "[experience name] wrapped up" | `notify_experience_completed` |
 | Experience cancelled (`EXPERIENCE_CANCELLED`) | Yes/Maybe RSVPs minus actor | "[experience name]" / "Event has been cancelled" | `notify_experience_rsvps` |
 
-All three lifecycle notifications (STARTED, COMPLETED, CANCELLED) go through `RecordCommunityEventAndNotify`, applying stream-suppression and actor exclusion uniformly, and all target Yes/Maybe RSVPs minus the actor. Every toggle category is opt-out (default: on) and is scoped per-(user, community). See `docs/issues/1107-per-community-notifications.md` for the preference design.
+All three lifecycle notifications (STARTED, COMPLETED, CANCELLED) go through `RecordCommunityEventAndNotify`, applying stream-suppression and actor exclusion uniformly, and all target Yes/Maybe RSVPs minus the actor. Every toggle category is opt-out (default: on) and is scoped per-(user, community). See the #1107 plan (archived) for the preference design.
 
 **Events that do NOT trigger notifications:**
 

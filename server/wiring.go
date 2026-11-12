@@ -196,9 +196,6 @@ func wireServices(ctx context.Context, cfg *config.Config, logger *logging.Logge
 	chatEventBus := chat_event_bus.NewInProcessBus(sqlStorage, chatEventTopic)
 
 	chatService := chat.New(sqlStorage, chatEventBus)
-	if aiProvider != nil {
-		chatService.SetAIProvider(aiProvider)
-	}
 
 	// Subscribe the stream broadcaster and push-notification subscriber.
 	// Stream-presence hooks are bound here because chatService's registry

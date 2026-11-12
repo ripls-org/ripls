@@ -348,18 +348,6 @@ message DeleteExperienceRequest {
 
 message DeleteExperienceResponse {}
 
-// Request to generate an AI completion summary for an experience.
-// The AI analyzes the experience details and conversation to create a summary.
-message GenerateCompletionSummaryRequest {
-  string experience_id = 1; // Experience to generate summary for
-  string community_id = 2; // Community context for conversation lookup
-}
-
-// Response containing the generated completion summary.
-message GenerateCompletionSummaryResponse {
-  string summary = 1; // AI-generated summary of how the experience went
-}
-
 // Request to get people associated with an experience.
 message GetExperiencePeopleRequest {
     // The unique identifier of the experience.
@@ -970,9 +958,6 @@ service ExperienceService {
 
   // Convert informal time description to structured ExperienceTime using LLM.
   rpc ConvertInformalTime(ConvertInformalTimeRequest) returns (ConvertInformalTimeResponse);
-
-  // Generate an AI completion summary for an experience (owner only).
-  rpc GenerateCompletionSummary(GenerateCompletionSummaryRequest) returns (GenerateCompletionSummaryResponse);
 
   // Get people associated with an experience (host, RSVPs, attendees).
   rpc GetExperiencePeople(GetExperiencePeopleRequest) returns (GetExperiencePeopleResponse);

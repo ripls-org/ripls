@@ -60,8 +60,6 @@ type MockProvider struct {
 	GenerateExperienceFromWebpageStreamingFunc func(ctx context.Context, pageTitle, pageDescription, pageBody, region, currentTime string) (<-chan FieldEvent, <-chan ExperienceStreamFinal, error)
 	GenerateRequestFromImageFunc               func(ctx context.Context, image *DetectionImage, region string) (*RequestGeneration, error)
 	GenerateRequestFromImageStreamingFunc      func(ctx context.Context, image *DetectionImage, region string) (<-chan FieldEvent, <-chan RequestStreamFinal, error)
-	GenerateConversationSummaryFunc            func(ctx context.Context, messages []ConversationMessage, requestTitle, requestDescription string, style SummaryStyle) (*ConversationSummary, error)
-	GenerateExperienceCompletionSummaryFunc    func(ctx context.Context, messages []ConversationMessage, experienceTitle, experienceDescription string, attendeeNames []string) (*ConversationSummary, error)
 	ParseInformalTimeFunc                      func(ctx context.Context, informalDescription, currentTime, timezone string) (string, error)
 	GenerateExperienceSuggestionsFunc          func(ctx context.Context, name, description, category string) (*ExperienceSuggestionResult, error)
 	GenerateRequestSuggestionsFunc             func(ctx context.Context, title, description, location string) (*RequestSuggestionResult, error)
@@ -72,23 +70,21 @@ type MockProvider struct {
 
 // MockProviderCalls records all calls made to a MockProvider, with captured arguments.
 type MockProviderCalls struct {
-	DetectGearInImage                   []DetectGearInImageCall
-	GenerateGearFromText                []GenerateGearFromTextCall
-	GenerateGearFromWebpage             []GenerateGearFromWebpageCall
-	GenerateCommunityContent            []GenerateCommunityContentCall
-	GenerateRequestContent              []GenerateRequestContentCall
-	GenerateExperienceFromText          []GenerateExperienceFromTextCall
-	GenerateExperienceFromImage         []GenerateExperienceFromImageCall
-	GenerateExperienceFromWebpage       []GenerateExperienceFromWebpageCall
-	GenerateRequestFromImage            []GenerateRequestFromImageCall
-	GenerateConversationSummary         []GenerateConversationSummaryCall
-	GenerateExperienceCompletionSummary []GenerateExperienceCompletionSummaryCall
-	ParseInformalTime                   []ParseInformalTimeCall
-	GenerateExperienceSuggestions       []GenerateExperienceSuggestionsCall
-	GenerateRequestSuggestions          []GenerateRequestSuggestionsCall
-	InferSocialAttributes               []InferSocialAttributesCall
-	ClassifyUnifiedCreate               []ClassifyUnifiedCreateCall
-	CheckHealth                         []CheckHealthCall
+	DetectGearInImage             []DetectGearInImageCall
+	GenerateGearFromText          []GenerateGearFromTextCall
+	GenerateGearFromWebpage       []GenerateGearFromWebpageCall
+	GenerateCommunityContent      []GenerateCommunityContentCall
+	GenerateRequestContent        []GenerateRequestContentCall
+	GenerateExperienceFromText    []GenerateExperienceFromTextCall
+	GenerateExperienceFromImage   []GenerateExperienceFromImageCall
+	GenerateExperienceFromWebpage []GenerateExperienceFromWebpageCall
+	GenerateRequestFromImage      []GenerateRequestFromImageCall
+	ParseInformalTime             []ParseInformalTimeCall
+	GenerateExperienceSuggestions []GenerateExperienceSuggestionsCall
+	GenerateRequestSuggestions    []GenerateRequestSuggestionsCall
+	InferSocialAttributes         []InferSocialAttributesCall
+	ClassifyUnifiedCreate         []ClassifyUnifiedCreateCall
+	CheckHealth                   []CheckHealthCall
 }
 
 // Argument capture types for each Provider method.
@@ -154,22 +150,6 @@ type GenerateRequestFromImageCall struct {
 	Region string
 }
 
-// GenerateConversationSummaryCall captures arguments passed to GenerateConversationSummary.
-type GenerateConversationSummaryCall struct {
-	Messages           []ConversationMessage
-	RequestTitle       string
-	RequestDescription string
-	Style              SummaryStyle
-}
-
-// GenerateExperienceCompletionSummaryCall captures arguments passed to GenerateExperienceCompletionSummary.
-type GenerateExperienceCompletionSummaryCall struct {
-	Messages              []ConversationMessage
-	ExperienceTitle       string
-	ExperienceDescription string
-	AttendeeNames         []string
-}
-
 // ParseInformalTimeCall captures arguments passed to ParseInformalTime.
 type ParseInformalTimeCall struct {
 	InformalDescription string
@@ -218,8 +198,6 @@ func (c *MockProviderCalls) TotalCalls() int {
 		len(c.GenerateExperienceFromImage) +
 		len(c.GenerateExperienceFromWebpage) +
 		len(c.GenerateRequestFromImage) +
-		len(c.GenerateConversationSummary) +
-		len(c.GenerateExperienceCompletionSummary) +
 		len(c.ParseInformalTime) +
 		len(c.GenerateExperienceSuggestions) +
 		len(c.InferSocialAttributes) +
@@ -242,23 +220,21 @@ func (m *MockProvider) Snapshot() MockProviderCalls {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return MockProviderCalls{
-		DetectGearInImage:                   append([]DetectGearInImageCall(nil), m.Calls.DetectGearInImage...),
-		GenerateGearFromText:                append([]GenerateGearFromTextCall(nil), m.Calls.GenerateGearFromText...),
-		GenerateGearFromWebpage:             append([]GenerateGearFromWebpageCall(nil), m.Calls.GenerateGearFromWebpage...),
-		GenerateCommunityContent:            append([]GenerateCommunityContentCall(nil), m.Calls.GenerateCommunityContent...),
-		GenerateRequestContent:              append([]GenerateRequestContentCall(nil), m.Calls.GenerateRequestContent...),
-		GenerateExperienceFromText:          append([]GenerateExperienceFromTextCall(nil), m.Calls.GenerateExperienceFromText...),
-		GenerateExperienceFromImage:         append([]GenerateExperienceFromImageCall(nil), m.Calls.GenerateExperienceFromImage...),
-		GenerateExperienceFromWebpage:       append([]GenerateExperienceFromWebpageCall(nil), m.Calls.GenerateExperienceFromWebpage...),
-		GenerateRequestFromImage:            append([]GenerateRequestFromImageCall(nil), m.Calls.GenerateRequestFromImage...),
-		GenerateConversationSummary:         append([]GenerateConversationSummaryCall(nil), m.Calls.GenerateConversationSummary...),
-		GenerateExperienceCompletionSummary: append([]GenerateExperienceCompletionSummaryCall(nil), m.Calls.GenerateExperienceCompletionSummary...),
-		ParseInformalTime:                   append([]ParseInformalTimeCall(nil), m.Calls.ParseInformalTime...),
-		GenerateExperienceSuggestions:       append([]GenerateExperienceSuggestionsCall(nil), m.Calls.GenerateExperienceSuggestions...),
-		GenerateRequestSuggestions:          append([]GenerateRequestSuggestionsCall(nil), m.Calls.GenerateRequestSuggestions...),
-		InferSocialAttributes:               append([]InferSocialAttributesCall(nil), m.Calls.InferSocialAttributes...),
-		ClassifyUnifiedCreate:               append([]ClassifyUnifiedCreateCall(nil), m.Calls.ClassifyUnifiedCreate...),
-		CheckHealth:                         append([]CheckHealthCall(nil), m.Calls.CheckHealth...),
+		DetectGearInImage:             append([]DetectGearInImageCall(nil), m.Calls.DetectGearInImage...),
+		GenerateGearFromText:          append([]GenerateGearFromTextCall(nil), m.Calls.GenerateGearFromText...),
+		GenerateGearFromWebpage:       append([]GenerateGearFromWebpageCall(nil), m.Calls.GenerateGearFromWebpage...),
+		GenerateCommunityContent:      append([]GenerateCommunityContentCall(nil), m.Calls.GenerateCommunityContent...),
+		GenerateRequestContent:        append([]GenerateRequestContentCall(nil), m.Calls.GenerateRequestContent...),
+		GenerateExperienceFromText:    append([]GenerateExperienceFromTextCall(nil), m.Calls.GenerateExperienceFromText...),
+		GenerateExperienceFromImage:   append([]GenerateExperienceFromImageCall(nil), m.Calls.GenerateExperienceFromImage...),
+		GenerateExperienceFromWebpage: append([]GenerateExperienceFromWebpageCall(nil), m.Calls.GenerateExperienceFromWebpage...),
+		GenerateRequestFromImage:      append([]GenerateRequestFromImageCall(nil), m.Calls.GenerateRequestFromImage...),
+		ParseInformalTime:             append([]ParseInformalTimeCall(nil), m.Calls.ParseInformalTime...),
+		GenerateExperienceSuggestions: append([]GenerateExperienceSuggestionsCall(nil), m.Calls.GenerateExperienceSuggestions...),
+		GenerateRequestSuggestions:    append([]GenerateRequestSuggestionsCall(nil), m.Calls.GenerateRequestSuggestions...),
+		InferSocialAttributes:         append([]InferSocialAttributesCall(nil), m.Calls.InferSocialAttributes...),
+		ClassifyUnifiedCreate:         append([]ClassifyUnifiedCreateCall(nil), m.Calls.ClassifyUnifiedCreate...),
+		CheckHealth:                   append([]CheckHealthCall(nil), m.Calls.CheckHealth...),
 	}
 }
 
@@ -482,32 +458,6 @@ func (m *MockProvider) GenerateGearFromWebpageStreaming(ctx context.Context, pag
 	return fields, final, nil
 }
 
-// GenerateConversationSummary implements the Provider interface.
-func (m *MockProvider) GenerateConversationSummary(ctx context.Context, messages []ConversationMessage, requestTitle, requestDescription string, style SummaryStyle) (*ConversationSummary, error) {
-	m.mu.Lock()
-	m.Calls.GenerateConversationSummary = append(m.Calls.GenerateConversationSummary, GenerateConversationSummaryCall{
-		Messages: messages, RequestTitle: requestTitle, RequestDescription: requestDescription, Style: style,
-	})
-	m.mu.Unlock()
-	if m.GenerateConversationSummaryFunc == nil {
-		return defaultGenerateConversationSummary(ctx, messages, requestTitle, requestDescription, style)
-	}
-	return m.GenerateConversationSummaryFunc(ctx, messages, requestTitle, requestDescription, style)
-}
-
-// GenerateExperienceCompletionSummary implements the Provider interface.
-func (m *MockProvider) GenerateExperienceCompletionSummary(ctx context.Context, messages []ConversationMessage, experienceTitle, experienceDescription string, attendeeNames []string) (*ConversationSummary, error) {
-	m.mu.Lock()
-	m.Calls.GenerateExperienceCompletionSummary = append(m.Calls.GenerateExperienceCompletionSummary, GenerateExperienceCompletionSummaryCall{
-		Messages: messages, ExperienceTitle: experienceTitle, ExperienceDescription: experienceDescription, AttendeeNames: attendeeNames,
-	})
-	m.mu.Unlock()
-	if m.GenerateExperienceCompletionSummaryFunc == nil {
-		return defaultGenerateExperienceCompletionSummary(ctx, messages, experienceTitle, experienceDescription, attendeeNames)
-	}
-	return m.GenerateExperienceCompletionSummaryFunc(ctx, messages, experienceTitle, experienceDescription, attendeeNames)
-}
-
 // defaultDetectGear is the default mock implementation for gear detection.
 func defaultDetectGear(_ context.Context, _ *DetectionImage) (*GearDetection, error) {
 	return &GearDetection{
@@ -725,30 +675,6 @@ func defaultGenerateExperienceFromWebpage(_ context.Context, pageTitle, pageDesc
 			Reasoning:         "Mock per-person value estimate from webpage for testing",
 			Sources:           []string{"mock webpage data"},
 		},
-	}, nil
-}
-
-// defaultGenerateConversationSummary is the default mock implementation for conversation summary.
-func defaultGenerateConversationSummary(_ context.Context, messages []ConversationMessage, _, _ string, style SummaryStyle) (*ConversationSummary, error) {
-	if len(messages) == 0 {
-		return nil, fmt.Errorf("no messages to summarize")
-	}
-
-	if style == SummaryStyleCompletion {
-		return &ConversationSummary{
-			Summary: "Thank you everyone for your help! This is a mock completion summary.",
-		}, nil
-	}
-
-	return &ConversationSummary{
-		Summary: "This is a mock progress summary for testing purposes.",
-	}, nil
-}
-
-// defaultGenerateExperienceCompletionSummary is the default mock implementation for experience completion summary.
-func defaultGenerateExperienceCompletionSummary(_ context.Context, _ []ConversationMessage, _, _ string, _ []string) (*ConversationSummary, error) {
-	return &ConversationSummary{
-		Summary: "Great experience! Everyone had a wonderful time.",
 	}, nil
 }
 

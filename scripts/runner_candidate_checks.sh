@@ -61,15 +61,11 @@ step "Generate freezed and mockito code"
 (cd app && flutter pub run build_runner build --delete-conflicting-outputs)
 
 # ── Flutter analyze + test: the baked Flutter / Dart SDK ─────────────────────
-# Mirrors test_flutter.yaml's analyze + test steps, including the profiler
-# workaround: without it this gate inherits the same ~60%-per-run flutter_tester
-# crash rate (#2933) and would block every future baked-tool bump. Parity with
-# test_flutter.yaml is preserved — both sides run the shim.
+# Mirrors test_flutter.yaml's analyze + test steps. A candidate image has a
+# fresh SDK, so it never carries the old #2933 profiler shim that
+# test_flutter.yaml restores on long-lived runners.
 step "Analyze Flutter code"
 (cd app && flutter analyze)
-
-step "Disable the flutter_tester Dart profiler (issue #2933)"
-bash scripts/disable_flutter_tester_profiler.sh
 
 step "Run Flutter tests"
 (cd app && flutter test --reporter expanded)

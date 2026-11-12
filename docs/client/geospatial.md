@@ -55,7 +55,7 @@ The system combines client-side and server-side geospatial capabilities: client-
 
 **Map State Isolation:** [DiscoverMapHelper](../app/lib/core/utils/discover_map_helper.dart) encapsulates all map-related state (controller, markers, selection, style, sheet-driven padding) so screen logic stays free of Google-SDK details.
 
-**Avatar / Thumbnail Markers:** Markers are pre-rendered as circular PNG bitmaps via [MapAvatarRenderer](../app/lib/core/utils/map_avatar_renderer.dart) (gear thumbnails, user avatars, or initials fallback) and attached as `BitmapDescriptor.bytes`. The pre-migration (Mapbox-era) "ripple" marker design has been deferred — see `docs/ai/map.md` for the motivation.
+**Avatar / Thumbnail Markers:** Markers are pre-rendered as circular PNG bitmaps via [MapAvatarRenderer](../app/lib/core/utils/map_avatar_renderer.dart) (gear thumbnails, user avatars, or initials fallback) and attached as `BitmapDescriptor.bytes`. The pre-migration (Mapbox-era) "ripple" marker design has been deferred — see the map design notes (archived) for the motivation.
 
 **Provider-Agnostic Geocoding:** Viewmodels and widgets depend only on the [LocationSearchService](../app/lib/services/location_search_service.dart) interface and the [LocationRepository](../app/lib/data/repositories/location_repository.dart) that wraps it. Swapping providers would be a single Riverpod-binding change in [location_providers.dart](../app/lib/services/providers/location_providers.dart).
 
@@ -440,7 +440,7 @@ The server abstracts geocoding behind `location.Provider` in [server/location/pr
 ## Architecture Weaknesses
 
 1. **No selected-marker visual scale.** The pre-migration Mapbox 1.35× scale on selection has no direct Google equivalent; selection is currently communicated by the gallery overlay only. A scaled `BitmapDescriptor` implementation is deferred.
-2. **No ripple aesthetic on markers.** Google's `Circle` is geographic, not pixel-sized, and scales with zoom — so the pre-migration ripple design was dropped. See `docs/ai/map.md`.
+2. **No ripple aesthetic on markers.** Google's `Circle` is geographic, not pixel-sized, and scales with zoom — so the pre-migration ripple design was dropped. See the map design notes (archived).
 3. **No marker clustering** (yet). Heavy item sets create visual clutter; clustering would need a custom layer or the `google_maps_cluster_manager` package.
 4. **No offline maps.** Google Maps tiles require connectivity.
 5. **No category / availability filtering on the map** beyond search.

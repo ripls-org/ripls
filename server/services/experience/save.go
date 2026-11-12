@@ -104,11 +104,10 @@ func (s *Service) SaveExperience(
 			}
 		}
 
-		// Fallback: the experience-AI Gen path doesn't yet populate
-		// Category (#2013). Derive a coarse label
-		// from name+description so the `known_for` derivation can
-		// surface "{Category} host" chips. Remove once Gen sets
-		// Category itself.
+		// The AI Gen path doesn't set Category, so derive a coarse
+		// label from name+description with the keyword categorizer;
+		// the `known_for` derivation uses it for "{Category} host"
+		// chips.
 		if expStored.Category == "" {
 			expStored.Category = category.Categorize(
 				expStored.Name, expStored.Description,

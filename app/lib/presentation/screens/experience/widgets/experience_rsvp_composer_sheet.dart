@@ -17,7 +17,7 @@ import 'package:ripls/presentation/widgets/needs/needs_actions.dart';
 import 'package:ripls/presentation/widgets/needs/needs_claim_gear_picker.dart';
 
 /// ExperienceRsvpComposerSheet is the unified RSVP composer
-/// (docs/issues/2278-experience-content-redesign.md): one modal that brings
+/// (the #2278 plan, archived): one modal that brings
 /// together the RSVP intention (Going / Maybe / No) and the contributions the
 /// viewer will bring (needs/contributions).
 ///

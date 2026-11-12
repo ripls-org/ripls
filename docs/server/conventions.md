@@ -262,4 +262,4 @@ TODOs.
 
 When in doubt, default to `ClassificationClientOnly` with a rationale
 explaining why no server-side undo is needed. See
-`docs/ai/undo_plan.md` §10.6 for the broader design.
+the undo plan's §10.6 (archived) for the broader design.

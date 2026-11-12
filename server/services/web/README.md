@@ -31,7 +31,7 @@ The router branches on which `oneof` variant the looked-up `ShareLink` row has s
 
 ## Design tokens & styling
 
-All templates share the Ripls app's visual language (sage primary, Libre Baskerville serif, OS-aware dark mode) via `website/content/css/tokens.css` — design tokens hand-mirrored from `app/lib/core/theme/app_colors.dart` and `app_theme.dart`. The four landings (`event.html`, `gear.html`, `request.html`, `community.html`) share `event.css`; the `invite.html` error surface uses `shared.css + deeplink.css`. All CSS files are embedded via `website/embed.go`. See `docs/issues/2049-web-event-landing.md` for the design history.
+All templates share the Ripls app's visual language (sage primary, Libre Baskerville serif, OS-aware dark mode) via `website/content/css/tokens.css` — design tokens hand-mirrored from `app/lib/core/theme/app_colors.dart` and `app_theme.dart`. The four landings (`event.html`, `gear.html`, `request.html`, `community.html`) share `event.css`; the `invite.html` error surface uses `shared.css + deeplink.css`. All CSS files are embedded via `website/embed.go`. See the #2049 plan (archived) for the design history.
 
 ## Localization (#2090)
 

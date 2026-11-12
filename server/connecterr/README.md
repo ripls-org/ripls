@@ -85,4 +85,4 @@ structured logging primitives (handlers, masking, context propagation).
 ## Related
 
 - Issue #1340 — the durable review finding this package addresses.
-- Plan: [`docs/issues/1340-connecterr-internal-helper.md`](../../docs/issues/1340-connecterr-internal-helper.md).
+- Plan: the #1340 plan (archived).

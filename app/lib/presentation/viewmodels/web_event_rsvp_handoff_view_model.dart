@@ -1,7 +1,7 @@
 // Auto-fires RSVPToExperience after the post-registration redirect
 // brings a freshly-authenticated Flutter Web visitor back to
 // /event/{id}?rsvp=…&code=…. See WebExperienceScreen and
-// docs/issues/2050-web-rsvp-actions.md §D1 for the wider context:
+// the #2050 plan's §D1 (archived) for the wider context:
 // register → CommunityUser (via short_code) → RSVPToExperience runs
 // here as the third step in the client-side flow.
 

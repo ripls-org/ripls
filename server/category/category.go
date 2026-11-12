@@ -44,25 +44,10 @@ type rule struct {
 // substring contains, not a word-boundary regex, so "drill" will
 // also catch "drilling".
 //
-// TODO(#2013): Move this dictionary out of code. It's configuration,
-// not program logic — every keyword tweak shouldn't require a server
-// redeploy. Migrate to an embedded text-proto / YAML / JSON file
-// loaded via `embed.FS` at startup, or to a Secret-Manager-fetched
-// config so prod can iterate without a code push.
-//
-// TODO(#2013): Replace this whole keyword pass with an LLM-derived
-// category. The proper home is the AI metadata pipeline — see the
-// TODO(#2013) markers in `services/experience/gen_ai.go` and
-// `services/request/gen.go`, both of which currently write an empty
-// `Category` string. When that ships, this package becomes a
-// fallback (no AI configured / AI call failed) and eventually
-// retires.
-//
-// TODO(#2013): English-only. Keywords here are lowercase ASCII
-// English. Non-English content (Spanish "comida", French "cuisine",
-// etc.) returns the empty string and the chip never surfaces. The
-// LLM migration above fixes this for free; until then, content in
-// non-English locales is silently uncategorized.
+// Known limitations: the dictionary is in code, so a keyword change
+// needs a server redeploy; and it is English-only — keywords are
+// lowercase ASCII English, so non-English content (Spanish "comida",
+// French "cuisine") returns the empty string and gets no chip.
 var rules = []rule{
 	{"Cooking", []string{"cook", "recipe", "meal", "kitchen", "bake", "potluck", "supper", "brunch", "dinner", "lunch", "breakfast", "chef"}},
 	{"Bonfires", []string{"bonfire", "smoker", "bbq", "barbecue", "grill"}},

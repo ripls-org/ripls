@@ -375,42 +375,6 @@ message GetConversationContextResponse {
     ConversationContext context = 1;
 }
 
-// Style of summary to generate.
-enum SummaryStyle {
-    // Unspecified style - defaults to SUMMARY_STYLE_PROGRESS.
-    SUMMARY_STYLE_UNSPECIFIED = 0;
-
-    // Progress summary: Third-person, objective summary of conversation so far.
-    // Used during active request/transfer phases to show what's happening.
-    SUMMARY_STYLE_PROGRESS = 1;
-
-    // Completion summary: First-person, solution-focused summary.
-    // Used during wrap-up to thank helpers and highlight the solution.
-    SUMMARY_STYLE_COMPLETION = 2;
-}
-
-// Request to generate an AI summary of a conversation.
-message GenConversationSummaryRequest {
-    // The conversation ID to summarize.
-    string conversation_id = 1;
-
-    // The style of summary to generate.
-    // If unspecified, defaults to SUMMARY_STYLE_PROGRESS.
-    SummaryStyle style = 2;
-}
-
-// Response containing the AI-generated conversation summary.
-message GenConversationSummaryResponse {
-    // The AI-generated summary of the conversation.
-    string summary = 1;
-
-    // The number of messages that were summarized.
-    int32 message_count = 2;
-
-    // The number of participants in the conversation (excluding the current user).
-    int32 participant_count = 3;
-}
-
 // A conversation item in the list.
 message ConversationItem {
     // The conversation id.
@@ -643,10 +607,6 @@ service ChatService {
 
     // Get conversation context for UI display (topic title, image, message count, etc.).
     rpc GetConversationContext(GetConversationContextRequest) returns (GetConversationContextResponse);
-
-    // Generate an AI summary of a conversation.
-    // Returns a summary of recent messages and participant count.
-    rpc GenConversationSummary(GenConversationSummaryRequest) returns (GenConversationSummaryResponse);
 
     // Add an emoji reaction to a message.
     // One reaction per user per message; adding a new one replaces the previous.

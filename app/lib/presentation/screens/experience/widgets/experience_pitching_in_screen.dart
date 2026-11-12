@@ -28,7 +28,7 @@ import 'package:ripls/services/providers.dart'
     show contentCacheInvalidationProvider;
 
 /// ExperiencePitchingInScreen is the full-screen roster the "Who's pitching in?"
-/// widget expands into when tapped (docs/issues/2280-pitching-in-expand.md). It
+/// widget expands into when tapped (the #2280 plan, archived). It
 /// replaces the former bottom-sheet modal: pushed via [morphRevealRoute] (which
 /// grows it from the card's footprint) and dismissed by the close button or
 /// system back, it shows the stocked-needs progress, the open needs as

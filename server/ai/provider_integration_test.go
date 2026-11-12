@@ -342,38 +342,4 @@ func runAllIntegrationTests(t *testing.T, provider Provider, imageData []byte) {
 			t.Error("Expected location query to be extracted (should be 'Chautauqua')")
 		}
 	})
-
-	// Test 5: GenerateConversationSummary
-	t.Run("GenerateConversationSummary", func(t *testing.T) {
-		t.Parallel()
-		messages := []ConversationMessage{
-			{SenderName: "Alice", Text: "Hi! I saw you have a camping tent available. Is it still free this weekend?", SentAtUnixSec: 1700000000},
-			{SenderName: "Bob", Text: "Yes it is! It's a 4-person tent, great for families. When would you need it?", SentAtUnixSec: 1700000100},
-			{SenderName: "Alice", Text: "Perfect! We're planning a trip to the mountains Saturday through Monday. Could I pick it up Friday evening?", SentAtUnixSec: 1700000200},
-			{SenderName: "Bob", Text: "Friday evening works great. I'll have it packed and ready. Just bring it back clean and dry!", SentAtUnixSec: 1700000300},
-			{SenderName: "Alice", Text: "Will do! Thank you so much. See you Friday around 6pm?", SentAtUnixSec: 1700000400},
-		}
-
-		summary, err := retryOnRateLimit(t, "GenerateConversationSummary", func() (*ConversationSummary, error) {
-			return provider.GenerateConversationSummary(
-				ctx,
-				messages,
-				"Need camping tent for weekend",
-				"Looking to borrow a tent for a family camping trip this weekend",
-				SummaryStyleProgress,
-			)
-		})
-		if err != nil {
-			t.Fatalf("GenerateConversationSummary failed: %v", err)
-		}
-
-		// Log results
-		t.Logf("Generated conversation summary:")
-		t.Logf("  Summary: %s", summary.Summary)
-
-		// Validate results
-		if summary.Summary == "" {
-			t.Error("Expected non-empty summary")
-		}
-	})
 }

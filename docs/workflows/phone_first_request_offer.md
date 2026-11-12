@@ -13,7 +13,7 @@ freshness:
 ---
 # Phone-First Invite → Verify → Offer to Help (Request) Workflow
 
-The phone-first pivot (epic #2492; canonical plan `docs/issues/2492-phone-first-pivot.md`)
+The phone-first pivot (epic #2492; its canonical plan is archived)
 lets a person with **no Ripls account and no app** receive an invite to a neighbor's request, respond
 on the **web**, verify ownership of their **phone**, and become a real member — all without installing
 the app. This doc describes that loop for **requests** (WEB-3) — the offer-to-help analog of

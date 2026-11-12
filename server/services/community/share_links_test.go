@@ -232,7 +232,7 @@ func TestService_GetOrCreateShareLink_Event_RejectsExperienceNotInCommunity(t *t
 // TestService_AcceptInvitationLink_Event_JoinsCommunity verifies that an
 // event-flavored share link is accepted via AcceptInvitationLink — the user
 // becomes a CommunityUser without any RSVP being written. The RSVP step is
-// the client's responsibility per docs/issues/2050-web-rsvp-actions.md §D1.
+// the client's responsibility per the #2050 plan's §D1 (archived).
 func TestService_AcceptInvitationLink_Event_JoinsCommunity(t *testing.T) {
 	sqlStorage, svc, hostCtx, communityID, experienceID := shareTestSetup(t)
 

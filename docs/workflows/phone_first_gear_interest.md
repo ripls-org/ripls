@@ -13,7 +13,7 @@ freshness:
 ---
 # Phone-First Invite → Verify → Express Interest (Gear) Workflow
 
-The phone-first pivot (epic #2492; canonical plan `docs/issues/2492-phone-first-pivot.md`)
+The phone-first pivot (epic #2492; its canonical plan is archived)
 lets a person with **no Ripls account and no app** receive an invite to a shared item, respond on the
 **web**, verify ownership of their **phone**, and become a real member — all without installing the
 app. This doc describes that loop for **gear** (a loan or a giveaway, WEB-4) — the non-RSVP analog of

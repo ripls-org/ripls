@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Idempotently ensure the local Web-E2E Postgres database exists.
 #
-# The Web-E2E harness (docs/issues/2492-web2-pivot-e2e.md) points E2E_DB_URL at
+# The Web-E2E harness (the #2492 web2-pivot e2e plan, archived) points E2E_DB_URL at
 # this database on the *shared, persistent* local Postgres container
 # (docker-local-postgres.yaml), which only bootstraps the `ripls` dev DB on first
 # init. Without this, a fresh checkout (or one after `npm run db:reset`, which

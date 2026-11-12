@@ -19,7 +19,7 @@ item (an event, request, giveaway, or loan). It is created at item-creation time
 so that **every participant, even a brand-new phone/email invitee, is always a
 member of some community**, and visibility is cleanly "the audience of this
 item." This is part of the account-optional, phone-first pivot
-([epic #2492](issues/2492-phone-first-pivot.md), item COMM-1).
+(epic #2492, item COMM-1; plan archived).
 
 Ad-hoc communities are not a second container type. They are ordinary
 `Community` rows that differ in exactly one way: they have **no name**. Sharing

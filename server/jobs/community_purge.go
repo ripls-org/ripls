@@ -19,7 +19,7 @@
 //     window expired). The parent community may still be
 //     active.
 //
-// Five safeguards (see docs/issues/1620-community-purge.md):
+// Five safeguards (see the #1620 plan, archived):
 //
 //  1. Threshold gate. Aborts the run if the candidate count
 //     exceeds min(100, max(5, 5% of total communities)). One bug
@@ -72,7 +72,7 @@ const (
 // Disabled and DryRun are wired from server flags
 // (--community-purge-disabled and --community-purge-dry-run)
 // rather than environment variables — see Safeguards #2 and #3
-// in docs/issues/1620-community-purge.md. Tests construct the
+// in the #1620 plan (archived). Tests construct the
 // job directly with the desired booleans.
 type CommunityPurgeJob struct {
 	storage  *storage.ProtoSQLStorage

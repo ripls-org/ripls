@@ -44,7 +44,7 @@
 //      client and the redesigned roster renders it.
 //      The stronger claim — that the host's ALREADY-OPEN page
 //      updates live via `StreamUserEvents` with NO reload — is
-//      tracked separately in #2531. The prior "stream-driven" form
+//      proven by event-rsvp-streaming-multi-client.spec.ts (#2531). The prior "stream-driven" form
 //      of this assertion was a false positive: before the Who's-In
 //      redesign (#2492) the server rendered every no-reply community
 //      member as a static individual roster row, so the participant
@@ -262,13 +262,9 @@ test('two members view an event; participant taps RSVP Yes; both browsers reflec
     // participant's YES, and the redesigned roster renders them in
     // GOING. This is on-load correctness — provably guaranteed.
     //
-    // Proving the host's ALREADY-OPEN page updates live via
-    // `StreamUserEvents` with no reload is tracked in #2531. The
-    // client refresh chain is intact (EventRouter → `content` target,
-    // `app/lib/services/event_router.dart §154-158` →
-    // `contentCacheInvalidationProvider.notify()` →
-    // `ExperienceNotifier.scheduleRefresh()`); what #2531 must confirm
-    // is the cross-browser stream delivery in the headless web e2e.
+    // That the host's ALREADY-OPEN page updates live via
+    // `StreamUserEvents` with no reload is proven by
+    // event-rsvp-streaming-multi-client.spec.ts (#2531).
     await hostPage.reload();
     await expect(
       hostPage.locator('[flt-semantics-identifier="web-event-screen"]'),

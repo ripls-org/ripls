@@ -1,8 +1,8 @@
 // Crashlytics → GitHub issue handlers. Wraps the firebase-functions v2
 // alert triggers and routes through the shared upsertIssue helper.
 //
-// Gating per docs/issues/1148-1149-alert-to-issue.md §"Claude-trigger
-// gating":
+// Gating per the #1148/#1149 plan's §"Claude-trigger gating"
+// (archived):
 //   - Velocity alerts: file always; claude-fix only when crashPercentage
 //     >= CLAUDE_FIX_VELOCITY_THRESHOLD_PCT.
 //   - Regression alerts: file always; claude-fix always (regressions are

@@ -62,7 +62,7 @@ var (
 	// commit periodic baselines under docs/ai/eval/baselines/ so we
 	// don't have to re-run the expensive cloud sweep every time we want
 	// to compare a candidate (e.g. a new model or prompt revision)
-	// against the prod providers. See docs/ai/eval/baselines/README.md.
+	// against the prod providers. See the eval baselines README (archived).
 	evalReportOut   = flag.String("eval-report-out", "", "Directory to write machine-readable baseline JSON files (one per Test*Prompt suite)")
 	evalReportLabel = flag.String("eval-report-label", "", "Optional human label embedded in the baseline JSON's run.label (e.g. \"cloud\")")
 )

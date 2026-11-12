@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/text/language"
+
 	"go.ripls.org/ripls/server/clock"
 	communitylib "go.ripls.org/ripls/server/community"
 	"go.ripls.org/ripls/server/gen/ripls/models"
@@ -234,7 +236,7 @@ func (d *RequestFollowupDispatcher) QuietHoursPolicy(_ *models.ScheduledNotifica
 // open, is soft-deleted, its community is soft-deleted, or the
 // requester has opted out. Does not emit a community event or story
 // (the push is private to the requester).
-func (d *RequestFollowupDispatcher) Render(ctx context.Context, row *models.ScheduledNotification) (*models.Notification, error) {
+func (d *RequestFollowupDispatcher) Render(ctx context.Context, row *models.ScheduledNotification, locale language.Tag) (*models.Notification, error) {
 	reqItem := row.GetRequest()
 	if reqItem == nil {
 		return nil, fmt.Errorf("row missing request variant")
@@ -300,7 +302,7 @@ func (d *RequestFollowupDispatcher) Render(ctx context.Context, row *models.Sche
 	// for it, so the off-app renderers could not reproduce the sentence. One
 	// wording that every surface can render beats a push-only wording that
 	// leaves SMS and email with nothing (#2896).
-	return notification_content.SystemNotification(ctx, &models.CommunityEventPayload{
+	return notification_content.SystemNotification(ctx, locale, &models.CommunityEventPayload{
 		CommunityId:  communityID,
 		EventType:    "REQUEST_FOLLOWUP_PROMPT",
 		RequestId:    &requestID,

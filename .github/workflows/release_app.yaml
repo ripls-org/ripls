@@ -85,8 +85,8 @@ jobs:
           # Get base version from pubspec.yaml
           BASE_VERSION=$(grep '^version:' app/pubspec.yaml | sed 's/version: //' | tr -d ' ' | cut -d'+' -f1)
 
-          # Calculate build number from git commit count
-          BUILD_NUMBER=$(git rev-list --count HEAD)
+          # Commit count plus BUILD_NUMBER_OFFSET; the Fastfile uses the same script
+          BUILD_NUMBER=$(scripts/build_number.sh)
 
           # Full version string
           FULL_VERSION="${BASE_VERSION}+${BUILD_NUMBER}"

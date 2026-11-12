@@ -6,7 +6,7 @@ it doesn't, the conventions, and the Flutter Web quirks you'll hit if
 you try to assert against the wrong thing.
 
 Designed and tracked in
-[`docs/issues/2162-web-e2e-harness.md`](../docs/issues/2162-web-e2e-harness.md).
+the #2162 plan (archived).
 
 ## What this is
 
@@ -592,7 +592,7 @@ Token values are compile-time constants, so each pass needs its own bundle
 (~2.6 min; `flutter build web --wasm` has no meaningful incremental reuse for a
 constant change). The sentinel pass rewrites a checked-in generated file, so the
 orchestrator restores it via an `EXIT` trap — an interrupted run must never
-leave sentinel hues staged. Background plan: `docs/issues/2770-token-contrast-evaluation.md`.
+leave sentinel hues staged. Background plan: the #2770 plan (archived).
 
 ## Anti-patterns
 
@@ -639,7 +639,7 @@ should have a single-commit revert path.
 
 ## See also
 
-- [`docs/issues/2162-web-e2e-harness.md`](../docs/issues/2162-web-e2e-harness.md) — full plan and design rationale.
+- The #2162 plan (archived) — full plan and design rationale.
 - [`docs/testing/update_system_tests.md`](../docs/testing/update_system_tests.md) — workflow-doc ↔ test mapping, including the e2e cherry-pick rules.
 - [`docs/client/testing.md`](../docs/client/testing.md) — broader client testing strategy.
 - [`docs/client/testing/semantics_identifiers.md`](../docs/client/testing/semantics_identifiers.md) — the identifier convention.

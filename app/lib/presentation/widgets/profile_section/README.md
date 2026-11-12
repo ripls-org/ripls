@@ -18,9 +18,8 @@ with plain-language subtexts. Rows with a destination carry a chevron
 and expand in place via the morph-reveal panel.
 
 The section structure originated with the v4 profile redesign
-([docs/issues/1929-profile-v4-redesign.md](../../../../../docs/issues/1929-profile-v4-redesign.md));
-the current hybrid layout is
-[docs/issues/2568-directory-and-profiles.md](../../../../../docs/issues/2568-directory-and-profiles.md).
+(the #1929 plan, archived); the current hybrid layout is the #2568 plan
+(archived).
 
 ## Files
 

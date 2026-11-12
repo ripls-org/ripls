@@ -29,7 +29,9 @@ The user has provided: `$version`
 
 ### Step 2 — Safety check: data model changes
 
-1. Run `git log` to find the most recent release tag (e.g. `v0.1.1`).
+1. Run `git log` to find the most recent release tag (e.g. `v0.1.1`). If there
+   is none, this is the first release after the move to a new history (#3228):
+   diff from this history's first commit instead.
 2. Review changes to `proto/ripls/models/` since that tag using `git diff`.
 3. If there are non-backwards-compatible changes (renamed protos, renumbered fields), warn the user that a database migration or reset may be needed. Ask if they want to proceed or handle the migration first.
 4. If changes are backwards-compatible (new fields only) or there are no changes, note this and continue.

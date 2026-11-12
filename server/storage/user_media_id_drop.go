@@ -18,7 +18,7 @@ import (
 //
 // Must run AFTER the proto field removal in #2083 is fully deployed
 // — a server still running pre-removal code would try to write to this
-// column and fail. See docs/issues/2083-avatar-media-id-deprecation.md
+// column and fail. See the #2083 plan (archived)
 // for the rollout sequencing.
 //
 // Idempotent: subsequent runs see the column absent and no-op silently.

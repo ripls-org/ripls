@@ -842,7 +842,7 @@ group('disposal safety', () {
 **See also:**
 - [Riverpod: ref.mounted documentation](https://riverpod.dev/docs/concepts/ref#refmounted)
 - [Riverpod: AsyncNotifier](https://riverpod.dev/docs/providers/async_notifier_provider)
-- [Analysis: ref_check.md](../ai/ref_check.md) for full migration plan
+- Analysis: the ref_check design notes (archived) for full migration plan
 
 ---
 

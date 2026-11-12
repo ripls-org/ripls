@@ -15,7 +15,7 @@ freshness:
 
 > **Retired as a tab (#2568).** The Workshop **bottom-nav tab is replaced by
 > the Directory** (address book) surface — see
-> [docs/issues/2568-directory-and-profiles.md](issues/2568-directory-and-profiles.md).
+> the #2568 plan (archived).
 > The cutover is gated by `directoryEnabledProvider`
 > ([app/lib/core/config/feature_flags.dart](../app/lib/core/config/feature_flags.dart)),
 > now defaulted **on**: `HomeScreen` renders `DirectoryScreen` in the former
@@ -904,14 +904,14 @@ on subsequent passes when a more-specific signal arrives.
 
 ## Related references
 
-- [docs/issues/1618-workshop-daily-brief.md](issues/1618-workshop-daily-brief.md)
+- The #1618 plan (archived)
   — the canonical plan for the brief direction; phases, decisions, and
   cleanup work.
-- [docs/issues/1579-workshop-tab.md](issues/1579-workshop-tab.md) — the
+- The #1579 plan (archived) — the
   v1 plan that established the cascade detector chain and the
   per-event Hero card model. The detector chain is unchanged; the
   rendering layer changed in #1618.
-- [docs/issues/1580-esm-cards.md](issues/1580-esm-cards.md) — the ESM
+- The #1580 plan (archived) — the ESM
   feed-card surface that produces the data the ESM Repeat Signal
   detector consumes.
 - The host journey — the 27-step path from first idea to keeping a
@@ -983,7 +983,7 @@ differentiator — the work that turns one-offs into ongoing things.
 2. **Add a "publish the recap" postcard.** Recap stories already
    auto-create via the event-bus subscriber; the gap is a home surface
    that opens the recap for the host to publish. Lights up step 17.
-3. **Wire the v2 ESM automated trigger** ([docs/issues/1580-esm-cards.md](issues/1580-esm-cards.md)
-   Phase 4). Step 18 fires automatically; the ESM Repeat detector
+3. **Wire the v2 ESM automated trigger** (the #1580 plan's
+   Phase 4, archived). Step 18 fires automatically; the ESM Repeat detector
    then sees real signal in production.
 4. **Per-attendee detection model.** Unlocks steps 23–26.

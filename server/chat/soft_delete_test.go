@@ -9,7 +9,7 @@ import (
 )
 
 // TestChatMessageSoftDeleteFilterInvariant asserts the load-bearing
-// invariant documented in docs/ai/undo_plan.md §7.1: once a
+// invariant documented in the undo plan's §7.1 (archived): once a
 // ChatMessage has its Deleted field populated, it must not appear in
 // any standard storage query result.
 //

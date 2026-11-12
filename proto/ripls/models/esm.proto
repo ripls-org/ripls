@@ -5,7 +5,7 @@
 // Quest hero cascade.
 //
 // Responses are persisted in a dedicated table separate from CommunityEvent;
-// no undo registry entry is required. See docs/issues/1580-esm-cards.md.
+// no undo registry entry is required. See the #1580 plan (archived).
 
 syntax = "proto3";
 
@@ -21,7 +21,7 @@ message ESMResponseOption {
   // Stable key used to identify this option in aggregations and across
   // prompt versions. Lower-case snake_case (e.g., "do_again", "skip", "maybe").
   // The Workshop's repeat-signal threshold check looks up the literal key
-  // "do_again" — see docs/issues/1579-workshop-tab.md for the convention.
+  // "do_again" — see the #1579 plan (archived) for the convention.
   string key = 1;
 
   // Human-readable label rendered on the response button. Authored in the

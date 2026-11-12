@@ -32,9 +32,8 @@ Two capabilities underpin it:
 2. In the time picker, select a date and time in the past (past dates are allowed for the "Set time" tab; they are intentionally blocked for time polls, which only make sense for future events).
 3. Tap **Mark Completed** (the primary button label switches from "Create Experience" when the selected time is in the past).
 4. The server saves the experience and immediately sets its state to `IN_PROCESS`, provisions the event's per-item community (`community.ProvisionPerItemCommunity`), and shares the event into it via the internal `shareExperienceToCommunity`, which auto-creates the owner's attendance RSVP as YES.
-5. The creation modal returns an `ExperienceCreationResult` with `isPastEvent: true` to the home screen, which opens the completion modal directly over the feed.
-6. The completion modal is pre-populated with any participants the AI extracted from the prompt (see *Participant resolution* below).
-7. The owner confirms or adjusts the attendee list and taps **Complete**. The server records attendance, generates the completion story synchronously (LLM call, ~5–8 s), and returns. The client immediately refreshes the feed, which now contains the new story.
+5. The creation modal closes. The completion modal no longer opens on its own: it needed a community id that the creation flow stopped carrying in #1895, and the dead hand-off was removed in #3228's TODO cleanup. The owner completes the experience from its detail screen instead.
+6. The owner confirms or adjusts the attendee list and taps **Complete**. The server records attendance, generates the completion story synchronously (LLM call, ~5–8 s), and returns. The client immediately refreshes the feed, which now contains the new story.
 
 **Server-side detection:**
 
@@ -151,15 +150,7 @@ Provisional user attendees of an experience appear in the share modal with a *"S
 
 ## Participant resolution (completion modal)
 
-When the AI extracts names from an experience prompt (e.g. *"Sarah and Tom"* → `mentioned_names: ["Sarah", "Tom"]`), `GenExperienceViewModel.resolveParticipantsForCompletion()` resolves each name against the community in order:
-
-1. Search registered members by name via `communityRepo.searchMembers()`. If matches, add as pre-tagged attendees.
-2. If no member match, search existing provisional users via `provisionalRepo.searchProvisionalUsers()`. If one matches, add as pre-tagged provisional attendee. If multiple match, add all as suggestions (user unchecks wrong ones in the modal).
-3. Only if zero provisional matches exist, create a new provisional user.
-
-This prevents duplicate provisional users accumulating for the same person across multiple activities.
-
-Resolved participants arrive as `preTaggedUsers` and `preProvisionalUsers` on the completion modal.
+The AI still extracts names from an experience prompt (e.g. *"Sarah and Tom"* → `mentioned_names: ["Sarah", "Tom"]`), but nothing resolves them into pre-tagged attendees any more. That resolution ran only on the post-create completion hand-off, which has been dead since #1895 and was removed. The owner tags attendees by hand in the completion modal.
 
 ---
 

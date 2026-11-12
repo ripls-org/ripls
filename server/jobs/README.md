@@ -8,7 +8,7 @@ The `jobs` package contains server-side background jobs that run at startup or o
 - `community_purge.go` — `CommunityPurgeJob`: daily hard-delete of soft-deleted communities (and their cascade) whose 30-day window expired. Kill switch and dry-run flags; see #1620.
 - `community_purge_reminder.go` — `CommunityPurgeReminderJob`: dispatches the day-before-purge push reminder to snapshot members of soft-deleted communities crossing the 29-day mark. Idempotent via the conditional-UPDATE primitive on `Community.purge_reminder_sent_at_unix_sec`. See `docs/community_delete_and_leave.md` §6.6 and #1659.
 - `activity_digest.go` / `activity_digest_weekly.go` — daily and weekly ops-facing activity digest emails (#1924); at most one send per local day/ISO-week via same-period claims.
-- `workshop_generation.go` — `WorkshopGenerationJob`: startup pre-warm of Workshop Hero / Bring-Back nudges for every (host, community) pair. Deliberately does not enqueue notifications (docs/ai/workshop.md Decision 8).
+- `workshop_generation.go` — `WorkshopGenerationJob`: startup pre-warm of Workshop Hero / Bring-Back nudges for every (host, community) pair. Deliberately does not enqueue notifications (Decision 8 of the Workshop design notes, archived).
 - `scheduled_notifications/` — the reconciler/dispatcher subsystem for time-anchored notifications (event reminders, loan-return prompts); see `docs/server/scheduled_notifications.md`.
 - `shutdown.go` — helpers that let batch loops distinguish process teardown from genuine per-row failures.
 

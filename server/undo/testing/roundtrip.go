@@ -3,7 +3,7 @@
 // correctness invariant: for any sequence [perform-action,
 // undo-action], post-undo state equals pre-action state.
 //
-// See docs/ai/undo_plan.md §10.5 for the design rationale.
+// See the undo plan's §10.5 (archived) for the design rationale.
 //
 // Usage: each Undo* RPC ships a test that supplies four callbacks
 // (SnapshotBefore, Mutate, SnapshotAfter, Undo) plus the service

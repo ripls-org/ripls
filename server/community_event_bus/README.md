@@ -7,8 +7,7 @@ This package is the **first** domain adapter on `server/pubsub`. The intent
 is that future event families — chat messages, gear lifecycle, user
 lifecycle — get parallel adapters (`server/chat_event_bus`,
 `server/gear_event_bus`, etc.) using the same `pubsub` primitive. See
-[`docs/issues/510-community-event-pubsub-v2.md`](../../docs/issues/510-community-event-pubsub-v2.md)
-for the broader plan.
+the #510 plan (archived) for the broader plan.
 
 ## Public surface
 

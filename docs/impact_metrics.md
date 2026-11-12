@@ -576,6 +576,6 @@ Order must match tab bar: **Saved → CO2 Avoided → Quality Time**
 - **Backend:** Complete. Transaction-level ImpactEstimate with quadrature aggregation, estimator library, backfill. Provenance on all impact dimensions and gear metadata. (The server-rendered methodology-doc RPC was removed; methodology specs live under `docs/impact_metrics/`.)
 - **Frontend:** Complete. Three full-screen metric views (Community, User/profile, Item), per-attribute audit trail screen, per-dimension drill-down screens, equivalence-ladder cards, shared widget library.
 - **Quality Time (Fourth Metric):** Complete. Proto definitions, estimator library, config, ConnectionContext resolver, builder integration, community/item/user metric screens with detail view, per-loan social attributes, subsidiary metrics. See [quality_time.md](./impact_metrics/quality_time.md) for the dimension spec.
-- **Impact 3.0:** In progress. See [impact3.md](./ai/impact3.md) for plan. Time tab removed, metrics consistency and insight overhaul planned.
-- **Impact 4.0:** Planned. See [impact4.md](./ai/impact4.md) for plan. Leaderboards, percentile rankings, metric refinements, design polish.
+- **Impact 3.0:** In progress. See the impact3 design notes (archived) for plan. Time tab removed, metrics consistency and insight overhaul planned.
+- **Impact 4.0:** Planned. See the impact4 design notes (archived) for plan. Leaderboards, percentile rankings, metric refinements, design polish.
 **Architecture:** Transaction-level ImpactEstimate storage with community/user-level aggregation. Three visible dimensions: cost, carbon, quality time (time saved computed but not displayed as a tab). Provenance tracking on all computed values. Client displays via dedicated screens with audit trail drill-downs.

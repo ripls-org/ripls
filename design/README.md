@@ -70,6 +70,6 @@ surfaces the gate must check, not by being visual detail.
 ## Provenance
 
 Palette and font pairing were selected from the Phase 1 choice sheet
-(`docs/concepts/theme/unification-choice-sheet.html`); the Ink & Sage light
+(the unification choice-sheet concept mock, archived); the Ink & Sage light
 theme comes verbatim from PR #2440's palette explorer, the dark theme was
-synthesized during #2441. Plan: `docs/issues/2441-visual-token-unification.md`.
+synthesized during #2441. Plan: the #2441 plan (archived).

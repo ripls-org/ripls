@@ -282,7 +282,7 @@ or an in-app deep link.
 > deleted in #2643 after verifying as a no-op in production, closing #2056.
 > All live RPC paths read `ShareLink` exclusively; the legacy table remains
 > only for cascade-delete/restore and hard-delete handling of any surviving
-> rows.
+> rows. Dropping it is #3273.
 
 Constraints:
 

@@ -91,7 +91,7 @@ When adding code that runs during logout, call `LogoutDiagnostics.trace('LABEL',
 - [startup.md](startup.md) — initialization sequence
 - [auth_state.dart](../../app/lib/services/auth_state.dart) — implementation
 - [caching.md](caching.md) — cache security
-- [issue #2158](../issues/2158-logout-crash-mutation-race.md) — logout-rebound race
+- issue #2158 (plan archived) — logout-rebound race
 
 ---
 

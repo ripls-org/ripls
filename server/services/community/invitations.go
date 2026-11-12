@@ -55,7 +55,7 @@ func (s *Service) AcceptInvitationLink(
 	// user to the community. Event share links additionally require an
 	// RSVP write, which the client fires separately via
 	// RSVPToExperience after this RPC succeeds (see
-	// docs/issues/2050-web-rsvp-actions.md §D1).
+	// the #2050 plan's §D1, archived).
 	if err := requireAcceptableViaCommunityJoin(link); err != nil {
 		return nil, err
 	}

@@ -2,7 +2,7 @@
   "name": "ripls-cloud-functions",
   "version": "0.1.0",
   "private": true,
-  "description": "Cloud Functions for ripls observability automation. See docs/issues/1148-1149-alert-to-issue.md for the design.",
+  "description": "Cloud Functions for ripls observability automation. See the #1148/#1149 plan (archived) for the design.",
   "engines": {
     "node": "24"
   },

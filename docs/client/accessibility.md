@@ -13,7 +13,7 @@ freshness:
 ---
 # Accessibility
 
-How the Flutter app stays accessible by default. This document is the contributor reference; the multi-phase plan that produced these mechanisms lives at [`docs/ai/accessibility_plan.md`](../ai/accessibility_plan.md).
+How the Flutter app stays accessible by default. This document is the contributor reference; the multi-phase plan that produced these mechanisms lives in the accessibility plan (archived).
 
 The short version: every new interactive widget composes from the primitives under `app/lib/presentation/widgets/accessibility/`, every accessibility-visible string comes from `context.l10n.*`, and CI rejects PRs that introduce new violations.
 
@@ -86,6 +86,6 @@ We don't currently drive the app with VoiceOver / TalkBack on a routine basis �
 
 ## See also
 
-- [`docs/ai/accessibility_plan.md`](../ai/accessibility_plan.md) — full multi-phase plan.
+- The accessibility plan (archived) — full multi-phase plan.
 - [`app/lib/presentation/widgets/accessibility/README.md`](../../app/lib/presentation/widgets/accessibility/README.md) — primitive API details.
 - [`app/lib/l10n/README.md`](../../app/lib/l10n/README.md) — l10n key conventions, including the `a11y` prefix.

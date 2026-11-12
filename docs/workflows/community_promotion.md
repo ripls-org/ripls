@@ -12,7 +12,7 @@ freshness:
 ---
 # Name-This-Group: Promoting an Ad-Hoc Community
 
-The phone-first pivot (epic #2492; canonical plan `docs/issues/2492-phone-first-pivot.md`) gives
+The phone-first pivot (epic #2492; its canonical plan is archived) gives
 every item its own **nameless, per-item "ad-hoc" community** — the item's audience. A nameless
 community is intentionally second-class: it renders group-chat style (by its members' first names)
 and carries no standing identity. **DISPLAY-1** lets the owner *promote* such a community into a real,

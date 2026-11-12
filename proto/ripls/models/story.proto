@@ -75,8 +75,9 @@ message Story {
   // payload — render title/description verbatim" (covers AI-generated
   // story prose and pre-migration rows).
   //
-  // TODO(#2159): cleanup tracker removes the legacy title/description
-  // fields once historical rows have aged out.
+  // title/description stay populated permanently: they are the English
+  // fallback for rows without a template_key and for clients that don't
+  // know a newer key.
   optional string template_key = 21;
   map<string, string> template_params = 22;
 }

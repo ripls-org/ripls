@@ -15,7 +15,7 @@
 // here automatically renames the wire key the parser watches for.
 //
 // The fields are positioned to maximize the early-fire wall-clock win
-// documented in `docs/evals/1157-genexperience-latency.md`:
+// documented in the #1157 genexperience latency eval (archived):
 //
 //   - `title` first — gives the client a renderable preview ~1 s before
 //     terminal on real per-token streamers.

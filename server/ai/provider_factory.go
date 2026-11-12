@@ -98,7 +98,7 @@ func resolveTemperature(t float64) float64 {
 
 // NewAllProvidersWithFallback creates a provider with Gemini 3.1 Flash-Lite
 // as primary and Anthropic Claude Haiku 4.5 as fallback. Selected based on the 2026-05-09
-// gear-image eval (#1777, see docs/issues/1777-baseline-2026-05-09.md):
+// gear-image eval (#1777, see the #1777 baseline, archived):
 // Gemini 3.1 Flash-Lite scored 93.6% to Haiku's 84.9% on the small-model
 // tier with comparable median latency (~3.1s vs ~3.2s) and lower per-call
 // cost. The eval covers gear-from-image specifically, but Flash-Lite also

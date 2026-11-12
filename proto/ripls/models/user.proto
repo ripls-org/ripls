@@ -104,11 +104,8 @@ message User {
     // device is unaffected). Defaults false. CAN-SPAM: this is the durable
     // suppression record for the off-app email channel.
     //
-    // TODO(#2524): reversible from in-app settings. Today this only flips true
-    // via the one-click email unsubscribe link; there is no in-app way to opt
-    // out or re-subscribe. Removing this TODO means a toggle on
-    // user_notifications_screen backed by a get/set RPC (the field itself is
-    // already reversible — this is the missing UI/RPC).
+    // Only the one-click email unsubscribe link sets this; there is no
+    // in-app control to opt out or re-subscribe.
     bool off_app_email_opted_out = 21;
 
     // Unix seconds of the last platform SMS that carried the STOP/HELP opt-out

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// ContentDashedAvatar is a dashed ring with optional [initials] inside — the
 /// "invited / not replied yet" status circle on the pitching-in surface
-/// (docs/issues/2280-pitching-in-expand.md). Pure; the caller resolves [color].
+/// (the #2280 plan, archived). Pure; the caller resolves [color].
 class ContentDashedAvatar extends StatelessWidget {
   /// Up-to-two letters shown inside the ring; null draws an empty ring.
   final String? initials;

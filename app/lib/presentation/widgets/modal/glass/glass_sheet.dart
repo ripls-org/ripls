@@ -31,7 +31,7 @@ import 'package:ripls/presentation/widgets/modal/glass/glass_surface.dart';
 ///    e.g. a full-bleed map).
 /// 3. The provided [child].
 ///
-/// See docs/issues/1797-glass-modal-revamp.md.
+/// See the #1797 plan (archived).
 class GlassSheet extends StatelessWidget {
   /// Sheet content. Typically a column of `GlassModalHeader`,
   /// field-label-and-chips groups, and a `GlassFooterButtons` at the bottom.

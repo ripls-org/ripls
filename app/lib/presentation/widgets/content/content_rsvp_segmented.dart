@@ -26,7 +26,7 @@ class ContentSegment {
 
 /// ContentRsvpSegmented is a subtle inline segmented control — e.g. Going /
 /// Maybe / Can't go — for the expanded pitching-in panel
-/// (docs/issues/2280-pitching-in-expand.md). The selected segment is filled
+/// (the #2280 plan, archived). The selected segment is filled
 /// with the accent; the rest read as muted text on the dark track. Each segment
 /// is a [Toggle] so its selected state is announced.
 class ContentRsvpSegmented extends StatelessWidget {

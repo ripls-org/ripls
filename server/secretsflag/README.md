@@ -30,7 +30,7 @@ accept either form. The bytes live in a tmpfs file written by
 `scripts/run_server_with_sm_secrets.sh` (local dev), and the server reads
 the file at startup.
 
-See issue #1885 and the plan at [`docs/issues/1885-secrets-file-flags.md`](../../docs/issues/1885-secrets-file-flags.md).
+See issue #1885 and the #1885 plan (archived).
 
 ## Usage
 

@@ -62,7 +62,7 @@ func getTemplateForStoryType(storyType string) storyTemplate {
 // structured-template payload Phase 4b clients use to render the
 // story in the viewer's locale. Both halves are populated together;
 // the legacy text fields stay on Story for backward compatibility
-// (TODO(#2159): retire them after historical rows age out).
+// and as the fallback for clients that don't recognize the key.
 type templateResult struct {
 	Title       string
 	Description string

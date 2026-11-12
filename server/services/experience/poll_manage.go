@@ -14,6 +14,8 @@ package experience
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/proto"
@@ -173,11 +175,13 @@ func (s *Service) nudgePollVoters(
 		return 0, nil
 	}
 
-	notification := pollNudgeNotification(ctx, experienceID, expStored.Name, spec)
-
 	nudged := 0
 	if s.notificationService != nil {
-		for userID := range candidates {
+		// One batched preferred_language read for the fan-out, one render per
+		// distinct locale (#3276).
+		byRecipient := notification_content.SystemNotifications(ctx, s.storage,
+			slices.Collect(maps.Keys(candidates)), pollNudgePayload(experienceID, expStored.Name, spec))
+		for userID, notification := range byRecipient {
 			if err := s.notificationService.NotifyUser(ctx, userID, notification); err != nil {
 				logger.WarnContext(ctx, "failed to nudge voter",
 					"recipient_user_id", userID, "error", err)
@@ -264,20 +268,20 @@ func (s *Service) experienceHasActiveCommunity(
 	return false
 }
 
-// pollNudgeNotification builds the reminder. Copy comes from the poll's kind in
-// the shared catalog, so push, SMS and email render one sentence that names the
-// plan — the old push body ("The organizer is waiting on your pick.") named
-// nothing, which left an off-app recipient with no way to tell which plan wanted
-// them (#2896).
+// pollNudgePayload builds the reminder's payload. Copy comes from the poll's
+// kind in the shared catalog, so push, SMS and email render one sentence that
+// names the plan — the old push body ("The organizer is waiting on your pick.")
+// named nothing, which left an off-app recipient with no way to tell which plan
+// wanted them (#2896).
 //
 // The experience name must reach the payload, not just the rendered body: the
 // off-app senders ignore Title/Body and re-render from these fields.
-func pollNudgeNotification(ctx context.Context, experienceID, experienceName string, spec pollSpec) *models.Notification {
-	return notification_content.SystemNotification(ctx, &models.CommunityEventPayload{
+func pollNudgePayload(experienceID, experienceName string, spec pollSpec) *models.CommunityEventPayload {
+	return &models.CommunityEventPayload{
 		EventType:      spec.nudgeEventType,
 		ExperienceName: experienceName,
 		ExperienceId:   proto.String(experienceID),
-	})
+	}
 }
 
 // --- Proposal deletion -------------------------------------------------------

@@ -12,8 +12,8 @@
 // The dedupLabel must be applied to every auto-filed issue. Callers may
 // supply extra labels (severity, platform, etc.) and may opt in to the
 // `claude-fix` label which triggers the existing claude_plan_issue.yaml
-// workflow. See docs/issues/1148-1149-alert-to-issue.md §"Claude-trigger
-// gating" for when to opt in.
+// workflow. See the #1148/#1149 plan's §"Claude-trigger gating"
+// (archived) for when to opt in.
 
 import type { Octokit } from '@octokit/rest';
 

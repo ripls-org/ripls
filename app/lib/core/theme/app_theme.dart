@@ -541,7 +541,7 @@ class AppTheme {
 /// (`modal*`); this class holds the geometry and text styles so each glass
 /// primitive pulls from a single source of truth.
 ///
-/// See docs/issues/1797-glass-modal-revamp.md for the rationale.
+/// See the #1797 plan (archived) for the rationale.
 class ModalTheme {
   ModalTheme._();
 

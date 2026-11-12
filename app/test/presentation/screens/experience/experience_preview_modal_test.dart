@@ -8,7 +8,7 @@ import 'package:ripls/data/repositories/media_url.dart';
 /// based on media ID, which is critical for preventing the image caching bug
 /// where different media items could show the wrong cached image.
 ///
-/// See docs/ai/experience_image.md for full context on the bug and fix.
+/// See the experience-image design notes (archived) for full context on the bug and fix.
 void main() {
   group('Experience Background Image Caching Pattern', () {
     test('MediaUrl provides stable cache keys based on media ID', () {

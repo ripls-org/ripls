@@ -51,7 +51,7 @@ val googleMapsApiKey: String =
         ?: ""
 
 // Force DataStore 1.0.0 to avoid native library crashes in 1.1.x
-// See: docs/ai/bug1.md for detailed analysis
+// See: the bug1 analysis notes (archived) for detailed analysis
 // The 1.1.x versions use native JNI code that fails to load on some devices
 configurations.all {
     resolutionStrategy {

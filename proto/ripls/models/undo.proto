@@ -13,7 +13,7 @@ option go_package = "go.ripls.org/ripls/server/gen/ripls/models;models";
 // UndoData records the minimal prior-state snapshot needed to reverse
 // a state-changing action within the generalized-undo feature. Attached
 // to CommunityEvent for server-authoritative undoable events. See
-// docs/ai/undo_plan.md §4.1.
+// the undo plan's §4.1 (archived).
 //
 // The variant chosen on a given CommunityEvent depends on the event
 // type being reversed; events whose reversal requires no cascade data

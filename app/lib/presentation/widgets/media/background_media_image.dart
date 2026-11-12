@@ -31,7 +31,7 @@ import 'package:ripls/presentation/widgets/chat/cached_media_image.dart';
 /// )
 /// ```
 ///
-/// See docs/ai/experience_image.md for full context on the caching bug this solves.
+/// See the experience-image design notes (archived) for full context on the caching bug this solves.
 class BackgroundMediaImage extends ConsumerWidget {
   /// The media ID for the background image.
   ///

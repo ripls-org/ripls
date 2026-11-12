@@ -14,9 +14,6 @@ import 'package:ripls/core/utils/toast_helper.dart';
 import 'package:ripls/data/gen/ripls/api/location.pb.dart'
     show GeocodedLocation;
 import 'package:ripls/data/gen/ripls/api/time.pb.dart' show ExperienceTime;
-import 'package:ripls/data/gen/ripls/api/user.pb.dart' show User;
-import 'package:ripls/data/repositories/provisional_user_repository.dart'
-    show ProvisionalUser;
 import 'package:ripls/presentation/screens/experience/widgets/preview/preview_community_selector.dart';
 import 'package:ripls/presentation/screens/experience/widgets/preview/preview_header.dart';
 import 'package:ripls/presentation/screens/experience/widgets/preview/preview_location_selector.dart';
@@ -223,20 +220,7 @@ class _ExperiencePreviewModalState extends ConsumerState<ExperiencePreviewModal>
         );
       } else if (finalState.isCompleted) {
         final experienceId = finalState.createdExperienceId;
-        final isPastEvent = _isTimeInPast(finalState.selectedTime);
         final notifier = ref.read(genExperienceProvider.notifier);
-
-        // For past events: resolve AI-mentioned names into participant IDs and
-        // provisional users before closing, so the feed can open the completion modal
-        // on top with pre-populated attendees.
-        List<User> preTaggedUsers = [];
-        List<ProvisionalUser> preProvisionalUsers = [];
-        if (isPastEvent && experienceId != null) {
-          final resolved = await notifier.resolveParticipantsForCompletion();
-          if (!mounted) return;
-          preTaggedUsers = resolved?.users ?? [];
-          preProvisionalUsers = resolved?.provisionalUsers ?? [];
-        }
 
         // Reset provider state while we have stable context
         notifier.reset();
@@ -246,21 +230,7 @@ class _ExperiencePreviewModalState extends ConsumerState<ExperiencePreviewModal>
 
         if (!mounted) return;
 
-        // Pop — for past events, return ExperienceCreationResult so the feed
-        // layer opens the completion modal on top. For future events, pass
-        // just the experience ID string for backwards compatibility.
-        if (isPastEvent && experienceId != null) {
-          Navigator.of(context).pop(
-            ExperienceCreationResult(
-              experienceId: experienceId,
-              isPastEvent: true,
-              preTaggedUsers: preTaggedUsers,
-              preProvisionalUsers: preProvisionalUsers,
-            ),
-          );
-        } else if (mounted) {
-          Navigator.of(context).pop(experienceId);
-        }
+        Navigator.of(context).pop(experienceId);
       }
     } catch (e) {
       if (mounted) {

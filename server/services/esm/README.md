@@ -37,7 +37,7 @@ In v1, ESM prompts are materialized inline with the
 (see [server/services/experience/stories_esm.go](../experience/stories_esm.go)).
 The shared helpers `esm.AttendeeUserIDs` and `esm.BuildPromptForExperience`
 live in [server/esm/](../../esm/). v2's automated trigger
-([docs/issues/1580-esm-cards.md](../../../docs/issues/1580-esm-cards.md))
+(the #1580 plan, archived)
 will reuse the same helpers and add a template bank keyed to event
 flavor.
 

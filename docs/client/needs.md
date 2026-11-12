@@ -499,7 +499,7 @@ Once the table is approved, the cleanest split is:
 
 ## See also
 
-- [`docs/issues/2148-needs-modal-redesign.md`](../issues/2148-needs-modal-redesign.md) — the original v1 implementation plan that produced the surface set.
+- The #2148 plan (archived) — the original v1 implementation plan that produced the surface set.
 - [`docs/cowork/App Design/needs-redesign-v2.html`](../cowork/App%20Design/needs-redesign-v2.html) — the v2 visual reference.
 - [`docs/planning.md`](../planning.md) — the data-layer story (slots, atomic claim, snapshot-on-claim, chat integration).
 - [`docs/client/polls.md`](polls.md) — the parallel parity contract for experience-poll surfaces.

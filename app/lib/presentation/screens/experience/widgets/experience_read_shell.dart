@@ -39,7 +39,7 @@ import 'package:ripls/presentation/widgets/home/calendar/calendar_weather.dart';
 
 /// ExperienceReadShell is the redesigned read-mode layout for an experience: an
 /// editorial sheet that scrolls over the full-bleed hero rendered behind it by
-/// the content view (docs/issues/2278-experience-content-redesign.md). It
+/// the content view (the #2278 plan, archived). It
 /// composes the shared `widgets/content/` building blocks from the experience
 /// view-model's derived view-data (chips, headline, facts, messages card, edges
 /// graph, you-gap, CTA, whats-next).
@@ -816,7 +816,7 @@ class ExperienceReadShell extends ConsumerWidget {
 
   /// Expands the roster into a full-screen panel that grows from the card's
   /// footprint ([cardRect]) via a clip-reveal morph (not a slide, not a modal
-  /// sheet — see docs/issues/2280-pitching-in-expand.md). Pushed on the root
+  /// sheet — see the #2280 plan, archived). Pushed on the root
   /// navigator so it overlays the feed's home nav bar; the custom
   /// [morphRevealRoute] owns the transition (so this bypasses the slide-based
   /// `NavigationHelpers.pushScreen`), and the reverse morph plays on pop.

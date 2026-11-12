@@ -218,13 +218,20 @@ jobs:
       - name: Check TODOs reference an issue
         run: npm run lint:todo-refs
 
-      # Flutter 3.47.0's Dart VM profiler segfaults flutter_tester at ~0.2% of
-      # process starts, which fails this job on a random, innocent test file
-      # (#2933). Nothing reads the samples here — flutter_tools runs the tester
-      # with --disable-vm-service — so the profiler is switched off until
-      # upstream fixes the stack walker.
-      - name: "Disable the flutter_tester Dart profiler (issue #2933)"
-        run: bash scripts/disable_flutter_tester_profiler.sh
+      # Flutter 3.47.0's Dart VM profiler segfaulted flutter_tester (#2933), and
+      # CI worked around it by replacing the tester with a shim that dropped
+      # --enable-dart-profiling. The Flutter this pins no longer crashes
+      # (#3277). The shim patched the SDK in place, so a long-lived runner can
+      # still carry it: put the real binary back so the suite tests the real
+      # tester.
+      - name: Restore the real flutter_tester
+        run: |
+          sdk="${FLUTTER_ROOT:-$(dirname "$(dirname "$(readlink -f "$(command -v flutter)")")")}"
+          shopt -s nullglob
+          for real in "$sdk"/bin/cache/artifacts/engine/*/flutter_tester.real; do
+            mv "$real" "${real%.real}"
+            echo "Restored ${real%.real}"
+          done
 
       - name: Run Flutter tests
         run: cd app && flutter test --reporter github

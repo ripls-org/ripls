@@ -51,26 +51,6 @@ func TestMockProvider_CallTracking(t *testing.T) {
 		}
 	})
 
-	t.Run("records GenerateConversationSummary calls with style", func(t *testing.T) {
-		mock.Reset()
-		msgs := []ConversationMessage{{SenderName: "Alice", Text: "Hi"}}
-		_, _ = mock.GenerateConversationSummary(ctx, msgs, "req-title", "req-desc", SummaryStyleCompletion)
-
-		if len(mock.Calls.GenerateConversationSummary) != 1 {
-			t.Fatalf("expected 1 call, got %d", len(mock.Calls.GenerateConversationSummary))
-		}
-		call := mock.Calls.GenerateConversationSummary[0]
-		if call.Style != SummaryStyleCompletion {
-			t.Errorf("expected SummaryStyleCompletion, got %v", call.Style)
-		}
-		if call.RequestTitle != "req-title" {
-			t.Errorf("expected request title 'req-title', got %q", call.RequestTitle)
-		}
-		if len(call.Messages) != 1 || call.Messages[0].SenderName != "Alice" {
-			t.Errorf("unexpected messages: %+v", call.Messages)
-		}
-	})
-
 	t.Run("records InferSocialAttributes calls", func(t *testing.T) {
 		mock.Reset()
 		_, _ = mock.InferSocialAttributes(ctx, "Drill", "A power drill", "gear_loan", 50.0)

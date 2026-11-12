@@ -154,7 +154,7 @@ func TestSystemNotificationsReachOffApp(t *testing.T) {
 
 			// Push: the same sentence, with the kind's title as its only
 			// surface-specific adornment.
-			notif := SystemNotification(ctx, tt.payload)
+			notif := SystemNotification(ctx, language.English, tt.payload)
 			if notif.Title != tt.wantTitle {
 				t.Errorf("push title = %q, want %q", notif.Title, tt.wantTitle)
 			}
@@ -170,11 +170,10 @@ func TestSystemNotificationsReachOffApp(t *testing.T) {
 	}
 }
 
-// TestSystemNotificationLocalizesOffApp asserts the one sentence really is one
-// sentence: the off-app render follows the recipient's locale even though the
-// push strings are materialized in English (see the TODO(#2897) in
-// SystemNotification).
-func TestSystemNotificationLocalizesOffApp(t *testing.T) {
+// TestSystemNotificationLocalizes asserts the one sentence really is one
+// sentence in every locale: push and the off-app render both follow the
+// recipient's locale (#3276).
+func TestSystemNotificationLocalizes(t *testing.T) {
 	ctx := context.Background()
 	payload := &models.CommunityEventPayload{
 		EventType:      "EXPERIENCE_REMINDER_TWO_HOUR",
@@ -190,6 +189,14 @@ func TestSystemNotificationLocalizesOffApp(t *testing.T) {
 	if got != want {
 		t.Errorf("Spanish SMS =\n%q\nwant\n%q", got, want)
 	}
+
+	notif := SystemNotification(ctx, language.Spanish, payload)
+	if notif.Title != "El evento empieza pronto" {
+		t.Errorf("Spanish push title = %q", notif.Title)
+	}
+	if notif.Body != "Backyard BBQ empieza en 2 horas" {
+		t.Errorf("Spanish push body = %q", notif.Body)
+	}
 }
 
 // TestSystemNotificationMissingNameUsesStandIn asserts the producers' old
@@ -199,7 +206,7 @@ func TestSystemNotificationMissingNameUsesStandIn(t *testing.T) {
 	loc := enLoc(t)
 	ctx := context.Background()
 
-	notif := SystemNotification(ctx, &models.CommunityEventPayload{
+	notif := SystemNotification(ctx, language.English, &models.CommunityEventPayload{
 		EventType: "EXPERIENCE_REMINDER_DAY_BEFORE",
 	})
 	if notif.Body != "an event is tomorrow" {

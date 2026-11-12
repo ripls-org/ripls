@@ -38,11 +38,16 @@ Two long-running goroutines, spawned from `server/jobs.go` via
   through the diff.
 - **Dispatcher** (every 1 min,
   [`dispatch.go`](../../server/jobs/scheduled_notifications/dispatch.go))
-  — pulls rows whose `fire_at_unix_sec` is in the past, routes each
-  to the matching per-kind `Dispatcher` via `CanHandle`, applies
-  the per-dispatcher quiet-hours policy, atomically claims (via
+  — pulls rows whose `fire_at_unix_sec` is in the past, resolves
+  every due row's recipient locale in one batched
+  `User.preferred_language` read
+  (`notification_content.LoadRecipientLocales`; a failed read
+  degrades to English), routes each row to the matching per-kind
+  `Dispatcher` via `CanHandle`, applies the per-dispatcher
+  quiet-hours policy, atomically claims (via
   `ClaimAndDeleteScheduledNotification`), renders copy from current
-  entity state, and sends through `notifications.Service`.
+  entity state in the recipient's locale, and sends through
+  `notifications.Service`.
 
 Cadences chosen so the reconciler's grace window (5 minutes — see
 *Re-fire protection* below) is smaller than its interval.
@@ -279,9 +284,11 @@ Four independent steps, each landable as its own PR.
      entity is in a terminal state, or a preference check disables
      this kind for the recipient.
    - Preference-fetch errors fail open.
-   - `Render()` returns `notification_content.SystemNotification(ctx,
-     payload)` — never a hand-built `Notification` with `fmt.Sprintf`
-     copy. See step 3.
+   - `Render(ctx, row, locale)` returns
+     `notification_content.SystemNotification(ctx, locale, payload)` —
+     never a hand-built `Notification` with `fmt.Sprintf` copy, and
+     never a per-row user read for the locale: the driver passes the
+     recipient's locale in, resolved once per tick (#3276). See step 3.
 
 3. **Copy** — a scheduled notification reaches a recipient with no
    device through SMS or email, and those senders ignore
@@ -414,8 +421,7 @@ fires automatically without further configuration.
 
 - [`docs/push_notifications.md`](../push_notifications.md) — the
   reactive notification path that scheduled notifications complement.
-- [`docs/issues/625-scheduled-notifications.md`](../issues/625-scheduled-notifications.md)
-  — implementation history (decisions, options that were rejected,
+- The #625 plan (archived) — implementation history (decisions, options that were rejected,
   schema revisions). Read this only if you need to understand *why*
   the design is shaped the way it is; for *what* it does, this
   document is canonical.

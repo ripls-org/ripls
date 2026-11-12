@@ -78,9 +78,8 @@ func main() {
 			return err
 		},
 		func() error {
-			// TODO(#2056): Remove this legacy-table insert once
-			// community_invitation_link is dropped. The share_link
-			// insert below covers the new path.
+			// Legacy community_invitation_link table; the share_link
+			// insert below covers the current path.
 			_, err := store.Insert(ctx, &models.CommunityInvitationLink{CommunityId: communityID, ShortCode: "purge-test-code"})
 			return err
 		},

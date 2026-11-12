@@ -2,7 +2,7 @@
 //
 // These tests verify that search results appear reliably regardless of how many
 // times communitiesProvider emits during startup, including the race
-// conditions described in docs/ai/load.md.
+// conditions described in the load design notes (archived).
 
 import 'dart:async';
 

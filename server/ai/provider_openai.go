@@ -205,52 +205,6 @@ func (p *OpenAIProvider) GenerateRequestContent(ctx context.Context, prompt, reg
 	return f.Result, f.Err
 }
 
-// GenerateConversationSummary creates a summary of a conversation using OpenAI.
-func (p *OpenAIProvider) GenerateConversationSummary(ctx context.Context, messages []ConversationMessage, requestTitle, requestDescription string, style SummaryStyle) (*ConversationSummary, error) {
-	if len(messages) == 0 {
-		return nil, fmt.Errorf("messages cannot be empty")
-	}
-	logger := logging.LoggerWithContext(ctx).With(
-		"provider", p.Name(),
-		"operation", "GenerateConversationSummary",
-		"model", p.model,
-		"style", style,
-	)
-	startTime := time.Now()
-	promptText := buildConversationSummaryPrompt(messages, requestTitle, requestDescription, style)
-	type outputSchema struct {
-		Summary string `json:"summary"`
-	}
-	result, err := openaiCallStructured[outputSchema](ctx, logger, startTime, p.client, p.model, p.temperatureParam(),
-		[]openai.ChatCompletionMessageParamUnion{openai.UserMessage(promptText)}, "conversation_summary")
-	if err != nil {
-		return nil, err
-	}
-	logger.InfoContext(ctx, "openai API call completed", "duration_ms", time.Since(startTime).Milliseconds())
-	return &ConversationSummary{Summary: result.Summary}, nil
-}
-
-// GenerateExperienceCompletionSummary creates a summary of how an experience went using OpenAI.
-func (p *OpenAIProvider) GenerateExperienceCompletionSummary(ctx context.Context, messages []ConversationMessage, experienceTitle, experienceDescription string, attendeeNames []string) (*ConversationSummary, error) {
-	logger := logging.LoggerWithContext(ctx).With(
-		"provider", p.Name(),
-		"operation", "GenerateExperienceCompletionSummary",
-		"model", p.model,
-	)
-	startTime := time.Now()
-	promptText := buildExperienceCompletionSummaryPrompt(messages, experienceTitle, experienceDescription, attendeeNames)
-	type outputSchema struct {
-		Summary string `json:"summary"`
-	}
-	result, err := openaiCallStructured[outputSchema](ctx, logger, startTime, p.client, p.model, p.temperatureParam(),
-		[]openai.ChatCompletionMessageParamUnion{openai.UserMessage(promptText)}, "experience_completion_summary")
-	if err != nil {
-		return nil, err
-	}
-	logger.InfoContext(ctx, "openai API call completed", "duration_ms", time.Since(startTime).Milliseconds())
-	return &ConversationSummary{Summary: result.Summary}, nil
-}
-
 // GenerateExperienceFromText creates experience content from a user prompt using OpenAI.
 func (p *OpenAIProvider) GenerateExperienceFromText(ctx context.Context, prompt, region, currentTime string) (*ExperienceGeneration, error) {
 	fields, final, err := p.GenerateExperienceFromTextStreaming(ctx, prompt, region, currentTime)

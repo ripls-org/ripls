@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"go.ripls.org/ripls/server/gen/ripls/models"
+	"go.ripls.org/ripls/server/notifications/notification_content"
 	"go.ripls.org/ripls/server/storage"
 )
 
@@ -127,11 +128,12 @@ func TestBuildNotification_RoutesThroughLocalizer(t *testing.T) {
 	}
 }
 
-// TestLoadRecipientLocales verifies the per-recipient locale lookup
-// helper returns the stored preferred_language for each user and
-// falls through to DefaultTag for users with no recorded preference
-// or a missing record. Locale-mechanism test (not copy content), so
-// it lives alongside the other locale-routing tests.
+// TestLoadRecipientLocales verifies the shared per-recipient locale
+// lookup the subscriber uses, against real storage: it returns the
+// stored preferred_language for each user and falls through to
+// DefaultTag for users with no recorded preference or a missing
+// record. Locale-mechanism test (not copy content), so it lives
+// alongside the other locale-routing tests.
 func TestLoadRecipientLocales(t *testing.T) {
 	s := setupTestStorage(t)
 	ctx := context.Background()
@@ -140,7 +142,7 @@ func TestLoadRecipientLocales(t *testing.T) {
 	esUser := insertTestUserWithLanguage(t, s, "es@example.com", "ES", "es")
 	noLangUser := insertTestUser(t, s, "none@example.com", "None")
 
-	got := loadRecipientLocales(ctx, s, []string{enUser, esUser, noLangUser, "missing-id"})
+	got := notification_content.LoadRecipientLocales(ctx, s, []string{enUser, esUser, noLangUser, "missing-id"})
 
 	if got[enUser].String() != "en" {
 		t.Errorf("en user → %v, want en", got[enUser])

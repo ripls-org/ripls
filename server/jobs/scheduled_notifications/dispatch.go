@@ -8,6 +8,7 @@ import (
 	"go.ripls.org/ripls/server/gen/ripls/models"
 	"go.ripls.org/ripls/server/logging"
 	"go.ripls.org/ripls/server/notifications"
+	"go.ripls.org/ripls/server/notifications/notification_content"
 )
 
 // DispatchStorage is the storage surface the dispatch driver needs.
@@ -15,6 +16,9 @@ import (
 type DispatchStorage interface {
 	FindDueScheduledNotifications(ctx context.Context, nowUnixSec int64, limit int) ([]*models.ScheduledNotification, error)
 	ClaimAndDeleteScheduledNotification(ctx context.Context, id string) (bool, error)
+	// UserBatchReader resolves recipients' preferred_language in one
+	// batched read per tick.
+	notification_content.UserBatchReader
 }
 
 // Dispatch runs one dispatcher tick: pull due rows, defer rows in
@@ -41,6 +45,13 @@ func Dispatch(
 	if err != nil {
 		return DispatchStats{}, fmt.Errorf("find due: %w", err)
 	}
+
+	// Resolve every due row's recipient locale in one batched read so
+	// push copy renders in the recipient's language without a storage
+	// read per row (#3276). Rows deferred for quiet hours below are
+	// included; the batch is bounded by batchLimit either way. A
+	// failed read degrades to English inside LoadRecipientLocales.
+	locales := notification_content.LoadRecipientLocales(ctx, store, dueRecipients(due))
 
 	var stats DispatchStats
 	for _, row := range due {
@@ -106,7 +117,7 @@ func Dispatch(
 			continue
 		}
 
-		notification, err := matched.Render(ctx, row)
+		notification, err := matched.Render(ctx, row, locales[row.RecipientUserId])
 		if err != nil {
 			stats.RenderFailed++
 			perRow.ErrorContext(ctx, "render failed; push lost", "error", err)
@@ -138,6 +149,25 @@ func Dispatch(
 		"send_failed", stats.SendFailed,
 	)
 	return stats, nil
+}
+
+// dueRecipients returns the distinct recipient user ids across rows,
+// in first-seen order.
+func dueRecipients(rows []*models.ScheduledNotification) []string {
+	seen := make(map[string]struct{}, len(rows))
+	out := make([]string, 0, len(rows))
+	for _, row := range rows {
+		id := row.GetRecipientUserId()
+		if id == "" {
+			continue
+		}
+		if _, dup := seen[id]; dup {
+			continue
+		}
+		seen[id] = struct{}{}
+		out = append(out, id)
+	}
+	return out
 }
 
 // matchingDispatcher returns the first Dispatcher that claims the

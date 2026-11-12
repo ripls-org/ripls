@@ -34,7 +34,7 @@ enum RecentBucket { today, yesterday, older }
 /// One row in the Directory address book — a person, a named community,
 /// or an ad-hoc group. Assembled client-side from existing reads
 /// (community membership + people/activity); see
-/// docs/issues/2568-directory-and-profiles.md, Decision 4.
+/// the #2568 plan's Decision 4 (archived).
 class DirectoryEntry {
   const DirectoryEntry({
     required this.id,

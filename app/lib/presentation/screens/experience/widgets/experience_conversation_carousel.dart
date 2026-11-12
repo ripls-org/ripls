@@ -9,7 +9,7 @@ import 'package:ripls/presentation/widgets/back_button.dart';
 
 /// ExperienceConversationCarousel carousels between the read shell and the
 /// full-screen discussion *without* tearing down the hero
-/// (docs/issues/2278-experience-content-redesign.md). Both panes share the
+/// (the #2278 plan, archived). Both panes share the
 /// content view's persistent `VideoBackgroundHost` behind this widget, so
 /// opening the conversation slides the read shell off to the left and the chat
 /// in from the right with no interruption to the background video.

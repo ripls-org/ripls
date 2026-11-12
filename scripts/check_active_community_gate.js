@@ -290,7 +290,7 @@ function main() {
     console.error('  - auth.FilterActiveMemberCommunities (multi-community, batched)');
     console.error('');
     console.error(
-      'See docs/community_delete_and_leave.md §6.5 and docs/issues/1621-deleted-community-read-filter.md.',
+      'See docs/community_delete_and_leave.md §6.5 and the #1621 plan (archived).',
     );
   }
 
@@ -305,7 +305,7 @@ function main() {
     );
     console.error('The helper suppresses pushes for soft-deleted communities while preserving');
     console.error('the audit trail (CommunityEvent / ChatMessage rows are still recorded).');
-    console.error('See docs/community_delete_and_leave.md §12 and docs/issues/1622-notification-dispatcher-deleted-guard.md.');
+    console.error('See docs/community_delete_and_leave.md §12 and the #1622 plan (archived).');
   }
 
   if (dViolations.length > 0) {
@@ -319,7 +319,7 @@ function main() {
     );
     console.error('or be added to RULE_D_ALLOWLIST in this script with a one-sentence rationale');
     console.error('(typical reason: the goroutine does not actually write community-scoped data).');
-    console.error('See docs/community_delete_and_leave.md §12 and docs/issues/1623-background-job-write-guard.md.');
+    console.error('See docs/community_delete_and_leave.md §12 and the #1623 plan (archived).');
   }
 
   process.exit(1);

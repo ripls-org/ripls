@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/text/language"
+
 	"go.ripls.org/ripls/server/gen/ripls/models"
 )
 
@@ -42,7 +44,7 @@ func TestExperienceClosePromptDispatcher_Render(t *testing.T) {
 	row := experienceRow("u-host", "e-1",
 		models.ExperienceNotificationPurpose_EXPERIENCE_NOTIFICATION_PURPOSE_CLOSE_PROMPT,
 		OffsetClosePromptAfterStart, 100)
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}
@@ -82,7 +84,7 @@ func TestExperienceClosePromptDispatcher_SkipsCompletedExperience(t *testing.T) 
 	row := experienceRow("u-host", "e-1",
 		models.ExperienceNotificationPurpose_EXPERIENCE_NOTIFICATION_PURPOSE_CLOSE_PROMPT,
 		OffsetClosePromptAfterStart, 100)
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}
@@ -112,7 +114,7 @@ func TestExperienceClosePromptDispatcher_SkipsWhenPreferenceDisabled(t *testing.
 	row := experienceRow("u-host", "e-1",
 		models.ExperienceNotificationPurpose_EXPERIENCE_NOTIFICATION_PURPOSE_CLOSE_PROMPT,
 		OffsetClosePromptAfterStart, 100)
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}
@@ -138,7 +140,7 @@ func TestExperienceClosePromptDispatcher_PreferenceFetchErrorsFailOpen(t *testin
 	row := experienceRow("u-host", "e-1",
 		models.ExperienceNotificationPurpose_EXPERIENCE_NOTIFICATION_PURPOSE_CLOSE_PROMPT,
 		OffsetClosePromptAfterStart, 100)
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render returned error: %v", err)
 	}
@@ -218,7 +220,7 @@ func TestExperienceReminderDispatcher_Render(t *testing.T) {
 					},
 				},
 			}
-			notif, err := d.Render(ctx, row)
+			notif, err := d.Render(ctx, row, language.English)
 			if err != nil {
 				t.Fatalf("Render: %v", err)
 			}
@@ -264,7 +266,7 @@ func TestExperienceReminderDispatcher_RenderSkipsWhenAnchorMissing(t *testing.T)
 	row := experienceRow("u-1", "e-missing",
 		models.ExperienceNotificationPurpose_EXPERIENCE_NOTIFICATION_PURPOSE_REMINDER_BEFORE_START,
 		OffsetReminderDayBefore, 100)
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render returned error: %v", err)
 	}
@@ -297,7 +299,7 @@ func TestExperienceReminderDispatcher_RenderSkipsWhenPreferenceDisabled(t *testi
 			},
 		},
 	}
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}
@@ -325,7 +327,7 @@ func TestExperienceReminderDispatcher_RenderProceedsWhenPreferenceUnsetOrEnabled
 				},
 			},
 		}
-		notif, err := d.Render(context.Background(), row)
+		notif, err := d.Render(context.Background(), row, language.English)
 		if err != nil {
 			t.Fatalf("Render: %v", err)
 		}
@@ -355,7 +357,7 @@ func TestExperienceReminderDispatcher_RenderProceedsWhenPreferenceUnsetOrEnabled
 				},
 			},
 		}
-		notif, err := d.Render(context.Background(), row)
+		notif, err := d.Render(context.Background(), row, language.English)
 		if err != nil {
 			t.Fatalf("Render: %v", err)
 		}
@@ -386,7 +388,7 @@ func TestExperienceReminderDispatcher_PreferenceFetchErrorsFailOpen(t *testing.T
 			},
 		},
 	}
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render returned error instead of failing open: %v", err)
 	}
@@ -456,7 +458,7 @@ func TestExperienceReminderDispatcher_RenderSkipsWhenAnchorSoftDeleted(t *testin
 	row := experienceRow("u-1", "e-1",
 		models.ExperienceNotificationPurpose_EXPERIENCE_NOTIFICATION_PURPOSE_REMINDER_BEFORE_START,
 		OffsetReminderDayBefore, 100)
-	notif, err := d.Render(context.Background(), row)
+	notif, err := d.Render(context.Background(), row, language.English)
 	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}

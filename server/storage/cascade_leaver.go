@@ -294,8 +294,8 @@ func DeleteLeaverCommunityNotificationPreferences(
 // left as-is — soft-delete is the cascade marker, is_revoked is the
 // user-facing kill switch.
 //
-// TODO(#2056): When the legacy community_invitation_link table is
-// dropped, remove the first scan and keep only the share_link scan.
+// The first scan covers the legacy community_invitation_link table, the
+// second the share_link table that replaced it.
 func RevokeLeaverCommunityInvitationLinks(
 	ctx context.Context, storage *ProtoSQLStorage,
 	communityID, leaverUserID string, deletedMetadata *models.DeletedMetadata,
@@ -375,13 +375,9 @@ func RevokeLeaverCommunityInvitationLinks(
 // no-op. It issues O(1) SQL round-trips regardless of how many conversations or
 // communities are involved.
 //
-// TODO(#2134): This helper fixes the invariant going forward but does not
-// retroactively clean up stale ParticipantIds for users who left before this
-// code was deployed. Once the read-path fix in requireConversationAccess (#2133)
-// is in production, the stale entries are no longer a security issue — they only
-// cause ghost rows in the inbox preview. A one-shot backfill job should iterate
-// soft-deleted CommunityUser rows and call this helper per (communityID,
-// leaverUserID) pair to restore the invariant for historical leavers.
+// This helper fixes the invariant going forward only: conversations from
+// before it shipped can still list users who had already left. Those are
+// being archived rather than backfilled (#3272).
 func CascadeRemoveLeaverFromChatConversationsInCommunity(
 	ctx context.Context, store *ProtoSQLStorage,
 	communityID, leaverUserID string,

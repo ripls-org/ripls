@@ -12,7 +12,7 @@ import 'package:ripls/core/theme/app_colors.dart';
 /// solid translucent rectangle that reads similarly enough that the
 /// migration does not regress without blur.
 ///
-/// See docs/issues/1797-glass-modal-revamp.md for the design rationale.
+/// See the #1797 plan (archived) for the design rationale.
 class GlassSurface extends StatelessWidget {
   /// Optional override for the surface fill. Defaults to [AppColors.modalSurface].
   final Color? fill;

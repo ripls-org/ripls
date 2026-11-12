@@ -137,8 +137,7 @@ clip-reveal "morph"), overlays the content view's **existing hero**
 (image/video), and hides everything else. Use it when a widget on a
 content view should *expand into its own full detail* rather than slide a
 sheet up from the bottom. First shipped for the "Who's pitching in?"
-roster and the experience conversation (see
-[docs/issues/2280-pitching-in-expand.md](../issues/2280-pitching-in-expand.md)).
+roster and the experience conversation (see the #2280 plan, archived).
 **We are standardizing on this surface for content-view expansions**, so
 build new ones from the shared pieces below rather than re-rolling the
 animation.
@@ -526,7 +525,7 @@ after grep confirmed zero callers.
 - **Maintainability**: Single source of truth for common patterns
 - **Testability**: Shared widgets have comprehensive test coverage
 
-**Reference:** [transfer2.md](../docs/ai/transfer2.md), [transfer2_phase15_refactoring_example.md](../docs/ai/transfer2_phase15_refactoring_example.md)
+**Reference:** the transfer2 design notes and its phase-15 refactoring example (archived)
 
 ### Preview Modals
 
@@ -569,7 +568,7 @@ All modals use `Navigator.pop(result)` to return data instead of callbacks. This
 - Enables better type safety
 - Supports async/await at call sites
 
-**Reference:** [preview_modal_navigation.md](../docs/ai/preview_modal_navigation.md)
+**Reference:** the preview-modal navigation design notes (archived)
 
 ### Keyboard Handling
 
@@ -691,8 +690,8 @@ Standard picker/action modals shown via `ModalHelpers.showStandardModal()` get a
 ### Modal Fragmentation (resolved for bottom sheets)
 
 **Status:** Bottom-sheet modals migrated to a single material —
-frosted glass — under [`#1797`](../issues/1797-glass-modal-revamp.md)
-and [`#1802`](../issues/1802-modals-glass-sweep.md). Every glass modal
+frosted glass — under #1797
+and #1802. Every glass modal
 now shares the same shape (12px inset, 28px corners, 92% max height)
 and entry pattern (`showAccessibleModal` + `GlassSheet`). Multiple
 historical action-modal variants (RequestActionModal, etc.) and
@@ -841,8 +840,8 @@ impact-detail modals (warm-paper `ImpactModalColors` palette).
 ## Documentation
 
 - [create.md](create.md) - Creation flow architecture and patterns
-- [keyboard.md](../docs/ai/keyboard.md) - Keyboard handling implementation plan
-- [preview_modal_navigation.md](../docs/ai/preview_modal_navigation.md) - Navigator result pattern migration
+- The keyboard design notes (archived) - Keyboard handling implementation plan
+- The preview-modal navigation design notes (archived) - Navigator result pattern migration
 - [content.md](content.md) - Content view architecture (complementary patterns)
 
 ---
@@ -908,9 +907,7 @@ the layered approach is overkill.
 **Scope.** Only **bottom-sheet** modals are on the glass material.
 Right-side detail screens, creation modals, preview modals, centered
 alert dialogs, and impact-detail modals are intentionally on different
-surfaces. See
-[`docs/issues/1797-glass-modal-revamp.md`](../issues/1797-glass-modal-revamp.md)
-and [`docs/issues/1802-modals-glass-sweep.md`](../issues/1802-modals-glass-sweep.md)
+surfaces. See the #1797 and #1802 plans (archived)
 for the migration plan, rationale, and out-of-scope rules.
 
 **Retired.** `ModalBuilders` and `ModalActionButtons` were deleted in

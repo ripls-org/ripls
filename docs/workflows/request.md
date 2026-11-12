@@ -269,7 +269,7 @@ enum RequestState {
 
 A helper can satisfy a request with their **actual item** — the request morphs
 into a real loan or giveaway instead of staying a chat coordination. Design
-and decision log: `docs/issues/2702-request-to-loan.md`.
+and decision log: the #2702 plan (archived).
 
 **A request is born with the needs its text plainly names.** `SubmitRequest`
 seeds one one-slot need per entry in `seed_need_names` (the gen call's

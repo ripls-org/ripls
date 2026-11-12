@@ -133,8 +133,8 @@ func TestWorkshopGenerationJob_SharedGearAloneProducesNothing(t *testing.T) {
 }
 
 func TestWorkshopGenerationJob_NeverEnqueuesNotifications(t *testing.T) {
-	// The job's contract (Decision 8 in docs/ai/workshop.md) explicitly
-	// forbids notifications. This test fails loudly if a future change
+	// The job's contract (Decision 8 in the Workshop design notes,
+	// archived) explicitly forbids notifications. This test fails loudly if a future change
 	// introduces a notification dependency: it constructs the job with
 	// a nil notification provider and runs without panic.
 	t.Parallel()

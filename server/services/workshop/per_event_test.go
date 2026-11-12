@@ -38,8 +38,8 @@ func completedExperienceIn(
 }
 
 // TestEnsureHeroCard_PerEventEmitsOnePerRecentEvent — the
-// load-bearing per-event guarantee from docs/ai/workshop.md §3.1:
-// every recently-completed event surfaces a Hero card.
+// load-bearing per-event guarantee from the Workshop design notes'
+// §3.1 (archived): every recently-completed event surfaces a Hero card.
 func TestEnsureHeroCard_PerEventEmitsOnePerRecentEvent(t *testing.T) {
 	store := setupTestStorage(t)
 	svc := New(store, nil)

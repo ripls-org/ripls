@@ -14,7 +14,7 @@ freshness:
 # Testing the Completion-Time Impact Draft & Override Flow
 
 **Scope:** The draft-at-completion + per-attribute override UX for experiences and requests
-introduced by [#1249](../issues/1249-completion-impact-draft.md). Gear loans / giveaways
+introduced by #1249. Gear loans / giveaways
 are out of scope here — their single-LLM-call-at-completion path is unchanged and tested
 by the existing loan / giveaway suites.
 

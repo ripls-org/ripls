@@ -323,5 +323,5 @@ expectation is:
 
 ## See also
 
-- [`docs/issues/2131-time-poll-migration.md`](../issues/2131-time-poll-migration.md) — the migration plan that produced this parallel structure, including the deferred-work list above.
+- The #2131 plan (archived) — the migration plan that produced this parallel structure, including the deferred-work list above.
 - [`docs/client/modals.md`](modals.md) — the standard glass-modal shape every surface above conforms to.

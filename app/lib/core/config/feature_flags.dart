@@ -24,7 +24,7 @@ final Provider<bool> navDockEnabledProvider = Provider<bool>(
 
 /// directoryEnabledProvider gates the #2568 Directory (address book) tab
 /// that replaces the Workshop tab in the bottom navigation. Defaults **on**
-/// at the Phase-3 cutover (see docs/issues/2568-directory-and-profiles.md):
+/// at the Phase-3 cutover (see the #2568 plan, archived):
 /// the Directory is the live tab, the Workshop tab is retired from the nav,
 /// and the momentum engine it relied on is retained and surfaces via the
 /// Feed + calendar. Overridable (e.g. for rollback) via

@@ -151,7 +151,7 @@ func TestLoadBalancedProvider_AllMethods(t *testing.T) {
 	_, _ = lb.DetectGearInImage(ctx, &DetectionImage{ImageData: []byte("test"), MimeType: "image/jpeg"})
 	_, _ = lb.GenerateCommunityContent(ctx, "test", "")
 	_, _ = lb.GenerateRequestContent(ctx, "test", "")
-	_, _ = lb.GenerateConversationSummary(ctx, []ConversationMessage{{SenderName: "A", Text: "Hi"}}, "", "", SummaryStyleProgress)
+	_, _ = lb.ParseInformalTime(ctx, "tomorrow", "", "")
 
 	if provider.Calls.TotalCalls() != 4 {
 		t.Errorf("Expected 4 calls, got %d", provider.Calls.TotalCalls())
@@ -190,12 +190,6 @@ func newDecoratorMock(name string, shouldError bool, errorMsg string) *MockProvi
 			return nil, fmt.Errorf("%s", errorMsg)
 		}
 		mock.GenerateRequestFromImageFunc = func(_ context.Context, _ *DetectionImage, _ string) (*RequestGeneration, error) {
-			return nil, fmt.Errorf("%s", errorMsg)
-		}
-		mock.GenerateConversationSummaryFunc = func(_ context.Context, _ []ConversationMessage, _, _ string, _ SummaryStyle) (*ConversationSummary, error) {
-			return nil, fmt.Errorf("%s", errorMsg)
-		}
-		mock.GenerateExperienceCompletionSummaryFunc = func(_ context.Context, _ []ConversationMessage, _, _ string, _ []string) (*ConversationSummary, error) {
 			return nil, fmt.Errorf("%s", errorMsg)
 		}
 		mock.ParseInformalTimeFunc = func(_ context.Context, _, _, _ string) (string, error) {

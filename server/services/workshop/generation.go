@@ -36,7 +36,7 @@ const BringBackMaxRendered = momentum.BringBackMaxItems
 // Returns the list of newly-created nudges (empty when every recent
 // event already has an active card and no drift signal fires).
 //
-// Per docs/ai/workshop.md §3.1: every recently-completed event
+// Per the Workshop design notes' §3.1 (archived): every recently-completed event
 // always surfaces *something* — the per-event detector falls back
 // to a generic "Schedule {event} again?" card when no slot fires.
 // Drift detections are deduped against the per-event set by

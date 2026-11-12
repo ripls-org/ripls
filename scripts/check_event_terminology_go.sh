@@ -48,7 +48,6 @@ SCANNED_FILES=(
   "server/ai/prompts_hero_card.go"
   "server/ai/prompts_impact_row.go"
   "server/ai/prompts_story.go"
-  "server/ai/prompts_summaries.go"
   "server/ai/prompts_unified.go"
 )
 

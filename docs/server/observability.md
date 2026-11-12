@@ -1133,7 +1133,7 @@ carry the standard `provider` and `model` fields emitted by every
 method on `ai.Provider`. `FallbackProvider.withFallback` rewrites
 `provider` to the implementation that actually served the response,
 so a row with `provider=anthropic` after a Gemini outage indicates
-fallback engaged on that call. See `docs/issues/1907-multi-provider-classifier.md`
+fallback engaged on that call. See the #1907 plan (archived)
 for the migration that put the classifier on `ai.Provider`.
 
 | Field | Source | Notes |
@@ -1171,8 +1171,7 @@ auto-file GitHub issues so triage moves out of inboxes and into the issue
 tracker. Implemented as a Firebase Cloud Functions codebase under
 `cloud_functions/` (TypeScript, Node 24). See
 [`cloud_functions/README.md`](../../cloud_functions/README.md) for layout and
-[`docs/issues/1148-1149-alert-to-issue.md`](../issues/1148-1149-alert-to-issue.md)
-for the full design.
+the #1148/#1149 plan (archived) for the full design.
 
 #### What is wired today
 

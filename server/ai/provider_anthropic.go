@@ -186,52 +186,6 @@ func (p *AnthropicProvider) GenerateRequestFromImage(ctx context.Context, image 
 	return f.Result, f.Err
 }
 
-// GenerateConversationSummary creates a summary of a conversation using Anthropic Claude.
-func (p *AnthropicProvider) GenerateConversationSummary(ctx context.Context, messages []ConversationMessage, requestTitle, requestDescription string, style SummaryStyle) (*ConversationSummary, error) {
-	if len(messages) == 0 {
-		return nil, fmt.Errorf("messages cannot be empty")
-	}
-	logger := logging.LoggerWithContext(ctx).With(
-		"provider", p.Name(),
-		"operation", "GenerateConversationSummary",
-		"model", p.model,
-		"style", style,
-	)
-	startTime := time.Now()
-	promptText := buildConversationSummaryPrompt(messages, requestTitle, requestDescription, style)
-	type outputSchema struct {
-		Summary string `json:"summary"`
-	}
-	result, resp, err := anthropicCallStructured[outputSchema](ctx, logger, startTime, p.client, p.model, p.temperature, anthropicDefaultMaxTokens,
-		[]anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock(promptText))}, "conversation_summary")
-	if err != nil {
-		return nil, err
-	}
-	logAPICallCompleted(logger, startTime, resp)
-	return &ConversationSummary{Summary: result.Summary}, nil
-}
-
-// GenerateExperienceCompletionSummary creates a summary of how an experience went using Anthropic Claude.
-func (p *AnthropicProvider) GenerateExperienceCompletionSummary(ctx context.Context, messages []ConversationMessage, experienceTitle, experienceDescription string, attendeeNames []string) (*ConversationSummary, error) {
-	logger := logging.LoggerWithContext(ctx).With(
-		"provider", p.Name(),
-		"operation", "GenerateExperienceCompletionSummary",
-		"model", p.model,
-	)
-	startTime := time.Now()
-	promptText := buildExperienceCompletionSummaryPrompt(messages, experienceTitle, experienceDescription, attendeeNames)
-	type outputSchema struct {
-		Summary string `json:"summary"`
-	}
-	result, resp, err := anthropicCallStructured[outputSchema](ctx, logger, startTime, p.client, p.model, p.temperature, anthropicDefaultMaxTokens,
-		[]anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock(promptText))}, "experience_completion_summary")
-	if err != nil {
-		return nil, err
-	}
-	logAPICallCompleted(logger, startTime, resp)
-	return &ConversationSummary{Summary: result.Summary}, nil
-}
-
 // GenerateExperienceFromText creates experience content from a user prompt using Anthropic Claude.
 func (p *AnthropicProvider) GenerateExperienceFromText(ctx context.Context, prompt, region, currentTime string) (*ExperienceGeneration, error) {
 	fields, final, err := p.GenerateExperienceFromTextStreaming(ctx, prompt, region, currentTime)

@@ -24,7 +24,7 @@ import (
 // Administrative Hierarchy:
 // The client should populate the neighborhood, county, and administrative_area fields
 // from Mapbox Search Box API context data when available. These fields enhance location
-// data for regional filtering and community discovery. See docs/ai/regions.md for details.
+// data for regional filtering and community discovery. See the regions design notes (archived) for details.
 func (s *Service) SaveLocation(
 	ctx context.Context,
 	req *connect.Request[api.SaveLocationRequest],

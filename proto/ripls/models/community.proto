@@ -307,7 +307,7 @@ enum CommunityEventType {
   COMMUNITY_EVENT_TYPE_PLANNING_CONTRIBUTION_REMOVED = 28;
 
   // Experience completion. Required by the generalized-undo feature
-  // (see docs/ai/undo_plan.md) and was missing before.
+  // (see the undo plan, archived) and was missing before.
   COMMUNITY_EVENT_TYPE_EXPERIENCE_COMPLETED = 29;
 
   // Retraction events emitted when an Undo* RPC reverses a prior

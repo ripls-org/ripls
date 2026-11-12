@@ -2,7 +2,7 @@
 /**
  * check_a11y.js — accessibility lint enforcement for Flutter presentation code.
  *
- * Implements Phase 2 of docs/ai/accessibility_plan.md:
+ * Implements Phase 2 of the accessibility plan (archived):
  *
  *   - avoid_raw_gesture_detector              raw GestureDetector / InkWell with onTap
  *   - require_semantic_label_on_icon_button   IconButton without tooltip

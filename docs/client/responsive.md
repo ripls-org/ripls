@@ -166,7 +166,7 @@ it needs a load-bearing `MediaQuery` override across 51 call sites and is a
 dead end once real adaptive layouts exist. Multi-column Library/People grids,
 an item-route side rail, and a nav rail are deferred until the constrained
 compositions prove insufficient in real desktop use (see
-`docs/issues/2912-desktop-adaptive.md` → Open Questions, and #2917).
+the #2912 plan's Open Questions (archived), and #2917).
 
 Bounding the Library's shelf viewport to the gallery measure so tiles clip at
 the gutter instead of at the window edge — rejected in #2926: the scroll-under

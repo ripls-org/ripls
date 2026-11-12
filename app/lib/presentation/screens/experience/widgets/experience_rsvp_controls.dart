@@ -10,7 +10,7 @@ import 'package:ripls/presentation/widgets/content/content_lifecycle_phase.dart'
 import 'package:ripls/presentation/widgets/content/content_rsvp_segmented.dart';
 
 /// ExperienceRsvpControls is the RSVP block at the top of the expanded
-/// pitching-in panel (docs/issues/2280-pitching-in-expand.md). It mirrors the
+/// pitching-in panel (the #2280 plan, archived). It mirrors the
 /// v7 reference: once the viewer has replied it shows a compact, tappable
 /// status line ("✓ You're going · Tap to change ›"); tapping it — or not having
 /// replied yet — reveals the Going / Maybe / Can't go segmented control. The

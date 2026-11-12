@@ -16,11 +16,11 @@ freshness:
 ---
 # User Profile (Viewer-Facing)
 
-The user profile is rendered when one user (the *viewer*) taps another user's name or avatar. [`ContentViewHelpers.openUserScreen`](../app/lib/presentation/widgets/content/content_view_helpers.dart) routes *every* user — including the viewer themselves — to the same [`UserScreen`](../app/lib/presentation/screens/users/user_screen.dart). When the viewer is the target (self-view), the shared-groups line is hidden and the target's own overflow menu (edit name) replaces the viewer-facing action row's external destinations; see [`docs/issues/1996-self-view-items.md`](issues/1996-self-view-items.md).
+The user profile is rendered when one user (the *viewer*) taps another user's name or avatar. [`ContentViewHelpers.openUserScreen`](../app/lib/presentation/widgets/content/content_view_helpers.dart) routes *every* user — including the viewer themselves — to the same [`UserScreen`](../app/lib/presentation/screens/users/user_screen.dart). When the viewer is the target (self-view), the shared-groups line is hidden and the target's own overflow menu (edit name) replaces the viewer-facing action row's external destinations; see the #1996 plan (archived).
 
 ## Surface
 
-The screen is built on the **v11 synthesis chassis** ([`docs/issues/2568-directory-and-profiles.md`](issues/2568-directory-and-profiles.md), which superseded the v4 redesign at [`docs/issues/1929-profile-v4-redesign.md`](issues/1929-profile-v4-redesign.md)): the target's photo fills the top ~46% under a scrim dissolving into a dark page, or a circular-monogram masthead when they have no photo (same body either way — no layout shift when a photo arrives). Below it, one scrolling column, top to bottom:
+The screen is built on the **v11 synthesis chassis** (the #2568 plan, archived, which superseded the v4 redesign in the #1929 plan, archived): the target's photo fills the top ~46% under a scrim dissolving into a dark page, or a circular-monogram masthead when they have no photo (same body either way — no layout shift when a photo arrives). Below it, one scrolling column, top to bottom:
 
 1. **Identity** — an eyebrow ("What {name} brings", or a self/cold-start variant), the serif display name, and a one-line description sentence.
 2. **Shared-groups line** — "With you in {crew} +N", naming the first shared community with a small face-stack. Hidden on self-view or when the viewer shares no community with the target.
@@ -54,4 +54,4 @@ Tests in [`profile_test.go`](../server/services/profile/profile_test.go) and [`p
 
 ## Deferred (v1)
 
-- **Problems-solved / Money-saved drill-downs** — tapping either of these two ledger tiles is intentionally inert (Library and Plans already drill down in place). Wiring them to scoped versions of the community impact detail screens would require parameterising those screens with a `target_user_id` filter on `GetCommunityMetricDetailRequest` and adding a per-record anonymization layer for rows that belong to non-shared communities. Tracked in [`docs/issues/1889-user-profile-workshop.md` §Phase 3.5](issues/1889-user-profile-workshop.md).
+- **Problems-solved / Money-saved drill-downs** — tapping either of these two ledger tiles is intentionally inert (Library and Plans already drill down in place). Wiring them to scoped versions of the community impact detail screens would require parameterising those screens with a `target_user_id` filter on `GetCommunityMetricDetailRequest` and adding a per-record anonymization layer for rows that belong to non-shared communities. Tracked in the #1889 plan's §Phase 3.5 (archived).

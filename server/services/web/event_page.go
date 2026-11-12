@@ -233,12 +233,11 @@ func (s *Service) handleEventLanding(w http.ResponseWriter, r *http.Request, sha
 // Sets a short SSR cache TTL — 30 seconds — to tolerate event
 // cancellation without ETag complexity.
 //
-// TODO(#2051): the landing becomes personalized when the session-
-// cookie variant lands ("You're going" / "Maybe" instead of the
-// three RSVP CTAs). At that point switch this from
-// `Cache-Control: public` to either `private` or add `Vary: Cookie`
-// so a CDN doesn't serve one visitor's personalized HTML to
-// another.
+// The landing is the same for every visitor, which is what makes
+// `Cache-Control: public` safe. If it ever varies per visitor (e.g.
+// a session cookie showing "You're going" instead of the three RSVP
+// CTAs), switch to `private` or add `Vary: Cookie` so a CDN doesn't
+// serve one visitor's HTML to another.
 func (s *Service) renderEventPage(w http.ResponseWriter, data eventPageData) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=30")

@@ -53,5 +53,4 @@ configuration whenever the user toggles a feed video's mute state.
 ## See also
 
 - Issue #1250 — the audio hijack defect this module addresses.
-- [docs/issues/1250-video-audio-takeover.md](../../../../docs/issues/1250-video-audio-takeover.md)
-  — implementation plan.
+- The #1250 plan (archived) — implementation plan.

@@ -14,8 +14,8 @@ import 'package:ripls/presentation/widgets/accessibility/tappable.dart';
 /// Uses `transferCoral` and `transferSage` as semantic accent fills for
 /// the primary action only — destructive actions render in coral, the
 /// default action renders in sage. Both colors survive the glass
-/// migration as semantic accents (per `docs/issues/1802-modals-glass-sweep.md`
-/// §Resolved Decisions).
+/// migration as semantic accents (per the #1802 plan's
+/// §Resolved Decisions, archived).
 class TransferPhaseBottomBar extends StatelessWidget {
   /// Optional leading widget (e.g., chat button)
   final Widget? leadingWidget;

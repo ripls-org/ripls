@@ -75,7 +75,7 @@ Here's how to deploy the current main to prod:
 The version system includes both a _semantic version_ and a _build number_:
 
 - **Semantic version** (e.g. `1.2.0`): Stored in `pubspec.yaml`, manually bumped for releases
-- **Build number** (`3472`): Automatically calculated from git commit count
+- **Build number** (`3472`): Automatically calculated from the git commit count plus `BUILD_NUMBER_OFFSET` (`scripts/build_number.sh`)
 - **Full version** (`1.2.0+3472`): Assembled at build time
 
 The semantic version is what you need to choose. Look at the current semantic version in `pubspec.yaml` and increment the version according to the following rules:

@@ -478,11 +478,11 @@ class _CommunityScreenState extends ConsumerState<CommunityPublicScreen>
       locale: Localizations.localeOf(context).toString(),
       decimalDigits: 0,
     ).format(dollars);
-    // TODO(#2568): no single community "problems solved" total is on
+    // No single community "problems solved" total is on
     // CommunityImpactMetrics; the dedicated figure is
-    // GetCommunityProblemsSolvedDetail.handled_count. costSavingsCount
-    // (count of cost-saving transactions) is the closest inline proxy —
-    // swap to the dedicated read in a later slice.
+    // GetCommunityProblemsSolvedDetail.handled_count, which the drill-down
+    // shows. costSavingsCount (count of cost-saving transactions) is the
+    // closest inline proxy, so the tile and its drill-down can disagree.
     final problems = metrics.costSavingsCount;
     // Each row opens the metric-breakdown detail screen for that
     // dimension, scoped to this community (#2568).

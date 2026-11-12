@@ -8,20 +8,13 @@
 //
 // Why no recategorizeGear? Gear's AI pipeline already populates
 // `Gear.Category` at save time (see
-// `services/gear/gen_ai_streaming.go`) — it doesn't carry the
-// `TODO(#2013): Add category detection to AI provider` stub that
-// `services/experience/gen_ai.go` and `services/request/gen.go`
-// have. Gear rows therefore already have their categories; only
-// experience and request rows need the keyword fallback. If a
-// gear-side backfill ever becomes necessary, mirror the helpers
-// below.
+// `services/gear/gen_ai_streaming.go`), which the experience and
+// request AI paths don't. Gear rows therefore already have their
+// categories; only experience and request rows need the keyword
+// categorizer. If a gear-side backfill ever becomes necessary,
+// mirror the helpers below.
 //
 // One-shot dev tool.
-//
-// TODO(#2013): retire this command once the AI category-detection
-// pipeline lands. At that point the AI populates Category at save
-// time on the experience and request paths too, and re-deriving
-// from a keyword dictionary is no longer useful.
 //
 // Usage:
 //

@@ -4,7 +4,7 @@ package integration_tests
 // their actual item toward a request, the handoff auto-fulfills the request,
 // the fulfilled request stands down its sibling offers, cancellation unwinds the
 // claim/offer, and undoing a handoff-driven fulfillment cancels the loan.
-// Covers docs/issues/2702-request-to-loan.md Phases 1–2.
+// Covers the #2702 plan's Phases 1–2 (archived).
 
 import (
 	"context"

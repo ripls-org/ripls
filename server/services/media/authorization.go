@@ -5,7 +5,7 @@
 // community-direct surface (Community / Story), community-via-join
 // surface (Gear / Experience / Request), or chat participant.
 //
-// See docs/issues/1529-getmedia-auth.md for the design + audit.
+// See the #1529 plan (archived) for the design + audit.
 package media
 
 import (

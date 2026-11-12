@@ -4,14 +4,12 @@ import (
 	"context"
 	"sync/atomic"
 
-	"golang.org/x/text/language"
-
 	"go.ripls.org/ripls/server/chat_event_bus"
 	"go.ripls.org/ripls/server/community"
-	"go.ripls.org/ripls/server/gen/ripls/models"
 	"go.ripls.org/ripls/server/l10n"
 	"go.ripls.org/ripls/server/logging"
 	"go.ripls.org/ripls/server/notifications"
+	"go.ripls.org/ripls/server/notifications/notification_content"
 	"go.ripls.org/ripls/server/storage"
 )
 
@@ -149,7 +147,7 @@ func (s *Subscriber) Handle(ctx context.Context, evt *chat_event_bus.PublishedEv
 	// Resolve recipient locales in one batch so the per-recipient
 	// loop renders frame copy (sender fallback, "mentioned you") in
 	// the right language without a per-call user lookup.
-	localesByUser := loadRecipientLocales(ctx, s.storage, recipientIDs)
+	localesByUser := notification_content.LoadRecipientLocales(ctx, s.storage, recipientIDs)
 
 	// Resolve the entity name attached to the conversation topic
 	// (gear / experience / request / community) once per event so
@@ -210,37 +208,6 @@ func (s *Subscriber) Handle(ctx context.Context, evt *chat_event_bus.PublishedEv
 	}
 
 	return nil
-}
-
-// loadRecipientLocales returns userID → resolved locale tag for the
-// given chat recipients. Reads User.preferred_language in one
-// batched query; users without a stored preference default to
-// l10n.DefaultTag. Mirrors the equivalent helper in
-// community_subscriber.
-func loadRecipientLocales(ctx context.Context, st *storage.ProtoSQLStorage, recipients []string) map[string]language.Tag {
-	out := make(map[string]language.Tag, len(recipients))
-	if len(recipients) == 0 {
-		return out
-	}
-	for _, id := range recipients {
-		out[id] = l10n.DefaultTag
-	}
-	users, err := st.GetByIDs(ctx, recipients, &models.User{})
-	if err != nil {
-		logging.LoggerWithContext(ctx).WarnContext(ctx,
-			"failed to batch-load recipient users for locale resolution; defaulting to English",
-			"recipient_count", len(recipients), "error", err,
-		)
-		return out
-	}
-	for _, msg := range users {
-		u, ok := msg.(*models.User)
-		if !ok || u == nil {
-			continue
-		}
-		out[u.Id] = l10n.Normalize(u.GetPreferredLanguage())
-	}
-	return out
 }
 
 func (s *Subscriber) loadStreamChecker() StreamChecker {

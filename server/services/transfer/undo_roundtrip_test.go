@@ -17,7 +17,7 @@ import (
 // TestUndoSelectRecipient_RoundTrip asserts that undoing a recipient
 // selection restores the full composite snapshot (transfer + chat
 // messages) to byte-equal pre-action state. Load-bearing correctness
-// invariant per docs/ai/undo_plan.md §10.5.
+// invariant per the undo plan's §10.5 (archived).
 func TestUndoSelectRecipient_RoundTrip(t *testing.T) {
 	service, testStorage, _, done := setupTestServiceWithNotifications(t)
 

@@ -3,7 +3,7 @@ import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/core/theme/app_theme.dart';
 
 /// ContentHeadline renders the serif title and supporting description that open
-/// the content sheet (see docs/issues/2278-experience-content-redesign.md).
+/// the content sheet (see the #2278 plan, archived).
 ///
 /// The title uses [AppTheme.headingFont] (the app's existing serif), matching
 /// the editorial treatment in the mockups without introducing a new font. This

@@ -4,7 +4,7 @@
 // hard-deletes the row on successful send. Record-of-send lives in
 // structured logs.
 //
-// See docs/issues/625-scheduled-notifications.md for the broader
+// See the #625 plan (archived) for the broader
 // design.
 
 syntax = "proto3";

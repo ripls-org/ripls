@@ -123,8 +123,8 @@ When adding provenance to new domains, follow these principles:
 
 ## Related Documentation
 
-- [docs/ai/provenance_plan.md](./ai/provenance_plan.md) -- Detailed implementation plan with phase-by-phase progress
-- [docs/ai/impact_improvements_plan.md](./ai/impact_improvements_plan.md) -- Impact estimation system (Phases 1-10), which provenance builds on
+- The provenance plan (archived) -- Detailed implementation plan with phase-by-phase progress
+- The impact improvements plan (archived) -- Impact estimation system (Phases 1-10), which provenance builds on
 - [docs/impact_metrics.md](./impact_metrics.md) -- Community impact metrics system overview
 
 ---

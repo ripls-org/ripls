@@ -18,13 +18,10 @@ import 'package:ripls/data/repositories/experience_repository.dart';
 import 'package:ripls/data/repositories/media_repository.dart';
 import 'package:ripls/data/repositories/media_url.dart';
 import 'package:ripls/presentation/providers/user_timezone_provider.dart';
-import 'package:ripls/presentation/viewmodels/gen_experience_types.dart';
 import 'package:ripls/services/community_service.dart'
     show HostInviteConsent, Invitee, ShareItemResult;
 import 'package:ripls/services/providers.dart';
 import 'package:video_player/video_player.dart';
-
-export 'package:ripls/presentation/viewmodels/gen_experience_types.dart';
 
 part 'gen_experience_view_model.freezed.dart';
 
@@ -807,22 +804,6 @@ class GenExperienceNotifier extends Notifier<GenExperienceState>
       );
       return null;
     }
-  }
-
-  /// Resolves AI-mentioned names against community members and provisional users.
-  ///
-  /// For each name in [mentionedNames]:
-  /// - If one member matches: auto-accept (add to [ResolvedParticipants.userIds]).
-  /// - If multiple members match: add all as suggestions (caller deduplicates via UI).
-  /// - If zero members match: create a provisional user (add to [ResolvedParticipants.provisionalUsers]).
-  ///
-  /// Returns [null] if no community is selected.
-  Future<ResolvedParticipants?> resolveParticipantsForCompletion() async {
-    // TODO(#2040): selectedCommunity was the per-community filter removed in
-    // #1895 and now always null, so this method always returns null. Plumb a
-    // community ID through from the experience-creation flow when restoring
-    // the post-create completion path.
-    return null;
   }
 
   /// Reset the workflow to start

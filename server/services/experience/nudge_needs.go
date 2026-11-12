@@ -3,6 +3,8 @@ package experience
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/proto"
@@ -123,15 +125,19 @@ func (s *Service) NudgeUncoveredNeedClaimers(
 	// The experience name rides the payload, not just the rendered body: the
 	// off-app senders ignore Title/Body and re-render the sentence from these
 	// fields, so a name left off here is a blank slot in someone's text (#2896).
-	notification := notification_content.SystemNotification(ctx, &models.CommunityEventPayload{
+	payload := &models.CommunityEventPayload{
 		EventType:      "EXPERIENCE_NEEDS_NUDGE",
 		ExperienceName: expStored.Name,
 		ExperienceId:   proto.String(req.Msg.ExperienceId),
-	})
+	}
 
 	nudged := 0
 	if s.notificationService != nil {
-		for userID := range candidates {
+		// One batched preferred_language read for the fan-out, one render per
+		// distinct locale (#3276).
+		byRecipient := notification_content.SystemNotifications(ctx, s.storage,
+			slices.Collect(maps.Keys(candidates)), payload)
+		for userID, notification := range byRecipient {
 			if err := s.notificationService.NotifyUser(ctx, userID, notification); err != nil {
 				logger.WarnContext(ctx, "failed to nudge unclaimed contributor",
 					"recipient_user_id", userID, "error", err)

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/text/language"
+
 	"go.ripls.org/ripls/server/clock"
 	communitylib "go.ripls.org/ripls/server/community"
 	"go.ripls.org/ripls/server/gen/ripls/models"
@@ -371,7 +373,7 @@ func (d *ExperienceReminderDispatcher) QuietHoursPolicy(row *models.ScheduledNot
 // Returns (nil, nil) when the anchor is gone so the dispatcher
 // driver logs a skip and moves on — the row is already deleted at
 // this point.
-func (d *ExperienceReminderDispatcher) Render(ctx context.Context, row *models.ScheduledNotification) (*models.Notification, error) {
+func (d *ExperienceReminderDispatcher) Render(ctx context.Context, row *models.ScheduledNotification, locale language.Tag) (*models.Notification, error) {
 	exp := row.GetExperience()
 	if exp == nil {
 		return nil, fmt.Errorf("row missing experience variant")
@@ -415,7 +417,7 @@ func (d *ExperienceReminderDispatcher) Render(ctx context.Context, row *models.S
 		}
 	}
 
-	return notification_content.SystemNotification(ctx, &models.CommunityEventPayload{
+	return notification_content.SystemNotification(ctx, locale, &models.CommunityEventPayload{
 		CommunityId: row.GetCommunityId(),
 		EventType:   reminderEventType(exp.OffsetSecondsFromAnchor),
 		// The name is what every surface's copy interpolates, and the
@@ -495,7 +497,7 @@ func (d *ExperienceClosePromptDispatcher) QuietHoursPolicy(_ *models.ScheduledNo
 // Notification. Returns (nil, nil) when the Experience is already
 // completed/cancelled, the anchor is gone, or the host has disabled
 // close-prompt notifications.
-func (d *ExperienceClosePromptDispatcher) Render(ctx context.Context, row *models.ScheduledNotification) (*models.Notification, error) {
+func (d *ExperienceClosePromptDispatcher) Render(ctx context.Context, row *models.ScheduledNotification, locale language.Tag) (*models.Notification, error) {
 	exp := row.GetExperience()
 	if exp == nil {
 		return nil, fmt.Errorf("row missing experience variant")
@@ -535,7 +537,7 @@ func (d *ExperienceClosePromptDispatcher) Render(ctx context.Context, row *model
 		}
 	}
 
-	return notification_content.SystemNotification(ctx, &models.CommunityEventPayload{
+	return notification_content.SystemNotification(ctx, locale, &models.CommunityEventPayload{
 		CommunityId:    row.GetCommunityId(),
 		EventType:      "EXPERIENCE_CLOSE_PROMPT",
 		ExperienceName: experience.Name,

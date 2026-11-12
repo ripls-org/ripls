@@ -197,7 +197,7 @@ Source: [experience_content_view.dart](../app/lib/presentation/screens/experienc
 ### Modal Bottom Sheets — Glass Material
 
 Bottom-sheet modals are unifying around a frosted-glass material. The
-primitives live under [`app/lib/presentation/widgets/modal/glass/`](../../app/lib/presentation/widgets/modal/glass/). See [`docs/issues/1797-glass-modal-revamp.md`](../issues/1797-glass-modal-revamp.md) for the migration plan.
+primitives live under [`app/lib/presentation/widgets/modal/glass/`](../../app/lib/presentation/widgets/modal/glass/). See the #1797 plan (archived) for the migration plan.
 
 **Tokens:**
 - Color tokens: `AppColors.modal*` (e.g. `modalSurface`, `modalBackdrop`,

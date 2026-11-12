@@ -90,18 +90,10 @@ message GetUserProfileForViewerResponse {
   // beneath the identity block on the profile.
   repeated string known_for = 9;
 
-  // Always absent. These carried one-sentence LLM-written captions for
-  // the three impact rows; no client ever rendered them, and #2936
-  // removed the generation behind them. The profile shows the cited
-  // tier ladder (impact_row_narrative_tiers.dart) instead.
-  //
-  // TODO(#2936): #2938 deletes these three fields and reserves 10-12
-  // once the release carrying #2936 has soaked. Kept for now because
-  // API fields need one shipped release before removal — see
-  // docs/proto_conventions.md.
-  optional string time_narrative = 10 [deprecated = true];
-  optional string money_narrative = 11 [deprecated = true];
-  optional string co2_narrative = 12 [deprecated = true];
+  // Fields 10-12 carried LLM-written impact-row captions that no client
+  // rendered; generation was removed in #2936, then the fields.
+  reserved 10, 11, 12;
+  reserved "time_narrative", "money_narrative", "co2_narrative";
 }
 
 // Request for the presence read that selects the profile sheet's

@@ -4,4 +4,4 @@
 // Publish is invoked. The bus owns pre-fetch of denormalized context (sender
 // User, transfer for transfer-topic deep links) and fan-out to subscribers.
 // See README.md for the contract.
-package chat_event_bus // snake_case package name matches the docs/issues/1842 plan.
+package chat_event_bus // snake_case package name matches the #1842 plan (archived).

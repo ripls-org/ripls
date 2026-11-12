@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// DashedBorder is a dashed rounded-rectangle [ShapeBorder] — used for the
 /// "needed" / "add" chips on the pitching-in surface
-/// (docs/issues/2280-pitching-in-expand.md). A small re-implementation so we
+/// (the #2280 plan, archived). A small re-implementation so we
 /// don't depend on an external dashed-border package.
 class DashedBorder extends ShapeBorder {
   final Color color;

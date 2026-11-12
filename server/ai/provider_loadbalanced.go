@@ -39,7 +39,6 @@ type MethodWeights struct {
 	GenerateRequestFromImage      []WeightedProvider
 	GenerateExperienceFromText    []WeightedProvider
 	GenerateExperienceFromImage   []WeightedProvider
-	GenerateConversationSummary   []WeightedProvider
 	ParseInformalTime             []WeightedProvider
 	GenerateExperienceSuggestions []WeightedProvider
 	InferSocialAttributes         []WeightedProvider
@@ -61,7 +60,6 @@ func (m *MethodWeights) byMethod() map[string][]WeightedProvider {
 		"GenerateRequestFromImage":      m.GenerateRequestFromImage,
 		"GenerateExperienceFromText":    m.GenerateExperienceFromText,
 		"GenerateExperienceFromImage":   m.GenerateExperienceFromImage,
-		"GenerateConversationSummary":   m.GenerateConversationSummary,
 		"ParseInformalTime":             m.ParseInformalTime,
 		"GenerateExperienceSuggestions": m.GenerateExperienceSuggestions,
 		"InferSocialAttributes":         m.InferSocialAttributes,
@@ -249,26 +247,6 @@ func (p *LoadBalancedProvider) GenerateRequestFromImage(ctx context.Context, ima
 		"method_name", "GenerateRequestFromImage",
 		"provider", name)
 	return selected.GenerateRequestFromImage(ctx, image, region)
-}
-
-// GenerateConversationSummary selects a provider and delegates the call.
-func (p *LoadBalancedProvider) GenerateConversationSummary(ctx context.Context, messages []ConversationMessage, requestTitle, requestDescription string, style SummaryStyle) (*ConversationSummary, error) {
-	providers := p.getProvidersForMethod("GenerateConversationSummary")
-	selected, name := selectProvider(providers)
-	logging.LoggerWithContext(ctx).Info("load balancer selected provider",
-		"method_name", "GenerateConversationSummary",
-		"provider", name)
-	return selected.GenerateConversationSummary(ctx, messages, requestTitle, requestDescription, style)
-}
-
-// GenerateExperienceCompletionSummary selects a provider and delegates the call.
-func (p *LoadBalancedProvider) GenerateExperienceCompletionSummary(ctx context.Context, messages []ConversationMessage, experienceTitle, experienceDescription string, attendeeNames []string) (*ConversationSummary, error) {
-	providers := p.getProvidersForMethod("GenerateExperienceCompletionSummary")
-	selected, name := selectProvider(providers)
-	logging.LoggerWithContext(ctx).Info("load balancer selected provider",
-		"method_name", "GenerateExperienceCompletionSummary",
-		"provider", name)
-	return selected.GenerateExperienceCompletionSummary(ctx, messages, experienceTitle, experienceDescription, attendeeNames)
 }
 
 // ParseInformalTime selects a provider and delegates the call.

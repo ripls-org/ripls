@@ -14,7 +14,7 @@ import 'package:ripls/presentation/widgets/accessibility/tappable.dart';
 /// rather than exposing a raw `GestureDetector`, satisfying the
 /// `avoid_raw_gesture_detector` lint.
 ///
-/// See `docs/issues/1802-modals-glass-sweep.md`.
+/// See the #1802 plan (archived).
 class GlassInsetCard extends StatelessWidget {
   /// Card content.
   final Widget child;

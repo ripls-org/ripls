@@ -64,5 +64,5 @@ Each primitive has a widget test under `app/test/presentation/widgets/accessibil
 
 ## See also
 
-- [`docs/ai/accessibility_plan.md`](../../../../../../docs/ai/accessibility_plan.md) — full multi-phase plan, including the Phase 2 lint package and the migration phases that consume these primitives.
+- The accessibility plan (archived) — full multi-phase plan, including the Phase 2 lint package and the migration phases that consume these primitives.
 - [`app/lib/l10n/README.md`](../../../l10n/README.md) — l10n key conventions and the `a11y` prefix.

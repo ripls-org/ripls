@@ -25,7 +25,7 @@
 // is bootstrapped per-spec by e2e/lib/server.ts (which itself shells
 // out to scripts/start_e2e_server.sh to avoid duplicating the
 // ~10-flag startup invocation in TS). See the plan
-// (docs/issues/2162-web-e2e-harness.md) for rationale.
+// (the #2162 plan, archived) for rationale.
 
 import { defineConfig, devices } from '@playwright/test';
 import {

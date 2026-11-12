@@ -194,4 +194,4 @@ the verification rubric and the apply/stamp flow.
 
 The full rationale — why frontmatter-on-docs over separate rule files, why globs
 over keywords, why a CI gate, and how this maps to the Cursor/Copilot/llms.txt
-prior art — is in the plan at `docs/issues/2398-context-doc-tree.md`.
+prior art — is in the #2398 plan (archived).

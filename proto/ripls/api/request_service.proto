@@ -402,19 +402,6 @@ message DeleteRequestRequest {
 // DeleteRequestResponse confirms the request was deleted.
 message DeleteRequestResponse {}
 
-// GenerateResolutionSummaryRequest generates an AI summary of the request resolution.
-message GenerateResolutionSummaryRequest {
-  // ID of the request to generate a summary for.
-  // The server will fetch the request details (title, description, conversation).
-  string request_id = 1;
-}
-
-// GenerateResolutionSummaryResponse returns the AI-generated summary.
-message GenerateResolutionSummaryResponse {
-  // AI-generated summary of how the request was resolved.
-  string summary = 1;
-}
-
 // Request to get people associated with a request.
 message GetRequestPeopleRequest {
     // The unique identifier of the request.
@@ -790,10 +777,6 @@ service RequestService {
   // Only the request creator can delete their own requests.
   // The request will no longer appear in listings or be accessible.
   rpc DeleteRequest(DeleteRequestRequest) returns (DeleteRequestResponse);
-
-  // GenerateResolutionSummary generates an AI summary of how the request was resolved.
-  // Uses the conversation messages to create a summary.
-  rpc GenerateResolutionSummary(GenerateResolutionSummaryRequest) returns (GenerateResolutionSummaryResponse);
 
   // Get people associated with a request (requester, helpers, offerers).
   rpc GetRequestPeople(GetRequestPeopleRequest) returns (GetRequestPeopleResponse);

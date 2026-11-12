@@ -21,8 +21,7 @@ analyzer:
     - '**/*.mocks.dart'
     # Generated protobuf code. Excluding from analysis prevents
     # warnings on @Deprecated annotations the generator adds for
-    # proto fields marked `[deprecated = true]` (e.g. the #2012
-    # EntityCardCore dual-population window tracked by #2020).
+    # proto fields marked `[deprecated = true]`.
     - 'lib/data/gen/**'
     # Generated design tokens (scripts/gen_design_tokens.js). Unlike the proto
     # output these files ARE committed, and `npm run lint:design-tokens`

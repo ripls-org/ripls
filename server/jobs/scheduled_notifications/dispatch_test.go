@@ -7,8 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/text/language"
+	"google.golang.org/protobuf/proto"
+
 	"go.ripls.org/ripls/server/clock"
 	"go.ripls.org/ripls/server/gen/ripls/models"
+	"go.ripls.org/ripls/server/storage"
 )
 
 type fakeDispatchStorage struct {
@@ -19,6 +23,29 @@ type fakeDispatchStorage struct {
 	findErr          error
 	claimErrByID     map[string]error
 	claimAndDelCalls int
+	// users backs GetByIDs (recipient locale resolution); usersErr
+	// fails it. getByIDsCalls / getByIDsArgs record each batch read.
+	users         map[string]*models.User
+	usersErr      error
+	getByIDsCalls int
+	getByIDsArgs  [][]string
+}
+
+func (f *fakeDispatchStorage) GetByIDs(_ context.Context, ids []string, _ proto.Message, _ ...storage.QueryOptions) (map[string]proto.Message, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.getByIDsCalls++
+	f.getByIDsArgs = append(f.getByIDsArgs, append([]string(nil), ids...))
+	if f.usersErr != nil {
+		return nil, f.usersErr
+	}
+	out := make(map[string]proto.Message, len(ids))
+	for _, id := range ids {
+		if u, ok := f.users[id]; ok {
+			out[id] = u
+		}
+	}
+	return out, nil
 }
 
 func newFakeDispatchStorage() *fakeDispatchStorage {
@@ -92,6 +119,8 @@ type fixedDispatcher struct {
 	renderSkip     bool // return (nil, nil)
 	renderErr      error
 	renderCallback func(row *models.ScheduledNotification)
+	// renderedLocales records the locale Render received per row id.
+	renderedLocales map[string]language.Tag
 }
 
 func (f *fixedDispatcher) Name() string { return f.name }
@@ -112,7 +141,11 @@ func (f *fixedDispatcher) QuietHoursPolicy(_ *models.ScheduledNotification) Quie
 	return f.quietPolicy
 }
 
-func (f *fixedDispatcher) Render(_ context.Context, row *models.ScheduledNotification) (*models.Notification, error) {
+func (f *fixedDispatcher) Render(_ context.Context, row *models.ScheduledNotification, locale language.Tag) (*models.Notification, error) {
+	if f.renderedLocales == nil {
+		f.renderedLocales = map[string]language.Tag{}
+	}
+	f.renderedLocales[row.Id] = locale
 	if f.renderCallback != nil {
 		f.renderCallback(row)
 	}

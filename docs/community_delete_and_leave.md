@@ -22,7 +22,7 @@ window.
 This document is the **behavior and architecture spec** for those flows. For
 the project-wide soft/hard-deletion model, see
 [`deleting_things.md`](./deleting_things.md). For the undo taxonomy this doc
-references, see [`ai/undo_plan.md`](./ai/undo_plan.md).
+references, see the undo plan (archived).
 
 ---
 

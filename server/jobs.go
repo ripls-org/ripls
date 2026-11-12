@@ -30,9 +30,9 @@ import (
 func startBackgroundJobs(ctx context.Context, cfg *config.Config, logger *logging.Logger, sqlStorage *storage.ProtoSQLStorage, notificationService notifications.Service, emailService email.Service) {
 	// Pre-warm Workshop Hero card / Bring-Back nudges for every (host,
 	// community) pair so a host opening the Workshop tab sees content
-	// immediately. Per docs/ai/workshop.md Decision 8, the job does NOT
-	// enqueue push notifications — pre-warming the database is the
-	// whole point.
+	// immediately. Per Decision 8 of the Workshop design notes (archived),
+	// the job does NOT enqueue push notifications — pre-warming the
+	// database is the whole point.
 	logging.GoSafe(ctx, "workshop-generation-startup", func() {
 		count, err := jobs.NewWorkshopGenerationJob(sqlStorage).Run(ctx)
 		if err != nil && !errors.Is(err, context.Canceled) {

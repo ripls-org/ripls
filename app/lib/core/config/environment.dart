@@ -93,7 +93,7 @@ class Environment {
   /// Auth Emulator instead of the real project. Set ONLY by the e2e web build
   /// (`--dart-define=AUTH_EMULATOR_HOST=…`) so Playwright can drive deterministic
   /// phone OTP with no reCAPTCHA/SMS; empty in every real build. See
-  /// `docs/issues/2492-web2-pivot-e2e.md`.
+  /// the #2492 web2-pivot e2e plan (archived).
   static String get authEmulatorHost {
     return const String.fromEnvironment('AUTH_EMULATOR_HOST', defaultValue: '');
   }

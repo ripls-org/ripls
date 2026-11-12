@@ -18,9 +18,26 @@ def get_base_version
   version_string.split("+").first
 end
 
-# Get build number from git commit count
+# Get build number: git commit count plus BUILD_NUMBER_OFFSET (versions.env).
+# release_app.yaml calls the same script, so the label and the upload agree.
 def get_build_number
-  sh("git rev-list --count HEAD").strip.to_i
+  sh(File.expand_path("../../scripts/build_number.sh", __dir__), log: false).strip.to_i
+end
+
+# Compare a build number with the highest one a store already has, before
+# building. Equal means this commit was already uploaded (a re-run of the same
+# tag), so the lane skips. Lower means the number went backwards — after a move
+# to a new git history, BUILD_NUMBER_OFFSET is too small (#3228). The store
+# would reject that upload, and skipping it would hide the problem on every
+# release from then on, so it fails instead. Returns true when the lane should
+# skip.
+def already_uploaded?(build, store_latest, store:)
+  if store_latest > build
+    UI.user_error!("Build #{build} is lower than the latest on #{store} (#{store_latest}). " \
+                   "Raise BUILD_NUMBER_OFFSET in versions.env so that " \
+                   "scripts/build_number.sh prints more than #{store_latest}.")
+  end
+  store_latest == build
 end
 
 # Get full version info
@@ -199,6 +216,28 @@ platform :ios do
       sh("cd .. && flutter pub get")
     end
 
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_KEY_CONTENT"],
+      is_key_content_base64: true
+    )
+
+    # Check the build number against TestFlight before spending a build on it.
+    # No `version:` filter: build numbers increase across versions, so the
+    # app's latest build of any version is the one to beat.
+    planned = get_version_info
+    app_identifier = ENV["APP_IDENTIFIER_IOS"] || CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
+    latest_build = latest_testflight_build_number(
+      api_key: api_key,
+      app_identifier: app_identifier
+    )
+    if already_uploaded?(planned[:build], latest_build, store: "TestFlight")
+      UI.important("Build #{planned[:build]} already exists on TestFlight, skipping")
+      UI.success("✅ iOS #{planned[:full]} already uploaded")
+      next  # Exit the lane early
+    end
+
     # Build Flutter iOS (unsigned)
     version_info = flutter_build(platform: :ios)
 
@@ -244,28 +283,6 @@ platform :ios do
       UI.success("dSYMs uploaded to Crashlytics")
     else
       UI.important("No dSYMs found to upload")
-    end
-
-    # Upload to TestFlight
-    api_key = app_store_connect_api_key(
-      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_KEY_CONTENT"],
-      is_key_content_base64: true
-    )
-
-    # Check if this build already exists on TestFlight
-    app_identifier = ENV["APP_IDENTIFIER_IOS"] || CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
-    latest_build = latest_testflight_build_number(
-      api_key: api_key,
-      app_identifier: app_identifier,
-      version: version_info[:version]
-    )
-
-    if latest_build >= version_info[:build]
-      UI.important("Build #{version_info[:build]} already exists on TestFlight (latest: #{latest_build}), skipping upload")
-      UI.success("✅ iOS #{version_info[:full]} build complete (upload skipped - already exists)")
-      next  # Exit the lane early
     end
 
     # Get release notes for "What to Test" field
@@ -330,22 +347,26 @@ platform :android do
       sh("cd .. && flutter pub get")
     end
 
-    # Build Flutter Android App Bundle
-    version_info = flutter_build(platform: :android_appbundle)
-
-    # Check if this version code already exists on Play Store
+    # Check the version code against Play before spending a build on it. A
+    # promoted build leaves beta for production, so the highest code can be on
+    # either track.
+    planned = get_version_info
     package_name = ENV["APP_IDENTIFIER_ANDROID"] || "org.ripls.app"
-    existing_codes = google_play_track_version_codes(
-      package_name: package_name,
-      track: "beta",
-      json_key_data: ENV["PLAY_STORE_SERVICE_ACCOUNT_JSON"]
-    )
-
-    if existing_codes.include?(version_info[:build])
-      UI.important("Build #{version_info[:build]} already exists on Play Store beta track, skipping upload")
-      UI.success("✅ Android #{version_info[:full]} build complete (upload skipped - already exists)")
+    existing_codes = %w[beta production].flat_map do |track|
+      google_play_track_version_codes(
+        package_name: package_name,
+        track: track,
+        json_key_data: ENV["PLAY_STORE_SERVICE_ACCOUNT_JSON"]
+      )
+    end
+    if already_uploaded?(planned[:build], existing_codes.max || 0, store: "Play")
+      UI.important("Build #{planned[:build]} already exists on Play, skipping")
+      UI.success("✅ Android #{planned[:full]} already uploaded")
       next  # Exit the lane early
     end
+
+    # Build Flutter Android App Bundle
+    version_info = flutter_build(platform: :android_appbundle)
 
     # Get release notes and write to Play Store changelog format
     # Google Play limits "What's new" to 500 characters

@@ -46,7 +46,7 @@ type LocalizedMessage struct {
 // as an empty actorName, and the client renders its own localized stand-in from
 // its ARB catalog. Substituting here too would splice an English word into an
 // otherwise-translated sentence, which is the render-boundary violation #2844
-// closed. Text is the legacy English `description` column (#2159), so an
+// closed. Text is the legacy English `description` column, so an
 // English fallback is correct there and only there.
 func actorOrSomeone(name string) string {
 	if name == "" {

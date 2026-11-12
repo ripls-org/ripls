@@ -18,7 +18,7 @@ enum ContentNeedChipStyle {
 }
 
 /// ContentNeedChip is a chip in the "Needed" section of the pitching-in surface
-/// (docs/issues/2280-pitching-in-expand.md). It renders on the dark content
+/// (the #2280 plan, archived). It renders on the dark content
 /// surface — a dashed empty-slot with an accent "+" for an open need, an accent
 /// outline + check for a claimed one, and a neutral dashed "+ …" for the add
 /// affordances. Pure; the caller resolves copy and wires [onTap].

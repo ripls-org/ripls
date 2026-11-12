@@ -15,7 +15,7 @@ These are the reusable components that make all content-type screens look and be
 - **`content_gradient_overlay.dart`** — dark gradient overlaid on background media.
 
 ### Redesigned content surface (sheet-over-hero)
-Role-agnostic building blocks for the redesigned content views. See `docs/issues/2278-experience-content-redesign.md`. These take plain view-data + callbacks (no Experience/Request types) so the experience view and, later, the request view share them. They are always-on-dark surfaces (the background is media), so they compose from the `dark*` tokens plus a caller-supplied accent — like nudge cards.
+Role-agnostic building blocks for the redesigned content views. See the #2278 plan (archived). These take plain view-data + callbacks (no Experience/Request types) so the experience view and, later, the request view share them. They are always-on-dark surfaces (the background is media), so they compose from the `dark*` tokens plus a caller-supplied accent — like nudge cards.
 - **`content_headline.dart`** — serif title (`AppTheme.headingFont`) + optional description.
 - **`content_facts_row.dart`** — one or two label/value fact cards (when/where), optionally tappable.
 - **`content_discussion_card.dart`** — the compact conversation entry point: a single serif-italic quote (the description, attributed to the owner) that cross-fades on a timer to the most recent reply, with the thread meta ("— Alfred · 3 replies · last 2h") and an unread dot on the attribution line; tapping opens the conversation. Cycling is skipped under reduce-motion or when only the description exists. Supersedes the headline-description + messages-card split on the experience view.

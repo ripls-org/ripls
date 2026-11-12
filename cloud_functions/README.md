@@ -5,7 +5,7 @@ Cloud Functions that file GitHub issues from production observability signals
 `claude_plan_issue.yaml` workflow via the `claude-fix` label rather than
 duplicating any Claude planning workflow.
 
-Design: [`docs/issues/1148-1149-alert-to-issue.md`](../docs/issues/1148-1149-alert-to-issue.md).
+Design: the #1148/#1149 plan (archived).
 Operations / runbook context: [`docs/server/observability.md`](../docs/server/observability.md)
 (extended in Phase 1 with the auto-filing section).
 
@@ -43,7 +43,7 @@ cloud_functions/
 
 The Cloud Function and `server/github` independently implement `upsertIssue`-shaped
 helpers. The duplication is intentional and bounded; see the plan doc's
-[Audit Notes](../docs/issues/1148-1149-alert-to-issue.md#audit-notes) for why
+Audit Notes (the #1148/#1149 plan, archived) for why
 (Bryan's design directive on #1322 + #1323).
 
 ## Local development

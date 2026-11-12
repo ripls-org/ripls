@@ -576,7 +576,7 @@ class AppColors {
   // Frosted-glass material for bottom-sheet modals. Identical in light and
   // dark modes by design — the sheet sits on a dark scrim that handles theme
   // adaptation, and on-glass content is white-on-translucent in both modes.
-  // See docs/issues/1797-glass-modal-revamp.md for the rationale.
+  // See the #1797 plan (archived) for the rationale.
   //
   // #2770: values now come from `GlassTokens` (design/tokens.json), so the
   // material is a swappable, gate-checked token set instead of ~40 hand-tuned

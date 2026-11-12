@@ -624,7 +624,7 @@ class AuthStateNotifier extends Notifier<AuthStateData> with WidgetsBindingObser
   /// - Zero risk of forgetting to clear a new cache pattern
   /// - Minor performance trade-off (~200-500ms slower first load after auth change)
   ///
-  /// See docs/ai/cache_security_audit.md for full security analysis.
+  /// See the cache security audit (archived) for full security analysis.
   Future<void> _clearUserCaches() async {
     try {
       final cacheManager = ref.read(cacheManagerProvider);

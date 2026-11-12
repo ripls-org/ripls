@@ -98,7 +98,7 @@ class ContentFactData {
 }
 
 /// ContentFactsRow lays out one or two [ContentFactData] cards side by side
-/// below the headline (see docs/issues/2278-experience-content-redesign.md).
+/// below the headline (see the #2278 plan, archived).
 /// Always-on-dark and role-agnostic.
 class ContentFactsRow extends StatelessWidget {
   final List<ContentFactData> facts;

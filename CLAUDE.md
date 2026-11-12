@@ -233,8 +233,8 @@ that have been there for months with no one watching.
 
 - **Every TODO must reference a GitHub issue.** Format: `TODO(#NNNN):`
   where `#NNNN` is an open issue tracking the cleanup. Existing examples
-  in the codebase: the `TODO(#2020):` proto-deprecation markers in
-  `proto/ripls/api/portfolio.proto` and `proto/ripls/api/item.proto`.
+  in the codebase: the `TODO(#2864):` auth-removal markers in
+  `proto/ripls/api/login_service.proto`.
 - **If no issue exists, file one before writing the TODO.** A two-minute
   `gh issue create` is part of the cost of leaving a TODO. The issue
   becomes the place where context lives — what triggered the TODO, why

@@ -16,7 +16,7 @@ import (
 // experience completion restores the full composite snapshot
 // (experience + CommunityExperience rows + pre-action chat) to
 // byte-equal pre-action state. Load-bearing correctness invariant
-// per docs/ai/undo_plan.md §10.5.
+// per the undo plan's §10.5 (archived).
 func TestUndoCompleteExperience_RoundTrip(t *testing.T) {
 	service, testStorage, _ := setupTestService(t)
 

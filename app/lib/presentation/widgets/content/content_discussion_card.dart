@@ -4,7 +4,7 @@ import 'package:ripls/core/theme/app_theme.dart';
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';
 
 /// ContentDiscussionCard is the compact entry point into the content's
-/// conversation (see docs/issues/2278-experience-content-redesign.md). It pins
+/// conversation (see the #2278 plan, archived). It pins
 /// a single quote — the content description, attributed to its owner — above
 /// the attribution line that carries the thread meta ("— Alfred · 3 replies ·
 /// last 2h") and an unread dot. When the caller supplies a [latestLine], the

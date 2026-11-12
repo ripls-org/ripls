@@ -101,20 +101,6 @@ type Provider interface {
 	// GenerateExperienceFromTextStreaming.
 	GenerateExperienceFromWebpageStreaming(ctx context.Context, pageTitle, pageDescription, pageBody, region, currentTime string) (<-chan FieldEvent, <-chan ExperienceStreamFinal, error)
 
-	// GenerateConversationSummary creates a summary of a conversation from message history.
-	// requestTitle and requestDescription provide optional context about what the conversation
-	// is about. When provided, they help the AI generate more accurate summaries.
-	// Pass empty strings if no context is available.
-	// style determines whether to generate a progress (third-person) or completion (first-person) summary.
-	GenerateConversationSummary(ctx context.Context, messages []ConversationMessage, requestTitle, requestDescription string, style SummaryStyle) (*ConversationSummary, error)
-
-	// GenerateExperienceCompletionSummary creates a summary of how an experience went.
-	// experienceTitle and experienceDescription provide context about the experience.
-	// attendeeNames lists the people who attended (first names).
-	// messages may be empty if no conversation existed; the summary will be based on
-	// the experience details and attendee names instead.
-	GenerateExperienceCompletionSummary(ctx context.Context, messages []ConversationMessage, experienceTitle, experienceDescription string, attendeeNames []string) (*ConversationSummary, error)
-
 	// ParseInformalTime converts an informal time description to structured JSON.
 	ParseInformalTime(ctx context.Context, informalDescription, currentTime, timezone string) (string, error)
 
@@ -435,25 +421,6 @@ type ConversationMessage struct {
 	// Unix timestamp when the message was sent
 	SentAtUnixSec int64
 }
-
-// ConversationSummary represents an AI-generated summary of a conversation.
-type ConversationSummary struct {
-	// Concise summary of the conversation (2-3 sentences)
-	Summary string `json:"summary"`
-}
-
-// SummaryStyle defines the style of summary to generate.
-type SummaryStyle int
-
-const (
-	// SummaryStyleProgress generates a third-person, objective summary of the conversation.
-	// Used during active phases to show what's happening.
-	SummaryStyleProgress SummaryStyle = iota
-
-	// SummaryStyleCompletion generates a first-person, solution-focused summary.
-	// Used during wrap-up to thank helpers and highlight the solution.
-	SummaryStyleCompletion
-)
 
 // NormalizeConfidence converts a confidence value to the 0.0-1.0 range.
 // AI models sometimes return percentages (0-100) instead of decimals (0-1),

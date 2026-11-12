@@ -193,7 +193,7 @@ func TestFallbackProvider_AllMethods(t *testing.T) {
 	_, _ = fb.DetectGearInImage(ctx, &DetectionImage{ImageData: []byte("test"), MimeType: "image/jpeg"})
 	_, _ = fb.GenerateCommunityContent(ctx, "test", "")
 	_, _ = fb.GenerateRequestContent(ctx, "test", "")
-	_, _ = fb.GenerateConversationSummary(ctx, []ConversationMessage{{SenderName: "A", Text: "Hi"}}, "", "", SummaryStyleProgress)
+	_, _ = fb.ParseInformalTime(ctx, "tomorrow", "", "")
 
 	if primary.Calls.TotalCalls() != 4 {
 		t.Errorf("Expected primary called 4 times, got %d", primary.Calls.TotalCalls())

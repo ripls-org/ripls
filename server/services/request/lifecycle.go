@@ -80,10 +80,9 @@ func (s *Service) SubmitRequest(
 		}
 	}
 
-	// Fallback: the request-AI Gen path doesn't yet populate Category
-	// (#2013). Derive a coarse label from title +
-	// description so the `known_for` derivation can surface
-	// "{Category} asker" chips. Remove once Gen sets Category itself.
+	// The AI Gen path doesn't set Category, so derive a coarse label
+	// from title + description with the keyword categorizer; the
+	// `known_for` derivation uses it for "{Category} asker" chips.
 	if request.Category == "" {
 		request.Category = category.Categorize(request.Title, request.Description)
 	}

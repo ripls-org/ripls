@@ -7,7 +7,7 @@ import (
 )
 
 // ReadBehavior defines how often a persona performs read actions per simulated week.
-// Values derived from production traffic analysis (docs/ai/production_traffic_analysis.md).
+// Values derived from production traffic analysis (the traffic analysis report, archived).
 type ReadBehavior struct {
 	FeedChecksPerWeek         float64
 	SearchesPerWeek           float64

@@ -42,7 +42,7 @@ subscriber requires from `story.Creator`. Do not change that
 de-duplication without also adding an explicit dedup table or
 upgrading the bus to a durable transport with at-least-once retry
 semantics (see G6 in
-[`docs/issues/510-community-event-pubsub-v2.md`](../../../docs/issues/510-community-event-pubsub-v2.md)).
+the #510 plan, archived).
 
 ## Soft-delete behavior
 

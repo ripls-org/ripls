@@ -192,8 +192,9 @@ message SystemChatMessage {
     // structured payload — render description verbatim" (covers pre-
     // migration rows).
     //
-    // TODO(#2159): cleanup tracker removes the legacy description field
-    // once historical rows have aged out.
+    // description stays populated permanently: it is the English fallback
+    // for rows without a template_key and for clients that don't know a
+    // newer key.
     optional string template_key = 7;
     map<string, string> template_params = 8;
 }
