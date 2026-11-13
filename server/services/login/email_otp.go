@@ -348,7 +348,7 @@ func (s *Service) consumeOutstandingEmailCodes(ctx context.Context, email string
 //
 // allowPassword says whether the password fallback is available at all.
 // Sign-in passes true — the 22 accounts that still hold a password must keep
-// working until #2864 retires them. Registration passes devAuth, so a new
+// working until ripls-org/ripls#5 retires them. Registration passes devAuth, so a new
 // account can only ever be created by proving ownership of the address (#2864).
 // That makes the set of password-holding accounts closed: it can shrink as
 // people migrate, and nothing can add to it. The dev exception exists solely so

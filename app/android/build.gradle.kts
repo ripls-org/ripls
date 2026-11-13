@@ -27,7 +27,7 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 
-    // TODO(#2792): drop once camera_android_camerax puts concurrent-futures on
+    // TODO(#6): drop once camera_android_camerax puts concurrent-futures on
     // its own compile classpath (or camera-core's POM stops scoping it
     // `runtime`, or javac downgrades the diagnostic again — JDK-8370800).
     //

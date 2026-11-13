@@ -281,7 +281,7 @@ backdoor.
 ##### Password Registration (retired, #2864)
 
 `EmailRegisterRequest.password` remains on the wire (`[deprecated = true]`,
-`TODO(#2864)`) only so a build released before the code flow keeps working
+`TODO(#5)`, ripls-org/ripls#5) only so a build released before the code flow keeps working
 without crashing when it sends the field; the server no longer reads it.
 `EmailRegister` unconditionally requires `email_proof_token` now — sending a
 password without a proof token, or no credential at all, fails with

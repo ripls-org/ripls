@@ -180,7 +180,7 @@ when you just need an account to exist.
 **Seeding a legacy password account.** `registerUser({ password })` still exists
 for one purpose: creating the pre-#2571 account shape, so the login screen's
 "Use my password instead" fallback can be exercised
-(`login-screen-email-code.spec.ts`). It goes away with the password path (#2864).
+(`login-screen-email-code.spec.ts`). It goes away with the password path (ripls-org/ripls#5).
 Do not reach for it otherwise — a password account is not what real users have
 any more.
 

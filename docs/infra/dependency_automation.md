@@ -307,6 +307,13 @@ override an org that forbids it).
   Under Unraid this needed a second script (`recreate_runners_idle.sh`) purely
   because the User Scripts plugin invoked every script as `<name>/script` with
   no arguments. systemd passes the flag, so that wrapper is gone.
+- **CPU budget:** each runner has `cpus: 10` (a ceiling Go, the JVM and Node
+  size themselves to; Dart ignores it, so `test_flutter.yaml` passes
+  `--concurrency` explicitly) and `cpu_shares: 128` (low cgroup weight, so the
+  host's other services win under contention). Containers a job starts on the
+  host daemon sit outside the runner's cgroup; the BuildKit builder and the
+  candidate-image container carry the budget explicitly. Rationale and
+  measurements: `runners/README.md` → *CPU budget*.
 - `runners/docker-compose.yml` uses the shared local tag `ripls-runner:latest`;
   `runners/sync.sh --rebuild` is the manual build path; `sync.sh` (no args) ships
   the compose files, both host scripts, and `versions.env` to `/opt/runners`.

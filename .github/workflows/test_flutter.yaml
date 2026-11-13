@@ -233,5 +233,12 @@ jobs:
             echo "Restored ${real%.real}"
           done
 
+      # One tester per CPU this job is actually allowed. Dart counts the host's
+      # CPUs and ignores the runner container's CPU limit
+      # (runners/docker-compose.yml), so left to itself it sizes the pool for
+      # the whole 20-thread host. Node reads the limit, and on a GitHub-hosted
+      # runner with no limit it simply reports the VM's CPU count.
       - name: Run Flutter tests
-        run: cd app && flutter test --reporter github
+        run: |
+          cd app
+          flutter test --concurrency="$(node -p 'require("os").availableParallelism()')" --reporter github

@@ -63,6 +63,7 @@
     "oss:publish": "node scripts/oss_publish.js",
     "oss:sync": "node scripts/oss_publish.js --sync",
     "oss:gate": "npm run oss:export --silent && node scripts/oss_scan.js --gate",
+    "oss:gate:tree": "node scripts/oss_scan.js --gate --tree",
     "test:oss": "node --test scripts/oss_export.test.js scripts/oss_scan.test.js",
     "lint:terraform": "npm run fmt:terraform && npm run validate:terraform",
     "lint:fix": "npm run lint:go:fix && npm run fmt:terraform",

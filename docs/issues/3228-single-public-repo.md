@@ -187,6 +187,8 @@ to remove.
 ## Open Questions
 
 - **Do the old plan docs move out, or get published after a scan?**
+  - **Decided 2026-11-12: published, all of them, after a scrub** (#3286). See
+    phase 3. The analysis below is what led there.
   - The issue says to move all of `docs/issues/` because it was "never vetted".
     But 62 of those docs are the design rationale that code comments cite, and
     a contributor following such a link from public code finds nothing.
@@ -417,7 +419,7 @@ denylist.
 **Validates:** a build of the export alone produces a store-acceptable build
 number. No public file links into a moved path.
 
-### Phase 3: Gate on the working tree; split the tracker and the website
+### Phase 3: Gate on the working tree; settle what stays private
 **Goal:** what was checked once at export time is checked on every change, and the
 non-code pieces have their own homes.
 
@@ -428,7 +430,14 @@ non-code pieces have their own homes.
   - extend `oss_scan.test.js` to cover tree mode, a missing denylist and
     redaction of matches in the output. CI logs on a public repo are public,
     so a hit must never print the matched value. *(audit fix)*
-- [ ] **CI job:**
+- [x] **CI job:** done in `check_oss_export.yaml` rather than the lint
+  workflow, next to the export gate it shares the denylist with
+  (`npm run oss:gate:tree`). The denylist is in the `OSS_DENYLIST` secret and
+  the notes repo at `oss/oss_denylist.txt`; the canonical repo is named in the
+  workflow, so update it at the cut-over. That workflow and `oss_scan.js` are
+  private-bound today, so the cut-over must also move the tree step, the
+  scanner and its fixture tests into something that ships; the real-denylist
+  tests stay out of the public tree.
   - add an `oss_scan` job to the existing lint workflow;
   - write the denylist from a secret to a temp file;
   - skip it, with a notice, when the secret is absent (forks); fail it when the
@@ -437,35 +446,53 @@ non-code pieces have their own homes.
     turn the gate off;
   - move `scripts/oss_denylist.txt` out of git: it lives in the secret and in
     the notes repo.
-- [ ] **Website repo:**
-  - extract `website/`, `infra/staging-web`, `.github/actions/deploy-website` and
-    the three website workflows into a new repo, history and all if wanted
-    (`git filter-repo --path`);
-  - point `publish_website` at its new home;
-  - delete them here.
-- [ ] **Notes repo:** create it as private. It holds:
-  - everything moved out in phases 1–2;
-  - the old `docs/issues/`, `docs/ai/`, `docs/concepts/`, `docs/evals/`,
-    `docs/crashlytics/` and `docs/reviews/reports/`;
-  - the denylist.
-
-  It is `bryan/ripls-notes`, a private repo on the Forgejo instance; mimir's
-  policy now allows private repos there as long as nothing deploys from them.
-  Phases 1–2 already moved `docs/private/**` into it.
-
-  Tree-mode hits on this repo are all in `docs/issues/` and
-  `website/content/`, so the CI gate below waits on this move and the
-  website split.
-- [ ] **Private tracker:**
+- [x] **Website** (#3287; **decided 2026-11-12: it stays in this repo and ships
+  publicly**, reversing the split):
+  - a separate repo was too entangled: `website/content/` symlinks static
+    assets from `server/`, release notes are generated into it, and e2e pages
+    live there. The site itself is already public at ripls.org;
+  - the denylist's `!allow-under website/content/` section lets the founder's
+    name and the staff addresses appear there, and nowhere else;
+  - the deploy endpoint moved from the workflows into the repo variables
+    `WEB_DEPLOY_SSH`, `WEB_DEPLOY_PORT` and `WEB_DEPLOY_ROOT`. The deploy
+    jobs run only where `INSTANCE_PIPELINES` is set, and the staging preview
+    never runs for PRs from forks;
+  - `oss_export.js` recreates tracked symlinks instead of copying them.
+- [x] **Plans** (#3286; **decided 2026-11-12: they stay public**, so new plans
+  keep going to `docs/issues/`):
+  - `docs/issues/`, `docs/ai/`, `docs/evals/`, `docs/crashlytics/` and
+    `docs/reviews/reports/` ship, scrubbed of personal data: names, handles,
+    emails, phone numbers, production ids and LAN IPs became placeholders;
+  - the denylist gained a pattern for phone numbers written with separators;
+  - two things stay excluded: `docs/concepts/**/*.mov` (36 MB of video that
+    can't be reviewed like text) and `docs/reviews/reports/security_review.md`
+    (it lists findings without saying whether each is fixed). Both move to
+    the notes repo or are deleted before the cut-over.
+- [x] **Notes repo:** `bryan/ripls-notes`, a private repo on the Forgejo
+  instance; mimir's policy allows private repos there as long as nothing
+  deploys from them. It holds `docs/private/**` (phases 1–2) and receives
+  the denylist with the CI job above.
+- [ ] **Private tracker:** **on hold (2026-11-12)** until the phase 4 forge
+  decision, since where it lives depends on that. When it resumes:
   - create it and move #2760;
   - point `server/github/client.go`'s config (`Owner`/`Repo` from app config)
     and `cloud_functions`' target at it;
   - both stay GitHub-API clients until the Forgejo port.
-- [ ] **Refile the five product issues** in `ripls-org/ripls`: #3213, #3079,
+- [x] **Refile the five product issues** in `ripls-org/ripls`: #3213, #3079,
   #2952, #2864, #2792. Then renumber the TODOs for #2864 and #2792.
+  - Refiled 2026-11-12 with personal details and account counts removed:
+    #3213 → ripls-org/ripls#3, #2952 → #4, #2864 → #5, #2792 → #6.
+  - `TODO(#2864)` became `TODO(#5)` and `TODO(#2792)` became `TODO(#6)`.
+    Until the cut-over those numbers name the public tracker's issues, not
+    this repo's. Prose that points at the open work says
+    `ripls-org/ripls#5` in full; prose recording what #2864 already did
+    keeps the old number.
+  - #3079 is not refiled: it is closed, and its two leftovers are instance
+    operations.
 
 **Validates:** `oss_scan` and gitleaks pass on the working tree in CI. The website
-deploys from its own repo. A feedback report lands in the private tracker.
+deploys from this repo through the variable-based endpoint. (A feedback report
+landing in the private tracker moves to phase 4 with the tracker.)
 
 ### Phase 4: Cut-over (gated on the forge decision)
 **Goal:** development, deploy and release run from the public repo, and this repo

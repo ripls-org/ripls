@@ -31,6 +31,11 @@ node_modules/
 tmp/
 .secrets
 
+# The leak scanner's denylist (#3228). It names what must not be published, so
+# it lives in the private notes repo and, for CI, the OSS_DENYLIST secret. A
+# local copy here is what scripts/oss_scan.js reads by default.
+scripts/oss_denylist.txt
+
 # Local overrides for the GCP project names the npm scripts fetch secrets from
 # (#2965). Project IDs are org identifiers, not secrets, but they are exactly
 # what the open-source split (#2953) parameterizes out of package.json.

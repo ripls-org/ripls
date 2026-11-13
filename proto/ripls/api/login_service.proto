@@ -36,7 +36,7 @@ message EmailRegisterRequest {
   string email = 1;
   string name = 2;
 
-  // TODO(#2864): Ignored. Registration requires email_proof_token — a new
+  // TODO(#5): Ignored. Registration requires email_proof_token — a new
   // account is only ever created for someone who proved they receive mail at
   // the address, so no account created from here holds a password. Sending
   // this field without a proof token fails with INVALID_ARGUMENT rather than
@@ -62,7 +62,7 @@ message EmailRegisterRequest {
 message EmailLoginRequest {
   string email = 1;
 
-  // TODO(#2864): Sign-in is passwordless — the client sends email_proof_token.
+  // TODO(#5): Sign-in is passwordless — the client sends email_proof_token.
   // This field is still accepted for the accounts that already hold a password
   // and for builds released before the code flow. Remove it (and reserve tag 2)
   // once a release carrying the code flow has shipped, soaked, and password
@@ -273,7 +273,7 @@ message CheckInvitationResponse {
 
 // Request to initiate a password reset
 //
-// TODO(#2864): The whole password-reset trio exists only for accounts that
+// TODO(#5): The whole password-reset trio exists only for accounts that
 // still hold a password. A forgotten password is no longer a lockout — email
 // sign-in is a one-time code, which is the same recovery path a reset link was.
 // Remove all three RPCs (plus the reset screens, templates, and the
@@ -289,7 +289,7 @@ message RequestPasswordResetResponse {}
 
 // Request to check if a password reset token is valid
 //
-// TODO(#2864): Removed with the password-reset trio. This one also discloses
+// TODO(#5): Removed with the password-reset trio. This one also discloses
 // the account's email address to any holder of a reset token, which is a second
 // reason to be rid of it.
 message CheckResetPasswordTokenRequest {
@@ -305,7 +305,7 @@ message CheckResetPasswordTokenResponse {
 
 // Request to complete a password reset
 //
-// TODO(#2864): Removed with the password-reset trio.
+// TODO(#5): Removed with the password-reset trio.
 message ResetPasswordRequest {
   string token = 1;         // The password reset token
   string new_password = 2;  // The new password to set

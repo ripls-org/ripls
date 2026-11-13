@@ -68,7 +68,7 @@ step "Analyze Flutter code"
 (cd app && flutter analyze)
 
 step "Run Flutter tests"
-(cd app && flutter test --reporter expanded)
+(cd app && flutter test --concurrency="$(node -p 'require("os").availableParallelism()')" --reporter expanded)
 
 # ── Android release build: JDK + NDK + Gradle + R8 ───────────────────────────
 # Mirrors release_build_android.yaml — the toolchain-sensitive gate the PR's own

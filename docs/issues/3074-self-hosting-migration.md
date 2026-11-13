@@ -301,7 +301,7 @@ HOST-2.
 | **Bad/revoked/expired SA key → prod will not boot** (Firebase init is fatal) | medium | Expiry-policy check in Phase 2; rotation runbook; `deploy.sh` rollback does not help here, so alert on boot failure via the crash watcher. |
 | **mimir host freezes** recur — root cause never proven | medium | Kernel hang detection now works; external uptime check catches it; recovery is still a manual power-cycle. |
 | **Residential uplink / single box**: ISP outage, reboot, power beyond UPS runtime | medium, accepted | D8. Confirm Google Fiber's terms are fine with hosting a PBC's production API. |
-| CPU/RAM contention with 5 CI runners, Plex, Immich | medium | Memory limit + `cpu_shares` on server and Postgres; watch RPC P95 during the dev soak under a full CI run. |
+| CPU/RAM contention with 5 CI runners and the host's other services | medium | Memory limit + `cpu_shares` on server and Postgres; watch RPC P95 during the dev soak under a full CI run. |
 | Terraform refactor destroys the prod media bucket | low likelihood, severe | `moved` blocks, `prevent_destroy`, human-read plan. Bucket versioning is on. |
 | D5 costs more than expected (log-based metric ingestion) | low | Measured first in Phase 4; fallback is the minimal uptime+crash+error set. |
 | `update-docker-stacks` or a manual `compose pull` upgrades Postgres major version | low | Digest pin; the script already holds DB images; stacks live outside `/opt/nas/stacks`. |

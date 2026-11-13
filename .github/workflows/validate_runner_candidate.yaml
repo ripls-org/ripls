@@ -109,8 +109,13 @@ jobs:
         # container's, so the runner's in-container workspace path doesn't exist
         # there.) The candidate's baked SDKs at /opt/* and /usr/local/go are not
         # shadowed by those mounts, so the NEW toolchain is what runs.
+        #
+        # `--cpus` hands the candidate this runner's own CPU budget: the
+        # container is created on the host daemon, outside this runner's
+        # cgroup, so it would otherwise run uncapped next to the fleet.
         run: |
           docker run --rm \
+            --cpus "$(node -p 'require("os").availableParallelism()')" \
             --volumes-from "$(hostname)" \
             -w "$PWD" \
             "$CANDIDATE_TAG" \

@@ -76,8 +76,20 @@ jobs:
       - name: Fix git ownership (self-hosted runner)
         run: git config --global --add safe.directory '*'
 
+      # The BuildKit builder is a container on the host daemon, outside this
+      # runner's cgroup, so the runner's CPU limit (runners/docker-compose.yml)
+      # does not reach the compile inside `docker build`. Give the builder the
+      # same budget explicitly. cpu-quota is microseconds per 100ms period.
+      - name: Compute builder CPU quota
+        id: cpu
+        run: echo "quota=$(node -p 'require("os").availableParallelism() * 100000')" >> "$GITHUB_OUTPUT"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
+        with:
+          driver-opts: |
+            cpu-period=100000
+            cpu-quota=${{ steps.cpu.outputs.quota }}
 
       - name: Test Docker build
         uses: docker/build-push-action@v7

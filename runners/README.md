@@ -139,6 +139,56 @@ clone or credentials needed on the host. To go live the first time:
 then let the recreate — or `./sync.sh --rebuild` — roll the fleet onto it.
 Tracked in #2287/#2395.
 
+## CPU budget
+
+mimir is one host with 20 logical CPUs (8 P-cores with SMT plus 4 E-cores)
+that also runs the prod and dev servers, the websites and other services. Each runner
+gets two settings in `docker-compose.yml`:
+
+- `cpu_shares: 128` — cgroup weight 21 against the default 100. Under
+  contention the whole fleet weighs about as much as one ordinary container,
+  so the other services get the CPU they ask for. It costs CI nothing when
+  the host is otherwise idle.
+- `cpus: 10` — a ceiling. Go (`GOMAXPROCS`, hence `go test -p`), the JVM
+  (Gradle workers) and Node read the limit and size themselves to it. **Dart
+  does not**: `Platform.numberOfProcessors` reports 20 under both a quota and
+  a cpuset, so `test_flutter.yaml` passes `--concurrency` from Node's
+  `os.availableParallelism()`.
+
+Containers a job starts through the mounted Docker socket are created on the
+host daemon, **outside** the runner's cgroup, so neither setting reaches them.
+The two heavy cases carry the budget explicitly: the BuildKit builder
+(`driver-opts: cpu-quota` in `test_docker_build.yaml` and
+`build_and_deploy_container.yaml`) and the candidate-image container
+(`docker run --cpus` in `validate_runner_candidate.yaml`). Testcontainers
+Postgres is left alone; it is light.
+
+**Why not a strict partition (20 CPUs / 5 runners = 4 each).** Measured on
+mimir, 2026-11-12, simulating one PR's heavy jobs landing together (Flutter
+tests, Go integration tests, Android release build), seconds:
+
+| per-job `cpus` | Flutter | Android | Go  | all done | job-seconds |
+| -------------- | ------- | ------- | --- | -------- | ----------- |
+| uncapped       | 215     | 319     | 336 | 336      | 870         |
+| 4              | 176     | 290     | 474 | 475      | 940         |
+| 6              | 171     | 277     | 426 | 427      | 874         |
+| 8              | 184     | 278     | 370 | 371      | 832         |
+| 10             | 191     | 363     | 330 | 364      | 884         |
+| 12             | 210     | 299     | 349 | 350      | 858         |
+
+Single runs, so treat ±10% as noise (the 10 row also ran `go test -p 20`;
+repeating 8 with `-p 16` and `-p 20` changed nothing measurable). What survives the noise: total work is
+flat from 6 up to uncapped, a cap moves time from Flutter and Android onto Go
+(the last job to finish), and 4 is plainly worse. The Flutter suite alone
+takes 96s uncapped, 93s at 8, 99s at 6 and 120s at 4. A high load average
+during a burst is jobs queueing for cores, not lost work; a tight cap lowers
+the load number by making the PR slower. About half of busy time has only one
+or two heavy jobs running, and a strict partition would idle most of the host
+then.
+
+Go tests are the long pole and CPU-bound, so the real lever for PR turnaround
+is the Go suite itself (its slowest packages run 200s+), not the budget.
+
 ## Go version
 
 `GO_VERSION` (from `versions.env`) is a **bootstrap**. With `GOTOOLCHAIN=auto`

@@ -47,6 +47,21 @@ x-runner-common: &runner-common
       GOLANGCI_LINT_VERSION: ${GOLANGCI_LINT_VERSION}
       GOFUMPT_VERSION: ${GOFUMPT_VERSION}
   restart: unless-stopped
+  # CPU budget per runner. mimir has 20 logical CPUs and also runs prod, the
+  # websites and other services. See "CPU budget" in runners/README.md for the
+  # measurements behind both numbers.
+  #
+  # cpus: a ceiling, not a share. Go, the JVM (Gradle) and Node read it and
+  # size their worker pools to 10 instead of 20, which halves the worst case
+  # of five busy runners. Dart ignores it, so the Flutter test step passes the
+  # count explicitly. Measured throughput is flat from 8 up to uncapped and
+  # clearly worse at 4, so do not lower this to "20 / runner count".
+  cpus: 10
+  # cpu_shares: what actually protects the other services. 128 gives each
+  # runner cgroup weight 21 against the default 100, so the whole fleet
+  # together weighs about as much as one ordinary container. It only matters
+  # under contention: an idle host still gives CI every core.
+  cpu_shares: 128
   devices:
     - "/dev/kvm:/dev/kvm"
   environment: &runner-env
