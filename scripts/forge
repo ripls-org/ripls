@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# forge — gh-compatible issue and pull-request commands on GitHub or Forgejo.
+# See forge.js for what it covers and how it picks the forge.
+exec node "$(dirname "${BASH_SOURCE[0]}")/forge.js" "$@"

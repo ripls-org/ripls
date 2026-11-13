@@ -252,14 +252,19 @@ The audit ended with eight questions. The answers:
 
 ## Still to verify by running
 
-- A pull request on the shadow repo: the detect jobs, `paths-filter` on a PR,
-  whether a skipped job satisfies a required check, and the checkout ref on
-  `pull_request: closed`.
-- `upload-artifact@v7`; whether `if: always()` steps run on cancel; the
-  expression in `gitleaks-push`'s `cancel-in-progress`.
-- Review and label payload fields (B2).
+Answered on 2026-11-13 by a second round of probes; the results are in the
+plan under *Probe round two*. In short: `upload-artifact@v7` fails on
+Forgejo, `if: always()` steps do not run on cancel (so the leak in D5 is
+real), the review payload has no id or body, `user.type` is absent, and a
+merged `pull_request: closed` run checks out the merge commit (so B7 does not
+apply).
+
+Still open:
+
+- A pull request on the shadow repo itself: `paths-filter` on a PR and
+  whether a skipped job satisfies a required check.
+- The expression in `gitleaks-push`'s `cancel-in-progress`.
 - `validate_runner_candidate`'s `--volumes-from "$(hostname)"`.
-- With the dev GCP key on Forgejo: Web E2E, and Go Tests undegraded.
 
 ## Corrections to the plan
 

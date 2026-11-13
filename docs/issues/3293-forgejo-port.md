@@ -257,12 +257,21 @@ What this changes in the plan:
 **Goal:** the agent plans, implements, addresses review and fixes CI from
 Forgejo events.
 **Tasks:**
-- [ ] Write `scripts/forge` with tests against recorded API responses.
+- [x] Write `scripts/forge` with tests against recorded API responses
+  (#3306, #3307). It covers every `gh` form in use across both repos, plus
+  two commands of its own (`forge file`, `forge permission`).
 - [ ] Switch this repo's workflows, scripts and skills from `gh` to it. On
   GitHub it passes through to `gh`, so both forges keep working.
-- [ ] Create the bot account and its tokens; replace the three App-token steps.
+- [ ] Create the bot accounts and their tokens; replace the three App-token
+  steps. Three accounts, by what each may do (see *Probe round two*):
+  - `ripls-agent`: writes to the repo (branches, PRs, comments). A
+    collaborator, not an org member.
+  - `ripls-dispatch`: starts workflows in the agent repo and answers the
+    trust check. Created 2026-11-13 and proven to be able to do only that.
+  - a Renovate account, when Renovate moves.
 - [ ] Port the dispatchers:
-  - the trust check calls the collaborator-permission API;
+  - the trust check becomes a step: is the actor a member of the org? It
+    uses the dispatch account's token, since the automatic token can't ask;
   - the CI fixers lose `workflow_run`. Each watched workflow gains a last job,
     `if: failure()`, that dispatches the fixer with the run id.
 - [ ] Import `ripls-agent` and port its workflows, prompts and
@@ -272,6 +281,47 @@ Forgejo events.
 
 **Validates:** on the shadow repo, the agent takes one issue from plan to
 merged PR, and fixes one deliberately broken test run.
+
+The baseline to match is the same exercise on GitHub, run on 2026-11-13
+against a real task (the connectrpc 2 upgrade): plan, refine, implement and
+address-feedback each worked once through the dispatch bridge. Fix-ci did not
+run, because nothing failed.
+
+#### Probe round two (2026-11-13)
+
+Run on a second scratch repo under the org, on the real runner fleet, to
+answer what the workflow audit left as *verify*.
+
+| Question | Answer |
+| --- | --- |
+| Is `github.run_id` the id the API takes? | Yes. It is the global run id; `run_number` is the per-repo index shown in URLs. |
+| `github.triggering_actor` | Empty. Use `github.actor`. |
+| Label events | Action `label_updated`. The payload has both a singular `label` object and `issue.labels`. A `types: [labeled]` filter did not need changing to receive it. |
+| Is a comment on a PR distinguishable? | Yes, two ways: `is_pull: true`, and `issue.pull_request` is an object as on GitHub. The existing expression works unchanged. |
+| Review payload | Only `review.type` and `review.content`. No review id and no `body`. A dispatcher that needs the id must look the review up. `types: [submitted]` still matches. |
+| `user.type` | Absent. Bots are ordinary users; tell them apart by login. |
+| What does a merged `pull_request: closed` run check out? | The merge commit, which is also `github.sha`. `release_finalize`'s prod build is therefore built from the right commit (audit B7 does not apply). |
+| `if: always()` after a skipped `needs` | Runs, with `needs.<job>.result == 'skipped'`. The path-gated pattern works. |
+| `if: always()` steps when a run is cancelled | **Do not run.** A container the job started on the host daemon was still up after the cancel. The orphan sweep is the only cleanup for superseded runs (audit D5). |
+| `actions/upload-artifact@v7` | **Fails**: "not currently supported on GHES". Only v3 and Forgejo's v4 fork work. |
+| What can the automatic token ask about a user? | Nothing useful: collaborator permission is 403, org membership is a redirect, team lists are 403. |
+
+**The dispatch account is confined as intended.** `ripls-dispatch` is in an
+org team whose only unit is Actions (write), on one repo. With its token:
+
+| Attempt | Result |
+| --- | --- |
+| Dispatch a workflow in that repo | 204 |
+| Read a file, write a file, create a branch, open an issue | 403 each |
+| List secrets, set a variable | 403 each |
+| Read another repo in the org | 404 |
+| Is a given user an org member? | 204 for a member, 404 for a non-member and for a collaborator-only bot |
+
+So the credential the public repo holds can start an agent run and nothing
+else, which restores what the GitHub App gave (audit B9). The same token
+answers the trust check, so the dispatchers need one secret, not two. Team
+membership can't be read with it (403), so trust is "member of the org", and
+the bot accounts that write to the repo stay collaborators, not members.
 
 ### Phase 3: Deploy, release and the tracker
 **Goal:** everything production needs has run once from Forgejo.
