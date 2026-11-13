@@ -119,84 +119,41 @@ jobs:
         run: npm run lint:dart:a11y
 
       - name: Verify accessibility allowlist did not grow
-        run: |
-          # The allowlist may shrink (entries removed as files are remediated)
-          # but must never grow on main. Compare against the base ref's
-          # allowlist size and fail if a new entry was added.
-          git fetch origin "${{ github.base_ref || 'main' }}":__a11y_base 2>/dev/null || true
-          if git rev-parse --verify __a11y_base > /dev/null 2>&1; then
-            BASE_COUNT=$(git show __a11y_base:scripts/a11y_allowlist.txt 2>/dev/null \
-              | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          else
-            BASE_COUNT=0
-          fi
-          HEAD_COUNT=$(grep -v '^#' scripts/a11y_allowlist.txt \
-            | grep -v '^$' | wc -l | tr -d ' ')
-          echo "base=$BASE_COUNT head=$HEAD_COUNT"
-          if [ "$HEAD_COUNT" -gt "$BASE_COUNT" ]; then
-            echo "::error::Accessibility allowlist grew from $BASE_COUNT to $HEAD_COUNT entries. The allowlist may only shrink on main; remove an existing entry before adding a new one."
-            exit 1
-          fi
+        # The allowlist may shrink as files are fixed but must never grow.
+        run: >-
+          scripts/check_allowlist_ratchet.sh scripts/a11y_allowlist.txt
+          "${{ github.base_ref || 'main' }}" "Accessibility"
+          "The allowlist may only shrink on main; remove an existing entry before adding a new one."
 
       - name: "Check hardcoded accent colors (issue #1946 ratchet)"
         run: npm run lint:dart:colors
 
       - name: Verify color allowlist did not grow
-        run: |
-          git fetch origin "${{ github.base_ref || 'main' }}":__color_base 2>/dev/null || true
-          if git rev-parse --verify __color_base > /dev/null 2>&1; then
-            BASE_COUNT=$(git show __color_base:scripts/color_allowlist.txt 2>/dev/null \
-              | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          else
-            BASE_COUNT=0
-          fi
-          HEAD_COUNT=$(grep -v '^#' scripts/color_allowlist.txt \
-            | grep -v '^$' | wc -l | tr -d ' ')
-          echo "base=$BASE_COUNT head=$HEAD_COUNT"
-          if [ "$HEAD_COUNT" -gt "$BASE_COUNT" ]; then
-            echo "::error::Color allowlist grew from $BASE_COUNT to $HEAD_COUNT entries. The allowlist may only shrink on main; route the color through AppColors instead of adding an entry."
-            exit 1
-          fi
+        # The allowlist may shrink as files are fixed but must never grow.
+        run: >-
+          scripts/check_allowlist_ratchet.sh scripts/color_allowlist.txt
+          "${{ github.base_ref || 'main' }}" "Color"
+          "The allowlist may only shrink on main; route the color through AppColors instead of adding an entry."
 
       - name: "Check ref.listen() in build() (issue #1527)"
         run: npm run lint:dart:ref-listen-in-build
 
       - name: Verify ref.listen allowlist did not grow
-        run: |
-          git fetch origin "${{ github.base_ref || 'main' }}":__ref_listen_base 2>/dev/null || true
-          if git rev-parse --verify __ref_listen_base > /dev/null 2>&1; then
-            BASE_COUNT=$(git show __ref_listen_base:scripts/ref_listen_allowlist.txt 2>/dev/null \
-              | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          else
-            BASE_COUNT=0
-          fi
-          HEAD_COUNT=$(grep -v '^#' scripts/ref_listen_allowlist.txt \
-            | grep -v '^$' | wc -l | tr -d ' ')
-          echo "base=$BASE_COUNT head=$HEAD_COUNT"
-          if [ "$HEAD_COUNT" -gt "$BASE_COUNT" ]; then
-            echo "::error::ref.listen allowlist grew from $BASE_COUNT to $HEAD_COUNT entries. Fix the ref.listen() call in build() instead of adding an allowlist entry."
-            exit 1
-          fi
+        # The allowlist may shrink as files are fixed but must never grow.
+        run: >-
+          scripts/check_allowlist_ratchet.sh scripts/ref_listen_allowlist.txt
+          "${{ github.base_ref || 'main' }}" "ref.listen"
+          "Fix the ref.listen() call in build() instead of adding an allowlist entry."
 
       - name: "Check GoRoute name presence (issue #1809)"
         run: npm run lint:dart:route-names
 
       - name: Verify route-names allowlist did not grow
-        run: |
-          git fetch origin "${{ github.base_ref || 'main' }}":__route_names_base 2>/dev/null || true
-          if git rev-parse --verify __route_names_base > /dev/null 2>&1; then
-            BASE_COUNT=$(git show __route_names_base:scripts/route_names_allowlist.txt 2>/dev/null \
-              | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          else
-            BASE_COUNT=0
-          fi
-          HEAD_COUNT=$(grep -v '^#' scripts/route_names_allowlist.txt \
-            | grep -v '^$' | wc -l | tr -d ' ')
-          echo "base=$BASE_COUNT head=$HEAD_COUNT"
-          if [ "$HEAD_COUNT" -gt "$BASE_COUNT" ]; then
-            echo "::error::route-names allowlist grew from $BASE_COUNT to $HEAD_COUNT entries. Add name: to each new GoRoute instead of adding an allowlist entry."
-            exit 1
-          fi
+        # The allowlist may shrink as files are fixed but must never grow.
+        run: >-
+          scripts/check_allowlist_ratchet.sh scripts/route_names_allowlist.txt
+          "${{ github.base_ref || 'main' }}" "route-names"
+          "Add name: to each new GoRoute instead of adding an allowlist entry."
 
       - name: "Check ViewModel test coverage (issue #1362)"
         run: npm run lint:dart:viewmodel-tests
