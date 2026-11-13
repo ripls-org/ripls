@@ -39,11 +39,18 @@
  *   forge member <login> [--org <o>]  print true | false: is the login a
  *                                     member of the organization (default:
  *                                     the repository's owner)
+ *
+ * Three more look one thing up by id and print it as JSON in one shape on
+ * both forges. The agent's request validation is built on them:
+ *
+ *   forge run-info <run id>                    a workflow run
+ *   forge comment-info <comment id>            an issue or PR comment
+ *   forge review-info <pr> <review id> [--comments]
  */
 
 const fs = require('fs');
 const { spawnSync } = require('child_process');
-const { createClient, commands, orgMember, ForgeError } = require('./forge_forgejo.js');
+const { createClient, commands, lookups, commentInfo, reviewInfo, orgMember, ForgeError } = require('./forge_forgejo.js');
 
 // flag → [option key, takes a value, repeatable]
 const FLAGS = {
@@ -79,6 +86,7 @@ const FLAGS = {
   '--target': ['target', true],
   '--prerelease': ['prerelease', false], '-p': ['prerelease', false],
   '--org': ['org', true],
+  '--comments': ['comments', false],
 };
 
 // gh reuses short flags across commands; these are the ones that differ.
@@ -91,7 +99,7 @@ const FLAGS_BY_COMMAND = {
 };
 
 // Commands gh does not have. On GitHub these are answered through `gh api`.
-const FORGE_ONLY = new Set(['file', 'permission', 'member']);
+const FORGE_ONLY = new Set(['file', 'permission', 'member', 'run-info', 'comment-info', 'review-info']);
 
 function parseArgs(argv, command = '') {
   const flags = { ...FLAGS, ...(FLAGS_BY_COMMAND[command] || {}) };
@@ -180,10 +188,59 @@ function inputsOf(pairs = []) {
   return inputs;
 }
 
+function idArg(value, what) {
+  if (!/^\d+$/.test(String(value || ''))) throw new ForgeError(`${what} needs a numeric id, got "${value || ''}"`);
+  return String(value);
+}
+
+function ghJson(spawn, path) {
+  const res = spawn('gh', ['api', path], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  if (res.error) throw new ForgeError(`could not run gh: ${res.error.message}`);
+  if (res.status !== 0) throw new ForgeError(`gh api ${path}: ${String(res.stderr || '').trim().slice(0, 300)}`);
+  return JSON.parse(res.stdout);
+}
+
+// GitHub's run object, in the shape lookups.runInfo gives for Forgejo.
+function githubRunInfo(r) {
+  return {
+    databaseId: r.id,
+    number: r.run_number,
+    displayTitle: r.display_title,
+    workflowFile: String(r.path || '').split('/').pop(),
+    event: r.event,
+    status: r.status,
+    conclusion: r.conclusion || '',
+    headSha: r.head_sha,
+    headBranch: r.head_branch,
+    headRepository: { nameWithOwner: r.head_repository ? r.head_repository.full_name : null },
+    pullRequestNumber: (r.pull_requests || [])[0]?.number ?? null,
+    actor: r.triggering_actor ? { login: r.triggering_actor.login } : null,
+    url: r.html_url,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+    name: r.name,
+    // GitHub concludes a run before anything reacts to it, so `conclusion`
+    // already says whether it failed.
+    failedJobs: [],
+  };
+}
+
+// The id lookups on GitHub: fetch with `gh api`, answer in the shared shape.
+function githubLookup(group, verb, positional, opts, repo, spawn) {
+  if (group === 'run-info') return githubRunInfo(ghJson(spawn, `repos/${repo}/actions/runs/${idArg(verb, group)}`));
+  if (group === 'comment-info') return commentInfo(ghJson(spawn, `repos/${repo}/issues/comments/${idArg(verb, group)}`));
+  const base = `repos/${repo}/pulls/${idArg(verb, group)}/reviews/${idArg(positional[0], group)}`;
+  return reviewInfo(ghJson(spawn, base), opts.comments ? ghJson(spawn, `${base}/comments?per_page=100`) : null);
+}
+
 // forge's own commands on GitHub. `{owner}/{repo}` is filled in by gh from
 // GH_REPO or the checkout when no repository was named.
-function githubOwn(group, verb, opts, env, spawn) {
+function githubOwn(group, verb, positional, opts, env, spawn, write) {
   const repo = opts.repo || env.GH_REPO || env.GITHUB_REPOSITORY || '{owner}/{repo}';
+  if (group.endsWith('-info')) {
+    write(render({ json: githubLookup(group, verb, positional, opts, repo, spawn), jsonAlways: true }, opts));
+    return 0;
+  }
   let args;
   if (group === 'member') {
     if (!verb) throw new ForgeError('member needs a login');
@@ -330,6 +387,18 @@ async function run(client, repo, group, verb, positional, opts) {
         if (!org) throw new ForgeError('member needs --org or a repository to take the owner from');
         return { text: String(await orgMember(client, org, verb)) };
       }
+      if (group === 'run-info') {
+        return { json: await lookups.runInfo(client, repo, { id: idArg(verb, 'run-info') }), jsonAlways: true };
+      }
+      if (group === 'comment-info') {
+        return { json: await lookups.commentInfo(client, repo, { id: idArg(verb, 'comment-info') }), jsonAlways: true };
+      }
+      if (group === 'review-info') {
+        const found = await lookups.reviewInfo(client, repo, {
+          number: idArg(verb, 'review-info'), id: idArg(positional[0], 'review-info'), withComments: opts.comments,
+        });
+        return { json: found, jsonAlways: true };
+      }
       const err = new ForgeError(`"forge ${key}" is not supported on Forgejo yet`);
       err.exitCode = 2;
       throw err;
@@ -370,12 +439,13 @@ async function main(argv, env = process.env, deps = {}) {
   // forge's own commands take their argument where others take a verb.
   const [group, verb = '', ...rest] = argv;
   const { positional, opts } = parseArgs(rest, own ? group : `${group} ${verb}`);
-  if (target.kind === 'github') return githubOwn(group, verb, opts, env, spawn);
+  const write = deps.write || ((s) => process.stdout.write(s));
+  if (target.kind === 'github') return githubOwn(group, verb, positional, opts, env, spawn, write);
   const repo = opts.repo || target.repo;
   if (!target.server) throw new ForgeError('no Forgejo server: set FORGE_URL');
   const client = createClient({ baseUrl: target.server, token: target.token, fetch: deps.fetch || fetch });
   const result = await run(client, repo, group, verb, positional, opts);
-  (deps.write || ((s) => process.stdout.write(s)))(render(result, opts));
+  write(render(result, opts));
   return 0;
 }
 

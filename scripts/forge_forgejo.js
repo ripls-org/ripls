@@ -416,6 +416,69 @@ async function orgMember(client, org, login) {
   throw new ForgeError(`cannot read membership of ${org} with this token (HTTP ${code}); it must belong to a member`, code);
 }
 
+// --- lookups by id, for the agent's request validation ------------------------
+//
+// GitHub and Forgejo answer these two in the same REST shape, so one function
+// each serves both forges (forge.js feeds the GitHub one from `gh api`).
+
+function commentInfo(c) {
+  // Forgejo fills pull_request_url for a comment on a pull request and leaves
+  // issue_url empty; GitHub always fills issue_url.
+  const url = c.pull_request_url || c.issue_url || '';
+  const number = Number((url.match(/\/(\d+)$/) || [])[1]);
+  return {
+    id: c.id,
+    body: c.body || '',
+    author: user(c.user),
+    number: Number.isInteger(number) ? number : null,
+    createdAt: c.created_at,
+    url: c.html_url,
+  };
+}
+
+function reviewInfo(r, comments) {
+  const out = review(r);
+  out.state = String(out.state || '').toUpperCase();
+  if (comments) {
+    out.comments = comments.map((c) => ({
+      id: c.id,
+      path: c.path,
+      line: c.line ?? c.position ?? c.original_line ?? null,
+      body: c.body || '',
+      diffHunk: c.diff_hunk || '',
+      author: user(c.user),
+    }));
+  }
+  return out;
+}
+
+const lookups = {
+  // A run as the agent's validation reads it. Forgejo has no workflow name on
+  // a run, so `name` is the workflow file; `failedJobs` lets a caller see a
+  // failure before the run as a whole has concluded.
+  async runInfo(client, repo, { id }) {
+    const r = repoPath(repo);
+    const base = run(await client.request('GET', `${r}/actions/runs/${id}`));
+    const jobs = await client.request('GET', `${r}/actions/runs/${id}/jobs`);
+    return {
+      ...base,
+      name: base.workflowFile,
+      failedJobs: (jobs || []).filter((j) => j.status === 'failure').map((j) => j.name),
+    };
+  },
+
+  async commentInfo(client, repo, { id }) {
+    return commentInfo(await client.request('GET', `${repoPath(repo)}/issues/comments/${id}`));
+  },
+
+  async reviewInfo(client, repo, { number, id, withComments }) {
+    const r = repoPath(repo);
+    const raw = await client.request('GET', `${r}/pulls/${number}/reviews/${id}`);
+    const comments = withComments ? await client.paginate(`${r}/pulls/${number}/reviews/${id}/comments`) : null;
+    return reviewInfo(raw, comments);
+  },
+};
+
 const RUN_DONE = ['success', 'failure', 'cancelled', 'skipped'];
 
 // gh splits a run's state into status (queued | in_progress | completed) and
@@ -472,4 +535,4 @@ function matchesSearch(item, search) {
   return terms.every((t) => hay.includes(t));
 }
 
-module.exports = { createClient, commands, orgMember, ForgeError, matchesSearch, pull, issue, review, comment };
+module.exports = { createClient, commands, lookups, commentInfo, reviewInfo, orgMember, ForgeError, matchesSearch, pull, issue, review, comment };

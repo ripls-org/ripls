@@ -379,6 +379,74 @@ test('on GitHub, forge\'s own commands go through gh api', async () => {
   ]);
 });
 
+test('run-info reports a failed job before the run has concluded', async () => {
+  const payload = JSON.stringify({ number: 7, pull_request: { number: 7, head: { ref: 'claude/x', repo: { full_name: 'org/app' } } } });
+  const { out } = await forge(['run-info', '196'], {
+    'GET /repos/org/app/actions/runs/196': {
+      id: 196, index_in_repo: 9, title: 'Fix it', workflow_id: 'test_go.yaml', trigger_event: 'pull_request', status: 'running',
+      commit_sha: 'abc', prettyref: '#7', event_payload: payload, trigger_user: { login: 'ripls-agent' }, created: '2026-11-13T14:39:40-06:00',
+    },
+    'GET /repos/org/app/actions/runs/196/jobs': [{ id: 1, name: 'test', status: 'failure' }, { id: 2, name: 'fixer', status: 'running' }],
+  });
+  const got = JSON.parse(out);
+  assert.deepStrictEqual(
+    [got.workflowFile, got.name, got.event, got.status, got.conclusion, got.headBranch, got.headRepository.nameWithOwner, got.actor.login, got.failedJobs],
+    ['test_go.yaml', 'test_go.yaml', 'pull_request', 'in_progress', '', 'claude/x', 'org/app', 'ripls-agent', ['test']],
+  );
+});
+
+test('comment-info finds the number for a comment on an issue or on a pull request', async () => {
+  const on = async (extra) =>
+    JSON.parse((await forge(['comment-info', '37'], {
+      'GET /repos/org/app/issues/comments/37': { id: 37, body: '@claude hi', user: { login: 'bryan' }, ...extra },
+    })).out);
+  // Forgejo: a PR comment has pull_request_url and an empty issue_url.
+  assert.deepStrictEqual(await on({ issue_url: '', pull_request_url: 'https://forge.example/org/app/pulls/4' }), {
+    id: 37, body: '@claude hi', author: { login: 'bryan' }, number: 4,
+  });
+  assert.strictEqual((await on({ issue_url: 'https://forge.example/org/app/issues/12' })).number, 12);
+  assert.strictEqual((await on({})).number, null);
+});
+
+test('review-info gives the gh state name, and inline comments on request', async () => {
+  const routes = {
+    'GET /repos/org/app/pulls/4/reviews/8': { id: 8, state: 'REQUEST_CHANGES', body: 'rename', user: { login: 'bryan' }, commit_id: 'abc' },
+    'GET /repos/org/app/pulls/4/reviews/8/comments': [{ id: 21, path: 'src/a.txt', position: 2, body: 'here', diff_hunk: '@@', user: { login: 'bryan' } }],
+  };
+  const plain = JSON.parse((await forge(['review-info', '4', '8'], routes)).out);
+  assert.deepStrictEqual([plain.state, plain.body, plain.author.login, 'comments' in plain], ['CHANGES_REQUESTED', 'rename', 'bryan', false]);
+  const full = JSON.parse((await forge(['review-info', '4', '8', '--comments'], routes)).out);
+  assert.deepStrictEqual(full.comments, [{ id: 21, path: 'src/a.txt', line: 2, body: 'here', diffHunk: '@@', author: { login: 'bryan' } }]);
+  await assert.rejects(forge(['review-info', '4'], routes), /needs a numeric id/);
+});
+
+test('on GitHub the lookups read gh api and answer in the same shape', async () => {
+  const answers = {
+    'repos/o/r/actions/runs/5': {
+      id: 5, run_number: 2, display_title: 'agent-dispatch plan 9', path: '.github/workflows/claude_plan_issue.yaml', event: 'issues',
+      status: 'completed', conclusion: 'success', head_sha: 'abc', head_branch: 'main', head_repository: { full_name: 'o/r' },
+      triggering_actor: { login: 'octocat' }, created_at: '2026-11-13T00:00:00Z', name: 'Claude Plan Issue',
+    },
+    'repos/o/r/issues/comments/7': { id: 7, body: 'hi', user: { login: 'octocat' }, issue_url: 'https://api.github.com/repos/o/r/issues/9' },
+    'repos/o/r/pulls/9/reviews/3': { id: 3, state: 'COMMENTED', body: 'note', user: { login: 'octocat' } },
+  };
+  const spawn = (cmd, args) => {
+    assert.deepStrictEqual([cmd, args[0]], ['gh', 'api']);
+    return { status: 0, stdout: JSON.stringify(answers[args[1]]) };
+  };
+  const ask = async (argv) => {
+    let out = '';
+    await main(argv, { GITHUB_SERVER_URL: 'https://github.com', GITHUB_REPOSITORY: 'o/r' }, { spawn, remote: null, write: (s) => (out += s) });
+    return JSON.parse(out);
+  };
+  const run = await ask(['run-info', '5']);
+  assert.deepStrictEqual(
+    [run.workflowFile, run.event, run.displayTitle, run.conclusion, run.actor.login, run.headRepository.nameWithOwner, run.failedJobs],
+    ['claude_plan_issue.yaml', 'issues', 'agent-dispatch plan 9', 'success', 'octocat', 'o/r', []],
+  );
+  assert.deepStrictEqual([(await ask(['comment-info', '7'])).number, (await ask(['review-info', '9', '3'])).state], [9, 'COMMENTED']);
+});
+
 test('short flags mean what gh means by them in each command', () => {
   assert.deepStrictEqual(parseArgs(['-f', 'a=1'], 'workflow run').opts, { field: ['a=1'] });
   assert.deepStrictEqual(parseArgs(['-f'], 'label create').opts, { force: true });
