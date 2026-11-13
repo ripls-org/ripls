@@ -415,9 +415,11 @@ pushes, and comments, instead of leaving it red for a human (#2396).
      immediately after the push, minutes before CI could go green.
 - **Cost / loop control:** a per-head-SHA marker comment
   (`<!-- claude-renovate-fix:SHA -->`) dedups repeat triggers on the same branch
-  state, and a rate cap (≥3 Claude markers within 6h → back off) bounds total
-  attempts and breaks any revert-loop (the guard's revert advances the SHA, so the
-  per-SHA dedup can't catch a loop on its own).
+  state, and an attempt cap (3 Claude markers on a PR since a human last
+  commented → back off) bounds total attempts. The cap is per PR, not per time
+  window, because a new SHA defeats the dedup two ways: the guard's revert
+  advances it within minutes, and Renovate's daily rebase of a stuck PR advances
+  it once a day. A comment from a human resets the count.
 - **Auth:** the migration runs in the private agent repo (#2970), which
   checks out and pushes as `ripls-agent[bot]` with a token scoped to this repo
   (it can push to a `ripls-renovate[bot]`-authored branch); this repo only holds
@@ -845,8 +847,10 @@ blocked — but the flat-config migration is still owed (see follow-ups).
 - **A Renovate PR is red on a code migration:** `claude_fix_renovate_ci.yaml`
   (§8) attempts it automatically. To trigger a one-off by hand:
   `gh workflow run claude_fix_renovate_ci.yaml -f pr_number=<N>`. To force a
-  re-attempt after the per-SHA dedup or the 3-in-6h rate cap has it backing off,
-  delete the `<!-- claude-renovate-fix:… -->` marker comments on the PR. If
+  re-attempt after the three-attempt cap has it backing off, comment on the PR
+  (any comment from a human resets the count). To retry the same commit, which
+  the per-SHA dedup blocks, delete that commit's
+  `<!-- claude-renovate-fix:… -->` marker comment. If
   Claude posts a "documented hold" skip, decide in this doc's *Held-back
   dependencies* section whether the cap can be lifted — don't just remove it on
   the branch (the post-fix guard will revert that).

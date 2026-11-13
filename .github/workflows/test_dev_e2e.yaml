@@ -54,7 +54,10 @@ jobs:
 
       - name: Run end-to-end tests
         env:
-          E2E_SERVER_URL: ${{ github.event.inputs.server_url || 'https://server-dev.ripls.org' }}
+          # `inputs`, not `github.event.inputs`: only `inputs` is filled for a
+          # workflow_call, so the caller's URL used to be dropped. The fallback
+          # covers the nightly schedule, which has no inputs at all.
+          E2E_SERVER_URL: ${{ inputs.server_url || 'https://server-dev.ripls.org' }}
         run: |
           set -o pipefail
           ( cd server && go test -v -json -timeout 10m -run TestEndToEnd ) \

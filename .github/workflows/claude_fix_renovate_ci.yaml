@@ -252,16 +252,27 @@ jobs:
           # Cost/loop guards. Fetch comments once for both checks.
           gh pr view "$PR_NUMBER" --json comments --jq '.comments' > /tmp/pr-comments.json
 
-          # Rate cap: bound total attempts per PR. The renovate.json guard
-          # reverts off-script changes, which advances the branch SHA — so the
-          # per-SHA dedup below won't stop a tight revert-loop on its own. Cap at
-          # 3 Claude markers within 6h: a loop racks those up in minutes, while a
-          # legitimate retry after a weekly Renovate rebase is days apart.
-          SIX_HOURS_AGO=$(date -u -d '6 hours ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
-            || date -u -v-6H +%Y-%m-%dT%H:%M:%SZ)
-          RECENT_ATTEMPTS=$(jq "[.[] | select(.createdAt > \"$SIX_HOURS_AGO\") | select(.body | contains(\"<!-- claude-renovate-fix:\"))] | length" /tmp/pr-comments.json)
-          if [ "$RECENT_ATTEMPTS" -ge 3 ]; then
-            echo "::notice::PR #$PR_NUMBER has $RECENT_ATTEMPTS Claude attempts in the last 6h; backing off (needs a human)."
+          # Attempt cap: three Claude markers per PR, counted since the last
+          # comment from a human. A human comment is the reset: it says someone
+          # looked and wants another try.
+          #
+          # This used to be "3 markers within 6h", which stops a tight
+          # revert-loop but not a slow one. Renovate rebases a stuck PR daily,
+          # every rebase is a new SHA (so the per-SHA dedup below doesn't
+          # apply), and the agent answered "blocked" on one PR twelve times,
+          # three runs a day (#3293 audit). A count per PR covers both loops.
+          #
+          # Keep in step with the agent repo's scripts/validate_request.sh,
+          # which repeats this check.
+          ATTEMPTS=$(jq '
+            def is_marker: (.body | contains("<!-- claude-renovate-fix:"));
+            def is_bot: ((.author.login // "") | sub("^app/"; "") | sub("\\[bot\\]$"; "")
+              | test("^(renovate|ripls-renovate|ripls-agent|github-actions)$"));
+            ([.[] | select((is_marker or is_bot) | not) | .createdAt] | max // "") as $last_human
+            | [.[] | select(is_marker and .createdAt > $last_human)] | length
+          ' /tmp/pr-comments.json)
+          if [ "$ATTEMPTS" -ge 3 ]; then
+            echo "::notice::PR #$PR_NUMBER has $ATTEMPTS Claude attempts since a human last commented; backing off. Comment on the PR to allow another."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
