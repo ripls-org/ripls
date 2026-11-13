@@ -125,10 +125,10 @@
       "enabled": false
     },
     {
-      "description": "Blocked: Dart protobuf is capped by connect-dart (protobuf <5).",
+      "description": "The Dart `connectrpc` runtime and `protobuf` runtime are version-coupled (connectrpc 2 requires protobuf ^6) and the generated code must be regenerated with matching buf.gen.dart.yaml plugins. Group them so a coupled major arrives as one PR rather than two that each fail pub resolution (#3141).",
       "matchManagers": ["pub"],
-      "matchPackageNames": ["protobuf"],
-      "enabled": false
+      "matchPackageNames": ["connectrpc", "protobuf"],
+      "groupName": "dart protobuf runtime"
     },
     {
       "description": "cross_file is capped at <0.4 by share_plus, not by us: share_plus 13.x (latest 13.3.1) requires cross_file ^0.3.5+2, so 0.4 fails pub resolution (#3132). Lift when a share_plus release accepts cross_file 0.4.",

@@ -190,7 +190,7 @@ class MessageList extends ConsumerWidget {
             experienceProvider(experienceId!)
                 .select((s) => s.experienceDetails?.experience),
           );
-    final proposals = experience?.timeProposals ?? const [];
+    final proposals = experience?.timeProposals.toList() ?? const [];
     if (proposals.isNotEmpty && timeProposedSorted.isNotEmpty) {
       final earliestProposalByPollId = <String, int>{};
       for (final p in proposals) {

@@ -83,7 +83,7 @@ class _AttendeeListBodyState extends ConsumerState<_AttendeeListBody> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(experienceProvider(widget.experienceId));
-    final rsvps = state.experienceDetails?.rsvps ?? [];
+    final rsvps = state.experienceDetails?.rsvps.toList() ?? [];
     final ownerId = state.experienceDetails?.experience.owner.id ?? '';
 
     // Sync local selection with server state on first load

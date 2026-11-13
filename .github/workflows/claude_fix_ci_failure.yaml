@@ -22,6 +22,11 @@ on:
       - "Test Docker Build"
       - "AI Provider Integration Tests"
       - "Run End-to-End Tests on Dev"
+      # Added after a Web E2E failure on a claude/* PR went unnoticed here
+      # (#3305): the same three the Renovate fixer already watches.
+      - "Web E2E"
+      - "Cloud Functions Tests"
+      - "Check Versions"
     types: [completed]
   workflow_dispatch:
     inputs:
@@ -42,8 +47,14 @@ jobs:
   dispatch:
     # SAME-REPO ONLY: a fork can name its branch claude/*, so check where the
     # head lives, not just the name. The agent re-checks.
+    #
+    # ON FORGEJO (#3293) there is no workflow_run. Each watched workflow ends
+    # with a job that calls ci_failure_hook.yaml, which starts this workflow by
+    # workflow_dispatch with the PR number and the failed run id: the same two
+    # inputs a person supplies by hand.
     if: |
-      vars.AGENT_DISPATCH_APP_ID != '' && vars.AGENT_REPO != '' && (
+      vars.AGENT_REPO != '' &&
+      (vars.AGENT_DISPATCH_APP_ID != '' || github.server_url != 'https://github.com') && (
         github.event_name == 'workflow_dispatch' ||
         (github.event_name == 'workflow_run' &&
          github.event.workflow_run.conclusion == 'failure' &&
@@ -79,7 +90,10 @@ jobs:
         if: steps.pr.outputs.number != ''
         uses: actions/checkout@v7
         with:
-          sparse-checkout: .github/actions/agent-dispatch
+          # `scripts` is for scripts/forge, which the action needs on Forgejo.
+          sparse-checkout: |
+            .github/actions/agent-dispatch
+            scripts
           persist-credentials: false
 
       - name: Dispatch to the agent
@@ -88,7 +102,11 @@ jobs:
         with:
           app-id: ${{ vars.AGENT_DISPATCH_APP_ID }}
           private-key: ${{ secrets.AGENT_DISPATCH_PRIVATE_KEY }}
+          dispatch-token: ${{ secrets.AGENT_DISPATCH_TOKEN }}
           agent-repo: ${{ vars.AGENT_REPO }}
+          # Not started by a person's comment; the gates above and the agent's
+          # own checks decide.
+          trust: none
           mode: fix-ci
           number: ${{ steps.pr.outputs.number }}
           failed-run-id: ${{ github.event.workflow_run.id || inputs.failed_run_id }}

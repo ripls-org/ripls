@@ -36,7 +36,7 @@ class GearBorrowerSheet extends ConsumerWidget {
     final hasCurrent = people.hasCurrentBorrower();
     final currentBorrower = hasCurrent ? people.currentBorrower : null;
     final pastBorrowers = people.pastBorrowers;
-    final queuedUsers = (state.transferContext?.pendingRequests ?? [])
+    final queuedUsers = (state.transferContext?.pendingRequests.toList() ?? [])
         .where((r) => r.hasBorrower())
         .map((r) => r.borrower)
         .toList();

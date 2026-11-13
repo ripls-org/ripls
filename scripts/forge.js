@@ -36,11 +36,14 @@
  *
  *   forge file <path> [--ref <ref>]   print a file's contents at a ref
  *   forge permission <login>          print admin | write | read | none
+ *   forge member <login> [--org <o>]  print true | false: is the login a
+ *                                     member of the organization (default:
+ *                                     the repository's owner)
  */
 
 const fs = require('fs');
 const { spawnSync } = require('child_process');
-const { createClient, commands, ForgeError } = require('./forge_forgejo.js');
+const { createClient, commands, orgMember, ForgeError } = require('./forge_forgejo.js');
 
 // flag → [option key, takes a value, repeatable]
 const FLAGS = {
@@ -75,6 +78,7 @@ const FLAGS = {
   '--notes-file': ['notesFile', true],
   '--target': ['target', true],
   '--prerelease': ['prerelease', false], '-p': ['prerelease', false],
+  '--org': ['org', true],
 };
 
 // gh reuses short flags across commands; these are the ones that differ.
@@ -87,7 +91,7 @@ const FLAGS_BY_COMMAND = {
 };
 
 // Commands gh does not have. On GitHub these are answered through `gh api`.
-const FORGE_ONLY = new Set(['file', 'permission']);
+const FORGE_ONLY = new Set(['file', 'permission', 'member']);
 
 function parseArgs(argv, command = '') {
   const flags = { ...FLAGS, ...(FLAGS_BY_COMMAND[command] || {}) };
@@ -181,6 +185,15 @@ function inputsOf(pairs = []) {
 function githubOwn(group, verb, opts, env, spawn) {
   const repo = opts.repo || env.GH_REPO || env.GITHUB_REPOSITORY || '{owner}/{repo}';
   let args;
+  if (group === 'member') {
+    if (!verb) throw new ForgeError('member needs a login');
+    const org = opts.org || repo.split('/')[0];
+    // 204 for a member; anything else, including a token that cannot see the
+    // list, is "false": on a trust question the safe answer is no.
+    const res = spawn('gh', ['api', `orgs/${org}/members/${verb}`, '--silent'], { stdio: ['ignore', 'ignore', 'ignore'] });
+    process.stdout.write(res.status === 0 ? 'true\n' : 'false\n');
+    return 0;
+  }
   if (group === 'file') {
     if (!verb) throw new ForgeError('file needs a path');
     const ref = opts.ref ? `?ref=${encodeURIComponent(opts.ref)}` : '';
@@ -310,6 +323,12 @@ async function run(client, repo, group, verb, positional, opts) {
       if (group === 'permission') {
         if (!verb) throw new ForgeError('permission needs a login');
         return { text: await commands.permission(client, repo, { login: verb }) };
+      }
+      if (group === 'member') {
+        if (!verb) throw new ForgeError('member needs a login');
+        const org = opts.org || String(repo).split('/')[0];
+        if (!org) throw new ForgeError('member needs --org or a repository to take the owner from');
+        return { text: String(await orgMember(client, org, verb)) };
       }
       const err = new ForgeError(`"forge ${key}" is not supported on Forgejo yet`);
       err.exitCode = 2;

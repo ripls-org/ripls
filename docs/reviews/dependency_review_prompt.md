@@ -123,7 +123,7 @@ The following dependency updates are blocked by upstream constraints. Monitor fo
 
 | Package | Blocked Version | Blocker | Action |
 |---------|-----------------|---------|--------|
-| protobuf (Flutter) | 6.0.0 | `connectrpc ^1.0.0` requires `protobuf <5.0.0` | Monitor connectrpc releases for protobuf 6.x support |
+| None currently | | | |
 
 When reviewing, check if these blockers have been resolved:
 - Search pub.dev for connectrpc changelog/releases

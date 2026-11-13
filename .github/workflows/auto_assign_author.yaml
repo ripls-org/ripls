@@ -1,20 +1,47 @@
 name: Auto-assign PR author
 
+# Runs on GitHub and on Forgejo (#3293). Two things differ between them:
+#
+#   - Who is a bot. GitHub marks one with `user.type == 'Bot'`. Forgejo has no
+#     such field: a bot is an ordinary account, so its login is listed in the
+#     repository variable BOT_LOGINS, a JSON array such as
+#     ["ripls-agent","ripls-renovate"].
+#   - The CLI. `scripts/forge` is `gh` on GitHub and the REST API on Forgejo.
+
 on:
   pull_request:
     types: [opened]
 
 permissions:
+  contents: read
   pull-requests: write
 
 jobs:
   assign:
-    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    # Not the self-hosted GitHub fleet: the sparse checkout below must not run
+    # in a workspace another job will reuse. On Forgejo this label is the same
+    # fleet, where every job gets a fresh container.
+    runs-on: ubuntu-latest
     if: >
-      github.event.pull_request.user.type == 'User' &&
+      github.event.pull_request.user.type != 'Bot' &&
+      !contains(fromJSON(vars.BOT_LOGINS || '[]'), github.event.pull_request.user.login) &&
       github.event.pull_request.assignee == null
     steps:
-      - run: gh pr edit "$PR" --add-assignee "$AUTHOR" --repo "$REPO"
+      # forge comes from the default branch, never from the pull request: this
+      # job holds a token that can write, and must not run a script the PR
+      # could have edited.
+      - name: Fetch forge from the default branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: |
+            scripts/forge
+            scripts/forge.js
+            scripts/forge_forgejo.js
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - run: scripts/forge pr edit "$PR" --add-assignee "$AUTHOR" --repo "$REPO"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.pull_request.number }}

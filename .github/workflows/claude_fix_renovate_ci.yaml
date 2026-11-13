@@ -86,8 +86,14 @@ jobs:
     # Only act on failed runs against renovate/* PR branches. Manual dispatch is
     # always allowed; the discover step still validates the PR is a renovate/*
     # branch authored by the Renovate bot before invoking Claude.
+    #
+    # ON FORGEJO (#3293) there is no workflow_run. Each watched workflow ends
+    # with a job that runs .github/scripts/ci_failure_hook.sh, which starts
+    # this workflow by workflow_dispatch with the PR number and the failed run
+    # id. Every gate below still runs on that path.
     if: |
-      vars.AGENT_DISPATCH_APP_ID != '' && vars.AGENT_REPO != '' && (
+      vars.AGENT_REPO != '' &&
+      (vars.AGENT_DISPATCH_APP_ID != '' || github.server_url != 'https://github.com') && (
         github.event_name == 'workflow_dispatch' ||
         (github.event_name == 'workflow_run' &&
          github.event.workflow_run.conclusion == 'failure' &&
@@ -116,8 +122,34 @@ jobs:
       #
       # The gate script is fetched through the API below instead, exactly as
       # renovate.json already is. Nothing here touches the working tree.
+      # No checkout in this job (see the note on the next step), so on Forgejo
+      # fetch forge's three files from the default branch through the API.
+      # GitHub needs nothing: forge is `gh` there.
+      - name: Get the forge CLI
+        id: forge
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch || 'main' }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_SERVER_URL" = "https://github.com" ]; then
+            echo "bin=gh" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          dir="$RUNNER_TEMP/forge"
+          mkdir -p "$dir"
+          for f in forge forge.js forge_forgejo.js; do
+            curl -fsS -H "Authorization: token $TOKEN" -o "$dir/$f" \
+              "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/raw/scripts/$f?ref=$DEFAULT_BRANCH"
+          done
+          chmod +x "$dir/forge"
+          echo "bin=$dir/forge" >> "$GITHUB_OUTPUT"
+
       - id: ctx
         env:
+          FORGE: ${{ steps.forge.outputs.bin }}
+          # The Renovate account's login where it is not the GitHub App.
+          RENOVATE_BOT: ${{ vars.RENOVATE_BOT_LOGIN || 'ripls-renovate' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Required: `gh` is given no git remote to infer the repo from (the
           # checkout above is a sparse, credential-less checkout of one script).
@@ -136,7 +168,7 @@ jobs:
             FAILED_RUN_ID="${INPUT_RUN:-}"
             FAILED_WORKFLOW_NAME="(manual dispatch)"
           else
-            PR_NUMBER=$(gh pr list --state open --head "$WR_HEAD_BRANCH" \
+            PR_NUMBER=$("$FORGE" pr list --state open --head "$WR_HEAD_BRANCH" \
               --json number --jq '.[0].number // empty')
             FAILED_RUN_ID="$WR_RUN_ID"
             FAILED_WORKFLOW_NAME="$WR_NAME"
@@ -147,7 +179,7 @@ jobs:
             exit 0
           fi
 
-          gh pr view "$PR_NUMBER" \
+          "$FORGE" pr view "$PR_NUMBER" \
             --json number,title,body,headRefName,headRefOid,state,author,labels,isCrossRepository \
             > /tmp/pr-meta.json
 
@@ -190,7 +222,7 @@ jobs:
           AUTHOR_SLUG="${AUTHOR#app/}"
           AUTHOR_SLUG="${AUTHOR_SLUG%\[bot\]}"
           case "$AUTHOR_SLUG" in
-            renovate|ripls-renovate) ;;
+            renovate|ripls-renovate|"$RENOVATE_BOT") ;;
             *)
               echo "::notice::PR #$PR_NUMBER author '$AUTHOR' is not the Renovate bot; skipping."
               echo "should_run=false" >> "$GITHUB_OUTPUT"
@@ -228,29 +260,37 @@ jobs:
           # agent, so it must be the trusted version and not one the branch under
           # evaluation could have edited.
           DEFAULT_BRANCH='${{ github.event.repository.default_branch }}'
-          gh api "repos/${GH_REPO}/contents/renovate.json?ref=${DEFAULT_BRANCH}" \
-            -H "Accept: application/vnd.github.raw" > /tmp/renovate.json
-          gh api "repos/${GH_REPO}/contents/scripts/renovate_hold_gate.js?ref=${DEFAULT_BRANCH}" \
-            -H "Accept: application/vnd.github.raw" > /tmp/renovate_hold_gate.js
-          gh pr diff "$PR_NUMBER" > /tmp/pr-gate.diff
+          # `file` is forge's own command; plain gh reaches the same bytes
+          # through the contents API.
+          fetch_file() {
+            if [ "$FORGE" = "gh" ]; then
+              gh api "repos/${GH_REPO}/contents/$1?ref=${DEFAULT_BRANCH}" \
+                -H "Accept: application/vnd.github.raw" > "$2"
+            else
+              "$FORGE" file "$1" --ref "$DEFAULT_BRANCH" > "$2"
+            fi
+          }
+          fetch_file renovate.json /tmp/renovate.json
+          fetch_file scripts/renovate_hold_gate.js /tmp/renovate_hold_gate.js
+          "$FORGE" pr diff "$PR_NUMBER" > /tmp/pr-gate.diff
           HELD=$(node /tmp/renovate_hold_gate.js \
             --config /tmp/renovate.json --diff /tmp/pr-gate.diff)
           if [ -n "$HELD" ]; then
             echo "::notice::PR #$PR_NUMBER is about held/capped dependency '$HELD' (renovate.json); skipping (likely a documented hold)."
             # Comment once per head SHA so a human sees why it was skipped.
             MARKER="<!-- claude-renovate-fix:${HEAD_SHA} -->"
-            EXISTING=$(gh pr view "$PR_NUMBER" --json comments \
+            EXISTING=$("$FORGE" pr view "$PR_NUMBER" --json comments \
               --jq "[.comments[] | select(.body | contains(\"$MARKER\"))] | length")
             if [ "$EXISTING" -eq 0 ]; then
               BODY=$(printf '%s\n%s' "$MARKER" "This PR changes \`$HELD\`, which is capped or disabled in \`renovate.json\` (its packageRules \`description\` says why). Automated migration is intentionally skipped — removing a documented hold is the wrong fix. A human should decide whether the hold can be lifted.")
-              gh pr comment "$PR_NUMBER" --body "$BODY"
+              "$FORGE" pr comment "$PR_NUMBER" --body "$BODY"
             fi
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           # Cost/loop guards. Fetch comments once for both checks.
-          gh pr view "$PR_NUMBER" --json comments --jq '.comments' > /tmp/pr-comments.json
+          "$FORGE" pr view "$PR_NUMBER" --json comments --jq '.comments' > /tmp/pr-comments.json
 
           # Attempt cap: three Claude markers per PR, counted since the last
           # comment from a human. A human comment is the reset: it says someone
@@ -307,7 +347,10 @@ jobs:
       - name: Checkout dispatch action
         uses: actions/checkout@v7
         with:
-          sparse-checkout: .github/actions/agent-dispatch
+          # `scripts` is for scripts/forge, which the action needs on Forgejo.
+          sparse-checkout: |
+            .github/actions/agent-dispatch
+            scripts
           persist-credentials: false
 
       - name: Dispatch to the agent
@@ -315,6 +358,9 @@ jobs:
         with:
           app-id: ${{ vars.AGENT_DISPATCH_APP_ID }}
           private-key: ${{ secrets.AGENT_DISPATCH_PRIVATE_KEY }}
+          dispatch-token: ${{ secrets.AGENT_DISPATCH_TOKEN }}
+          # Not started by a person's comment; the discover job is the gate.
+          trust: none
           agent-repo: ${{ vars.AGENT_REPO }}
           mode: fix-renovate
           number: ${{ needs.discover.outputs.pr_number }}

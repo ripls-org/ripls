@@ -24,7 +24,9 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   schedule:
     # Hourly safety net: GitHub recomputes mergeability lazily, so a PR can
-    # become CONFLICTING without any push or PR event firing.
+    # become CONFLICTING without any push or PR event firing. Forgejo rechecks
+    # open pull requests when their base moves, so the job skips this trigger
+    # there (#3293).
     - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
@@ -43,27 +45,81 @@ jobs:
     # a branch claude/*, so the scan drops cross-repo PRs and the agent
     # re-checks.
     if: |
-      vars.AGENT_DISPATCH_APP_ID != '' && vars.AGENT_REPO != '' && (
+      vars.AGENT_REPO != '' &&
+      (vars.AGENT_DISPATCH_APP_ID != '' || github.server_url != 'https://github.com') &&
+      (github.event_name != 'schedule' || github.server_url == 'https://github.com') && (
         github.event_name != 'pull_request' ||
         startsWith(github.event.pull_request.head.ref, 'claude/')
       )
     runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
     steps:
+      # This job has no checkout (see the note above the dispatch step), so on
+      # Forgejo it fetches forge's three files from the default branch through
+      # the API. GitHub needs nothing: forge is `gh` there.
+      - name: Get the forge CLI
+        id: forge
+        env:
+          TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch || 'main' }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_SERVER_URL" = "https://github.com" ]; then
+            echo "bin=gh" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          dir="$RUNNER_TEMP/forge"
+          mkdir -p "$dir"
+          for f in forge forge.js forge_forgejo.js; do
+            curl -fsS -H "Authorization: token $TOKEN" -o "$dir/$f" \
+              "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/raw/scripts/$f?ref=$DEFAULT_BRANCH"
+          done
+          chmod +x "$dir/forge"
+          echo "bin=$dir/forge" >> "$GITHUB_OUTPUT"
+
       - name: Find conflicting claude/* PRs
         id: list
         env:
+          FORGE: ${{ steps.forge.outputs.bin }}
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch || 'main' }}
           INPUT_PR: ${{ inputs.pr_number }}
           PR_EVENT_NUMBER: ${{ github.event.pull_request.number }}
           PR_EVENT_CROSS: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
         run: |
           set -euo pipefail
-          # mergeable is computed lazily and reads UNKNOWN at first; poll.
+          # GitHub: mergeable is computed lazily and reads UNKNOWN at first; poll.
+          #
+          # Forgejo: the API's flag cannot be used. It means "can be merged
+          # now", which is also false for every draft and while a check is
+          # pending, and plan PRs are drafts. So compare the branches with git:
+          # `merge-tree` exits 0 for a clean merge and 1 for a conflict. The
+          # fetch is blobless, so only the files that both sides touched are
+          # downloaded.
+          if [ "$GITHUB_SERVER_URL" != "https://github.com" ]; then
+            MT="$RUNNER_TEMP/merge-tree.git"
+            git init -q --bare "$MT"
+            git -C "$MT" remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+            git -C "$MT" config http.extraheader \
+              "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          fi
           mergeable() {
-            local s="" _
+            local s="" _ head rc
+            if [ "$GITHUB_SERVER_URL" != "https://github.com" ]; then
+              head=$("$FORGE" pr view "$1" --json headRefName --jq '.headRefName')
+              git -C "$MT" fetch -q --filter=blob:none origin \
+                "+refs/heads/$DEFAULT_BRANCH:refs/mt/base" "+refs/heads/$head:refs/mt/head"
+              rc=0
+              git -C "$MT" merge-tree --write-tree refs/mt/base refs/mt/head >/dev/null 2>&1 || rc=$?
+              case "$rc" in
+                0) echo MERGEABLE ;;
+                1) echo CONFLICTING ;;
+                *) echo UNKNOWN ;;
+              esac
+              return
+            fi
             for _ in 1 2 3 4 5 6 7 8 9 10; do
-              s=$(gh pr view "$1" --json mergeable --jq '.mergeable')
+              s=$("$FORGE" pr view "$1" --json mergeable --jq '.mergeable')
               if [ "$s" != "UNKNOWN" ]; then break; fi
               sleep 3
             done
@@ -79,7 +135,7 @@ jobs:
             fi
           else
             PRS="[]"
-            for n in $(gh pr list --state open --limit 100 \
+            for n in $("$FORGE" pr list --state open --limit 100 \
                 --json number,headRefName,isCrossRepository \
                 --jq '.[] | select((.headRefName | startswith("claude/")) and (.isCrossRepository | not)) | .number'); do
               if [ "$(mergeable "$n")" = "CONFLICTING" ]; then
@@ -101,7 +157,7 @@ jobs:
 
       - name: Mint dispatch token
         id: token
-        if: steps.list.outputs.prs != '[]'
+        if: steps.list.outputs.prs != '[]' && github.server_url == 'https://github.com'
         uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ vars.AGENT_DISPATCH_APP_ID }}
@@ -115,16 +171,19 @@ jobs:
       - name: Dispatch to the agent
         if: steps.list.outputs.prs != '[]'
         env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
+          FORGE: ${{ steps.forge.outputs.bin }}
+          # The App token on GitHub; the ripls-dispatch account's on Forgejo.
+          GH_TOKEN: ${{ steps.token.outputs.token || secrets.AGENT_DISPATCH_TOKEN }}
           AGENT_REPO: ${{ vars.AGENT_REPO }}
           PRS: ${{ steps.list.outputs.prs }}
-          ACTOR: ${{ github.triggering_actor }}
+          # Forgejo leaves triggering_actor empty.
+          ACTOR: ${{ github.triggering_actor || github.actor }}
         run: |
           set -euo pipefail
           for n in $(echo "$PRS" | jq -r '.[]'); do
             # --ref is required: without it gh looks up the default branch,
             # which needs Contents read; the dispatch App has Actions write only.
-            gh workflow run agent.yaml -R "$AGENT_REPO" --ref main \
+            "$FORGE" workflow run agent.yaml -R "$AGENT_REPO" --ref main \
               -f mode=resolve -f target_repo="$GITHUB_REPOSITORY" -f number="$n" \
               -f actor="$ACTOR" -f caller_run_id="$GITHUB_RUN_ID"
             echo "::notice::Dispatched resolve for #$n."

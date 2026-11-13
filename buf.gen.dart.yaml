@@ -1,10 +1,15 @@
 # Controls Dart code generation for Buf.
 # Only generates code from proto/ripls/api/ (excludes proto/ripls/models/).
+#
+# The two plugins and the two pub packages in app/pubspec.yaml move together:
+#   buf.build/connectrpc/dart            <-> pub connectrpc (2.x)
+#   buf.build/protocolbuffers/dart (25+) <-> pub protobuf (^6)
+# Renovate does not manage these remote plugins; bump them by hand.
 version: v2
 plugins:
-  - remote: buf.build/connectrpc/dart:v1.0.0
+  - remote: buf.build/connectrpc/dart:v2.0.1
     out: app/lib/data/gen
-  - remote: buf.build/protocolbuffers/dart:v21.1.2
+  - remote: buf.build/protocolbuffers/dart:v25.0.0
     out: app/lib/data/gen
     include_wkt: true
     include_imports: true

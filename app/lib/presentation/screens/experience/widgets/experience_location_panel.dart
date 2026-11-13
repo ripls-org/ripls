@@ -9,7 +9,7 @@ import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/core/theme/app_theme.dart';
 import 'package:ripls/core/utils/location_pin_renderer.dart';
 import 'package:ripls/data/gen/ripls/api/experience_service.pb.dart'
-    show RSVPIntention;
+    show RSVP, RSVPIntention;
 import 'package:ripls/data/gen/ripls/api/location.pb.dart'
     show Location, LocationVote, LocationVoteStatus;
 import 'package:ripls/data/gen/ripls/api/user.pb.dart' show User;
@@ -728,7 +728,7 @@ class _ExperienceLocationPanelState
   /// reply denominator and unreplied set.
   List<User> _attendees() {
     final exp = ref.watch(experienceProvider(_experienceId));
-    final rsvps = exp.experienceDetails?.rsvps ?? const [];
+    final rsvps = exp.experienceDetails?.rsvps ?? const <RSVP>[];
     return [
       for (final r in rsvps)
         if (r.intention == RSVPIntention.RSVP_INTENTION_YES ||

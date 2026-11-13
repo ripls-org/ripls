@@ -85,6 +85,9 @@ test('pr view maps merged, conflicting and cross-repository pulls', async () => 
   assert.deepStrictEqual(await view(forgejoPull({ mergeable: false })), {
     state: 'OPEN', mergeable: 'CONFLICTING', isCrossRepository: false,
   });
+  // A draft is never "mergeable" on Forgejo, conflict or not.
+  assert.strictEqual((await view(forgejoPull({ mergeable: false, draft: true }))).mergeable, 'UNKNOWN');
+  assert.strictEqual((await view(forgejoPull({ mergeable: true, draft: true }))).mergeable, 'MERGEABLE');
   assert.strictEqual(
     (await view(forgejoPull({ head: { ref: 'x', sha: 'y', repo: { full_name: 'fork/app' } } }))).isCrossRepository,
     true,
@@ -333,6 +336,32 @@ test('permission answers in GitHub\'s words and does not hide a refusal', async 
     ['admin', 'admin', 'write', 'read', 'none', 'none'],
   );
   await assert.rejects(forge(['permission', 'someone'], {}), /HTTP 404/);
+});
+
+test('member answers true or false, and refuses to guess when the token cannot see', async () => {
+  const ask = async (status) => {
+    let out = '';
+    const fetch = async (url, init) => {
+      assert.match(url, /\/api\/v1\/orgs\/org\/members\/someone$/);
+      assert.strictEqual(init.redirect, 'manual');
+      return { status };
+    };
+    await main(['member', 'someone'], FORGEJO_ENV, { fetch, remote: null, write: (s) => (out += s) });
+    return out.trim();
+  };
+  assert.strictEqual(await ask(204), 'true');
+  assert.strictEqual(await ask(404), 'false');
+  await assert.rejects(ask(303), /cannot read membership of org with this token \(HTTP 303\)/);
+});
+
+test('member takes the organization from --org when given', async () => {
+  let asked = '';
+  const fetch = async (url) => {
+    asked = url;
+    return { status: 204 };
+  };
+  await main(['member', 'someone', '--org', 'other'], FORGEJO_ENV, { fetch, remote: null, write: () => {} });
+  assert.match(asked, /\/orgs\/other\/members\/someone$/);
 });
 
 test('on GitHub, forge\'s own commands go through gh api', async () => {

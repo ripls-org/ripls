@@ -22,6 +22,10 @@ on:
     types: [created]
   pull_request_review:
     types: [submitted]
+  # Forgejo only: a review of kind "comment" arrives as this event. See the
+  # job's `if:`.
+  pull_request_review_comment:
+    types: [created]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -33,7 +37,8 @@ on:
         required: true
         type: string
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   dispatch:
@@ -41,76 +46,71 @@ jobs:
     #   - workflow_dispatch (manual)
     #   - issue_comment on a PR carrying the claude-plan-pr label, with
     #     `@claude` in the body but NOT `@claude implement`
-    #   - pull_request_review submitted with the same conditions
+    #   - a submitted review with the same conditions
     # Self-triggered events are filtered out.
     # TRUSTED ACTORS ONLY — see the note in claude_plan_issue.yaml.
+    #
+    # ON FORGEJO (#3293), beyond what claude_plan_issue.yaml lists:
+    #   - A review has `review.content` and `review.type`, not `body` and
+    #     `state`.
+    #   - A review of kind "comment" arrives as a pull_request_review_comment
+    #     event that carries a `review` and no `comment`. On GitHub that event
+    #     is one inline comment and always carries `comment`. So "a review" is
+    #     either event, as long as there is no `comment`.
     if: |
-      vars.AGENT_DISPATCH_APP_ID != '' && vars.AGENT_REPO != '' &&
-      github.actor != 'ripls-agent[bot]' && (
+      vars.AGENT_REPO != '' &&
+      (vars.AGENT_DISPATCH_APP_ID != '' || github.server_url != 'https://github.com') &&
+      github.actor != 'ripls-agent[bot]' &&
+      !contains(fromJSON(vars.BOT_LOGINS || '[]'), github.actor) && (
         github.event_name == 'workflow_dispatch' ||
         (
-          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association || github.event.review.author_association) &&
+          (
+            github.server_url != 'https://github.com' ||
+            contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association || github.event.review.author_association)
+          ) &&
           (
             (github.event_name == 'issue_comment' &&
              github.event.issue.pull_request &&
              contains(github.event.comment.body, '@claude') &&
              !contains(github.event.comment.body, '@claude implement') &&
              contains(github.event.issue.labels.*.name, 'claude-plan-pr')) ||
-            (github.event_name == 'pull_request_review' &&
-             contains(github.event.review.body, '@claude') &&
-             !contains(github.event.review.body, '@claude implement') &&
+            ((github.event_name == 'pull_request_review' || (github.event_name == 'pull_request_review_comment' && !github.event.comment)) &&
+             contains((github.event.review.body || github.event.review.content), '@claude') &&
+             !contains((github.event.review.body || github.event.review.content), '@claude implement') &&
              contains(github.event.pull_request.labels.*.name, 'claude-plan-pr'))
           )
         )
       )
-    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    # GitHub-hosted on purpose: the sparse checkout below would leave its sparse
+    # config in a reused self-hosted workspace and poison later checkouts there
+    # (see the note in claude_fix_renovate_ci.yaml). Hosted runners are fresh.
+    # On Forgejo this label is the fleet, where every job has a fresh container.
+    runs-on: ubuntu-latest
     steps:
-      - name: Split agent repo name
-        id: repo
-        env:
-          AGENT_REPO: ${{ vars.AGENT_REPO }}
-        run: |
-          echo "owner=${AGENT_REPO%%/*}" >> "$GITHUB_OUTPUT"
-          echo "name=${AGENT_REPO#*/}" >> "$GITHUB_OUTPUT"
+      - name: Checkout dispatch action
+        uses: actions/checkout@v7
+        with:
+          # Review events check out the PR's merge commit by default. Pin the
+          # action to the default branch so PR code never runs with the key.
+          ref: ${{ github.event.repository.default_branch }}
+          # `scripts` is for scripts/forge, which the action needs on Forgejo.
+          sparse-checkout: |
+            .github/actions/agent-dispatch
+            scripts
+          persist-credentials: false
 
-      - name: Mint dispatch token
-        id: token
-        uses: actions/create-github-app-token@v3
+      # Only ids cross the bridge for comment and review triggers; the agent
+      # fetches the text. A manual instruction is the one free-text input, and
+      # only workflow_dispatch (write access) can supply it.
+      - name: Dispatch to the agent
+        uses: ./.github/actions/agent-dispatch
         with:
           app-id: ${{ vars.AGENT_DISPATCH_APP_ID }}
           private-key: ${{ secrets.AGENT_DISPATCH_PRIVATE_KEY }}
-          owner: ${{ steps.repo.outputs.owner }}
-          repositories: ${{ steps.repo.outputs.name }}
-
-      - name: Dispatch to the agent
-        env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
-          AGENT_REPO: ${{ vars.AGENT_REPO }}
-          EVENT_NAME: ${{ github.event_name }}
-          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number }}
-          # triggering_actor, not actor: on a re-run they differ, and the agent
-          # checks this against the run's triggering actor.
-          ACTOR: ${{ github.triggering_actor }}
-          COMMENT_ID: ${{ github.event.comment.id }}
-          REVIEW_ID: ${{ github.event.review.id }}
-          INSTRUCTION: ${{ inputs.instruction }}
-        run: |
-          set -euo pipefail
-          # Only ids cross the bridge for comment and review triggers; the agent
-          # fetches the text. A manual instruction is the one free-text input,
-          # and only workflow_dispatch (write access) can supply it.
-          case "$EVENT_NAME" in
-            issue_comment) TRIGGER=(-f trigger_kind=comment -f trigger_id="$COMMENT_ID") ;;
-            pull_request_review) TRIGGER=(-f trigger_kind=review -f trigger_id="$REVIEW_ID") ;;
-            workflow_dispatch) TRIGGER=(-f trigger_kind=manual -f instruction="$INSTRUCTION") ;;
-          esac
-          # --ref is required: without it gh looks up the default branch, which
-          # needs Contents read, and the dispatch App holds only Actions write.
-          gh workflow run agent.yaml -R "$AGENT_REPO" --ref main \
-            -f mode=refine \
-            -f target_repo="$GITHUB_REPOSITORY" \
-            -f number="$NUMBER" \
-            -f actor="$ACTOR" \
-            -f caller_run_id="$GITHUB_RUN_ID" \
-            "${TRIGGER[@]}"
-          echo "::notice::Dispatched refine for #$NUMBER to $AGENT_REPO."
+          dispatch-token: ${{ secrets.AGENT_DISPATCH_TOKEN }}
+          agent-repo: ${{ vars.AGENT_REPO }}
+          mode: refine
+          number: ${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number }}
+          trigger-kind: ${{ github.event_name == 'issue_comment' && 'comment' || github.event_name == 'workflow_dispatch' && 'manual' || 'review' }}
+          trigger-id: ${{ github.event.comment.id || github.event.review.id }}
+          instruction: ${{ inputs.instruction }}

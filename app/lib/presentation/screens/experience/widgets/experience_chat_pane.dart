@@ -58,7 +58,7 @@ class ExperienceChatPane extends ConsumerWidget {
     final isTerminal =
         exp.state == proto.ExperienceState.EXPERIENCE_STATE_COMPLETED ||
             exp.state == proto.ExperienceState.EXPERIENCE_STATE_CANCELLED;
-    final rsvps = state.experienceDetails?.rsvps ?? [];
+    final rsvps = state.experienceDetails?.rsvps.toList() ?? [];
     final currentUserRsvp = rsvps.firstWhere(
       (r) => r.user.id == state.currentUserId,
       orElse: () => RSVP(),

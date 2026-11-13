@@ -1,18 +1,45 @@
 name: Dispatch to the agent
 description: >-
-  Starts one coding-agent run in the private agent repo (#2970). Mints a token
-  from the ripls-dispatch GitHub App, which can only start workflows there, and
-  passes identifiers only. The agent re-validates everything, including that
-  this run's run-name is "agent-dispatch <mode> <key>"; see the agent repo's
+  Starts one coding-agent run in the private agent repo (#2970) with a
+  credential that can only start workflows there, and passes identifiers only.
+  The agent re-validates everything, including that this run's run-name is
+  "agent-dispatch <mode> <key>"; see the agent repo's
   scripts/validate_request.sh.
+
+# TWO FORGES (#3293)
+#
+# The credential differs, and so does where the caller's trust is checked.
+#
+#   GitHub    A token minted from the ripls-dispatch GitHub App (app-id,
+#             private-key). The caller's `if:` already tested
+#             `author_association`, so nothing is checked here.
+#   Forgejo   The ripls-dispatch account's token (dispatch-token). That account
+#             is in an org team whose only permission is Actions on the agent
+#             repo. Forgejo events carry no `author_association`, so this
+#             action asks instead: is the actor a member of the organization?
+#             The same token answers that. A stranger is skipped with a
+#             notice, not failed, so their comment does not turn a check red.
+#
+# A Forgejo review event carries no review id, only its kind and text. When
+# trigger-kind is "review" and trigger-id is empty, this action finds the
+# actor's latest review on the pull request and passes that id, so the agent
+# fetches the text itself on both forges. That lookup uses the job's own token:
+# the dispatch credential cannot read this repository.
+#
+# The caller's sparse checkout must include `scripts` for Forgejo, which is
+# where `forge` lives. Without it this falls back to `gh`, which is all GitHub
+# needs.
 
 inputs:
   app-id:
-    description: vars.AGENT_DISPATCH_APP_ID
-    required: true
+    description: vars.AGENT_DISPATCH_APP_ID (GitHub)
+    default: ""
   private-key:
-    description: secrets.AGENT_DISPATCH_PRIVATE_KEY
-    required: true
+    description: secrets.AGENT_DISPATCH_PRIVATE_KEY (GitHub)
+    default: ""
+  dispatch-token:
+    description: secrets.AGENT_DISPATCH_TOKEN (Forgejo)
+    default: ""
   agent-repo:
     description: vars.AGENT_REPO (owner/name)
     required: true
@@ -32,6 +59,18 @@ inputs:
     default: ""
   head-sha:
     default: ""
+  trust:
+    description: >-
+      "actor" (default): on Forgejo, the actor must be an organization member
+      unless the event is workflow_dispatch, which already needs write access.
+      "none": for callers that are not started by a person's comment (CI
+      fixers, conflict resolution) and gate themselves.
+    default: actor
+
+outputs:
+  dispatched:
+    description: '"true" when an agent run was started'
+    value: ${{ steps.dispatch.outputs.dispatched }}
 
 runs:
   using: composite
@@ -47,6 +86,7 @@ runs:
 
     - name: Mint dispatch token
       id: token
+      if: github.server_url == 'https://github.com'
       uses: actions/create-github-app-token@v3
       with:
         app-id: ${{ inputs.app-id }}
@@ -55,15 +95,20 @@ runs:
         repositories: ${{ steps.repo.outputs.name }}
 
     - name: Dispatch
+      id: dispatch
       shell: bash
       env:
-        GH_TOKEN: ${{ steps.token.outputs.token }}
+        GH_TOKEN: ${{ steps.token.outputs.token || inputs.dispatch-token }}
+        REPO_TOKEN: ${{ github.token }}
+        ON_GITHUB: ${{ github.server_url == 'https://github.com' }}
         AGENT_REPO: ${{ inputs.agent-repo }}
         MODE: ${{ inputs.mode }}
         NUMBER: ${{ inputs.number }}
-        # triggering_actor, not actor: on a re-run they differ, and the agent
-        # checks this against the run's triggering actor.
-        ACTOR: ${{ github.triggering_actor }}
+        # triggering_actor, not actor: on a GitHub re-run they differ, and the
+        # agent checks this against the run's triggering actor. Forgejo leaves
+        # triggering_actor empty.
+        ACTOR: ${{ github.triggering_actor || github.actor }}
+        TRUST: ${{ inputs.trust }}
         TRIGGER_KIND: ${{ inputs.trigger-kind }}
         TRIGGER_ID: ${{ inputs.trigger-id }}
         INSTRUCTION: ${{ inputs.instruction }}
@@ -71,6 +116,38 @@ runs:
         HEAD_SHA: ${{ inputs.head-sha }}
       run: |
         set -euo pipefail
+        echo "dispatched=false" >> "$GITHUB_OUTPUT"
+        if [ -z "$GH_TOKEN" ]; then
+          echo "::error::No dispatch credential: pass app-id and private-key on GitHub, dispatch-token on Forgejo."
+          exit 1
+        fi
+        FORGE=scripts/forge
+        if [ ! -x "$FORGE" ]; then
+          if [ "$ON_GITHUB" != "true" ]; then
+            echo "::error::scripts/forge is missing: add \`scripts\` to this job's sparse checkout."
+            exit 1
+          fi
+          FORGE=gh
+        fi
+
+        if [ "$ON_GITHUB" != "true" ] && [ "$TRUST" = "actor" ] && [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then
+          # A failure to ask is a failure of this job; only a clear "no" is a skip.
+          member=$("$FORGE" member "$ACTOR" --org "${GITHUB_REPOSITORY%%/*}")
+          if [ "$member" != "true" ]; then
+            echo "::notice::$ACTOR is not a member of ${GITHUB_REPOSITORY%%/*}; not dispatching."
+            exit 0
+          fi
+        fi
+
+        if [ "$TRIGGER_KIND" = "review" ] && [ -z "$TRIGGER_ID" ]; then
+          TRIGGER_ID=$(GH_TOKEN="$REPO_TOKEN" "$FORGE" pr view "$NUMBER" -R "$GITHUB_REPOSITORY" \
+            --json reviews --jq '[.reviews[] | select(.author.login == env.ACTOR)] | last | .id // empty')
+          if [ -z "$TRIGGER_ID" ]; then
+            echo "::error::No review by $ACTOR found on #$NUMBER to hand to the agent."
+            exit 1
+          fi
+        fi
+
         ARGS=(-f mode="$MODE" -f target_repo="$GITHUB_REPOSITORY"
               -f actor="$ACTOR" -f caller_run_id="$GITHUB_RUN_ID")
         [ -z "$NUMBER" ] || ARGS+=(-f number="$NUMBER")
@@ -80,6 +157,8 @@ runs:
         [ -z "$FAILED_RUN_ID" ] || ARGS+=(-f failed_run_id="$FAILED_RUN_ID")
         [ -z "$HEAD_SHA" ] || ARGS+=(-f head_sha="$HEAD_SHA")
         # --ref is required: without it gh looks up the default branch, which
-        # needs Contents read, and the dispatch App holds only Actions write.
-        gh workflow run agent.yaml -R "$AGENT_REPO" --ref main "${ARGS[@]}"
+        # needs Contents read, and the dispatch credential holds only Actions
+        # write.
+        "$FORGE" workflow run agent.yaml -R "$AGENT_REPO" --ref main "${ARGS[@]}"
+        echo "dispatched=true" >> "$GITHUB_OUTPUT"
         echo "::notice::Dispatched $MODE ${NUMBER:+for #$NUMBER }to $AGENT_REPO."

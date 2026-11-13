@@ -1,7 +1,6 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
-import 'package:protobuf/protobuf.dart';
 import 'package:ripls/data/gen/ripls/api/experience.pb.dart';
 import 'package:ripls/data/gen/ripls/api/location.pb.dart';
 import 'package:ripls/data/gen/ripls/api/user.pb.dart' show User;

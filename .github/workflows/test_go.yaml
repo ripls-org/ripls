@@ -327,3 +327,31 @@ jobs:
       - name: Clean up test postgres container
         if: always()
         uses: ./.github/actions/cleanup-test-postgres
+
+  # Forgejo has no `workflow_run` trigger, so a failure here on a claude/* or
+  # renovate/* pull request is handed to its CI fixer by this job (#3293). It
+  # never runs on GitHub, where the fixers listen for workflow_run themselves.
+  # See .github/scripts/ci_failure_hook.sh.
+  fixer:
+    name: Hand a failure to the CI fixer
+    needs: [test]
+    if: ${{ failure() && github.server_url != 'https://github.com' && github.event_name == 'pull_request' }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The default branch's copy: a pull request must not supply the
+          # script that starts an agent on it.
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/scripts/ci_failure_hook.sh
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - run: bash .github/scripts/ci_failure_hook.sh
+        env:
+          TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}

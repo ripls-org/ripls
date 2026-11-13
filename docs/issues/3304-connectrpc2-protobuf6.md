@@ -1,0 +1,340 @@
+# Issue #3304: Upgrade the Dart client to connectrpc 2 and protobuf 6
+
+**Source:** https://github.com/Type2Fun-Foundation/ripls/issues/3304
+**Filed:** 2026-11-13 | **Last activity:** 2026-11-13
+**Labels:** claude-fix | **Assignees:** unassigned
+**Context docs:** `docs/infra/dependency_automation.md` (*Held-back dependencies*
+→ "Dart `protobuf` 4 → 6"), `docs/proto_conventions.md`,
+`docs/client/architecture.md`, `docs/client/conventions.md`,
+`app/lib/core/errors/README.md`, `docs/reviews/dependency_review_prompt.md`
+
+## Problem Statement
+
+The Flutter client pins `connectrpc: ^1.0.0` and `protobuf: ^4.2.0`
+(`app/pubspec.yaml`; lockfile has connectrpc 1.0.0). connectrpc 1.x caps
+`protobuf <5`, so `renovate.json` disables Dart `protobuf` updates entirely
+("Blocked: Dart protobuf is capped by connect-dart (protobuf <5)"). Renovate's
+connectrpc 2.x major (#3141, closed) failed pub resolution because connectrpc 2
+requires `protobuf ^6.0.0`, which the hold blocks, and the generated code
+targets the protobuf 4 runtime.
+
+Three pieces must move together, exactly as
+`docs/infra/dependency_automation.md` already says:
+
+1. **Runtime:** `connectrpc` ^2 + `protobuf` ^6 in `app/pubspec.yaml`.
+2. **Message codegen:** `buf.build/protocolbuffers/dart` is pinned at
+   `v21.1.2` (protobuf 4 output) in `buf.gen.dart.yaml`. The doc records
+   `protoc_plugin` 23/24 → protobuf 5 and 25 → protobuf 6, so this moves to a
+   v25.x (or later protobuf-6-compatible) remote plugin.
+3. **Service codegen:** `buf.build/connectrpc/dart:v1.0.0` in
+   `buf.gen.dart.yaml` must move to the v2 remote plugin that matches the
+   connectrpc 2 runtime.
+
+Then: fix any hand-written code broken by API changes, remove the renovate
+hold, and rewrite the doc section. No behaviour change: the doc already
+establishes that Dart protobuf 5/6 changed no wire or JSON format, so the Go
+server is untouched.
+
+**Note on the issue's `versions.env` bullet:** `versions.env` pins nothing
+Dart-codegen related today (checked: no `protoc`/`buf`/connect entries). Both
+plugin versions live only in `buf.gen.dart.yaml`. Nothing to change there.
+
+**Planning caveat:** the planning agent ran without network access and could
+not read the connect-dart / protobuf.dart changelogs (the issue asks for
+this). The API-risk inventory below is built from a full scan of our call
+sites, not from the changelogs. Phase 1 makes reading the changelogs the
+implementer's first step, and the compiler (`flutter analyze`) is the
+backstop.
+
+## Context from Comments
+
+The issue has no comments. The body is specific and gives the direction: lift
+the hold rather than work around it, keep the Go server unchanged, and read the
+changelogs first. #3141 (the closed Renovate PR) is the failed attempt that
+prompted this.
+
+## Hand-written API surface at risk
+
+Found by grepping `app/lib`, `app/test` (excluding `gen/`):
+
+| Surface | Where | Risk |
+|---|---|---|
+| `protocol.Transport(baseUrl:, codec: const ProtoCodec(), httpClient: createHttpClient())` | `app/lib/services/providers/auth_providers.dart:26-34` | Constructor/param names; `package:connectrpc/protobuf.dart` and `protocol/connect.dart` import paths |
+| Conditional import `package:connectrpc/web.dart` / `http2.dart` → `createHttpClient()` | `auth_providers.dart:4-5`, mirrored in `app/README.md:326` | Library split / renamed factory |
+| `ConnectException(code, message)`, `.code`, `.message`, `Code.*` | ~25 lib files (`services/*_service.dart`, `core/utils/rpc_utils.dart`, `core/utils/toast_helper.dart`, `core/errors/user_error.dart`, viewmodels, screens) and ~10 test files | Constructor shape, enum names |
+| `e.details` → `detail.type` / `detail.value` decoded with `LocalizedErrorDetail.fromBuffer` | `app/lib/core/errors/rpc_error_handler.dart:175-194`; tests build details with `writeToBuffer()` in `app/test/core/errors/rpc_error_handler_test.dart:47-110` | Error-detail type may change shape (e.g. to `Any`/unpack helper) |
+| `package:connectrpc/test.dart` test helpers | `app/test/services/user_service_add_phone_test.dart:2` | Helper renamed/removed |
+| Generated service clients (`*.connect.client.dart`) consumed as `XServiceClient(transport)` + streaming calls | `app/lib/services/*_service.dart`, `services/community/event_methods.dart` (server streams) | Generated client signature; `CallOptions`/headers |
+| `deepCopy()` (via `package:protobuf/protobuf.dart` extension import) | `presentation/viewmodels/experience_view_model.dart:916-918`, `gear_view_model.dart:1068,1134`; `protobuf.dart` also imported in `profile_sheet_view_model.dart`, `location_modal_view_model.dart`, `time_modal_view_model.dart` | Extension moved onto `GeneratedMessage`/removed; `clone()` removal; unused-import lint once the extension disappears |
+| Generated message API used everywhere (`hasX()`, `clearX()`, enums, `Timestamp`, `fixnum` `Int64`) | throughout | Generated-code changes from `protoc_plugin` 22–25 |
+| Mockito mocks generated by `build_runner` over service/generated types | `app/test/**/*.mocks.dart` (generated) | Must be regenerated; signature drift surfaces here |
+
+## Chosen versions and changelog evidence
+
+*Filled in by the implementer at the end of Phase 1, before any code change,
+so the implementation reviewer can check each Phase 3 edit against its
+upstream source without re-reading the changelogs.*
+
+| Component | From | To | Source |
+|---|---|---|---|
+| `connectrpc` (pub) | 1.0.0 | 2.0.1 | https://pub.dev/packages/connectrpc/changelog |
+| `protobuf` (pub) | 4.2.0 | 6.1.0 (`^6.0.0`) | https://pub.dev/packages/protobuf/changelog |
+| `buf.build/connectrpc/dart` | v1.0.0 | v2.0.1 | https://buf.build/connectrpc/dart (generation verified with `npm run generate:proto:dart`) |
+| `buf.build/protocolbuffers/dart` | v21.1.2 | v25.0.0 (`protoc_plugin` 25.0.0) | https://buf.build/protocolbuffers/dart; protobuf 6.0.0 changelog: "Add well-known proto types as libraries. This change is required for protoc_plugin-25.0.0" |
+
+**Changelog entries driving Phase 3 edits** (one row per API change actually
+made; quote or link the changelog entry and its version):
+
+| Changelog entry (package @ version) | API change | Our call sites |
+|---|---|---|
+| protobuf 6.0.0: "Hide `PbList` and `PbMap` constructors"; generated message constructors now take `Iterable<MapEntry<K,V>>` for map fields | `PbList<T>? ?? const []` no longer infers as `List<T>` (analyzer: `list_element_type_not_assignable`, `non_bool_operand`), so `.toList()` is added before `?? const []` | `experience_time_panel.dart`, `experience_location_panel.dart`, `experience_chat_pane.dart`, `attendee_list_sheet.dart`, `message_list.dart`, `gear_owner_reserve_dock.dart`, `gear_borrower_sheet.dart` |
+| not in changelog (protoc_plugin 25 generated constructors: map fields are `Iterable<MapEntry<K,V>>?`, found by `flutter analyze`) | Map-valued constructor args in tests use `{...}.entries` | `test/data/repositories/unread_count_repository_test.dart`, `test/presentation/viewmodels/feed_view_model_test.dart` |
+| protobuf 6.x: `deepCopy` extension now provided by the generated message library | `package:protobuf/protobuf.dart` import became `unnecessary_import` and was removed | `experience_view_model.dart`, `gear_view_model.dart`, `location_modal_view_model.dart`, `time_modal_view_model.dart` (`profile_sheet_view_model.dart` still needs it) |
+
+connectrpc 2.0.0/2.0.1 entries ("Require the V6 Protobuf runtime", Dart 3.7, unary-get query parameter order) needed no
+hand-written edits: `Transport`, `ConnectException`, `Code`, error details and
+`createHttpClient` call sites compiled unchanged.
+
+If a Phase 3 fix turns out to have no changelog entry (found only by
+`flutter analyze`), add a row anyway, set the entry to "not in changelog", and
+link the upstream commit or API doc that shows the change.
+
+## Potential Solutions
+
+### Option A: Lockstep upgrade of runtime + both codegen plugins in one PR
+- **Approach:** Bump `connectrpc` ^2 and `protobuf` ^6, bump both remote
+  plugins in `buf.gen.dart.yaml`, regenerate, fix compile errors in
+  hand-written code and tests, remove the renovate hold, rewrite the doc
+  section.
+- **Pros:** Matches the issue; the three pieces can't move apart (pub refuses
+  any mix), so one PR is the smallest change that can build.
+- **Cons:** Touches many files at once; whatever breaks shows up in one big
+  diff.
+- **Effort:** medium.
+
+### Option B: Two steps, protobuf 5 first, then connectrpc 2 + protobuf 6
+- **Approach:** Land an intermediate protobuf 5 / `protoc_plugin` 23-24 step,
+  then the connect bump.
+- **Pros:** Smaller diffs.
+- **Cons:** Not possible: connectrpc 1.x caps `protobuf <5` and connectrpc 2
+  requires ^6, so no connectrpc release resolves with protobuf 5. Rejected.
+- **Effort:** n/a.
+
+### Option C: Keep the hold and pin a fork / git dependency
+- **Approach:** What the doc previously described as the only path.
+- **Cons:** No longer needed now that connectrpc 2 is published; the issue
+  explicitly says to lift the hold. Rejected.
+
+## Recommendation
+
+**Option A.** It is the only option that resolves, and it is what the issue
+asks for. The Go server, proto files and wire format stay unchanged. The risk
+sits in the Dart API surface listed above. The compiler finds all of it, and
+the unit tests plus the web e2e suite cover the runtime paths: transport,
+error details and streaming.
+
+## Open Questions
+
+- **Which exact plugin versions?** — Recommendation: use the newest
+  `buf.build/protocolbuffers/dart` remote version whose output targets
+  protobuf ^6 (v25.x per the doc's mapping, or later if a newer one still
+  targets 6.x), and the `buf.build/connectrpc/dart` v2.x version equal to the
+  connectrpc runtime version in `pubspec.lock`. Check with
+  `buf registry plugin` / the buf.build plugin pages. Record the pairing in a
+  comment in `buf.gen.dart.yaml` so the next bump knows they move together.
+- **Should Renovate group `connectrpc` + `protobuf` (pub) and the two buf
+  plugins?** — Recommendation: yes, add a renovate `packageRules` group for pub
+  `connectrpc` + `protobuf` (e.g. `groupName: "dart protobuf runtime"`), the
+  same pattern as the existing `@connectrpc/*` group. That way the next
+  coupled major arrives as one PR rather than two red ones. Renovate does not
+  manage `buf.gen.dart.yaml` remote plugins today; keep that out of scope and
+  note it in the doc.
+- **Does connectrpc 2 change the error-detail API?** — Recommendation: if
+  `ConnectException.details` entries no longer expose `type`/`value`, switch
+  `_extractLocalizedErrorDetail` to the new accessor (or an `Any` unpack
+  helper) and keep the behaviour the same: first matching detail wins, and a
+  malformed one is logged and falls back to the per-Code branch. Update
+  `rpc_error_handler_test.dart` to build details the new way. Existing tests
+  must still pass with unchanged expectations.
+- **`deepCopy` changes?** — Recommendation: keep the call sites as they are if
+  `deepCopy()` still exists (protobuf 6 may provide it as a method on
+  `GeneratedMessage` rather than an extension). Then delete any
+  `package:protobuf/protobuf.dart` import that becomes unused. If it was
+  renamed, use the replacement. Do not swap to `rebuild`/`freeze` semantics:
+  the patch helpers rely on a mutable copy.
+
+## Implementation Plan
+
+### Phase 1: Research the breaking changes (no code yet)
+**Goal:** Know the actual breaking changes before editing.
+**Tasks:**
+- [ ] Read the pub.dev changelogs for `connectrpc` (1.0.0 → latest 2.x),
+      `protobuf` (4.2.0 → latest 6.x) and `protoc_plugin` (21.1.2 → the
+      version you pick). Note every breaking item that touches a row in the
+      *Hand-written API surface at risk* table.
+- [ ] Pick the plugin versions (see Open Questions) and confirm the
+      `buf.build/connectrpc/dart` v2 and `buf.build/protocolbuffers/dart`
+      versions exist on buf.build.
+- [ ] Fill in *Chosen versions and changelog evidence* in this plan doc: the
+      four versions (connectrpc, protobuf, both buf.build plugins) and one row
+      per breaking changelog entry you expect to drive a Phase 3 edit. Commit
+      it on its own (`Record chosen versions for #3304`) before Phase 2.
+**Validates:** the migration list is grounded in upstream notes, as the issue
+requires, and the record is in the PR for the reviewer.
+
+### Phase 2: Bump runtime + codegen, regenerate
+**Goal:** Dependencies resolve and code generates.
+**Tasks:**
+- [ ] `app/pubspec.yaml`: `connectrpc: ^2.<x>.0`, `protobuf: ^6.<y>.0`.
+      Run `cd app && flutter pub get` to refresh `app/pubspec.lock`. If
+      another dependency blocks resolution, stop and report it on the PR. Do
+      not add overrides.
+- [ ] `buf.gen.dart.yaml`: bump `buf.build/connectrpc/dart:v1.0.0` →
+      `v2.<x>` and `buf.build/protocolbuffers/dart:v21.1.2` → the
+      protobuf-6 version. Keep `include_wkt`/`include_imports`, unless the new
+      plugin renames these options; check the plugin docs. Add a short comment
+      that the two plugins and the two pub packages move together.
+- [ ] `npm run generate` (never `buf generate` directly), then
+      `cd app && dart run build_runner build --delete-conflicting-outputs` to
+      regenerate freezed/mockito output.
+**Validates:** pub resolution and codegen succeed against the new runtime.
+
+### Phase 3: Migrate hand-written code
+**Goal:** `flutter analyze` is clean.
+**Tasks:**
+- [ ] Run `cd app && flutter analyze` and fix every error, working through
+      the table above:
+  - `app/lib/services/providers/auth_providers.dart`: transport construction
+    and conditional HTTP-client imports. Also update the matching snippet in
+    `app/README.md` (around line 326).
+  - `app/lib/core/errors/rpc_error_handler.dart` `_extractLocalizedErrorDetail`
+    and `app/test/core/errors/rpc_error_handler_test.dart` (see Open Questions).
+  - `ConnectException`/`Code` call sites in `app/lib/services/*`,
+    `app/lib/core/utils/{rpc_utils,toast_helper}.dart`,
+    `app/lib/core/errors/user_error.dart`, viewmodels and screens, plus their
+    tests.
+  - `package:connectrpc/test.dart` usage in
+    `app/test/services/user_service_add_phone_test.dart`.
+  - `deepCopy` sites in `experience_view_model.dart` and
+    `gear_view_model.dart`; remove any `package:protobuf/protobuf.dart`
+    imports that become unused (`profile_sheet_view_model.dart`,
+    `location_modal_view_model.dart`, `time_modal_view_model.dart`,
+    `gear_view_model.dart`, `experience_view_model.dart`).
+- [ ] Fix deprecations too, not just errors: `flutter analyze` treats
+      info-level findings (including `deprecated_member_use`) as fatal
+      (`docs/client/conventions.md` → *Analyzer and lint rules*). Migrate
+      every API the new runtime deprecates; do not add `// ignore:`.
+- [ ] Keep changes mechanical: no behaviour change and no refactors beyond
+      what the new API forces. Update `app/lib/core/errors/README.md` or
+      `app/lib/services/README.md` only if they name an API that changed.
+- [ ] Don't edit or weaken test expectations. A test may change how it builds
+      an input (for example, how an error detail is constructed), but never
+      what it asserts.
+- [ ] Keep the changelog-evidence table in sync: every API change made in
+      this phase has a row. Add rows for anything found only by the analyzer,
+      and drop rows that turned out to need no edit.
+**Validates:** `flutter analyze` clean; `flutter test` passes; every Phase 3
+edit is traceable to a row in the evidence table.
+
+### Phase 4: Lift the Renovate hold and update docs
+**Goal:** Renovate config and docs reflect the new state.
+**Tasks:**
+- [ ] `renovate.json`: delete the rule with description "Blocked: Dart
+      protobuf is capped by connect-dart (protobuf <5)." (around line 128). Add
+      a pub group for `connectrpc` + `protobuf` per Open Questions.
+- [ ] `docs/infra/dependency_automation.md`:
+  - Remove "Dart `protobuf` (connect-dart cap)" from the *Blocked/pinned deps*
+    bullet (~line 77). Add the new group to the *Grouped deps* bullet.
+  - Delete the "Dart `protobuf` 4 → 6" subsection under *Held-back
+    dependencies* (~lines 453–488). Keep its "Go server needs no change /
+    wire-format unchanged" reasoning as a short note (e.g. in the grouped-deps
+    text or a one-paragraph "Dart protobuf runtime" note). It still explains
+    why the bump is client-only, and it says the `buf.gen.dart.yaml` plugins
+    are bumped by hand together with the pub packages.
+  - Update the doc's `context:`/`freshness:` frontmatter as appropriate.
+    Run `npm run generate:context-map` and `npm run lint:context-map`.
+- [ ] `docs/reviews/dependency_review_prompt.md` → *Known Blockers* table
+      (~line 126): remove the `protobuf (Flutter)` row, which is now resolved.
+      If the table ends up empty, replace the rows with a short "None
+      currently" line. Leave the "check if these blockers have been resolved"
+      guidance in place. Do **not** edit `docs/reviews/reports/dependency_review.md`:
+      it is a dated report output, and the next review run regenerates it.
+**Validates:** `npm run lint` passes, including the context-map gate.
+
+### Phase 5: Verify end-to-end
+**Goal:** Meet the issue's "done when" criteria.
+**Tasks:**
+- [ ] `cd app && flutter pub get && flutter analyze && flutter test --reporter github`.
+- [ ] `npm run lint:dart:size` (no file pushed over 1,000 lines).
+- [ ] Build the web bundle (`npm run build:web:e2e`, as used by
+      `.github/workflows/test_web_e2e.yaml`). If local credentials allow, run
+      the web e2e suite. Otherwise rely on the PR's `Web E2E` and Flutter Web
+      bundle CI jobs and say so in the PR body.
+- [ ] Confirm the Go side is untouched (`git diff --stat -- server/ proto/` is
+      empty).
+**Validates:** pub resolves, analyze is clean, tests pass, the web bundle
+builds and web e2e passes, with no user-visible behaviour change.
+
+### Acceptance criteria
+- `app/pubspec.yaml`/`pubspec.lock` on connectrpc 2.x and protobuf 6.x.
+- `buf.gen.dart.yaml` on matching v2 connect-dart and protobuf-6
+  protoc-gen-dart remote plugins.
+- No `protobuf` disable rule in `renovate.json`; doc's held-back section and
+  `dependency_review_prompt.md` Known Blockers updated; `npm run lint` green.
+- The client still imports only `ripls/api` generated code, never
+  `ripls/models` (`docs/client/conventions.md` → *Flutter & Protos*).
+  `buf.gen.dart.yaml` keeps generating from `proto/ripls/api/` only.
+- *Chosen versions and changelog evidence* filled in, with no `_TBD_` left.
+
+### Rollback
+
+If the Flutter Web bundle build or `Web E2E` regresses on `main` after merge,
+revert the whole implementation PR, not parts of it:
+`git revert -m 1 <merge-sha>` in a new PR. The runtime packages, lockfile,
+both `buf.gen.dart.yaml` plugins and the hand-written migrations only build
+together (see Option B), so a partial revert can't resolve or compile.
+Generated code is not checked in, so CI regenerates it from the reverted
+`buf.gen.dart.yaml`. Locally, run `npm run generate` and `build_runner` again
+after pulling.
+
+**Yes, the `renovate.json` hold goes back with it.** The whole-PR revert
+restores the "Blocked: Dart protobuf is capped by connect-dart" rule and
+removes the new `connectrpc` + `protobuf` group without extra steps. Don't
+keep the lifted hold: on connectrpc 1 / protoc-gen-dart v21 Renovate would
+reopen protobuf 5/6 (or grouped connectrpc 2) PRs that fail pub resolution or
+codegen, as #3141 did. The revert also restores the old
+`docs/infra/dependency_automation.md` and `dependency_review_prompt.md` text,
+which is correct again once the hold is back.
+
+The revert would also remove this plan doc. Restore it in the same revert PR
+(`git checkout <merge-sha> -- docs/issues/3304-connectrpc2-protobuf6.md`) so
+the version record and changelog evidence stay available for the retry, and
+reopen #3304 with a link to the failing run.
+
+## Audit notes (ripls-audit)
+
+Scope: client side, `dependency` and `testing` dimensions. No security,
+API-design or UI surface changes; the proto files stay the same.
+
+- **Added:** update the stale *Known Blockers* row in
+  `docs/reviews/dependency_review_prompt.md`. Otherwise the next dependency
+  review would keep reporting the cap as current.
+- **Added:** deprecations must be migrated, because `flutter analyze` makes
+  infos fatal.
+- **Added:** acceptance criterion that `buf.gen.dart.yaml` keeps generating
+  from `ripls/api` only.
+- **Confirmed:** the plan does not loosen any other hold (cross_file,
+  analyzer) and does not change the Go server, in line with the existing
+  *Held-back dependencies* analysis.
+
+Docs consulted: `docs/llms.txt`, `docs/client/conventions.md`,
+`docs/reviews/dependency_review_prompt.md`,
+`docs/infra/dependency_automation.md`.
+- `flutter analyze` clean, `flutter test` green, `Web E2E` green.
+- No changes under `server/` or `proto/`.
+
+## Related Issues
+- #3141 — Renovate's connectrpc 2.x major PR (closed; failed on the protobuf ^6 requirement).
+- connectrpc/connect-dart#38, #36 — upstream protobuf-6 and well-known-type
+  work referenced in `docs/infra/dependency_automation.md`, now released as
+  connectrpc 2.

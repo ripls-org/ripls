@@ -111,15 +111,19 @@ test('a member following the say-hi link lands in the discussion', async ({
   await expect(page).toHaveURL(/\/group\/[^?]+\?.*tab=discuss/, { timeout: 30_000 });
 
   // The conversation panel is open on arrival — the promise the notification
-  // made. Asserting on the community screen alone would pass even if the panel
-  // never opened, and a bare textbox locator would match any field on the
-  // profile, so this keys on the panel's own semantics identifier. No
-  // networkidle: the authed bundle holds a long-lived stream that never lets
-  // it fire (#2867).
-  await expect(
-    page.locator('[flt-semantics-identifier="web-community-screen"]'),
-  ).toBeVisible({ timeout: 30_000 });
+  // made. A bare textbox locator would match any field on the profile, so this
+  // keys on the panel's own semantics identifier. No networkidle: the authed
+  // bundle holds a long-lived stream that never lets it fire (#2867).
+  //
+  // Deliberately NOT asserting the `web-community-screen` node: the panel is a
+  // route pushed over the community screen, and Flutter's route ModalBarrier
+  // wraps the covered route in BlockSemantics, so once the panel is mounted
+  // that node leaves the semantics tree. Whether Playwright sees it depends on
+  // whether it polls before or after the panel opens — a race, not a signal.
+  // The hand-off to the community screen is still proven by the /group/ URL
+  // above plus the panel itself, which only the community profile mounts here.
   await expect(
     page.locator('[flt-semantics-identifier="community-conversation-panel"]'),
   ).toBeVisible({ timeout: 30_000 });
+  await expect(page).toHaveURL(/\/group\/[^?]+\?.*tab=discuss/);
 });

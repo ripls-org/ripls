@@ -29,8 +29,8 @@ void main() {
     test('returns server count from cached response', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 5,
-        communityIdToUnreadCount: {'comm-1': 3, 'comm-2': 2},
-        conversationIdToUnreadCount: {'conv-1': 3, 'conv-2': 2},
+        communityIdToUnreadCount: {'comm-1': 3, 'comm-2': 2}.entries,
+        conversationIdToUnreadCount: {'conv-1': 3, 'conv-2': 2}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -50,8 +50,8 @@ void main() {
     test('fetches count from server on cache miss', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 8,
-        communityIdToUnreadCount: {'comm-1': 5, 'comm-2': 3},
-        conversationIdToUnreadCount: {'conv-1': 5, 'conv-2': 3},
+        communityIdToUnreadCount: {'comm-1': 5, 'comm-2': 3}.entries,
+        conversationIdToUnreadCount: {'conv-1': 5, 'conv-2': 3}.entries,
       );
 
       when(mockChatService.getUnreadCounts())
@@ -75,8 +75,8 @@ void main() {
     test('applies optimistic deltas to server count', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 5,
-        communityIdToUnreadCount: {'comm-1': 5},
-        conversationIdToUnreadCount: {'conv-1': 5},
+        communityIdToUnreadCount: {'comm-1': 5}.entries,
+        conversationIdToUnreadCount: {'conv-1': 5}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -96,8 +96,8 @@ void main() {
     test('clamps negative total to 0', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 2,
-        communityIdToUnreadCount: {'comm-1': 2},
-        conversationIdToUnreadCount: {'conv-1': 2},
+        communityIdToUnreadCount: {'comm-1': 2}.entries,
+        conversationIdToUnreadCount: {'conv-1': 2}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -118,8 +118,8 @@ void main() {
     test('returns map of conversation id to unread count', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 3,
-        communityIdToUnreadCount: {'comm-1': 3},
-        conversationIdToUnreadCount: {'conv-1': 3, 'conv-2': 0},
+        communityIdToUnreadCount: {'comm-1': 3}.entries,
+        conversationIdToUnreadCount: {'conv-1': 3, 'conv-2': 0}.entries,
       );
 
       when(mockChatService.getUnreadCounts())
@@ -144,8 +144,8 @@ void main() {
     test('returns map of community id to unread count', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 8,
-        communityIdToUnreadCount: {'comm-1': 5, 'comm-2': 3},
-        conversationIdToUnreadCount: {'conv-1': 5, 'conv-2': 3},
+        communityIdToUnreadCount: {'comm-1': 5, 'comm-2': 3}.entries,
+        conversationIdToUnreadCount: {'conv-1': 5, 'conv-2': 3}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -161,8 +161,8 @@ void main() {
     test('applies optimistic deltas grouped by community', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 5,
-        communityIdToUnreadCount: {'comm-1': 3, 'comm-2': 2},
-        conversationIdToUnreadCount: {'conv-1': 3, 'conv-2': 2},
+        communityIdToUnreadCount: {'comm-1': 3, 'comm-2': 2}.entries,
+        conversationIdToUnreadCount: {'conv-1': 3, 'conv-2': 2}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -186,8 +186,8 @@ void main() {
     test('returns count for specific community', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 8,
-        communityIdToUnreadCount: {'comm-1': 5, 'comm-2': 3},
-        conversationIdToUnreadCount: {},
+        communityIdToUnreadCount: {'comm-1': 5, 'comm-2': 3}.entries,
+        conversationIdToUnreadCount: <String, int>{}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -203,8 +203,8 @@ void main() {
     test('returns 0 for community with no unread messages', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 5,
-        communityIdToUnreadCount: {'comm-1': 5},
-        conversationIdToUnreadCount: {},
+        communityIdToUnreadCount: {'comm-1': 5}.entries,
+        conversationIdToUnreadCount: <String, int>{}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -222,8 +222,8 @@ void main() {
     test('returns count for specific conversation with optimistic delta', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 5,
-        communityIdToUnreadCount: {'comm-1': 5},
-        conversationIdToUnreadCount: {'conv-1': 5},
+        communityIdToUnreadCount: {'comm-1': 5}.entries,
+        conversationIdToUnreadCount: {'conv-1': 5}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -274,8 +274,8 @@ void main() {
     test('invalidates and refetches count', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 7,
-        communityIdToUnreadCount: {'comm-1': 7},
-        conversationIdToUnreadCount: {'conv-1': 7},
+        communityIdToUnreadCount: {'comm-1': 7}.entries,
+        conversationIdToUnreadCount: {'conv-1': 7}.entries,
       );
 
       when(mockCacheManager.clear(pattern: 'unread:*'))
@@ -308,8 +308,8 @@ void main() {
 
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 5,
-        communityIdToUnreadCount: {'comm-1': 5},
-        conversationIdToUnreadCount: {'conv-1': 5},
+        communityIdToUnreadCount: {'comm-1': 5}.entries,
+        conversationIdToUnreadCount: {'conv-1': 5}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -324,8 +324,8 @@ void main() {
     test('resetUnreadCount sets negative delta to zero out server count', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 5,
-        communityIdToUnreadCount: {'comm-1': 5},
-        conversationIdToUnreadCount: {'conv-1': 5},
+        communityIdToUnreadCount: {'comm-1': 5}.entries,
+        conversationIdToUnreadCount: {'conv-1': 5}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -344,8 +344,8 @@ void main() {
     test('clears delta when server count is 0', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 1,
-        communityIdToUnreadCount: {'comm-1': 1},
-        conversationIdToUnreadCount: {'conv-1': 1},
+        communityIdToUnreadCount: {'comm-1': 1}.entries,
+        conversationIdToUnreadCount: {'conv-1': 1}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -374,8 +374,8 @@ void main() {
       // Now mock cache to return server count of 0
       final updatedResponse = GetUnreadCountsResponse(
         totalUnreadCount: 0,
-        communityIdToUnreadCount: {'comm-1': 0},
-        conversationIdToUnreadCount: {'conv-1': 0},
+        communityIdToUnreadCount: {'comm-1': 0}.entries,
+        conversationIdToUnreadCount: {'conv-1': 0}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -391,8 +391,8 @@ void main() {
     test('does not clear delta when server count is non-zero', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 5,
-        communityIdToUnreadCount: {'comm-1': 5},
-        conversationIdToUnreadCount: {'conv-1': 5},
+        communityIdToUnreadCount: {'comm-1': 5}.entries,
+        conversationIdToUnreadCount: {'conv-1': 5}.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -425,12 +425,12 @@ void main() {
     test('handles multiple conversations with mixed states', () async {
       final response = GetUnreadCountsResponse(
         totalUnreadCount: 5,
-        communityIdToUnreadCount: {'comm-1': 5},
+        communityIdToUnreadCount: {'comm-1': 5}.entries,
         conversationIdToUnreadCount: {
           'conv-1': 1,
           'conv-2': 2,
           'conv-3': 2,
-        },
+        }.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(
@@ -467,12 +467,12 @@ void main() {
       // Update mock to return new server state
       final updatedResponse = GetUnreadCountsResponse(
         totalUnreadCount: 2,
-        communityIdToUnreadCount: {'comm-1': 2},
+        communityIdToUnreadCount: {'comm-1': 2}.entries,
         conversationIdToUnreadCount: {
           'conv-1': 0,
           'conv-2': 0,
           'conv-3': 2,
-        },
+        }.entries,
       );
 
       when(mockCacheManager.get<GetUnreadCountsResponse>(

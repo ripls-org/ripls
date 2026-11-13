@@ -43,15 +43,29 @@ jobs:
     # see the repo, so on a public repo the author_association check is what
     # stops any GitHub user from starting the agent. workflow_dispatch needs
     # write access already. See #2953 / OSS-7 #2959.
+    #
+    # ON FORGEJO (#3293) three things in this condition are spelled differently:
+    #   - There is no author_association, so the trust test cannot live here.
+    #     Candidate events get through and the dispatch action asks whether the
+    #     actor is an organization member.
+    #   - Bots are ordinary accounts with no `[bot]` suffix; their logins are in
+    #     vars.BOT_LOGINS (a JSON array).
+    #   - A label change arrives with action `label_updated`, for removals too,
+    #     so the label must also still be on the issue.
     if: |
-      vars.AGENT_DISPATCH_APP_ID != '' && vars.AGENT_REPO != '' &&
-      github.actor != 'ripls-agent[bot]' && (
+      vars.AGENT_REPO != '' &&
+      (vars.AGENT_DISPATCH_APP_ID != '' || github.server_url != 'https://github.com') &&
+      github.actor != 'ripls-agent[bot]' &&
+      !contains(fromJSON(vars.BOT_LOGINS || '[]'), github.actor) && (
         github.event_name == 'workflow_dispatch' ||
         (
-          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association || github.event.issue.author_association) &&
           (
-            (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'claude-fix') ||
-            (github.event_name == 'issues' && github.event.action != 'labeled' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))) ||
+            github.server_url != 'https://github.com' ||
+            contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association || github.event.issue.author_association)
+          ) &&
+          (
+            (github.event_name == 'issues' && contains(fromJSON('["labeled","label_updated"]'), github.event.action) && github.event.label.name == 'claude-fix' && contains(github.event.issue.labels.*.name, 'claude-fix')) ||
+            (github.event_name == 'issues' && !contains(fromJSON('["labeled","label_updated"]'), github.event.action) && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))) ||
             (github.event_name == 'issue_comment' && !github.event.issue.pull_request && contains(github.event.comment.body, '@claude'))
           )
         )
@@ -59,12 +73,16 @@ jobs:
     # GitHub-hosted on purpose: the sparse checkout below would leave its sparse
     # config in a reused self-hosted workspace and poison later checkouts there
     # (see the note in claude_fix_renovate_ci.yaml). Hosted runners are fresh.
+    # On Forgejo this label is the fleet, where every job has a fresh container.
     runs-on: ubuntu-latest
     steps:
       - name: Checkout dispatch action
         uses: actions/checkout@v7
         with:
-          sparse-checkout: .github/actions/agent-dispatch
+          # `scripts` is for scripts/forge, which the action needs on Forgejo.
+          sparse-checkout: |
+            .github/actions/agent-dispatch
+            scripts
           persist-credentials: false
 
       - name: Dispatch to the agent
@@ -72,6 +90,7 @@ jobs:
         with:
           app-id: ${{ vars.AGENT_DISPATCH_APP_ID }}
           private-key: ${{ secrets.AGENT_DISPATCH_PRIVATE_KEY }}
+          dispatch-token: ${{ secrets.AGENT_DISPATCH_TOKEN }}
           agent-repo: ${{ vars.AGENT_REPO }}
           mode: plan
           number: ${{ github.event.issue.number || inputs.issue_number }}

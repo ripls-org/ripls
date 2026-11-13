@@ -404,7 +404,7 @@ void main() {
         const communityId = 'comm1';
         when(mockRepository.getFeedStatus()).thenAnswer(
           (_) async => GetFeedStatusResponse(
-            communityIdToHasNew: {communityId: true},
+            communityIdToHasNew: {communityId: true}.entries,
           ),
         );
 
@@ -416,7 +416,7 @@ void main() {
         // Server now returns comm1=false because items have been seen.
         when(mockRepository.getFeedStatus()).thenAnswer(
           (_) async => GetFeedStatusResponse(
-            communityIdToHasNew: {communityId: false},
+            communityIdToHasNew: {communityId: false}.entries,
           ),
         );
         when(mockRepository.invalidateFeedStatus()).thenAnswer((_) async {});
@@ -630,7 +630,7 @@ void main() {
     test('loads status map from repository on first access', () async {
       when(mockRepository.getFeedStatus()).thenAnswer(
         (_) async => GetFeedStatusResponse(
-          communityIdToHasNew: {'comm1': true, 'comm2': false},
+          communityIdToHasNew: {'comm1': true, 'comm2': false}.entries,
         ),
       );
 
@@ -642,7 +642,7 @@ void main() {
     test('refresh invalidates cache and reloads', () async {
       when(mockRepository.getFeedStatus()).thenAnswer(
         (_) async => GetFeedStatusResponse(
-          communityIdToHasNew: {'comm1': true},
+          communityIdToHasNew: {'comm1': true}.entries,
         ),
       );
       when(mockRepository.invalidateFeedStatus()).thenAnswer((_) async {});
@@ -662,7 +662,7 @@ void main() {
         () async {
       when(mockRepository.getFeedStatus()).thenAnswer(
         (_) async => GetFeedStatusResponse(
-          communityIdToHasNew: {'comm1': true, 'comm2': false},
+          communityIdToHasNew: {'comm1': true, 'comm2': false}.entries,
         ),
       );
 
@@ -675,7 +675,7 @@ void main() {
     test('communityHasNewFeedProvider returns false for unknown community',
         () async {
       when(mockRepository.getFeedStatus()).thenAnswer(
-        (_) async => GetFeedStatusResponse(communityIdToHasNew: {}),
+        (_) async => GetFeedStatusResponse(communityIdToHasNew: const []),
       );
 
       await container.read(feedStatusProvider.future);

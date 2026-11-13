@@ -338,7 +338,8 @@ class _GearOwnerReserveDockState extends ConsumerState<GearOwnerReserveDock> {
 
   String _firstName(String userId) {
     final reqs = ref.read(gearProvider(widget.gearId)).transferContext
-            ?.pendingRequests ??
+            ?.pendingRequests
+            .toList() ??
         const [];
     for (final r in reqs) {
       if (r.hasBorrower() && r.borrower.id == userId) {

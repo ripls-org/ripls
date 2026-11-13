@@ -136,6 +136,14 @@ else out. Branch protection on `main` and the gitleaks gates stay.
   - Recommendation: keep it for this port and decide later. Folding it in is a
     refactor with no deadline; moving it as it is keeps the port mechanical.
     The bridge becomes a bot token that can only dispatch workflows there.
+  - **Decided 2026-11-13: it stays separate.** Folding it in would remove the
+    bridge, but the separation is what makes it safe to open registration
+    later, and its complexity is already paid for. It is imported as the
+    private `ripls-org/ripls-agent`.
+  - What follows from that: the agent's secrets (the Claude token, the agent
+    account's token) are **repo** secrets on `ripls-agent`, never org secrets.
+    An org secret is readable by every repo in the org, the public one
+    included, which is the exposure the separate repo exists to prevent.
 - **What replaces `gh`?**
   - Recommendation: one script, `scripts/forge`, wrapping the Forgejo REST API
     for the subcommands actually used (`issue`, `pr`, `run`, `api`, `label`,

@@ -71,7 +71,16 @@ function createClient({ baseUrl, token, fetch: fetchImpl }) {
     return out.slice(0, max);
   }
 
-  return { request, paginate };
+  // The bare status of a GET, redirects not followed. For endpoints that
+  // answer with a status code alone.
+  async function status(path) {
+    const headers = { Accept: 'application/json' };
+    if (token) headers.Authorization = `token ${token}`;
+    const res = await fetchImpl(`${api}${path}`, { method: 'GET', headers, redirect: 'manual' });
+    return res.status;
+  }
+
+  return { request, paginate, status };
 }
 
 function repoPath(repo) {
@@ -103,12 +112,17 @@ function pullState(p) {
   return p.state === 'open' ? 'OPEN' : 'CLOSED';
 }
 
-// Forgejo reports `mergeable: false` both for a real conflict and while it is
-// still computing. An open PR that is not mergeable is reported CONFLICTING;
-// callers that must be sure re-read after the base has settled.
+// Forgejo's `mergeable` means "can be merged right now", which is false for a
+// real conflict, while it is still checking, and for any draft. So:
+//   true            MERGEABLE
+//   false, draft    UNKNOWN: the flag says nothing about conflicts
+//   false, ready    CONFLICTING, or still being checked just after a push
+// A caller that must know (the conflict dispatcher) compares the branches with
+// git instead of trusting this.
 function mergeable(p) {
   if (p.state !== 'open') return 'UNKNOWN';
-  return p.mergeable ? 'MERGEABLE' : 'CONFLICTING';
+  if (p.mergeable) return 'MERGEABLE';
+  return p.draft ? 'UNKNOWN' : 'CONFLICTING';
 }
 
 function pull(p) {
@@ -391,6 +405,17 @@ const commands = {
   },
 };
 
+// Is `login` a member of the organization? Forgejo answers 204 or 404 to a
+// member's token, and redirects a non-member's to the public-members list. A
+// redirect is an error here, not "no": the caller is asking a trust question
+// with a token that cannot see the answer.
+async function orgMember(client, org, login) {
+  const code = await client.status(`/orgs/${encodeURIComponent(org)}/members/${encodeURIComponent(login)}`);
+  if (code === 204) return true;
+  if (code === 404) return false;
+  throw new ForgeError(`cannot read membership of ${org} with this token (HTTP ${code}); it must belong to a member`, code);
+}
+
 const RUN_DONE = ['success', 'failure', 'cancelled', 'skipped'];
 
 // gh splits a run's state into status (queued | in_progress | completed) and
@@ -447,4 +472,4 @@ function matchesSearch(item, search) {
   return terms.every((t) => hay.includes(t));
 }
 
-module.exports = { createClient, commands, ForgeError, matchesSearch, pull, issue, review, comment };
+module.exports = { createClient, commands, orgMember, ForgeError, matchesSearch, pull, issue, review, comment };

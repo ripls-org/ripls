@@ -5,7 +5,6 @@ import 'package:cross_file/cross_file.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:logging/logging.dart';
-import 'package:protobuf/protobuf.dart';
 import 'package:ripls/core/errors/rpc_error_handler.dart';
 import 'package:ripls/core/errors/user_error.dart';
 import 'package:ripls/core/models/media_item_data.dart';

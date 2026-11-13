@@ -75,7 +75,7 @@ non-obvious and was learned the hard way.
   `docker-compose` (base images), `bundler`, and anything matching `versions.env`
   (labeled `needs runner rebuild`).
 - **Blocked/pinned deps** (reasons in [Held-back dependencies](#held-back-dependencies)
-  below): Dart `protobuf` (connect-dart cap), `analyzer` `<14` (freezed 4's
+  below): `analyzer` `<14` (freezed 4's
   ceiling), `microsoft/onnxruntime` `<1.30` (release-tarball ceiling, checked by
   `npm run check:onnx-tarballs`), `java` tracked
   major-only (`temurin-<major>-jdk` apt naming),
@@ -86,7 +86,9 @@ non-obvious and was learned the hard way.
   across every package file (`types-node` — otherwise a caret-range project
   whose lockfile-only remediation splits onto a separate `…-lockfile` branch
   yields two identically-titled PRs for one bump) and the `@connectrpc/*`
-  connect-es monorepo (`connectrpc`, released in lockstep) — alongside the
+  connect-es monorepo (`connectrpc`, released in lockstep), and the Dart pub
+  `connectrpc` + `protobuf` runtimes (`dart protobuf runtime`; see
+  [Dart protobuf runtime](#dart-protobuf-runtime-lifted)) — alongside the
   existing `image decoders`, `go toolchain`, `onnx runtime`, and
   `android gradle toolchain` groups.
 - **All non-major Go modules** are grouped into one `go modules` PR. Per-package
@@ -450,42 +452,25 @@ blocker clears, remove the cap in `renovate.json` and let the update flow.
 
 ### Hard blockers — won't resolve or won't run
 
-#### Dart `protobuf` 4 → 6 — blocked by the `connect-dart` client (server is fine)
+#### Dart protobuf runtime (lifted)
 
-A **client-only** blocker. `connectrpc` (latest published Dart release)
-constrains `protobuf: ">=3.1.0 <5.0.0"`, and our generated Dart code targets the
-protobuf v4 runtime. Three pieces must move together to adopt protobuf 6 in the
-app:
-
-1. **Runtime:** a `connect-dart` release that allows protobuf 6. None exists.
-   Open upstream PR [connectrpc/connect-dart#38 "Protobuf v6"](https://github.com/connectrpc/connect-dart/pull/38)
-   (conflict-free, has maintainer attention but unmerged/unreleased), plus
-   [#36](https://github.com/connectrpc/connect-dart/pull/36) for well-known-type
-   imports. The PR moves the constraint to `protobuf: ">=6.0.0 <7.0.0"`.
-2. **Message codegen:** `protoc-gen-dart` ≥ 25 emits protobuf-6 code
-   (`protoc_plugin` 23/24 → protobuf 5, 25 → protobuf 6). Our `buf.gen.dart.yaml`
-   pins `buf.build/protocolbuffers/dart:v21.1.2` (protobuf 4) and would bump to
-   the v6 remote plugin.
-3. **Service codegen:** the `connect-dart` plugin
-   (`buf.build/connectrpc/dart:v1.0.0`) must emit code for the new runtime. The
-   v6 plugin is not published to buf.build, so until #38 ships we'd have to build
-   and run the fork's plugin locally.
-
-**Not worth forcing now:** the only path today is pinning a git dependency to an
-unmerged fork branch *and* running a locally-built connect codegen plugin for a
-core RPC transport — fragile and high-maintenance. The clean unblock is upstream
-merging #38/#36, cutting a `connect-dart` release, and publishing the v6 buf
-remote plugin. **Track #38.**
+The old `protobuf` hold is gone: `connectrpc` 2 (pub) requires `protobuf ^6`, and
+the app now runs both. Three pieces move together, and pub refuses any mix: the
+pub packages `connectrpc` + `protobuf` in `app/pubspec.yaml`, and the two remote
+codegen plugins in `buf.gen.dart.yaml` (`buf.build/connectrpc/dart` and
+`buf.build/protocolbuffers/dart`; `protoc_plugin` 23/24 → protobuf 5, 25+ →
+protobuf 6). Renovate groups the pub packages as `dart protobuf runtime` so a
+coupled major arrives as one PR. It does **not** manage the `buf.gen.dart.yaml`
+plugins, so bump those by hand in the same PR and regenerate
+(`npm run generate`).
 
 **The Go server needs no change.** "protobuf 5/6" is the Dart `protobuf` *pub
-package* version, not a wire/spec version and not shared with Go. The server is
-current (`connectrpc.com/connect` + `google.golang.org/protobuf`, which has a
-single v1.x line — there is no "v5/v6"). The interop contract is the Connect
-protocol + proto3 binary wire format + protobuf-JSON mapping — all frozen,
-language-independent specs. The Dart `protobuf` 5.x/6.0 changelog confirms **no
-wire or JSON format change** (only Dart API changes), so a protobuf-6 Dart client
-emits byte-identical messages to today's protobuf-4 client and the connect-go
-server accepts them unchanged.
+package* version, not a wire/spec version and not shared with Go. The interop
+contract is the Connect protocol + proto3 binary wire format + protobuf-JSON
+mapping — all frozen, language-independent specs. The Dart `protobuf` 5.x/6.x
+changelogs show **no wire or JSON format change** (only Dart API changes), so
+the protobuf-6 client emits byte-identical messages and the connect-go server
+accepts them unchanged.
 
 #### Dart `analyzer` — capped `<14` by freezed (resolved for mockito, Aug 2026)
 
