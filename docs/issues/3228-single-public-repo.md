@@ -472,8 +472,9 @@ non-code pieces have their own homes.
   instance; mimir's policy allows private repos there as long as nothing
   deploys from them. It holds `docs/private/**` (phases 1–2) and receives
   the denylist with the CI job above.
-- [ ] **Private tracker:** **on hold (2026-11-12)** until the phase 4 forge
-  decision, since where it lives depends on that. When it resumes:
+- [ ] **Private tracker:** **decided 2026-11-12: a private repo on Forgejo.**
+  It moved to #3293 (phase 3 there), which ports both clients to the Forgejo
+  API. The original GitHub-shaped tasks, for the record:
   - create it and move #2760;
   - point `server/github/client.go`'s config (`Owner`/`Repo` from app config)
     and `cloud_functions`' target at it;
@@ -499,7 +500,11 @@ landing in the private tracker moves to phase 4 with the tracker.)
 is archived.
 
 **Tasks:**
-- [ ] **Decide the destination: Forgejo or GitHub.**
+- [x] **Decide the destination: Forgejo or GitHub.** **Decided 2026-11-12:
+  Forgejo**, with `ripls-org/ripls` on GitHub as a push mirror. The port is
+  #3293 (`docs/issues/3293-forgejo-port.md`); the rest of this phase waits on
+  it. Its phase 0 is the spike, and the GitHub branch below stays as the
+  fallback if the spike fails.
   - If Forgejo, the port must be done first:
     - the agent's `gh` calls replaced by a `forge` wrapper;
     - dispatchers ported (no `author_association`, so use
@@ -556,6 +561,7 @@ is archived.
 - #2953: the epic. Phase 4 of its plan is "One repo, archive the rest".
 - #3229 (OSS-15): archives this repo's history. It is the last step of phase 4
   here.
+- #3293 (OSS-18): the Forgejo port that phase 4 waits on.
 - #2971, #2969: replaced by this issue and #3229; both closed.
 - #3079 (HOST-5): GCP decommission and Terraform shrink. Landing it before phase
   1's deploy group means less Terraform gets published.

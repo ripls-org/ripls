@@ -1,0 +1,315 @@
+# Issue #3293: [OSS-18] Port CI, the agent and the feedback tracker to Forgejo
+
+**Source:** https://github.com/Type2Fun-Foundation/ripls/issues/3293
+**Filed:** 2026-11-12 | **Last activity:** 2026-11-12
+**Labels:** open-source | **Assignees:** unassigned
+**Context docs:** `docs/issues/3228-single-public-repo.md` (the cut-over this
+port unblocks), `docs/secrets.md`, `docs/infra/dependency_automation.md`,
+`runners/README.md`, `docs/release/automation.md`, the Forgejo v17 Actions
+reference, and the mimir repo's `stacks/forgejo`. Side anchors (`client/*`,
+`server/*`) not loaded: apart from the feedback client, this issue changes CI
+and tooling, not product code.
+
+## Problem Statement
+
+#3228 ends with one public repo that development, deploy and release all run
+from. On 2026-11-12 the destination was decided: the self-hosted Forgejo
+instance at `code.overt.org`, with `ripls-org/ripls` on GitHub kept as a push
+mirror. The private tracker for user feedback and crash alerts goes to Forgejo
+too.
+
+Nothing in this repo runs on Forgejo today. Actions are disabled on the
+instance, and four kinds of thing assume GitHub:
+
+| What | Size | Why it doesn't carry over |
+| --- | --- | --- |
+| Workflows in `.github/workflows/` | 41 files | Most are plain test and build jobs. About a dozen use something Forgejo lacks or spells differently (below). |
+| The agent (`ripls-agent`) | ~100 `gh` calls | `gh` only talks to GitHub. Its dispatchers also depend on `workflow_run`, `author_association` and a GitHub App. |
+| `gh` in this repo | ~30 calls in workflows and scripts, more in four Claude skills | Same. |
+| Feedback filing | `server/github/client.go`, `cloud_functions/` | GitHub API clients with a GitHub App for auth. |
+
+What Forgejo v17 does and doesn't have, from its Actions reference. Items
+marked *verify* were not stated there; the spike answered them (see *Spike
+results*):
+
+| GitHub feature | Used by | Forgejo v17 |
+| --- | --- | --- |
+| `workflow_run` trigger | `claude_fix_ci_failure`, `claude_fix_renovate_ci` | Absent. |
+| `pull_request_review` trigger | `claude_implement_plan`, `claude_address_pr_feedback`, `claude_refine_plan` | Works, though undocumented. The action is `reviewed`, and the kind of review is in `review.type`. |
+| `author_association` in the event | four agent dispatchers | Absent. The collaborator-permission API answers the same question. |
+| `environment:` secret scoping | five deploy and release workflows | Absent. Secrets are per repo, org or user. |
+| `permissions:` | most workflows | Ignored. The automatic token is read-only for fork PRs and read-write otherwise. |
+| `id-token: write` (OIDC into GCP) | `deploy_cloud_functions`, `release_finalize` | Spelled `enable-openid-connect`, and it works. GCP needs a provider for the new issuer. |
+| GitHub App tokens | the dispatch bridge, `claude_refine_plan`, `claude_resolve_conflict` | No Apps. A bot account with scoped access tokens instead. |
+| Reusable workflows | `build_and_deploy_container`, `test_dev_e2e` | Supported, same repo or any public repo. |
+| `concurrency`, `schedule`, `workflow_dispatch`, `issue_comment`, `pull_request_target`, `services`, `run-name`, `secrets: inherit` | throughout | Supported. Concurrency groups are best-effort. |
+| Marketplace actions that call the GitHub API | `softprops/action-gh-release`, `marocchino/sticky-pull-request-comment`, `hmarr/auto-approve-action`, `dorny/paths-filter`, `actions/upload-artifact` | `paths-filter` and `upload-artifact` (v3, and Forgejo's v4 fork) work unchanged. The other three call the GitHub API and get a few lines of `scripts/forge` instead. |
+| Push protection | required by `docs/secrets.md` for a public repo | Absent. A server-side hook can do the same job. |
+
+Two things get simpler. Registration on the instance is closed, so no outside
+account can open a PR, and the self-hosted runners and deploy secrets never sit
+behind a fork. The runners also share a host with the forge, so the slow part
+of an agent job today, cloning over the uplink from GitHub, becomes local.
+
+## Context from Comments
+
+No comments; the issue was filed with this plan. The decision it records was
+made on 2026-11-12 against #3228's recommendation text, which kept GitHub as
+the fallback "if the Forgejo spike fails". That fallback still stands: phase 0
+here is the spike, and its exit is a go or no-go.
+
+## Potential Solutions
+
+### Option A: Flip, then fix
+
+- **Approach:** import the public repo into Forgejo, make it canonical, and
+  port workflows as each one fails.
+- **Pros:** shortest path to "one repo"; no period of running two forges.
+- **Cons:** deploy, release and the agent are all broken on day one, and fixing
+  them happens on the repo that production ships from.
+- **Effort:** large, and front-loaded into an outage.
+
+### Option B: Shadow mirror, then flip
+
+- **Approach:**
+  - Create `ripls-org/ripls` on Forgejo as a pull mirror of the GitHub public
+    repo, so every `npm run oss:sync` reaches it.
+  - Port in this repo, where the changes ship through the existing export:
+    workflows are made to run on both forges, and the Forgejo side runs them in
+    shadow.
+  - Flip only when shadow CI is green, and the agent, a deploy and a release
+    have each been proven from Forgejo against the dev environment.
+- **Pros:**
+  - Nothing production depends on changes until the flip.
+  - Each incompatibility is found by a real run, not by reading docs.
+  - The flip itself shrinks to moving secrets and repointing remotes.
+- **Cons:**
+  - Workflows carry both spellings for a while (for example
+    `permissions: id-token: write` next to `enable-openid-connect`).
+  - Shadow runs add load to a host that also runs the GitHub fleet.
+- **Effort:** large, spread over four phases that each ship.
+
+### Option C: CI on Forgejo, agent stays on GitHub
+
+- **Approach:** port tests, deploy and release. Leave the agent working against
+  the GitHub mirror.
+- **Pros:** skips the biggest single piece, the agent's `gh` calls.
+- **Cons:** the mirror is one-way, so agent PRs would open on a repo that isn't
+  canonical and need carrying back by hand. That is the two-repo coupling #3228
+  exists to remove.
+- **Effort:** medium, with a permanent tax afterwards.
+
+## Recommendation
+
+**Option B.** The port is mostly discovering small differences, and a shadow
+mirror turns each one into a failed run on a repo nobody depends on. Option A
+finds the same differences during an outage. Option C keeps two forges forever.
+
+One trade-off is accepted up front: with no `environment:` scoping, every
+workflow on a maintainer's branch can read every repo secret. On GitHub that
+would be a real loss. Here the people who can push a branch are the people who
+already hold the deploy credentials, and closed registration keeps everyone
+else out. Branch protection on `main` and the gitleaks gates stay.
+
+## Open Questions
+
+- **Does the spike pass?**
+  - It is a go if all of these work on the instance: a test workflow on a
+    self-hosted runner, `pull_request_review` or a workable substitute, a
+    workflow dispatched into a private repo by a bot token, and an OIDC token
+    GCP accepts (or a decision to use a key instead).
+  - Recommendation: if any one fails with no substitute, stop and take #3228's
+    GitHub fallback. Don't build around a missing trigger with polling.
+- **How do the runners run jobs?**
+  - Today each of the five runner containers is the toolchain image with
+    GitHub's runner as its entrypoint.
+  - Recommendation: keep that shape. Add `forgejo-runner` to the image and run
+    it in host mode inside the same containers. The cache mounts, the CPU
+    budget, the recreate timers and `sync.sh` all keep working, and
+    `runs-on: self-hosted-linux` keeps its meaning.
+  - The alternative is docker mode, one runner daemon starting a fresh
+    toolchain container per job. It is cleaner but redoes the cache layout and
+    the CPU budget.
+- **Does the separate agent repo survive?**
+  - It exists because a public GitHub repo can't safely hold the agent's
+    secrets next to fork PRs. Closed registration removes that reason.
+  - Recommendation: keep it for this port and decide later. Folding it in is a
+    refactor with no deadline; moving it as it is keeps the port mechanical.
+    The bridge becomes a bot token that can only dispatch workflows there.
+- **What replaces `gh`?**
+  - Recommendation: one script, `scripts/forge`, wrapping the Forgejo REST API
+    for the subcommands actually used (`issue`, `pr`, `run`, `api`, `label`,
+    `release`). Workflows, agent prompts and skills call it instead of `gh`.
+  - It takes the same arguments as the `gh` forms in use, so prompts change by
+    one word and the agent's habits carry over.
+  - Off-the-shelf CLIs (`tea`, `fj`) cover issues and PRs but not Actions runs
+    and logs, which the CI fixer needs.
+- **Where do workflows live after the flip?**
+  - Forgejo reads `.forgejo/workflows/` and falls back to `.github/workflows/`.
+  - Recommendation: stay in `.github/workflows/` through the shadow period,
+    then `git mv` to `.forgejo/workflows/` at the flip. The GitHub mirror then
+    has no workflows and runs nothing, with no settings to maintain there.
+    Confirmed in the spike: with both directories present, only
+    `.forgejo/workflows/` ran.
+- **OIDC or a key for GCP?**
+  - Two workflows authenticate to GCP with Workload Identity Federation.
+  - Recommendation: add a second provider to the pool for the Forgejo issuer.
+    It keeps "no long-lived cloud keys in CI" true. If GCP rejects the token
+    shape, fall back to a service-account key in a repo secret and record it in
+    the secrets inventory.
+- **How do issues and their numbers move?**
+  - `TODO(#5)` and `TODO(#6)` name issues in `ripls-org/ripls`.
+  - Recommendation: use Forgejo's GitHub migration for that repo, which keeps
+    issue numbers. Check both numbers after the import. This repo's own issues
+    are not imported: they are archived with it (#3229).
+- **How does an outside contributor take part?**
+  - They can't register. The GitHub mirror takes issues; patches arrive by
+    email or through an account a maintainer creates.
+  - Recommendation: accept that for now and say so in `CONTRIBUTING.md` at the
+    flip. It is the known cost of Option C in #3228.
+- **Push-time secret scanning?**
+  - Recommendation: a `pre-receive` hook on the instance that runs gitleaks
+    with this repo's `.gitleaks.toml`, and a paragraph in `docs/secrets.md`
+    replacing the push-protection sentence. A hook rejects the push, so unlike
+    the Actions scan it has no exposure gap.
+
+## Implementation Plan
+
+Work in this repo ships to the public repo through `npm run oss:sync` until the
+flip, as now. Changes to the instance itself land in the mimir repo.
+
+### Phase 0: Spike
+**Goal:** a go or no-go, from real runs.
+**Tasks:**
+- [x] Enable Actions on the instance (mimir repo, `stacks/forgejo`).
+- [x] Register one throwaway runner and create a scratch repo.
+- [x] Run and record the result of each:
+  - a job on `runs-on: self-hosted-linux` with a Postgres service container;
+  - `pull_request_review` as a trigger;
+  - the event payload for `issue_comment` and `issues`, and the
+    collaborator-permission call that stands in for `author_association`;
+  - a bot account's token dispatching a workflow in a private repo, and
+    whether that token can be limited to doing only that;
+  - `enable-openid-connect`, and the token's issuer and claims;
+  - `dorny/paths-filter`, `actions/upload-artifact` and the three API-calling
+    actions, each by full URL;
+  - whether `.forgejo/workflows/` wins over `.github/workflows/`;
+  - what the automatic token may do on a same-repo PR.
+- [x] Write the results into this doc and mark the go or no-go.
+
+**Validates:** every *verify* in the tables above has an answer.
+
+#### Spike results (2026-11-13): go
+
+Run on Forgejo 17.0.1 with runner v13.2.1, against a private scratch repo
+with a maintainer account and a bot account that has write access.
+
+| Probe | Result |
+| --- | --- |
+| Job on `runs-on: self-hosted-linux` | Passed. The runner started each job in a fresh container from the existing `ripls-runner:latest` image, with no change to the image. Go, Flutter, Node and the Docker socket were all there. |
+| Postgres service container | Reachable by service name within a second. |
+| Triggers | `push`, `pull_request`, `pull_request_target`, `issues`, `issue_comment`, `pull_request_review`, `pull_request_review_comment` and `workflow_dispatch` all fired. `workflow_run` never did. |
+| Event payloads | No `author_association` anywhere. A label change arrives as `issues` with action `label_updated`, not `labeled`. A comment on a PR arrives as `issue_comment` with `is_pull: true`. A review's kind is `review.type`: `pull_request_review_approved`, `pull_request_review_rejected` or `pull_request_review_comment`. |
+| Trust check | `GET /repos/{owner}/{repo}/collaborators/{user}/permission` returns `owner`, `write` or `none`. Only a repo admin may ask about someone else: the automatic token gets a 403, and the bot may only ask about itself. |
+| Automatic token | On a same-repo run it can read the repo, create an issue, list runs and dispatch a workflow. Unlike on GitHub, a dispatch made with it does start a run. |
+| Dispatch by the bot | The bot's token dispatched a workflow in the private repo. Tokens are scoped by API area (`write:repository`, `write:issue`), not by action, so what limits the bot is which repos it is a collaborator on. |
+| `if: failure()` final job | Ran after a failed job and had the run id, which is what the CI fixer needs. |
+| OIDC | A job with `enable-openid-connect: true` minted a token. Issuer `https://code.overt.org/api/actions`, with a public discovery document and key set. Subject `repo:<owner>-<id>/<repo>-<id>:ref:<ref>`; claims include `repository`, `ref`, `workflow` and `event_name`. GCP accepting it is proven in phase 3. |
+| Actions | `actions/checkout@v4` resolved by short name. `dorny/paths-filter@v3` worked by full GitHub URL. `actions/upload-artifact@v3` and `forgejo/upload-artifact@v4` both uploaded. `GITHUB_STEP_SUMMARY` is set. |
+| Workflow directory | With both present, only `.forgejo/workflows/` ran. |
+| API | Runs, jobs, logs, reruns and artifacts are all in the REST API, which is what `scripts/forge` needs for the CI fixer. |
+
+What this changes in the plan:
+
+- **Trust check.** It can't run on the automatic token. The dispatchers need a
+  secret holding a token that may read permissions, or the repo moves under
+  an org and the check becomes org membership, which any member may read.
+  Phase 2 picks one.
+- **CI fixer.** The last-job pattern works, and that job can dispatch within
+  the repo on the automatic token alone. Only the hop into the agent repo
+  needs the bot's token.
+- **Runner mode.** Docker mode worked with the image as it is, so adding
+  `forgejo-runner` to the image may not be needed. Phase 1 chooses between
+  host mode in the existing containers and five small runner daemons that
+  each start jobs from the image with that runner's cache mounts.
+- **Dispatcher conditions** that test `github.event.action == 'labeled'` or
+  `review.state` need the Forgejo spellings.
+- Not covered: the Mac runner, and GCP accepting the token.
+
+### Phase 1: Runners and shadow CI
+**Goal:** every push to the public repo runs the test suite on Forgejo.
+**Tasks:**
+- [ ] Add `forgejo-runner` to `runners/Dockerfile`; register two of the five
+  containers with Forgejo and leave three on GitHub until the flip.
+- [ ] Register the Mac that builds iOS.
+- [ ] Create `ripls-org/ripls` on Forgejo as a pull mirror of the GitHub repo,
+  with LFS.
+- [ ] Make the test and lint workflows pass there. Replace or script around
+  each action the spike found wanting.
+- [ ] Set `CI_RUNNER_LINUX` on the Forgejo repo; leave `INSTANCE_PIPELINES`
+  unset so nothing deploys from the shadow.
+- [ ] Update `runners/README.md` and `docs/infra/dependency_automation.md` for
+  the two-forge period.
+
+**Validates:** a sync push turns green on both forges.
+
+### Phase 2: `scripts/forge` and the agent
+**Goal:** the agent plans, implements, addresses review and fixes CI from
+Forgejo events.
+**Tasks:**
+- [ ] Write `scripts/forge` with tests against recorded API responses.
+- [ ] Switch this repo's workflows, scripts and skills from `gh` to it. On
+  GitHub it passes through to `gh`, so both forges keep working.
+- [ ] Create the bot account and its tokens; replace the three App-token steps.
+- [ ] Port the dispatchers:
+  - the trust check calls the collaborator-permission API;
+  - the CI fixers lose `workflow_run`. Each watched workflow gains a last job,
+    `if: failure()`, that dispatches the fixer with the run id.
+- [ ] Import `ripls-agent` and port its workflows, prompts and
+  `validate_request.sh`.
+- [ ] Self-host Renovate against the Forgejo repo, and port
+  `renovate_auto_approve` and `validate_runner_candidate`.
+
+**Validates:** on the shadow repo, the agent takes one issue from plan to
+merged PR, and fixes one deliberately broken test run.
+
+### Phase 3: Deploy, release and the tracker
+**Goal:** everything production needs has run once from Forgejo.
+**Tasks:**
+- [ ] Add the GCP identity provider (or the key fallback) and prove
+  `deploy_cloud_functions` against dev.
+- [ ] Port `release_app`, `release_finalize` and the deploy workflows: releases
+  and tags through `scripts/forge`, artifacts through the action the spike
+  chose.
+- [ ] Run a dev deploy and a full release rehearsal that stops before the store
+  upload.
+- [ ] Create the private tracker repo on the instance and move #2760.
+- [ ] Give `server/github/client.go` a Forgejo implementation behind its
+  existing interface, chosen by config, and port `cloud_functions/` from
+  Octokit to the Forgejo API. Unit tests cover both.
+- [ ] Install the `pre-receive` gitleaks hook and update `docs/secrets.md`.
+
+**Validates:** a feedback report and a test crash alert each open an issue in
+the private Forgejo tracker; the dev deploy and the rehearsal pass.
+
+### Phase 4: Hand back to #3228
+**Goal:** #3228's phase 4 runs as written, with Forgejo as the destination.
+**Tasks:**
+- [ ] Turn the Forgejo repo from a pull mirror into the canonical repo, and
+  `ripls-org/ripls` on GitHub into its push mirror.
+- [ ] `git mv .github/workflows .forgejo/workflows`; drop the GitHub spellings
+  and the `gh` pass-through.
+- [ ] Register the remaining three runners with Forgejo; remove the GitHub
+  registration.
+- [ ] Continue with #3228 phase 4: final export, secrets, branch protection,
+  docs, the proving release, then #3229.
+
+**Validates:** #3228's criteria.
+
+## Related Issues
+- #3228 (OSS-17): the cut-over. Its phase 4 is gated on this port.
+- #3229 (OSS-15): archives this repo once the cut-over is proven.
+- #2953: the epic.
+- #2970 (OSS-16): the dispatch bridge that phase 2 ports.
+- #2760: the open issue filed from user feedback; it moves to the private
+  tracker in phase 3.
