@@ -21,11 +21,10 @@ on:
         required: false
         type: string
         default: "https://server-dev.ripls.org"
-    secrets:
-      # Required so callers pass authenticated BSR access through — proto codegen
-      # pulls remote Dart/TS plugins from buf.build and is rate-limited without it.
-      BUF_TOKEN:
-        required: true
+    # No `secrets:` block: Forgejo rejects one under workflow_call (#3293), so
+    # callers pass `secrets: inherit`. This workflow reads BUF_TOKEN: proto
+    # codegen pulls remote Dart/TS plugins from buf.build and is rate-limited
+    # without authenticated BSR access.
 
 env:
   BUF_TOKEN: ${{ secrets.BUF_TOKEN }}

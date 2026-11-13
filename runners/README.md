@@ -189,6 +189,40 @@ then.
 Go tests are the long pole and CPU-bound, so the real lever for PR turnaround
 is the Go suite itself (its slowest packages run 200s+), not the budget.
 
+## Forgejo runners
+
+`forgejo/` is a second fleet, for the Forgejo instance the project is moving
+to (#3293). Until the cut-over it runs CI in shadow next to the GitHub fleet
+above; after it, this is the only fleet.
+
+It works differently. Each service in `forgejo/docker-compose.yaml` is a small
+daemon that polls Forgejo and starts a **fresh container from
+`ripls-runner:latest` for every job**, through the host's Docker socket. So
+the toolchain image is shared with the GitHub fleet unchanged, a rebuilt image
+is used by the next job with no recreate pass, and nothing from one job's
+workspace reaches the next.
+
+- `forgejo/docker-compose.yaml` — the daemons. The compose project is
+  `forgejo-runners`, deployed to `/opt/forgejo-runners`.
+- `forgejo/config.template.yaml` — one daemon's config, including everything a
+  job container gets: the CPU budget below, `/dev/kvm`, the cache mounts and
+  the testcontainers override. A workflow can't mount anything else.
+- `forgejo/setup.sh` — host side: renders a config per runner, registers the
+  ones that aren't yet, starts the fleet. It also holds the label map.
+  `ubuntu-latest` is one of the labels because Forgejo has no hosted runners.
+- `forgejo/sync.sh` — run from a checkout: pushes the three files above and
+  runs `setup.sh`. To register a new runner it fetches a one-time token from
+  the Forgejo API (`FORGEJO_URL`, `FORGEJO_TOKEN` with `write:organization`)
+  and pipes it to the host; the token is never stored.
+
+Runners register at the organization, so every repo in it shares them. Their
+state is under `/var/cache/nas/forgejo-runner/runner-N/`: `data/` holds the
+registration and rendered config, `gradle/` that runner's Gradle home. The
+content-addressed caches under `github-runner/shared/` are shared by both
+fleets.
+
+To add a runner, add a service to the compose file and run `./sync.sh`.
+
 ## Go version
 
 `GO_VERSION` (from `versions.env`) is a **bootstrap**. With `GOTOOLCHAIN=auto`

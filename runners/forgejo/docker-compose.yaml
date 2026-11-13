@@ -1,0 +1,59 @@
+# Forgejo Actions runners for mimir (#3293).
+#
+# Deploy: edit here, then ./sync.sh. The fleet lives at /opt/forgejo-runners on
+# the host, so the compose project is `forgejo-runners`.
+#
+# These are not the GitHub runners in ../docker-compose.yml with a different
+# entrypoint. Each service here is a small daemon that polls Forgejo and, for
+# every job, starts a FRESH container from ripls-runner:latest through the
+# host's Docker socket. So:
+#
+#   - the toolchain image needs nothing Forgejo-specific in it;
+#   - a rebuilt image is picked up by the next job, with no recreate pass;
+#   - a job's CPU budget, cache mounts and devices are set in the daemon's
+#     config (config.template.yaml), not here.
+#
+# One daemon runs one job at a time (capacity: 1), because each needs its own
+# Gradle home. State per daemon is /var/cache/nas/forgejo-runner/runner-N/:
+#
+#   data/      the daemon's registration (.runner) and rendered config.yaml
+#   gradle/    that runner's ~/.gradle, mounted into its job containers
+#
+# The content-addressed caches under /var/cache/nas/github-runner/shared/ are
+# shared with the GitHub fleet; see ../docker-compose.yml for why those are
+# safe to share and Gradle's home is not.
+
+x-runner-common: &runner-common
+  image: code.forgejo.org/forgejo/runner:13.2.1
+  restart: unless-stopped
+  # The daemon only polls and relays logs. The job containers it starts carry
+  # the real budget (config.template.yaml → container.options).
+  cpus: 1
+  cpu_shares: 128
+  # Root, to use the Docker socket. The GitHub runners run as root for the
+  # same reason.
+  user: "0:0"
+  working_dir: /data
+  command: forgejo-runner daemon --config /data/config.yaml
+
+services:
+  forgejo-runner-1:
+    <<: *runner-common
+    container_name: forgejo-runner-1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/cache/nas/forgejo-runner/runner-1/data:/data
+
+  forgejo-runner-2:
+    <<: *runner-common
+    container_name: forgejo-runner-2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/cache/nas/forgejo-runner/runner-2/data:/data
+
+  forgejo-runner-3:
+    <<: *runner-common
+    container_name: forgejo-runner-3
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/cache/nas/forgejo-runner/runner-3/data:/data

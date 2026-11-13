@@ -28,10 +28,7 @@ jobs:
     with:
       environment: dev
       deploy: true
-    secrets:
-      GCP_SERVICE_ACCOUNT_KEY_DEV: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
-      MIMIR_DEPLOY_SSH_KEY: ${{ secrets.MIMIR_DEPLOY_SSH_KEY }}
-      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+    secrets: inherit
 
   e2e-tests:
     needs: build-and-deploy
@@ -40,5 +37,4 @@ jobs:
     uses: ./.github/workflows/test_dev_e2e.yaml
     with:
       server_url: "https://server-dev.ripls.org"
-    secrets:
-      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+    secrets: inherit

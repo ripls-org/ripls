@@ -13,19 +13,16 @@ on:
         required: false
         type: boolean
         default: false
-    secrets:
-      GCP_SERVICE_ACCOUNT_KEY_DEV:
-        required: true
-      GCP_SERVICE_ACCOUNT_KEY_PROD:
-        required: false
-      # SSH key whose authorized_keys entry on mimir forces
-      # /opt/ripls/server/deploy.sh; required when deploy is true.
-      MIMIR_DEPLOY_SSH_KEY:
-        required: false
-      # Proto Dart codegen pulls remote plugins from buf.build; without this the
-      # build hits BSR rate limits. Required so callers pass it through.
-      BUF_TOKEN:
-        required: true
+    # No `secrets:` block: Forgejo rejects one under workflow_call (#3293), so
+    # callers pass `secrets: inherit` instead. This workflow reads:
+    #   GCP_SERVICE_ACCOUNT_KEY_DEV    always
+    #   GCP_SERVICE_ACCOUNT_KEY_PROD   for environment: prod
+    #   MIMIR_DEPLOY_SSH_KEY           when deploy is true. Its authorized_keys
+    #                                  entry on mimir forces
+    #                                  /opt/ripls/server/deploy.sh.
+    #   BUF_TOKEN                      always. Proto Dart codegen pulls remote
+    #                                  plugins from buf.build and hits BSR rate
+    #                                  limits without it.
 
 jobs:
   build:

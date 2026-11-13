@@ -23,8 +23,4 @@ jobs:
     with:
       environment: ${{ inputs.environment }}
       deploy: true
-    secrets:
-      GCP_SERVICE_ACCOUNT_KEY_DEV: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
-      GCP_SERVICE_ACCOUNT_KEY_PROD: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_PROD }}
-      MIMIR_DEPLOY_SSH_KEY: ${{ secrets.MIMIR_DEPLOY_SSH_KEY }}
-      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+    secrets: inherit

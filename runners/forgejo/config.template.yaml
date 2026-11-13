@@ -1,0 +1,43 @@
+# Config for one Forgejo runner daemon. setup.sh renders it per runner:
+# @N@ becomes the runner number and @LABELS@ its label list.
+log:
+  level: info
+
+runner:
+  file: /data/.runner
+  # One job at a time: the job containers of one daemon share a Gradle home.
+  capacity: 1
+  timeout: 3h
+  shutdown_timeout: 3h
+  labels: [@LABELS@]
+
+cache:
+  enabled: false
+
+container:
+  # ripls-runner:latest is built into the host's Docker store and has no
+  # registry behind it, so never try to pull it.
+  force_pull: false
+  # Jobs use the host daemon for testcontainers and image builds, as they do
+  # on the GitHub fleet.
+  docker_host: automount
+  # Every job container gets:
+  #   - the CPU budget from ../README.md → "CPU budget";
+  #   - /dev/kvm, for the Android emulator;
+  #   - the testcontainers override explained in ../docker-compose.yml;
+  #   - this runner's Gradle home, then the shared caches. The Gradle home
+  #     comes first so the shared files-2.1 mount nests inside it.
+  options: >-
+    --cpus 10 --cpu-shares 128
+    --device /dev/kvm
+    -e TESTCONTAINERS_HOST_OVERRIDE=172.17.0.1
+    -v /var/cache/nas/forgejo-runner/runner-@N@/gradle:/root/.gradle
+    -v /var/cache/nas/github-runner/shared/go-mod:/root/go/pkg/mod
+    -v /var/cache/nas/github-runner/shared/go-build:/root/.cache/go-build
+    -v /var/cache/nas/github-runner/shared/pub-cache:/root/.pub-cache
+    -v /var/cache/nas/github-runner/shared/npm:/root/.npm
+    -v /var/cache/nas/github-runner/shared/gradle-files:/root/.gradle/caches/modules-2/files-2.1
+  # A workflow may not mount anything else from the host.
+  valid_volumes:
+    - /var/cache/nas/forgejo-runner/runner-@N@/gradle
+    - /var/cache/nas/github-runner/shared/**

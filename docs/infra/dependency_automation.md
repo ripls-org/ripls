@@ -744,10 +744,11 @@ blocked — but the flat-config migration is still owed (see follow-ups).
   *remote* plugins on buf.build (the BSR); unauthenticated, they hit BSR rate
   limits (`generate:proto:go` uses local plugins — no token). Two ways this
   drifts: a job that forgets `env: BUF_TOKEN`, or a **reusable-workflow caller
-  that doesn't pass it** — reusable workflows do **not** inherit secrets, so it
-  must be declared in `workflow_call.secrets` and passed by every caller (this is
+  that doesn't pass it** — a called workflow gets **no** secrets by default, so
+  every caller passes `secrets: inherit`. (Don't declare them under
+  `workflow_call.secrets`: Forgejo rejects that block, #3293.) A missing pass is
   how the deploy path — `deploy_to_dev_on_push` → `test_dev_e2e` /
-  `build_and_deploy_container` — silently went unauthenticated). `generate:proto:dart`
+  `build_and_deploy_container` — silently went unauthenticated. `generate:proto:dart`
   and `:ts` go through `scripts/buf_generate.sh`, which **fails fast in CI** with a
   clear message if `BUF_TOKEN` is empty, so drift breaks loudly at the point of use
   instead of as a confusing rate-limit. Local dev is unaffected (the guard is
