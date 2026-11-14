@@ -1,7 +1,7 @@
 # CI runners
 
 > **Since the move to Forgejo (2026-11-14, #3293) CI runs on the fleet under
-> [Forgejo runners](#forgejo-runners) below**: three Linux daemons and the Mac
+> [Forgejo runners](#forgejo-runners) below**: five Linux daemons and the Mac
 > that builds iOS. The GitHub fleet described first no longer receives jobs
 > and goes away with the private GitHub repository. Two things in its section
 > still matter: the **toolchain image** it defined (`Dockerfile`,
@@ -211,6 +211,20 @@ daemon that polls Forgejo and starts a **fresh container from
 the toolchain image is shared with the GitHub fleet unchanged, a rebuilt image
 is used by the next job with no recreate pass, and nothing from one job's
 workspace reaches the next.
+
+A fresh container does not mean a cold one. What made the GitHub runners fast
+was their caches, and the job containers mount the same ones: Go modules and
+build cache, pub, npm and Gradle. Measured on 2026-11-14 over the real
+(not path-skipped) runs of each fleet, the median job takes the same time on
+both: Go tests 374 s on GitHub and 370 s here, Flutter tests 322 and 310, web
+E2E 890 and 910, the dev deploy 576 and 574. What a job pays for a fresh
+container is its checkout, a few seconds from a forge on the same host. So
+the wall-clock time of a pull request is set by **how many jobs run at once**
+and by its longest job (web E2E, about 15 minutes), not by container reuse.
+
+All job containers join one Docker network, `ripls-ci`, which `setup.sh`
+creates. By default the runner makes a network per job, and the host only has
+room for a handful: with five daemons that failed jobs outright (issue #12).
 
 - `forgejo/docker-compose.yaml` — the daemons. The compose project is
   `forgejo-runners`, deployed to `/opt/forgejo-runners`.

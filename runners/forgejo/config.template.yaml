@@ -21,6 +21,15 @@ container:
   # Jobs use the host daemon for testcontainers and image builds, as they do
   # on the GitHub fleet.
   docker_host: automount
+  # One shared network for every job container, made by setup.sh. Left empty,
+  # the runner makes a network per job, and the host has room for only a
+  # handful more: Docker's default address pools hold about 31 bridge
+  # networks and the host's standing stacks use about 26. Five concurrent
+  # jobs ran it dry ("all predefined address pools have been fully
+  # subnetted", issue #12). A shared network costs one, however many jobs
+  # run. No workflow uses `services:`, which is what a per-job network is for;
+  # one that starts to would need it back, or unique service names.
+  network: ripls-ci
   # Every job container gets:
   #   - the CPU budget from ../README.md → "CPU budget";
   #   - /dev/kvm, for the Android emulator;
