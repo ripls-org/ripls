@@ -19,7 +19,8 @@ description: >-
 # comments; the job log and a red check say the same thing without handing a
 # third-party action write access to every PR.
 #
-# Both callers (gitleaks-pr, gitleaks-push) live here so the pinned version and
+# Both callers lived here (gitleaks-pr, and a scan of pushes that the forge's
+# pre-receive hook replaced at the move to Forgejo) so the pinned version and
 # the scan flags cannot drift apart between them. The old inline steps had
 # already drifted into two near-identical copies of the same comment.
 

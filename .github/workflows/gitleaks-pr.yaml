@@ -4,7 +4,9 @@ name: gitleaks-pr
 # Reads .gitleaks.toml and .gitleaksignore from the repo root.
 #
 # Runs the gitleaks binary via .github/actions/gitleaks-scan; that action's
-# header explains why, and holds the version pin shared with gitleaks-push.
+# header explains why, and holds the version pin. Pushes are covered by the
+# forge's pre-receive hook (infra/forgejo/), which refuses a push that adds a
+# secret; the Actions scan of pushes it replaced could only report one.
 
 # Supersede in-progress scans on the same PR (rapid pushes / Renovate rebases)
 # so redundant runs don't pile up — the latest PR commit is the one that gates
@@ -23,7 +25,6 @@ permissions:
 jobs:
   scan:
     name: Gitleaks (PR)
-    # See gitleaks-push for why this stays on a hosted runner.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

@@ -3,6 +3,28 @@
 Thanks for looking. This is a Go server plus a Flutter app for community
 sharing of goods and skills, and outside contributions are welcome.
 
+## Where development happens
+
+The project's home is <https://code.overt.org/ripls-org/ripls>, a Forgejo
+instance. Pull requests are reviewed and merged there, CI runs there, and
+releases are cut from there. The repository on GitHub
+(`github.com/ripls-org/ripls`) is a mirror that Forgejo pushes to: it is always
+current, but nothing is merged on it.
+
+Accounts on the Forgejo instance are created by a maintainer; there is no open
+sign-up. Until you have one:
+
+- **Issues and questions:** open them on the GitHub mirror. Maintainers read
+  them there.
+- **Patches:** open an issue on the mirror saying what you would like to change
+  and ask for an account, or attach a `git format-patch` series to the issue.
+
+In a checkout, `scripts/forge` is the command-line client for issues, pull
+requests and CI runs. It takes the same arguments as the `gh` forms it replaces
+and talks to whichever forge the checkout's `origin` points at. On Forgejo it
+needs an access token in `FORGEJO_TOKEN` (Settings → Applications on the
+instance).
+
 ## Sign your commits (DCO)
 
 Every commit needs a `Signed-off-by` line. Git adds it for you:

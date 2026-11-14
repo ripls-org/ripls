@@ -22,8 +22,8 @@ JOB_IMAGE="ripls-runner:latest"
 # GitHub fleet (see ../docker-compose.yml, runner-4).
 labels_for() {
   case "$1" in
-    1) echo "self-hosted-linux ubuntu-latest" ;;
-    *) echo "self-hosted-linux ubuntu-latest android-builder" ;;
+    2 | 3) echo "self-hosted-linux ubuntu-latest android-builder" ;;
+    *) echo "self-hosted-linux ubuntu-latest" ;;
   esac
 }
 

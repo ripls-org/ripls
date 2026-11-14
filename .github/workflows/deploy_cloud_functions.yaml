@@ -18,11 +18,14 @@ name: Deploy Cloud Functions
 #   - Forgejo (#3293): pool `forgejo-actions`, provider `forgejo`. It accepts
 #     only runs on `main` that a pull request did not trigger.
 #
-# TODO(#3293): on Forgejo a run gets an OIDC token only when the workflow
-# sets the top-level key `enable-openid-connect: true`, and without it the
-# auth step below fails. The key can't be here yet: GitHub rejects a workflow
-# file with a top-level key it does not know, and GitHub still does this
-# deploy. Add it in the cut-over change, when Forgejo takes the deploy over.
+# On Forgejo a run gets an OIDC token only when the workflow sets the
+# top-level key `enable-openid-connect: true`; without it the auth step below
+# fails. GitHub rejects a workflow file with that key, so this file no longer
+# runs there. That is intended: Forgejo does this deploy since the cut-over
+# (#3293). actionlint only knows GitHub's schema, so .github/actionlint.yaml
+# ignores the key for this file.
+
+enable-openid-connect: true
 
 on:
   push:

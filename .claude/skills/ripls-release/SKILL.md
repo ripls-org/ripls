@@ -72,7 +72,7 @@ Commit the release notes together with the version bump.
 git push origin bump-version-$version
 ```
 
-Create a PR using `gh pr create` with the version bump and release notes. The PR title should be something like "Bump version to $version".
+Create a PR using `scripts/forge pr create` with the version bump and release notes. The PR title should be something like "Bump version to $version".
 
 ### Step 8 — Post-merge steps (instructions only)
 

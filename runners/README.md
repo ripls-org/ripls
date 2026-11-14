@@ -1,4 +1,14 @@
-# GitHub Actions self-hosted runners
+# CI runners
+
+> **Since the move to Forgejo (2026-11-14, #3293) CI runs on the fleet under
+> [Forgejo runners](#forgejo-runners) below**: five Linux daemons and the Mac
+> that builds iOS. The GitHub fleet described first no longer receives jobs
+> and goes away with the private GitHub repository. Two things in its section
+> still matter: the **toolchain image** it defined (`Dockerfile`,
+> `ripls-runner:latest`) is the image every Forgejo job runs in, and the
+> **CPU budget** reasoning carries over unchanged.
+
+## The GitHub fleet (retired)
 
 Canonical source of the Docker config for the five `self-hosted-linux`
 runners that run CI for this repo. Lives on `mimir` (Ubuntu 26.04) under
@@ -191,9 +201,9 @@ is the Go suite itself (its slowest packages run 200s+), not the budget.
 
 ## Forgejo runners
 
-`forgejo/` is a second fleet, for the Forgejo instance the project is moving
-to (#3293). Until the cut-over it runs CI in shadow next to the GitHub fleet
-above; after it, this is the only fleet.
+`forgejo/` is the fleet that runs CI, on the Forgejo instance the project
+lives on (#3293). It ran in shadow next to the GitHub fleet above until the
+cut-over on 2026-11-14.
 
 It works differently. Each service in `forgejo/docker-compose.yaml` is a small
 daemon that polls Forgejo and starts a **fresh container from
@@ -233,8 +243,7 @@ label `self-hosted-mac`. It is a different shape from the Linux fleet:
 - **A LaunchAgent in the GUI session** (`org.ripls.forgejo-runner`), not a
   daemon, for the same reason: only that session reaches the login keychain.
 - **One job at a time.** `xcodebuild` and `fastlane match` are not safe to run
-  twice at once in one account. Until the cut-over the GitHub runner lives in
-  the same account, so do not send both forges an iOS build at the same time.
+  twice at once in one account.
 
 The files:
 
@@ -244,9 +253,11 @@ The files:
   the agent. It holds the toolchain `PATH`, used by the daemon and by every job
   step. The daemon needs `node` on it to run JavaScript actions; the GitHub
   runner ships its own Node, this one does not.
+- `forgejo/mac/prune.sh` and `forgejo/mac/org.ripls.runner-prune.plist` — the
+  nightly disk prune and its LaunchAgent; see "Disk" below.
 - `forgejo/mac/sync.sh` — run from a checkout with `MAC_HOST=user@host`: pushes
-  the three files and runs `setup.sh`, fetching a registration token the same
-  way as `forgejo/sync.sh`.
+  these files and runs `setup.sh`, fetching a registration token the same way
+  as `forgejo/sync.sh`.
 
 The runner binary comes from Homebrew (`brew install forgejo-runner`); keep it
 at the version `forgejo/docker-compose.yaml` pins. State is in
@@ -257,6 +268,28 @@ at the version `forgejo/docker-compose.yaml` pins. State is in
 ```bash
 ssh "$MAC_HOST" 'launchctl print gui/$(id -u)/org.ripls.forgejo-runner | grep state'
 ssh "$MAC_HOST" 'tail -20 ~/Library/Logs/forgejo-runner/stderr.log'
+```
+
+**Disk.** Nothing in either runner removes an old toolchain: every Flutter
+bump leaves a ~4 GB SDK in the tool cache, and the Mac's disk is small enough
+that this once left no room for a macOS update. `prune.sh` runs at 03:30 from
+the LaunchAgent `org.ripls.runner-prune` and, unless a job is running:
+
+- keeps the two most recently installed versions of each tool in the tool
+  cache (`KEEP_VERSIONS`), for this runner and for the GitHub runner while it
+  is still there;
+- removes the GitHub runner's superseded self-update directories;
+- clears the package download caches (Go modules, pub, npm, SwiftPM,
+  CocoaPods, Homebrew), but only when under 30 GB is free (`LOW_WATER_GB`),
+  since the next build has to fetch them again.
+
+It never touches Xcode archives, simulator runtimes or DerivedData, and logs
+a `WARNING` line when the disk is still low afterwards. Tests are in
+`scripts/runner_prune.test.js`.
+
+```bash
+ssh "$MAC_HOST" 'tail -20 ~/Library/Logs/forgejo-runner/prune.log'
+ssh "$MAC_HOST" '~/forgejo-runner/setup/prune.sh --dry-run'
 ```
 
 ## Go version

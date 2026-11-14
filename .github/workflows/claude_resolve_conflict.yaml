@@ -22,12 +22,9 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-  schedule:
-    # Hourly safety net: GitHub recomputes mergeability lazily, so a PR can
-    # become CONFLICTING without any push or PR event firing. Forgejo rechecks
-    # open pull requests when their base moves, so the job skips this trigger
-    # there (#3293).
-    - cron: "0 * * * *"
+  # No schedule. On GitHub this also ran hourly, because GitHub recomputes
+  # mergeability lazily. Forgejo rechecks open pull requests when their base
+  # moves, so the push trigger is enough (#3293).
   workflow_dispatch:
     inputs:
       pr_number:
@@ -47,7 +44,7 @@ jobs:
     if: |
       vars.AGENT_REPO != '' &&
       (vars.AGENT_DISPATCH_APP_ID != '' || github.server_url != 'https://github.com') &&
-      (github.event_name != 'schedule' || github.server_url == 'https://github.com') && (
+      (
         github.event_name != 'pull_request' ||
         startsWith(github.event.pull_request.head.ref, 'claude/')
       )

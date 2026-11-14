@@ -21,6 +21,8 @@ NAME="${RUNNER_NAME:-$(scutil --get LocalHostName)}"
 RUNNER="${RUNNER:-/opt/homebrew/bin/forgejo-runner}"
 LABEL="org.ripls.forgejo-runner"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+PRUNE_LABEL="org.ripls.runner-prune"
+PRUNE_PLIST="$HOME/Library/LaunchAgents/$PRUNE_LABEL.plist"
 DOMAIN="gui/$(id -u)"
 
 # The toolchain, for the daemon and for every job step. Keep it in step with
@@ -64,19 +66,30 @@ fi
 sed -e "s|@STATE@|$STATE|g" -e "s|@RUNNER@|$RUNNER|g" -e "s|@LOGS@|$LOGS|g" \
   -e "s|@PATH@|$TOOL_PATH|g" \
   "$HERE/$LABEL.plist" >"$PLIST"
+sed -e "s|@STATE@|$STATE|g" -e "s|@LOGS@|$LOGS|g" \
+  "$HERE/$PRUNE_LABEL.plist" >"$PRUNE_PLIST"
 
-# Into the user's GUI session by name. A bare `launchctl load` over SSH would
-# put the agent in the SSH session instead, where the login keychain is out
-# of reach and the agent dies with the connection.
-if launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then
-  launchctl bootout "$DOMAIN/$LABEL"
-  # bootout returns before the daemon has finished shutting down, and a
-  # bootstrap in that window fails with "Input/output error".
-  for _ in $(seq 1 30); do
-    launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1 || break
-    sleep 1
-  done
-fi
-launchctl bootstrap "$DOMAIN" "$PLIST"
+# (Re)load the agent $1 from the plist $2, into the user's GUI session by
+# name. A bare `launchctl load` over SSH would put the agent in the SSH
+# session instead, where the login keychain is out of reach and the agent
+# dies with the connection.
+reload_agent() {
+  local label="$1" plist="$2"
+  if launchctl print "$DOMAIN/$label" >/dev/null 2>&1; then
+    launchctl bootout "$DOMAIN/$label"
+    # bootout returns before the daemon has finished shutting down, and a
+    # bootstrap in that window fails with "Input/output error".
+    for _ in $(seq 1 30); do
+      launchctl print "$DOMAIN/$label" >/dev/null 2>&1 || break
+      sleep 1
+    done
+  fi
+  launchctl bootstrap "$DOMAIN" "$plist"
+}
 
+reload_agent "$LABEL" "$PLIST"
 echo "started $LABEL; log: $LOGS/stderr.log"
+
+# The nightly disk prune (prune.sh). It only runs on its schedule.
+reload_agent "$PRUNE_LABEL" "$PRUNE_PLIST"
+echo "scheduled $PRUNE_LABEL; log: $LOGS/prune.log"

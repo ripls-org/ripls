@@ -103,21 +103,13 @@ it; the CI gates below do not care.
 **2. PR gate.** `.github/workflows/gitleaks-pr.yaml` scans every pull request's
 diff and blocks the merge.
 
-**3. Push-time detection.** `.github/workflows/gitleaks-push.yaml` scans pushes
-to *any* branch, so direct pushes and force-pushes are covered too.
-
-Note what layer 3 does **not** do: it cannot prevent the secret from reaching
-the remote. Actions runs after the push is accepted, so detection is a few
-seconds behind exposure. If it fires, treat the credential as compromised and
-rotate it — do not treat deleting the commit as remediation. On a public
-repository, enable GitHub's push protection, which blocks at push time and does
-not have this gap.
-
-**4. Push-time refusal, on Forgejo.** `infra/forgejo/pre-receive-gitleaks` is a
-git `pre-receive` hook: the server runs it before it accepts a push, and a push
-that adds a secret is refused, so the secret never becomes readable there. It
-is Forgejo's answer to GitHub's push protection and closes the gap layer 3
-leaves. It scans the commits the push adds, with `.gitleaks.toml` and
+**3. Push-time refusal.** `infra/forgejo/pre-receive-gitleaks` is a git
+`pre-receive` hook on the Forgejo repository: the server runs it before it
+accepts a push to *any* branch, and a push that adds a secret is refused, so
+the secret never becomes readable there. It replaced an Actions workflow that
+scanned pushes after they were accepted, which could report a secret but not
+stop it from reaching the remote. It scans the commits the push adds, with
+`.gitleaks.toml` and
 `.gitleaksignore` as they are in the pushed tip, and prints each finding
 (redacted) to the pusher. If the scanner is missing it refuses every push
 and says so, since a guard that stops guarding without a word is the worse

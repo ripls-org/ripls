@@ -21,7 +21,7 @@ can't exhibit.
 ## Input
 
 An issue number (`/ripls-ui-investigate 2638`) or a freeform description.
-With an issue number, `gh issue view` for body + comments, and **download any
+With an issue number, `scripts/forge issue view` for body + comments, and **download any
 screenshot URLs in the issue body** into the workspace (`curl -L -o …`) and
 read them — the reporter's screenshot usually disambiguates what "it" is.
 
