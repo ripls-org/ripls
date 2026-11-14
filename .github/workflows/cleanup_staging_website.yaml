@@ -76,12 +76,19 @@ jobs:
                rm -f -- '$staging/config/locations-$SLUG.include' && \
                rm -rf -- '$staging/sites/$SLUG'"
 
-      - name: Update PR comment
-        uses: marocchino/sticky-pull-request-comment@v3
+      # Only for the comment script below; nothing else here reads the repo.
+      - name: Checkout the comment script
+        uses: actions/checkout@v7
         with:
-          header: staging-website
-          message: |
-            🧹 Staging website for this PR has been removed.
+          sparse-checkout: .github/scripts
+
+      - name: Update PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          .github/scripts/sticky_comment.sh "$PR_NUMBER" staging-website \
+            <<< "🧹 Staging website for this PR has been removed."
 
       - name: Cleanup SSH key
         if: always()

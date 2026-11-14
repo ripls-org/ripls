@@ -143,12 +143,15 @@ jobs:
           rm -f ~/.ssh/deploy_key "site-$SLUG.conf"
 
       - name: Comment staging URL on PR
-        uses: marocchino/sticky-pull-request-comment@v3
-        with:
-          header: staging-website
-          message: |
-            🌐 **Staging website deployed**
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          URL: ${{ steps.slug.outputs.url }}
+        run: |
+          .github/scripts/sticky_comment.sh "$PR_NUMBER" staging-website <<EOF
+          🌐 **Staging website deployed**
 
-            ${{ steps.slug.outputs.url }}
+          $URL
 
-            Updated on each push to this PR. Removed automatically when the PR is closed.
+          Updated on each push to this PR. Removed automatically when the PR is closed.
+          EOF
