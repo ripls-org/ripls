@@ -223,6 +223,42 @@ fleets.
 
 To add a runner, add a service to the compose file and run `./sync.sh`.
 
+### The Mac that builds iOS
+
+`forgejo/mac/` registers the build Mac with the same organization, under the
+label `self-hosted-mac`. It is a different shape from the Linux fleet:
+
+- **Host mode, no container.** Jobs run straight on the machine as the
+  logged-in user, because Xcode and code signing need the real macOS session.
+- **A LaunchAgent in the GUI session** (`org.ripls.forgejo-runner`), not a
+  daemon, for the same reason: only that session reaches the login keychain.
+- **One job at a time.** `xcodebuild` and `fastlane match` are not safe to run
+  twice at once in one account. Until the cut-over the GitHub runner lives in
+  the same account, so do not send both forges an iOS build at the same time.
+
+The files:
+
+- `forgejo/mac/config.template.yaml` — the daemon's config.
+- `forgejo/mac/org.ripls.forgejo-runner.plist` — the LaunchAgent.
+- `forgejo/mac/setup.sh` — Mac side: renders both, registers if needed, loads
+  the agent. It holds the toolchain `PATH`, used by the daemon and by every job
+  step. The daemon needs `node` on it to run JavaScript actions; the GitHub
+  runner ships its own Node, this one does not.
+- `forgejo/mac/sync.sh` — run from a checkout with `MAC_HOST=user@host`: pushes
+  the three files and runs `setup.sh`, fetching a registration token the same
+  way as `forgejo/sync.sh`.
+
+The runner binary comes from Homebrew (`brew install forgejo-runner`); keep it
+at the version `forgejo/docker-compose.yaml` pins. State is in
+`~/forgejo-runner/` on the Mac: the registration, the rendered config, and
+`work/`, which holds one directory per running job plus a persistent
+`tool_cache/` (the Flutter SDKs). Logs are in `~/Library/Logs/forgejo-runner/`.
+
+```bash
+ssh "$MAC_HOST" 'launchctl print gui/$(id -u)/org.ripls.forgejo-runner | grep state'
+ssh "$MAC_HOST" 'tail -20 ~/Library/Logs/forgejo-runner/stderr.log'
+```
+
 ## Go version
 
 `GO_VERSION` (from `versions.env`) is a **bootstrap**. With `GOTOOLCHAIN=auto`

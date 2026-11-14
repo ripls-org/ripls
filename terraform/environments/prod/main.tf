@@ -124,6 +124,59 @@ resource "google_secret_manager_secret_iam_member" "functions_forgejo_alerts_tok
 }
 
 # =============================================================================
+# DEPLOYS FROM FORGEJO ACTIONS (#3293)
+# =============================================================================
+# Forgejo Actions issues OpenID Connect tokens the way GitHub Actions does
+# (a job opts in with `enable-openid-connect: true`), so a run can exchange
+# one for the cloud-functions-deployer account's credentials with no stored
+# key. This is the Forgejo counterpart of the `github-actions` pool, which was
+# created out of band and trusts the GitHub repository.
+#
+# The provider accepts a token only from one repository, by its numeric id (a
+# name can be re-registered; an id cannot), and only for a run on `main` that
+# is not a pull request. A fork's pull request run therefore cannot deploy,
+# whatever its workflow says.
+resource "google_iam_workload_identity_pool" "forgejo_actions" {
+  project                   = var.project_id
+  workload_identity_pool_id = "forgejo-actions"
+  display_name              = "Forgejo Actions"
+  description               = "Actions runs on the Forgejo instance (#3293)"
+}
+
+resource "google_iam_workload_identity_pool_provider" "forgejo" {
+  project                            = var.project_id
+  workload_identity_pool_id          = google_iam_workload_identity_pool.forgejo_actions.workload_identity_pool_id
+  workload_identity_pool_provider_id = "forgejo"
+  display_name                       = "Forgejo"
+
+  oidc {
+    issuer_uri = "${var.forgejo_url}/api/actions"
+  }
+
+  attribute_mapping = {
+    "google.subject"          = "assertion.sub"
+    "attribute.repository"    = "assertion.repository"
+    "attribute.repository_id" = "assertion.repository_id"
+    "attribute.ref"           = "assertion.ref"
+    "attribute.event_name"    = "assertion.event_name"
+  }
+
+  attribute_condition = join(" && ", [
+    "assertion.repository_id == '${var.forgejo_repository_id}'",
+    "assertion.ref == 'refs/heads/main'",
+    "assertion.event_name != 'pull_request'",
+    "assertion.event_name != 'pull_request_target'",
+  ])
+}
+
+# Runs that pass the provider's condition may act as the deployer.
+resource "google_service_account_iam_member" "functions_deployer_from_forgejo" {
+  service_account_id = "projects/${var.project_id}/serviceAccounts/cloud-functions-deployer@${var.project_id}.iam.gserviceaccount.com"
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.forgejo_actions.name}/attribute.repository_id/${var.forgejo_repository_id}"
+}
+
+# =============================================================================
 # SERVER RUNTIME SECRETS (#1768, #1770)
 # =============================================================================
 # The credentials the server's entrypoint fetches from Secret Manager at

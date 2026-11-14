@@ -131,12 +131,12 @@ rest on reading, not on a run.
    that step exists to prevent. Port the alert before the first Forgejo
    deploy. The planned fallback, a service-account key, is forbidden by an
    org policy the workflow's own header cites.
-4. **`release_finalize` would start two release builds.** It pushes the tag
-   and then dispatches `release_app`, because on GitHub a tag pushed with the
-   workflow token triggers nothing. On Forgejo it does. Two runs in one
-   concurrency group with `cancel-in-progress` means one cancels the other,
-   possibly mid store upload. Run the dispatch on GitHub only, and delete it
-   at the flip.
+4. ~~**`release_finalize` would start two release builds.**~~ Wrong, as a
+   probe on 2026-11-14 showed. The claim was that on Forgejo a tag pushed
+   with the workflow token starts workflows, so the dispatch that follows the
+   push would start a second run. It does not: a tag pushed that way starts
+   nothing on Forgejo either, while the same tag pushed by a user does. The
+   dispatch stays, on both forges, and now goes through `scripts/forge`.
 5. **`actions/upload-artifact@v7`** (six places, plus the agent repo). Only
    v3 and Forgejo's v4 fork were proven. All six run on failure only, so the
    cost is lost debug output on a job that is already red. *Verify v7.*

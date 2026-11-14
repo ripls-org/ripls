@@ -125,7 +125,7 @@ jobs:
         run: |
           # Use homebrew Ruby on self-hosted Mac
           echo "/opt/homebrew/opt/ruby/bin" >> $GITHUB_PATH
-          echo "/opt/homebrew/lib/ruby/gems/3.4.0/bin" >> $GITHUB_PATH
+          echo "/opt/homebrew/lib/ruby/gems/4.0.0/bin" >> $GITHUB_PATH
           export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
           ruby --version
           gem install bundler --no-document --user-install

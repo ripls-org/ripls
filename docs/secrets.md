@@ -3,7 +3,7 @@
 # How it works + schema: docs/context_map.md
 context:
   description: How secrets reach the server and the app — the Secret Manager fetch-at-startup design, the entrypoint/fetch-secret wrappers, dart-define for client builds, and the gitleaks detection stack that keeps credentials out of the repo.
-  globs: [server/entrypoint.sh, server/cmd/fetch-secrets/**, docker-compose.yaml, scripts/fetch_secret.sh, scripts/run_server_with_sm_secrets.sh, .gitleaks.toml, .gitleaksignore, .github/workflows/gitleaks-pr.yaml, .github/workflows/gitleaks-push.yaml]
+  globs: [server/entrypoint.sh, server/cmd/fetch-secrets/**, docker-compose.yaml, scripts/fetch_secret.sh, scripts/run_server_with_sm_secrets.sh, .gitleaks.toml, .gitleaksignore, .github/workflows/gitleaks-pr.yaml, .github/workflows/gitleaks-push.yaml, infra/forgejo/**]
   triggers: [secrets, api-keys, secret-manager, gitleaks, credentials, tokens, dart-define]
   lens: [infra, security]
   skills: [issue, audit]
@@ -112,6 +112,21 @@ seconds behind exposure. If it fires, treat the credential as compromised and
 rotate it — do not treat deleting the commit as remediation. On a public
 repository, enable GitHub's push protection, which blocks at push time and does
 not have this gap.
+
+**4. Push-time refusal, on Forgejo.** `infra/forgejo/pre-receive-gitleaks` is a
+git `pre-receive` hook: the server runs it before it accepts a push, and a push
+that adds a secret is refused, so the secret never becomes readable there. It
+is Forgejo's answer to GitHub's push protection and closes the gap layer 3
+leaves. It scans the commits the push adds, with `.gitleaks.toml` and
+`.gitleaksignore` as they are in the pushed tip, and prints each finding
+(redacted) to the pusher. If the scanner is missing it refuses every push
+and says so, since a guard that stops guarding without a word is the worse
+failure.
+
+The hook is per repository. `infra/forgejo/install_hook.sh <owner>/<repo>`
+installs or updates it, and `--remove` takes it out; it needs shell access to
+the machine running Forgejo. Its tests push to a throwaway repository:
+`infra/forgejo/pre-receive-gitleaks.test.sh`.
 
 ### Configuration
 

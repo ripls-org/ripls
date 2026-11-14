@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchAgent for the Forgejo runner on the Mac that builds iOS. setup.sh
+  renders it: @STATE@ is the runner's state directory, @RUNNER@ the
+  forgejo-runner binary, @LOGS@ the log directory, @PATH@ the toolchain.
+
+  An agent in the user's GUI session, not a daemon: codesign and xcodebuild
+  reach the login keychain only from that session. ProcessType Interactive and
+  SessionCreate are what give it that access.
+-->
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>org.ripls.forgejo-runner</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>@RUNNER@</string>
+      <string>daemon</string>
+      <string>--config</string>
+      <string>@STATE@/config.yaml</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>@STATE@</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>@LOGS@/stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>@LOGS@/stderr.log</string>
+    <!-- launchd starts agents with a bare system PATH; the daemon itself
+         needs `node` and `git` from Homebrew. -->
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PATH</key>
+      <string>@PATH@</string>
+    </dict>
+    <key>ProcessType</key>
+    <string>Interactive</string>
+    <key>SessionCreate</key>
+    <true/>
+  </dict>
+</plist>

@@ -249,7 +249,11 @@ What this changes in the plan:
 **Tasks:**
 - [ ] Add `forgejo-runner` to `runners/Dockerfile`; register two of the five
   containers with Forgejo and leave three on GitHub until the flip.
-- [ ] Register the Mac that builds iOS.
+- [x] Register the Mac that builds iOS: `runners/forgejo/mac/`, a
+  host-mode runner started as a LaunchAgent, label `self-hosted-mac`. A probe
+  job checked out, found Xcode, CocoaPods, Ruby and the JDK, and installed
+  the pinned Flutter. Not yet run: a real iOS build, and signing. Both wait
+  for the release rehearsal in phase 3.
 - [ ] Create `ripls-org/ripls` on Forgejo as a pull mirror of the GitHub repo,
   with LFS.
 - [ ] Make the test and lint workflows pass there. Replace or script around
@@ -378,11 +382,34 @@ Two Forgejo behaviors cost a debugging round each and are worth knowing:
 ### Phase 3: Deploy, release and the tracker
 **Goal:** everything production needs has run once from Forgejo.
 **Tasks:**
-- [ ] Add the GCP identity provider (or the key fallback) and prove
-  `deploy_cloud_functions` against dev.
+- [ ] Add the GCP identity provider and prove `deploy_cloud_functions`.
+  The provider is in place in prod (#3326): pool `forgejo-actions`, provider
+  `forgejo`, accepting only runs of this repository (by its id) on `main`
+  that a pull request did not trigger. The workflow picks the provider by
+  forge, and its failure alert goes through `scripts/forge`. Proven from a
+  scratch repository on Forgejo: `google-github-actions/auth` runs there, and
+  Google verified the run's token and refused it for one reason, the
+  attribute condition (wrong repository). Left for the cut-over change: the
+  top-level key `enable-openid-connect: true`, which GitHub rejects as an
+  unknown key (tested), and with it the first deploy from Forgejo. The
+  functions deploy to prod only, so there is no dev run to prove it against
+  first.
 - [ ] Port `release_app`, `release_finalize` and the deploy workflows: releases
   and tags through `scripts/forge`, artifacts through the action the spike
-  chose.
+  chose. Done in the workflow files, with each piece tried on a scratch
+  repository:
+  - `release_finalize` starts Release App through `scripts/forge workflow
+    run` on both forges. On Forgejo, as on GitHub, a tag pushed with the
+    workflow's token starts nothing (the same tag pushed by a user does), so
+    the explicit dispatch is needed there too. A dispatch on a tag ref runs
+    on that tag, and `inputs.*` resolves in an ordinary job's `if:`.
+  - `release_app` creates the release with `softprops/action-gh-release` on
+    GitHub and `scripts/forge release create` on Forgejo, with the release's
+    notes file as the body. Its tag-on-main check no longer pipes into
+    `grep -q`.
+  - Both iOS workflows pointed at a Ruby 3.4 gem directory that does not
+    exist on the Mac; they now name the 4.0 one.
+  Not done: a run of either workflow on Forgejo. That is the rehearsal below.
 - [ ] Run a dev deploy and a full release rehearsal that stops before the store
   upload.
 - [x] Create the private tracker repo on the instance (`ripls-org/tracker`,
@@ -391,7 +418,14 @@ Two Forgejo behaviors cost a debugging round each and are worth knowing:
   interface, chosen by config (#3318), and port `cloud_functions/` from
   Octokit to the Forgejo API (#3321). Unit tests cover both. See *The tracker
   move* below.
-- [ ] Install the `pre-receive` gitleaks hook and update `docs/secrets.md`.
+- [x] Install the `pre-receive` gitleaks hook and update `docs/secrets.md`.
+  The hook is `infra/forgejo/pre-receive-gitleaks`, installed on the shadow
+  repository by `infra/forgejo/install_hook.sh`. On this Forgejo version a
+  repository has no hooks directory of its own until one is made: the global
+  `pre-receive` runs whatever is in `<repo>.git/hooks/pre-receive.d/`. Tried
+  on the instance: a clean push went through, and a push carrying a made-up
+  token was refused with the finding printed and nothing left on the server.
+  `gitleaks-push` stays until the cut-over (audit decision 5).
 
 **Validates:** a feedback report and a test crash alert each open an issue in
 the private Forgejo tracker; the dev deploy and the rehearsal pass.

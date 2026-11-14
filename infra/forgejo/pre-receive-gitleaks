@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# pre-receive-gitleaks — a git pre-receive hook that refuses a push which adds
+# a secret (#3293).
+#
+# Installed in one repository on the Forgejo instance, as
+# <repo>.git/hooks/pre-receive.d/gitleaks (see install_hook.sh). Forgejo's own
+# pre-receive runs every executable in that directory and refuses the push if
+# any of them fails.
+#
+# This is the push-time gate GitHub's push protection used to be. It differs
+# from the scan in Actions in the way that matters for a public repository:
+# the Actions scan runs after the commits are already on the server and
+# readable, and this runs before they are accepted.
+#
+# What is scanned: the commits the push adds to the repository, that is, those
+# reachable from a pushed tip and from no existing ref. A push that only
+# deletes refs, or only moves a ref to commits the repository already has,
+# scans nothing.
+#
+# Config: .gitleaks.toml and .gitleaksignore as they are in the pushed tip, so
+# a push can carry its own allowlist entry, as it can for the Actions scan. A
+# tip without .gitleaks.toml gets gitleaks' built-in rules.
+#
+# It fails closed. If gitleaks is missing or cannot run, the push is refused
+# with a message saying so: a guard that silently stops guarding is the worse
+# failure. To get unstuck, fix the binary or remove this file on the host.
+#
+# stdin, from git: one "<old> <new> <ref>" line per ref being updated.
+set -u
+
+GITLEAKS="${GITLEAKS:-/var/lib/gitea/custom/bin/gitleaks}"
+ZERO_RE='^0+$'
+
+say() { echo "pre-receive-gitleaks: $*" >&2; }
+
+if ! command -v "$GITLEAKS" >/dev/null 2>&1; then
+  say "gitleaks is not installed at $GITLEAKS, so pushes cannot be scanned for secrets."
+  say "Refusing the push. Tell whoever runs this instance."
+  exit 1
+fi
+
+work="$(mktemp -d)" || { say "cannot create a temporary directory; refusing the push."; exit 1; }
+trap 'rm -rf "$work"' EXIT
+
+status=0
+while read -r _old new ref; do
+  # A deleted ref adds nothing.
+  if [[ "$new" =~ $ZERO_RE ]]; then
+    continue
+  fi
+
+  # Nothing new to the repository: the tip is already reachable from a ref.
+  if [ -z "$(git rev-list --max-count=1 "$new" --not --all 2>/dev/null)" ]; then
+    continue
+  fi
+
+  cfg_dir="$work/$new"
+  mkdir -p "$cfg_dir"
+  # --verbose prints each finding (file, commit, rule), so the pusher can see
+  # what to remove; --log-level warn keeps a clean push silent.
+  args=(git --redact --verbose --no-banner --log-level warn --exit-code 1 --log-opts "$new --not --all")
+  if git show "$new:.gitleaks.toml" >"$cfg_dir/.gitleaks.toml" 2>/dev/null; then
+    args+=(--config "$cfg_dir/.gitleaks.toml")
+  fi
+  if git show "$new:.gitleaksignore" >"$cfg_dir/.gitleaksignore" 2>/dev/null; then
+    args+=(--gitleaks-ignore-path "$cfg_dir/.gitleaksignore")
+  fi
+
+  # --redact always: this output goes back to the pusher's terminal and into
+  # whatever log captured the push.
+  "$GITLEAKS" "${args[@]}" . >&2
+  code=$?
+  if [ "$code" -eq 1 ]; then
+    say "$ref: the push adds what looks like a secret (see above). Refused."
+    say "Remove it from the commits (amend or rebase; a later commit that deletes it is not enough) and push again."
+    say "If it is not a secret, add its fingerprint to .gitleaksignore in the same push."
+    status=1
+  elif [ "$code" -ne 0 ]; then
+    say "$ref: gitleaks failed to run (exit $code), so the push was not scanned. Refused."
+    status=1
+  fi
+done
+
+exit "$status"

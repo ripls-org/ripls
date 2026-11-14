@@ -1,0 +1,29 @@
+# Config for the Forgejo runner daemon on the Mac that builds iOS. setup.sh
+# renders it: @STATE@ becomes the runner's state directory, @PATH@ and
+# @JAVA_HOME@ the toolchain it defines.
+log:
+  level: info
+
+runner:
+  file: @STATE@/.runner
+  # One job at a time: xcodebuild and fastlane match share DerivedData and the
+  # login keychain, and neither is safe to run twice at once in one account.
+  capacity: 1
+  timeout: 3h
+  shutdown_timeout: 3h
+  # `:host` runs each job straight on the machine, as the logged-in user.
+  # There is no container: Xcode and code signing need the real macOS session.
+  labels: ["self-hosted-mac:host"]
+  # Job steps run in a plain `bash`, which reads no shell profile, so the
+  # toolchain a job sees is set here.
+  envs:
+    LANG: en_US.UTF-8
+    PATH: @PATH@
+    JAVA_HOME: @JAVA_HOME@
+
+cache:
+  enabled: false
+
+host:
+  # Each job gets a fresh directory under here, removed when the job ends.
+  workdir_parent: @STATE@/work

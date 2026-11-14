@@ -101,15 +101,18 @@ jobs:
           git tag -a "$TAG" -m "Release ${VERSION}"
           git push origin "$TAG"
 
-      # A tag pushed with GITHUB_TOKEN triggers no workflows, so start Release
-      # App on the tag explicitly. On a tag ref the dispatch matches a tag
-      # push: tag-on-main check, both platforms, and the GitHub release only
-      # if both builds succeed.
+      # A tag pushed with the workflow's own token triggers no workflows, on
+      # GitHub or on Forgejo (both tested), so start Release App on the tag
+      # explicitly. A dispatch made with that token does start a run on both.
+      # On a tag ref the dispatch matches a tag push: tag-on-main check, both
+      # platforms, and the release only if both builds succeed.
       - name: Start Release App
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.discover.outputs.tag }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          gh workflow run release_app.yaml --ref "$TAG" -f platform=both -f create_release=true
+          scripts/forge workflow run release_app.yaml --repo "$REPO" --ref "$TAG" \
+            -f platform=both -f create_release=true
           echo "Pushed $TAG and started Release App on it."

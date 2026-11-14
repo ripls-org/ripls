@@ -37,3 +37,15 @@ variable "billing_account_id" {
   type        = string
   default     = "01911A-DA95C0-B0C18F"
 }
+
+variable "forgejo_url" {
+  description = "Root URL of the Forgejo instance whose Actions runs deploy to this project"
+  type        = string
+  default     = "https://code.overt.org"
+}
+
+variable "forgejo_repository_id" {
+  description = "Numeric id of the repository on that instance allowed to deploy. The id survives a rename; a deleted and recreated repository gets a new one."
+  type        = string
+  default     = "15"
+}
