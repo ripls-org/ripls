@@ -58,16 +58,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/cache/nas/forgejo-runner/runner-3/data:/data
 
-  forgejo-runner-4:
-    <<: *runner-common
-    container_name: forgejo-runner-4
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/cache/nas/forgejo-runner/runner-4/data:/data
-
-  forgejo-runner-5:
-    <<: *runner-common
-    container_name: forgejo-runner-5
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/cache/nas/forgejo-runner/runner-5/data:/data
+  # Three, not five like the GitHub fleet was. Every job takes a Docker
+  # network of its own on the host, and five concurrent jobs ran the host's
+  # address pool dry: "all predefined address pools have been fully
+  # subnetted" (tried 2026-11-14; issue #12 has what would lift the cap).
