@@ -506,8 +506,8 @@ What was done, in order:
 4. `INSTANCE_PIPELINES` set on the Forgejo repository.
 5. A push mirror from Forgejo to GitHub for `main` and tags, authenticated by
    a deploy key on the GitHub repository.
-6. Branch protection on `main`: no force-push, and five always-run checks
-   required to merge a pull request.
+6. Branch protection on `main`: no force-push, and a list of checks required
+   to merge a pull request (see below for which).
 
 What ran from Forgejo afterwards:
 
@@ -519,6 +519,25 @@ What ran from Forgejo afterwards:
 | iOS build on the Mac, Android release build | Passed |
 | Deploy to Dev, including the dev end-to-end tests | Passed, after two fixes below |
 | Staging website preview and its cleanup | Passed, after one fix below |
+| Renovate, as the `ripls-renovate` account | A dry run authenticated, read the repository's config and finished cleanly. No real pull request yet: nothing is due until its Monday schedule |
+| The nightly docs refresh, from the agent repo | Passed: the agent opened a docs pull request (#17) and it merged itself when its checks passed |
+| Release 0.33.1: the release pull request, prod deploy, tag, Release App | Prod deployed and healthy, with feedback filing in the Forgejo tracker; `v0.33.1` tagged and mirrored; Android 0.33.1+10539 uploaded to Play's open testing track. **iOS did not upload**: see below |
+
+The iOS half of the release failed at its first call to App Store Connect,
+which answered "A required agreement is missing or has expired". The key
+authenticated; the developer account has an agreement waiting to be accepted.
+Nothing in the port can fix that. Once it is accepted, start Release App again
+on the tag for iOS only:
+`scripts/forge workflow run release_app.yaml --ref v0.33.1 -f platform=ios -f create_release=true`.
+The release entry on the forge is created by that run, since the job that
+makes it waits for both platforms.
+
+That docs pull request also answered a question the audit left open: **a job
+skipped by its path gate satisfies a required check.** So the path-gated test
+jobs (Go, Flutter, web E2E, the Docker, iOS and Android builds, Terraform,
+Cloud Functions, the runner candidate) are required on `main` along with the
+five always-run checks. Without them, a Renovate pull request scheduled to
+merge "when checks pass" would have merged on the five alone.
 
 Four things only a real run found:
 
@@ -531,13 +550,15 @@ Four things only a real run found:
 
 Still to do, none of it blocking daily work:
 
-- Renovate against the Forgejo repository, and `renovate_auto_approve`. Until
-  then dependency updates are paused; the host's `run-renovate` timer still
-  points at the private GitHub repository.
-- The nightly docs refresh in the agent repo.
-- The move to `.forgejo/workflows/`.
+- The iOS upload of 0.33.1, after the Apple agreement is accepted.
+- Watch Renovate's first real run and its first pull request of each kind:
+  one that merges itself, and one that asks for a review.
+- The move to `.forgejo/workflows/`. Left out on purpose: about a hundred
+  references in forty files and the agent repo, for a benefit (the GitHub
+  mirror runs nothing) that switching Actions off there already gives.
 - Making the Forgejo repository public.
 - Enlarging the Docker address pool (#12).
+- Archiving the private GitHub repository (#3229).
 
 ## Related Issues
 - #3228 (OSS-17): the cut-over. Its phase 4 is gated on this port.

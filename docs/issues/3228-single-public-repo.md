@@ -549,14 +549,17 @@ is archived.
   - set `AGENT_TARGETS` to the new repo;
   - update the ripls-agent README;
   - `AGENT_REPO` and dispatch variables move with the secrets.
-- [x] **Branch protection:** on Forgejo `main`, five always-run checks are
-  required to merge a pull request and force-pushes are refused. Path-gated
-  checks (Go, Flutter) are not required yet: whether a skipped job satisfies
-  a required check there is untested.
+- [x] **Branch protection:** on Forgejo `main`, the always-run checks and the
+  path-gated test jobs are required to merge a pull request (a job skipped by
+  its path gate satisfies the requirement, as a run showed), and force-pushes
+  are refused.
 - [x] **Docs:** `CLAUDE.md` and `CONTRIBUTING.md` say where the repository
   lives and to use `scripts/forge`.
-- [ ] **Prove it:** cut one release from the public repo, with deploy, store
-  upload and tag.
+- [x] **Prove it:** release 0.33.1 was cut from the Forgejo repository on
+  2026-11-14: prod deploy, tag, and the Android upload (build 10539, above
+  every build from the old history). The iOS upload is waiting on an Apple
+  agreement the account holder has to accept; the #3293 plan has the command
+  that finishes it.
 - [ ] **Archive:** archive this repo, which is #3229.
 
 **Validates:**
