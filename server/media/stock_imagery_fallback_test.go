@@ -11,6 +11,22 @@ import (
 	"go.ripls.org/ripls/server/health"
 )
 
+// Timings shared by the timeout and cancellation tests here and in
+// stock_video_fallback_test.go. Each test expects a call to return in tens of
+// milliseconds because a timeout or a cancellation cut it short, and would
+// otherwise wait for one of the two long durations. promptBound sits far from
+// both, so a loaded CI host that stretches 10ms into 150ms does not fail the
+// test, and a timeout that never fires still does.
+const (
+	// slowProviderDelay is how long a slow mock takes when nothing stops it.
+	slowProviderDelay = 10 * time.Second
+	// uncancelledProviderTimeout is the per-provider timeout in the tests
+	// where the parent context, not this timeout, must end the call.
+	uncancelledProviderTimeout = 5 * time.Second
+	// promptBound is the longest a cut-short call may take.
+	promptBound = 2 * time.Second
+)
+
 // fallbackMockProvider is a simple configurable mock for testing fallback behavior.
 type fallbackMockProvider struct {
 	name      string
@@ -394,7 +410,7 @@ func TestFallbackStockImageryProvider_PerProviderTimeout(t *testing.T) {
 		// First provider is slow (will timeout after 10ms)
 		slowProvider := &slowMockProvider{
 			name:  "slow",
-			delay: 500 * time.Millisecond, // Would take 500ms, but will be cancelled at 10ms
+			delay: slowProviderDelay, // cancelled by the 10ms per-provider timeout
 		}
 
 		// Second provider is fast and returns success
@@ -425,8 +441,8 @@ func TestFallbackStockImageryProvider_PerProviderTimeout(t *testing.T) {
 			t.Errorf("Expected result from fast provider, got ID: %s", result.Id)
 		}
 
-		// Should complete in roughly 10-50ms, not 500ms
-		if elapsed > 100*time.Millisecond {
+		// About 10ms when the timeout fires; slowProviderDelay when it does not.
+		if elapsed > promptBound {
 			t.Errorf("Operation took too long (%v), slow provider wasn't timed out properly", elapsed)
 		}
 
@@ -436,8 +452,8 @@ func TestFallbackStockImageryProvider_PerProviderTimeout(t *testing.T) {
 	})
 
 	t.Run("all providers timing out returns error", func(t *testing.T) {
-		provider1 := &slowMockProvider{name: "slow1", delay: 500 * time.Millisecond}
-		provider2 := &slowMockProvider{name: "slow2", delay: 500 * time.Millisecond}
+		provider1 := &slowMockProvider{name: "slow1", delay: slowProviderDelay}
+		provider2 := &slowMockProvider{name: "slow2", delay: slowProviderDelay}
 
 		fp, _ := NewFallbackStockImageryProviderWithTimeout(
 			[]StockImageryProvider{provider1, provider2},
@@ -456,8 +472,8 @@ func TestFallbackStockImageryProvider_PerProviderTimeout(t *testing.T) {
 			t.Error("Expected nil result when all providers timeout")
 		}
 
-		// Should complete in roughly 20ms (2 x 10ms timeouts), not 1 second
-		if elapsed > 100*time.Millisecond {
+		// About 20ms (2 x 10ms timeouts) when they fire.
+		if elapsed > promptBound {
 			t.Errorf("Operation took too long (%v), providers weren't timed out properly", elapsed)
 		}
 
@@ -469,7 +485,7 @@ func TestFallbackStockImageryProvider_PerProviderTimeout(t *testing.T) {
 
 func TestFallbackStockImageryProvider_ParentContextCancellation(t *testing.T) {
 	t.Run("stops trying providers when parent context is cancelled", func(t *testing.T) {
-		provider1 := &slowMockProvider{name: "slow1", delay: 500 * time.Millisecond}
+		provider1 := &slowMockProvider{name: "slow1", delay: slowProviderDelay}
 		provider2 := &slowMockProvider{
 			name:   "slow2",
 			delay:  10 * time.Millisecond,
@@ -479,7 +495,7 @@ func TestFallbackStockImageryProvider_ParentContextCancellation(t *testing.T) {
 		fp, _ := NewFallbackStockImageryProviderWithTimeout(
 			[]StockImageryProvider{provider1, provider2},
 			[]string{"slow1", "slow2"},
-			100*time.Millisecond, // Per-provider timeout
+			uncancelledProviderTimeout,
 		)
 
 		// Cancel parent context after 20ms
@@ -494,8 +510,9 @@ func TestFallbackStockImageryProvider_ParentContextCancellation(t *testing.T) {
 			t.Fatal("Expected error when parent context is cancelled")
 		}
 
-		// Should complete around 20ms, not wait for per-provider timeout (100ms)
-		if elapsed > 80*time.Millisecond {
+		// About 20ms when the parent's cancellation stops it; otherwise it
+		// waits out uncancelledProviderTimeout.
+		if elapsed > promptBound {
 			t.Errorf("Operation took too long (%v), should have stopped on parent context cancellation", elapsed)
 		}
 
