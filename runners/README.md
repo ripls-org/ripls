@@ -244,9 +244,11 @@ The files:
   the agent. It holds the toolchain `PATH`, used by the daemon and by every job
   step. The daemon needs `node` on it to run JavaScript actions; the GitHub
   runner ships its own Node, this one does not.
+- `forgejo/mac/prune.sh` and `forgejo/mac/org.ripls.runner-prune.plist` — the
+  nightly disk prune and its LaunchAgent; see "Disk" below.
 - `forgejo/mac/sync.sh` — run from a checkout with `MAC_HOST=user@host`: pushes
-  the three files and runs `setup.sh`, fetching a registration token the same
-  way as `forgejo/sync.sh`.
+  these files and runs `setup.sh`, fetching a registration token the same way
+  as `forgejo/sync.sh`.
 
 The runner binary comes from Homebrew (`brew install forgejo-runner`); keep it
 at the version `forgejo/docker-compose.yaml` pins. State is in
@@ -257,6 +259,28 @@ at the version `forgejo/docker-compose.yaml` pins. State is in
 ```bash
 ssh "$MAC_HOST" 'launchctl print gui/$(id -u)/org.ripls.forgejo-runner | grep state'
 ssh "$MAC_HOST" 'tail -20 ~/Library/Logs/forgejo-runner/stderr.log'
+```
+
+**Disk.** Nothing in either runner removes an old toolchain: every Flutter
+bump leaves a ~4 GB SDK in the tool cache, and the Mac's disk is small enough
+that this once left no room for a macOS update. `prune.sh` runs at 03:30 from
+the LaunchAgent `org.ripls.runner-prune` and, unless a job is running:
+
+- keeps the two most recently installed versions of each tool in the tool
+  cache (`KEEP_VERSIONS`), for this runner and for the GitHub runner while it
+  is still there;
+- removes the GitHub runner's superseded self-update directories;
+- clears the package download caches (Go modules, pub, npm, SwiftPM,
+  CocoaPods, Homebrew), but only when under 30 GB is free (`LOW_WATER_GB`),
+  since the next build has to fetch them again.
+
+It never touches Xcode archives, simulator runtimes or DerivedData, and logs
+a `WARNING` line when the disk is still low afterwards. Tests are in
+`scripts/runner_prune.test.js`.
+
+```bash
+ssh "$MAC_HOST" 'tail -20 ~/Library/Logs/forgejo-runner/prune.log'
+ssh "$MAC_HOST" '~/forgejo-runner/setup/prune.sh --dry-run'
 ```
 
 ## Go version

@@ -30,10 +30,12 @@ ssh "$MAC_HOST" "mkdir -p $DEST"
 rsync -rltv \
   --include='config.template.yaml' \
   --include='org.ripls.forgejo-runner.plist' \
+  --include='org.ripls.runner-prune.plist' \
   --include='setup.sh' \
+  --include='prune.sh' \
   --exclude='*' \
   "$HERE"/ "$MAC_HOST:$DEST"/
-ssh "$MAC_HOST" "chmod +x $DEST/setup.sh"
+ssh "$MAC_HOST" "chmod +x $DEST/setup.sh $DEST/prune.sh"
 
 if ssh "$MAC_HOST" "$DEST/setup.sh --pending"; then
   : "${FORGEJO_URL:?set FORGEJO_URL to register the runner}"

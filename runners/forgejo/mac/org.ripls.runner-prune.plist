@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchAgent that runs prune.sh every night on the Mac that builds iOS.
+  setup.sh renders it: @STATE@ is the runner's state directory (prune.sh sits
+  in its setup/ directory), @LOGS@ the log directory.
+
+  03:30 local time, when no release is being cut. prune.sh itself skips the
+  night if a job is running.
+-->
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>org.ripls.runner-prune</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/bin/bash</string>
+      <string>@STATE@/setup/prune.sh</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>STATE</key>
+      <string>@STATE@</string>
+    </dict>
+    <key>StartCalendarInterval</key>
+    <dict>
+      <key>Hour</key>
+      <integer>3</integer>
+      <key>Minute</key>
+      <integer>30</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>@LOGS@/prune.log</string>
+    <key>StandardErrorPath</key>
+    <string>@LOGS@/prune.log</string>
+    <key>ProcessType</key>
+    <string>Background</string>
+  </dict>
+</plist>
