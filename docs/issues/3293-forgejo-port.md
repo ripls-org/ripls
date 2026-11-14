@@ -247,21 +247,23 @@ What this changes in the plan:
 ### Phase 1: Runners and shadow CI
 **Goal:** every push to the public repo runs the test suite on Forgejo.
 **Tasks:**
-- [ ] Add `forgejo-runner` to `runners/Dockerfile`; register two of the five
-  containers with Forgejo and leave three on GitHub until the flip.
+- [x] Add `forgejo-runner` to `runners/Dockerfile`; register two of the five
+  containers with Forgejo and leave three on GitHub until the flip. Done the
+  other way the spike allowed: the image is unchanged, and small runner
+  daemons (`runners/forgejo/`) start each job in a fresh container from it.
 - [x] Register the Mac that builds iOS: `runners/forgejo/mac/`, a
   host-mode runner started as a LaunchAgent, label `self-hosted-mac`. A probe
   job checked out, found Xcode, CocoaPods, Ruby and the JDK, and installed
   the pinned Flutter. Not yet run: a real iOS build, and signing. Both wait
   for the release rehearsal in phase 3.
-- [ ] Create `ripls-org/ripls` on Forgejo as a pull mirror of the GitHub repo,
-  with LFS.
-- [ ] Make the test and lint workflows pass there. Replace or script around
+- [x] Create `ripls-org/ripls` on Forgejo as a pull mirror of the GitHub repo,
+  with LFS. It was the shadow until the cut-over made it the canonical repo.
+- [x] Make the test and lint workflows pass there. Replace or script around
   each action the spike found wanting.
-- [ ] Set `CI_RUNNER_LINUX` on the Forgejo repo; leave `INSTANCE_PIPELINES`
-  unset so nothing deploys from the shadow.
-- [ ] Update `runners/README.md` and `docs/infra/dependency_automation.md` for
-  the two-forge period.
+- [x] Set `CI_RUNNER_LINUX` on the Forgejo repo; leave `INSTANCE_PIPELINES`
+  unset so nothing deploys from the shadow. (Set at the cut-over.)
+- [x] Update `runners/README.md` and `docs/infra/dependency_automation.md` for
+  the two-forge period, and again at the cut-over.
 
 **Validates:** a sync push turns green on both forges.
 
@@ -291,8 +293,9 @@ Forgejo events.
   `validate_request.sh`. See *The agent on Forgejo* below for how. Not yet
   ported: the nightly docs refresh (`refresh_docs`), and release-cut is ported
   but has not run.
-- [ ] Self-host Renovate against the Forgejo repo, and port
-  `renovate_auto_approve` and `validate_runner_candidate`.
+- [x] Self-host Renovate against the Forgejo repo, and port
+  `renovate_auto_approve` and `validate_runner_candidate`. Done at the
+  cut-over; see the results table there for what has and has not run.
 
 **Validates:** on the shadow repo, the agent takes one issue from plan to
 merged PR, and fixes one deliberately broken test run.
@@ -382,7 +385,8 @@ Two Forgejo behaviors cost a debugging round each and are worth knowing:
 ### Phase 3: Deploy, release and the tracker
 **Goal:** everything production needs has run once from Forgejo.
 **Tasks:**
-- [ ] Add the GCP identity provider and prove `deploy_cloud_functions`.
+- [x] Add the GCP identity provider and prove `deploy_cloud_functions`.
+  Proven at the cut-over: the first deploy from Forgejo passed.
   The provider is in place in prod (#3326): pool `forgejo-actions`, provider
   `forgejo`, accepting only runs of this repository (by its id) on `main`
   that a pull request did not trigger. The workflow picks the provider by
@@ -394,7 +398,7 @@ Two Forgejo behaviors cost a debugging round each and are worth knowing:
   unknown key (tested), and with it the first deploy from Forgejo. The
   functions deploy to prod only, so there is no dev run to prove it against
   first.
-- [ ] Port `release_app`, `release_finalize` and the deploy workflows: releases
+- [x] Port `release_app`, `release_finalize` and the deploy workflows: releases
   and tags through `scripts/forge`, artifacts through the action the spike
   chose. Done in the workflow files, with each piece tried on a scratch
   repository:
@@ -409,9 +413,10 @@ Two Forgejo behaviors cost a debugging round each and are worth knowing:
     `grep -q`.
   - Both iOS workflows pointed at a Ruby 3.4 gem directory that does not
     exist on the Mac; they now name the 4.0 one.
-  Not done: a run of either workflow on Forgejo. That is the rehearsal below.
-- [ ] Run a dev deploy and a full release rehearsal that stops before the store
-  upload. Ready for it (2026-11-14): the 17 secrets the deploy, release and
+  Both have since run on Forgejo, for release 0.33.1.
+- [x] Run a dev deploy and a full release rehearsal that stops before the store
+  upload. The dev deploy passed after the cut-over, and a real release
+  (0.33.1) took the place of the rehearsal. Before it (2026-11-14): the 17 secrets the deploy, release and
   eval workflows read were copied to the Forgejo repository by a one-off
   GitHub workflow that sent each value from GitHub's secret store to
   Forgejo's API, so no value was printed or handled by a person. The deploy
@@ -421,7 +426,7 @@ Two Forgejo behaviors cost a debugging round each and are worth knowing:
   `UNSPLASH_KEYS`, `RIPLS_FEEDBACK_PAT`, `GITLEAKS_LICENSE`, the GitHub App
   key, and the org's two Apple push secrets.
 - [x] Create the private tracker repo on the instance (`ripls-org/tracker`,
-  issues only). Still to do: move #2760 into it.
+  issues only). #2760 has since been moved into it.
 - [x] Give `server/github` a Forgejo implementation behind its existing
   interface, chosen by config (#3318), and port `cloud_functions/` from
   Octokit to the Forgejo API (#3321). Unit tests cover both. See *The tracker
@@ -481,9 +486,9 @@ the labels on what comes back.
   and the `gh` pass-through. Not done. Actions is switched off on the GitHub
   mirror instead, which is one setting; the move touches every workflow's own
   `paths:` and the reusable-workflow `uses:` lines, and can follow.
-- [x] Runners. The Forgejo fleet stays at three Linux daemons, not five: see
-  below. The GitHub fleet is stopped (its containers and the runner on the
-  Mac), and its recreate timers are removed from the host.
+- [x] Runners. The Forgejo fleet is five Linux daemons, two of them labelled
+  for Android release builds: see below. The GitHub fleet is gone (its
+  containers, the runner on the Mac, and its recreate timers on the host).
 - [x] Continue with #3228 phase 4: final export, secrets, branch protection,
   docs, the proving release. #3229 (archiving the private repository) is the
   one step left.
@@ -543,10 +548,33 @@ Four things only a real run found:
 
 | Finding | Fix |
 | --- | --- |
-| **Five runner daemons exhaust the host's Docker address pool.** Every job takes a network of its own; with five jobs at once, creating one failed with "all predefined address pools have been fully subnetted", and two image builds collided in the shared image store. | Back to three daemons. Issue #12 has what would lift the cap. |
+| **Five runner daemons exhaust the host's Docker address pool.** Every job takes a network of its own; with five jobs at once, creating one failed with "all predefined address pools have been fully subnetted", and two image builds collided in the shared image store. | First, back to three daemons. Then the real fix (#12, closed): every job container joins one shared network, `ripls-ci`, which costs one network however many jobs run. The fleet is five daemons again. |
 | **The host refused the deploy key.** It accepted that key only from Docker's first address range, and a job's network can come from the second. sshd logged "correct key but not from a permitted host". | The key's allowed source range on the host now covers both of Docker's ranges and still excludes the LAN. |
 | **Repository variables are printed in logs; secrets are masked.** The first deploy log showed the deploy host's address. | The deploy and website workflows read each endpoint from a secret of the same name first, falling back to the variable. |
 | **Two more GitHub-only steps:** the staging preview's sticky comment (a marketplace action) and the runner-candidate notice (`gh`). | `.github/scripts/sticky_comment.sh`, which uses the two REST calls both forges share; and `scripts/forge`. |
+
+Done later the same day:
+
+- **The repository is public.** The organisation's visibility had to be made
+  public too; the repository's own flag did nothing until then. The agent
+  repo and the tracker stay private.
+- **Job times match the old fleet's.** A job in a fresh container takes what
+  it took on a long-lived GitHub runner, because the caches are mounted from
+  the host: Go tests 374 s against 370 s, Flutter tests 322 s against 310 s,
+  Web E2E 890 s against 910 s, the dev deploy 576 s against 574 s. With five
+  daemons, the six heavy workflows of one pull request finish in the time the
+  longest takes.
+- **Web E2E went from about 15 minutes to about 11.5.** The test bundle is
+  compressed at a fast level instead of the maximum, and the Playwright
+  setup runs beside the web build. Six Playwright workers were tried and
+  rejected: the two-browser realtime specs timed out. It stays at four.
+- **A timing test failed on `main` after a merge**, having passed on the pull
+  request: a 10 ms timeout took 121 ms on a busy runner, against a 100 ms
+  limit. Required checks gate the pull request's run, not the run on the
+  push that follows the merge. The limits in those tests are now far from
+  both outcomes.
+- **Leftovers removed:** the scratch repositories from the spike, the stopped
+  GitHub runner containers on the host, and the GitHub runner on the Mac.
 
 Still to do, none of it blocking daily work:
 
@@ -556,8 +584,7 @@ Still to do, none of it blocking daily work:
 - The move to `.forgejo/workflows/`. Left out on purpose: about a hundred
   references in forty files and the agent repo, for a benefit (the GitHub
   mirror runs nothing) that switching Actions off there already gives.
-- Making the Forgejo repository public.
-- Enlarging the Docker address pool (#12).
+- The TODO comments that still name issues from the private tracker (#22).
 - Archiving the private GitHub repository (#3229).
 
 ## Related Issues
