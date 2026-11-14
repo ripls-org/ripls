@@ -22,7 +22,7 @@ Extract the issue number and any file paths from whatever format the user provid
 
 1. Fetch the full issue including body and comments:
    ```bash
-   gh issue view <number> --json number,title,body,comments,labels,assignees,milestone,state,createdAt,updatedAt,url
+   scripts/forge issue view <number> --json number,title,body,comments,labels,assignees,milestone,state,createdAt,updatedAt,url
    ```
 
 2. Read every comment — not just the description. Critical context, clarifications, and revised requirements often live in the comments. Pay attention to who said what; maintainer comments carry different weight than drive-by suggestions.

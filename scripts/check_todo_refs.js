@@ -199,7 +199,7 @@ function main() {
   console.error('Every TODO must reference an open issue: TODO(#NNNN): <what and why>.');
   console.error('FIXME is not used — standardize on TODO(#NNNN).');
   console.error('');
-  console.error('If no issue exists, file one first (gh issue create); the issue is where the');
+  console.error('If no issue exists, file one first (scripts/forge issue create); the issue is where the');
   console.error('context lives. The TODO body itself must still say what the code does today,');
   console.error('what would let the TODO be removed, and what blocked doing it now — an');
   console.error('issue-only TODO is not enough. See CLAUDE.md "TODO Comments".');
