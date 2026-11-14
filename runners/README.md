@@ -1,7 +1,7 @@
 # CI runners
 
 > **Since the move to Forgejo (2026-11-14, #3293) CI runs on the fleet under
-> [Forgejo runners](#forgejo-runners) below**: five Linux daemons and the Mac
+> [Forgejo runners](#forgejo-runners) below**: three Linux daemons and the Mac
 > that builds iOS. The GitHub fleet described first no longer receives jobs
 > and goes away with the private GitHub repository. Two things in its section
 > still matter: the **toolchain image** it defined (`Dockerfile`,
