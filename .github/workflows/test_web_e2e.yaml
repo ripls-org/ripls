@@ -186,9 +186,6 @@ jobs:
       - name: Install Flutter dependencies
         run: cd app && flutter pub get
 
-      - name: Generate freezed and mockito code
-        run: cd app && flutter pub run build_runner build --delete-conflicting-outputs
-
       - name: Start Postgres via testcontainers
         # Same helper the smoke workflow uses; the e2e suite reuses
         # it unchanged per the Phase-1 plan.
@@ -199,7 +196,7 @@ jobs:
           echo "E2E_DB_URL=$(cat /tmp/web-e2e-db.url)" >> "$GITHUB_ENV"
           echo "SMOKE_DB_NAME=$SMOKE_DB_NAME" >> "$GITHUB_ENV"
 
-      - name: Build Flutter Web bundle (build:web:e2e)
+      - name: Build Flutter Web bundle (build:web:e2e) and set up the e2e harness
         # build:web:e2e == build:web:local + --dart-define=AUTH_EMULATOR_HOST so
         # the phone-first spec can route Firebase Auth through the Auth Emulator.
         # The define is inert for the other specs: the app wires the emulator
@@ -214,21 +211,59 @@ jobs:
         # scripts/gcp_project.sh (#2953). OSS-7 (#2959) converts this literal
         # to vars.GCP_PROJECT_DEV along with the rest of the workflow's project
         # references.
+        #
+        # WALL CLOCK. This job is the longest a pull request waits for, so this
+        # step does two things at once. The web build (code generation, then
+        # the compile) is one long single-purpose task; the e2e harness setup
+        # (its npm install and the Playwright browsers) needs nothing the
+        # build makes, so it runs beside it instead of after it. Its output is
+        # held in a file and printed in one group at the end, so the two logs
+        # do not interleave, and its failure fails the step.
+        #
+        # build:web:e2e also compresses the bundle at the fast level
+        # (PRECOMPRESS_FAST in package.json): the maximum level cost over two
+        # minutes here for a bundle that is served to a browser on the same
+        # machine and thrown away.
         env:
           GCP_PROJECT_DEV: ${{ vars.GCP_PROJECT_DEV }}
-        run: npm run build:web:e2e
+        run: |
+          set -euo pipefail
+          (
+            set -euo pipefail
+            cd e2e
+            # Installs the pinned firebase-tools@15 (the Auth Emulator CLI)
+            # too. The emulator JAR is fetched on the first `emulators:start`
+            # in global-setup, inside its 90s readiness timeout.
+            npm install
+            # --with-deps installs the apt-level libraries Chromium and WebKit
+            # need (libgbm, libxss, ...).
+            npx playwright install --with-deps chromium webkit
+          ) > /tmp/e2e-harness-setup.log 2>&1 &
+          harness=$!
+
+          build=0
+          (cd app && flutter pub run build_runner build --delete-conflicting-outputs) || build=$?
+          if [ "$build" -eq 0 ]; then
+            npm run build:web:e2e || build=$?
+          fi
+
+          setup=0
+          wait "$harness" || setup=$?
+          echo "::group::e2e harness setup (ran beside the web build)"
+          cat /tmp/e2e-harness-setup.log
+          echo "::endgroup::"
+          if [ "$setup" -ne 0 ]; then
+            echo "::error::e2e harness setup failed (npm install or the Playwright browser install)."
+          fi
+          if [ "$build" -ne 0 ]; then
+            echo "::error::The web build failed."
+          fi
+          [ "$build" -eq 0 ] && [ "$setup" -eq 0 ]
 
       - name: Build server binary
         # Re-embeds the fresh bundle (//go:embed app_assets). Always after the
         # web build — a stale binary serves the previously-embedded bundle.
         run: go build -o tmp/server ./server
-
-      - name: Install e2e npm dependencies
-        # Installs the pinned firebase-tools@15 (the Auth Emulator CLI) too. The
-        # Auth Emulator JAR has no separate `setup:emulators:*` command; it is
-        # fetched automatically on the first `emulators:start` in global-setup
-        # (covered by its 90s readiness timeout).
-        run: cd e2e && npm install
 
       # e2e/tsconfig.json has always said `strict: true`, but nothing ever ran
       # tsc, so 71 TypeScript files went unchecked. The first run found 144
@@ -250,14 +285,8 @@ jobs:
         # They live here rather than in `npm run test:scripts` because tsx is an
         # e2e devDependency, and Check Versions installs only root deps; running
         # them there failed with "tsx: not found". This job is gated on `e2e/**`,
-        # so it fires exactly when these tests can regress. Before the browser
-        # install so a broken harness fails in seconds, not after a web build.
+        # so it fires exactly when these tests can regress.
         run: cd e2e && npm run test:lib
-
-      - name: Install Playwright browsers
-        # --with-deps installs apt-level libs Chromium + WebKit need
-        # (libgbm, libxss, etc.). Idempotent across runs.
-        run: cd e2e && npx playwright install --with-deps chromium webkit
 
       - name: Run Playwright tests
         # global-setup.ts starts the server (E2E_DB_URL points at the
@@ -269,8 +298,13 @@ jobs:
         # (paced, hi-DPI, video-generating) is an on-demand deliverable, not a
         # CI gate. The phone-first onboarding flow is gated by the standard
         # workflow specs (e.g. phone-rsvp-full-loop) under mobile-chromium/webkit.
+        #
+        # Six workers, each with its own server and database. The job
+        # container's CPU budget is 10 (runners/README.md); four workers left
+        # most of it idle once the build was done.
         env:
           CI: 'true'
+          E2E_WORKERS: '6'
         run: cd e2e && npx playwright test --project=mobile-chromium --project=webkit
 
       - name: Upload Playwright HTML report

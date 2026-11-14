@@ -25,6 +25,7 @@
 //
 // Usage: node scripts/precompress_web_bundle.js [dir]
 //   dir defaults to app/build/web (relative to cwd).
+//   PRECOMPRESS_FAST=1 compresses at the fast level (see LEVELS below).
 
 const {
   brotliCompressSync,
@@ -68,30 +69,45 @@ function shouldCompress(name, sizeBytes) {
   return COMPRESSIBLE_EXTENSIONS.has(extname(name).toLowerCase());
 }
 
-const brotli = (buf) =>
+// Two effort levels. The default is the smallest output, for bundles that
+// ship: brotli 11 and gzip 9 take about two and a half minutes on a CI runner
+// for the whole bundle. `fast` is for bundles that are built, served to a test
+// browser on the same machine and thrown away (the web e2e suite): brotli 4
+// and gzip 1 take a few seconds, and the server still negotiates and serves
+// the variants exactly as in production, so the code path under test is the
+// same. Only the bytes saved differ.
+const LEVELS = {
+  best: { brotli: 11, gzip: 9 },
+  fast: { brotli: 4, gzip: 1 },
+};
+
+const brotli = (buf, quality) =>
   brotliCompressSync(buf, {
     params: {
-      [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
+      [zlibConstants.BROTLI_PARAM_QUALITY]: quality,
       [zlibConstants.BROTLI_PARAM_SIZE_HINT]: buf.length,
     },
   });
 
-const gzip = (buf) => gzipSync(buf, { level: 9 });
+const gzip = (buf, level) => gzipSync(buf, { level });
 
 /**
  * Recursively precompress every compressible file under `dir`.
  * Writes `<file>.br` and `<file>.gz` only when the compressed output
  * is actually smaller than the source. Idempotent.
  *
+ * @param {string} dir
+ * @param {{fast?: boolean}} [options] `fast` trades size for speed; see LEVELS.
  * @returns {{files:number, brBytesSaved:number, gzBytesSaved:number}}
  */
-function precompressDir(dir) {
+function precompressDir(dir, { fast = false } = {}) {
+  const level = fast ? LEVELS.fast : LEVELS.best;
   const stats = { files: 0, brBytesSaved: 0, gzBytesSaved: 0 };
 
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
-      const sub = precompressDir(full);
+      const sub = precompressDir(full, { fast });
       stats.files += sub.files;
       stats.brBytesSaved += sub.brBytesSaved;
       stats.gzBytesSaved += sub.gzBytesSaved;
@@ -104,13 +120,13 @@ function precompressDir(dir) {
 
     const source = readFileSync(full);
 
-    const br = brotli(source);
+    const br = brotli(source, level.brotli);
     if (br.length < source.length) {
       writeFileSync(`${full}.br`, br);
       stats.brBytesSaved += source.length - br.length;
     }
 
-    const gz = gzip(source);
+    const gz = gzip(source, level.gzip);
     if (gz.length < source.length) {
       writeFileSync(`${full}.gz`, gz);
       stats.gzBytesSaved += source.length - gz.length;
@@ -133,9 +149,10 @@ function main() {
     process.exit(1);
   }
 
-  const { files, brBytesSaved, gzBytesSaved } = precompressDir(dir);
+  const fast = process.env.PRECOMPRESS_FAST === '1';
+  const { files, brBytesSaved, gzBytesSaved } = precompressDir(dir, { fast });
   console.log(
-    `precompress: compressed ${files} file(s) in ${dir} ` +
+    `precompress: compressed ${files} file(s) in ${dir}${fast ? ' at the fast level' : ''} ` +
       `(brotli saved ${mib(brBytesSaved)} MiB, gzip saved ${mib(gzBytesSaved)} MiB)`,
   );
 }

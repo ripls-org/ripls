@@ -147,3 +147,23 @@ test('COMPRESSIBLE_EXTENSIONS includes the load-bearing WASM bundle types', () =
     assert.ok(COMPRESSIBLE_EXTENSIONS.has(ext), `${ext} allowlisted`);
   }
 });
+
+test('precompressDir: the fast level writes the same valid variants, including in subdirectories', () => {
+  const dir = scratch();
+  try {
+    const { mkdirSync } = require('node:fs');
+    mkdirSync(join(dir, 'assets'));
+    writeFileSync(join(dir, 'main.dart.js'), bigText);
+    writeFileSync(join(dir, 'assets', 'data.json'), bigText);
+
+    const stats = precompressDir(dir, { fast: true });
+
+    assert.equal(stats.files, 2);
+    for (const f of [join(dir, 'main.dart.js'), join(dir, 'assets', 'data.json')]) {
+      assert.equal(brotliDecompressSync(readFileSync(`${f}.br`)).toString(), bigText);
+      assert.equal(gunzipSync(readFileSync(`${f}.gz`)).toString(), bigText);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
