@@ -3,14 +3,14 @@
 # How it works + schema: docs/context_map.md
 context:
   description: How secrets reach the server and the app — the Secret Manager fetch-at-startup design, the entrypoint/fetch-secret wrappers, dart-define for client builds, and the gitleaks detection stack that keeps credentials out of the repo.
-  globs: [server/entrypoint.sh, server/cmd/fetch-secrets/**, docker-compose.yaml, scripts/fetch_secret.sh, scripts/run_server_with_sm_secrets.sh, .gitleaks.toml, .gitleaksignore, .github/workflows/gitleaks-pr.yaml, .github/workflows/gitleaks-push.yaml, infra/forgejo/**]
+  globs: [server/entrypoint.sh, server/cmd/fetch-secrets/**, docker-compose.yaml, scripts/fetch_secret.sh, scripts/run_server_with_sm_secrets.sh, .gitleaks.toml, .gitleaksignore, .github/workflows/gitleaks-pr.yaml, infra/forgejo/**]
   triggers: [secrets, api-keys, secret-manager, gitleaks, credentials, tokens, dart-define]
   lens: [infra, security]
   skills: [issue, audit]
   domain: infra
 freshness:
-  verified_commit: "402d4d9ff"
-  verified_on: "2026-08-22"
+  verified_commit: "e792499"
+  verified_on: "2026-11-14"
 ---
 # How secrets work
 

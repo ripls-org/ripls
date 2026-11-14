@@ -9,8 +9,8 @@ context:
   skills: [issue, audit]
   domain: infra
 freshness:
-  verified_commit: "71aae247c"
-  verified_on: "2026-11-11"
+  verified_commit: "e792499"
+  verified_on: "2026-11-14"
 ---
 # Dependency & Toolchain Automation
 
@@ -654,9 +654,11 @@ blocked — but the flat-config migration is still owed (see follow-ups).
 - **`gitleaks/gitleaks-action` breaks on these self-hosted runners** — the scan
   passes but the action crashes on SARIF artifact upload ("rootDirectory is not a
   parent directory of the file") because the `myoung34` runner exposes the
-  workspace at both `/github/workspace` and `/tmp/runner/work`. `gitleaks-pr` /
-  `gitleaks-push` are kept on GitHub-hosted as a result (they add per-ref
-  concurrency so redundant scans don't pile up on rapid pushes/Renovate rebases).
+  workspace at both `/github/workspace` and `/tmp/runner/work`. `gitleaks-pr` is
+  kept on `ubuntu-latest` as a result (it adds per-ref concurrency so redundant
+  scans don't pile up on rapid pushes/Renovate rebases). It now runs the
+  `gitleaks` binary through `.github/actions/gitleaks-scan`; pushes are covered
+  by the Forgejo `pre-receive` hook (`infra/forgejo/`), not a workflow.
 - **`onnxruntime_go` is coupled to the native ONNX Runtime.** A bare `go get -u`
   pulls the binding past the API the shipped `.so` supports and the server's
   embedder fails to init (and every `server/integration_tests` hangs). Renovate
@@ -869,10 +871,12 @@ purpose:
 - **`renovate_auto_approve`** — it's `pull_request_target`; running that trigger
   on a persistent self-hosted runner is a security anti-pattern. Trivial API-only
   job, so ephemeral hosted is the safer choice.
-- **`gitleaks-pr` / `gitleaks-push`** — `gitleaks-action` is incompatible with
-  the self-hosted workspace layout (see Gotchas). To reach *zero* hosted jobs,
-  switch these to invoking the `gitleaks` **binary** directly (also drops the
-  action's org-license requirement) — not yet done.
+- **`gitleaks-pr`** — `gitleaks-action` was incompatible with the self-hosted
+  workspace layout (see Gotchas). It now invokes the `gitleaks` **binary**
+  directly via `.github/actions/gitleaks-scan` (which also drops the action's
+  org-license requirement), but the job has not been moved to a self-hosted
+  runner. The push-time scan (`gitleaks-push`) is gone, replaced by the
+  `infra/forgejo/pre-receive-gitleaks` hook.
 
 ## Instance-only workflows (`INSTANCE_PIPELINES`)
 
