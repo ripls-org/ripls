@@ -3,11 +3,10 @@
 //
 // # Why this exists
 //
-// The open-source export (#2953) is gated by two text scanners:
-// scripts/oss_export.js decides what ships and scripts/oss_scan.js greps the
-// result for org identifiers. Neither can see inside a JPEG — oss_scan.js
-// skips binaries by extension, on purpose, because scanning them produces
-// nothing but noise.
+// What is published here is gated by two text scanners: gitleaks looks for
+// credentials and scripts/oss_scan.js greps for personal details. Neither can
+// see inside a JPEG — oss_scan.js skips binaries by extension, on purpose,
+// because scanning them produces nothing but noise.
 //
 // That leaves a gap with real consequence. A photo taken on a phone carries
 // the coordinates it was taken at, and this repo's image fixtures were

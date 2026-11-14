@@ -1,0 +1,77 @@
+name: Denylist Check
+
+# Fails a change that adds a value the project keeps private: a person's name,
+# address or phone number, or an identifier the instance does not publish.
+# gitleaks covers credentials; this covers what gitleaks has no rule for.
+#
+# The denylist names the values it exists to keep out, so it is not in git. CI
+# writes it from the OSS_DENYLIST secret to a file the scan reads through
+# OSS_DENYLIST_FILE. The scan prints `path:line [category]` and never the
+# matched text, because a CI log on a public repository is public.
+#
+# It replaced the export check that ran while this repository was a filtered
+# copy of a private one (#3228).
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-denylist:
+    name: Check Denylist
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Fix git ownership (self-hosted runner)
+        run: git config --global --add safe.directory '*'
+
+      # Whether a missing secret fails is keyed on the repository name, not on
+      # the secret: deleting the secret must not quietly turn the gate off.
+      # Only same-repo runs on the canonical repository fail. A fork gets no
+      # secrets, so there the gate is skipped with a notice.
+      - name: Load the denylist
+        id: denylist
+        env:
+          OSS_DENYLIST: ${{ secrets.OSS_DENYLIST }}
+          CANONICAL_REPO: ripls-org/ripls
+          CANONICAL_SERVER: https://code.overt.org
+          REPO: ${{ github.repository }}
+          SERVER: ${{ github.server_url }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -z "$OSS_DENYLIST" ]; then
+            if [ "$SERVER" = "$CANONICAL_SERVER" ] && [ "$REPO" = "$CANONICAL_REPO" ] && [ "$HEAD_REPO" = "$REPO" ]; then
+              echo "::error::OSS_DENYLIST secret is missing on $REPO; the denylist gate cannot run."
+              exit 1
+            fi
+            echo "::notice::No OSS_DENYLIST secret here (a fork or a mirror); skipping the denylist gate."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          file="$RUNNER_TEMP/oss_denylist.txt"
+          printf '%s\n' "$OSS_DENYLIST" > "$file"
+          echo "OSS_DENYLIST_FILE=$file" >> "$GITHUB_ENV"
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Gate on the scan of the tracked files
+        if: steps.denylist.outputs.available == 'true'
+        run: npm run oss:gate:tree
+
+      - name: Remove the denylist
+        if: always()
+        run: rm -f "$RUNNER_TEMP/oss_denylist.txt"
