@@ -10,6 +10,24 @@ The project uses Protocol Buffers for API definitions and type safety,
 with the Buf toolchain for code generation. The server is written in Go and
 the client is written with Flutter / Dart.
 
+## Where the repository lives
+
+Development happens on a Forgejo instance, at
+`code.ripls.org/ripls-org/ripls` (also reachable as `code.overt.org`). Issues,
+pull requests, CI, deploys and releases are all there; `origin` should point at
+it. `github.com/ripls-org/ripls` is a push mirror and is never merged into.
+
+- **Use `scripts/forge`, not `gh`,** for issues, pull requests and CI runs
+  (`scripts/forge pr create`, `scripts/forge issue view 7`, `scripts/forge run
+  view <id>`). It takes `gh`'s arguments and needs `FORGEJO_TOKEN` in the
+  environment.
+- Workflows are in `.github/workflows/` and run on Forgejo Actions. A few
+  spellings differ from GitHub's; `docs/issues/3293-forgejo-port.md` records
+  each one found.
+- Issue numbers below about 3300 in comments and docs (`#2953`, `#3228`) are
+  from the private repository the project was developed in before it was
+  opened. They are history, not links: numbers here start again from 1.
+
 ## Architecture
 
 - **Protocol Definitions**: Type definitions are separated into two packages:
@@ -231,12 +249,12 @@ without a tracking issue is invisible to anyone but the author and rots
 fast — the codebase already has multiple instances of "TODO: fix this"
 that have been there for months with no one watching.
 
-- **Every TODO must reference a GitHub issue.** Format: `TODO(#NNNN):`
+- **Every TODO must reference an issue.** Format: `TODO(#NNNN):`
   where `#NNNN` is an open issue tracking the cleanup. Existing examples
   in the codebase: the `TODO(#7):` auth-removal markers in
   `proto/ripls/api/login_service.proto`.
 - **If no issue exists, file one before writing the TODO.** A two-minute
-  `gh issue create` is part of the cost of leaving a TODO. The issue
+  `scripts/forge issue create` is part of the cost of leaving a TODO. The issue
   becomes the place where context lives — what triggered the TODO, why
   it was deferred, what needs to happen to remove it, who's affected.
   Inline TODOs are pointers, not specifications.

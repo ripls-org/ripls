@@ -1,4 +1,14 @@
-# GitHub Actions self-hosted runners
+# CI runners
+
+> **Since the move to Forgejo (2026-11-14, #3293) CI runs on the fleet under
+> [Forgejo runners](#forgejo-runners) below**: five Linux daemons and the Mac
+> that builds iOS. The GitHub fleet described first no longer receives jobs
+> and goes away with the private GitHub repository. Two things in its section
+> still matter: the **toolchain image** it defined (`Dockerfile`,
+> `ripls-runner:latest`) is the image every Forgejo job runs in, and the
+> **CPU budget** reasoning carries over unchanged.
+
+## The GitHub fleet (retired)
 
 Canonical source of the Docker config for the five `self-hosted-linux`
 runners that run CI for this repo. Lives on `mimir` (Ubuntu 26.04) under
@@ -191,9 +201,9 @@ is the Go suite itself (its slowest packages run 200s+), not the budget.
 
 ## Forgejo runners
 
-`forgejo/` is a second fleet, for the Forgejo instance the project is moving
-to (#3293). Until the cut-over it runs CI in shadow next to the GitHub fleet
-above; after it, this is the only fleet.
+`forgejo/` is the fleet that runs CI, on the Forgejo instance the project
+lives on (#3293). It ran in shadow next to the GitHub fleet above until the
+cut-over on 2026-11-14.
 
 It works differently. Each service in `forgejo/docker-compose.yaml` is a small
 daemon that polls Forgejo and starts a **fresh container from
@@ -233,8 +243,7 @@ label `self-hosted-mac`. It is a different shape from the Linux fleet:
 - **A LaunchAgent in the GUI session** (`org.ripls.forgejo-runner`), not a
   daemon, for the same reason: only that session reaches the login keychain.
 - **One job at a time.** `xcodebuild` and `fastlane match` are not safe to run
-  twice at once in one account. Until the cut-over the GitHub runner lives in
-  the same account, so do not send both forges an iOS build at the same time.
+  twice at once in one account.
 
 The files:
 
