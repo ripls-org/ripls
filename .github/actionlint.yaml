@@ -8,3 +8,11 @@ self-hosted-runner:
     # 2-runner subpool (mimir runners 4 + 5) that caps concurrent Android
     # Release Builds at 2 (each Gradle daemon is ~8-11GiB). See runners/docker-compose.yml.
     - android-builder
+
+# actionlint checks GitHub's workflow schema. Forgejo, which runs these
+# workflows, has one top-level key GitHub lacks: without it a run gets no OIDC
+# token (#3293).
+paths:
+  .github/workflows/deploy_cloud_functions.yaml:
+    ignore:
+      - 'unexpected key "enable-openid-connect" for "workflow" section'

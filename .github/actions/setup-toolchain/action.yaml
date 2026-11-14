@@ -29,7 +29,9 @@ description: >-
 # implies the right version. That is true of the baked image and false
 # everywhere else: `ubuntu-latest` preinstalls Node 22 and JDK 17, so a
 # presence probe found them, skipped the install, and left the job running
-# against the wrong majors. verify_toolchain.yaml caught it on its first run.
+# against the wrong majors. A workflow that installed the toolchain on a
+# bare machine caught it on its first run; it was dropped at the move to
+# Forgejo, where no job starts from a bare machine.
 #
 # So the probe compares versions. That costs a little `--version` parsing —
 # four tools, four output formats, `go version`'s "go" prefix and Node's "v"
