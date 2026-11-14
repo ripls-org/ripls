@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripls 0.33.1 Release Notes - Ripls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/privacy-policy.css">
+</head>
+<body>
+    <header>
+        <img src="../assets/logo.png" alt="Ripls Logo" class="logo-image">
+        <div class="logo-text">ripls</div>
+    </header>
+
+    <section class="content-section">
+        <div class="content-wrapper">
+<h1 id="release-0.33.1">Release 0.33.1</h1>
+            <p class="release-date">November 14, 2026</p>
+<p>A maintenance release, and the first one built and shipped from the
+project’s new home. Reminder and nudge notifications now arrive in your
+language, the app’s networking libraries are current, and the last of
+the code kept for retired services is gone.</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><p><strong>Reminders and Nudges in Your Language</strong>: Scheduled
+event reminders and organizer nudges sent their push notification in
+English even when texts and emails already followed your language
+preference. A Spanish-language member now gets these pushes in Spanish
+too (#3276, #3283)</p></li>
+<li><p><strong>One Public Repository, Developed in the Open</strong>:
+Development, CI, deploys and releases moved from a private GitHub
+repository to a single public repository on the project’s own Forgejo
+instance, with <code>github.com/ripls-org/ripls</code> as a mirror. The
+deploy and release pipelines, the website, the runner fleet and the
+planning notes are all published, scrubbed of personal data, and every
+change is checked against a private denylist so it stays that way.
+<code>CONTRIBUTING.md</code> says how to take part (#3228,
+#3293)</p></li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><p><strong>No More Pages for a Normal Deploy</strong>: The uptime
+alert paged whenever a single probe landed in the few seconds a deploy
+takes to restart the server, which was about four deploys in ten. It now
+fires only when two checker locations fail at once for a minute
+(#3317)</p></li>
+<li><p><strong>Feedback and Alerts Land in the New Tracker</strong>:
+In-app feedback and crash and monitoring alerts are filed in a private
+tracker on the new forge instead of GitHub. Prod’s feedback switches
+over with this release (#3318, #3321, #3323)</p></li>
+</ul>
+<h2 id="under-the-hood">Under the Hood</h2>
+<ul>
+<li><p><strong>Current Networking Libraries in the App</strong>: The
+Flutter client moved to <code>connectrpc</code> 2 and
+<code>protobuf</code> 6, lifting a long-standing hold on dependency
+updates. Nothing changes on the wire (#3304, #3305)</p></li>
+<li><p><strong>Retired Code Removed</strong>: Mapbox, unused since the
+move to Google Maps, is gone from the server and the app, and so are
+three AI summary endpoints that no released app has called for three
+versions. Their field numbers are reserved (#3254, #3278,
+#3282)</p></li>
+<li><p><strong>Cloud Run and Cloud SQL Decommissioned</strong>: The
+managed services the servers left in September were deleted; everything
+runs on the project’s own hardware (#3079, #3257)</p></li>
+<li><p><strong>CI on Forgejo Actions</strong>: Tests, deploys and
+releases run on Forgejo Actions on the project’s own runners. Cloud
+Functions deploy with a short-lived identity token rather than a stored
+key, a server-side hook refuses any push that contains a secret, and the
+coding agent’s workflows run from Forgejo events. The Mac that builds
+iOS moved to Xcode 27.2, JDK 25, Node 24 and Ruby 4.0.9 (#3293)</p></li>
+<li><p><strong>Dependency Updates</strong>: Twenty routine dependency
+updates.</p></li>
+</ul>
+<p>Issue and pull request numbers above are from the private repository
+the project was developed in until this release. Its tracker was not
+published.</p>
+            <h2>Previous Releases</h2>
+            <ul>
+                <li><a href="0.33.0.html">0.33.0</a> &mdash; October 23,
+2026</li>
+                <li><a href="0.32.0.html">0.32.0</a> &mdash; September
+19, 2026</li>
+                <li><a href="0.31.0.html">0.31.0</a> &mdash; August 16,
+2026</li>
+                <li><a href="0.30.1.html">0.30.1</a> &mdash; August 16,
+2026</li>
+                <li><a href="0.30.0.html">0.30.0</a> &mdash; August 15,
+2026</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p><a href="/">Back to Home</a></p>
+        <p>&copy; 2025 Type2Fun Foundation, PBC</p>
+    </footer>
+</body>
+</html>

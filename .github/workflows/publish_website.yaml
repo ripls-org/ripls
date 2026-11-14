@@ -40,9 +40,10 @@ jobs:
         uses: ./.github/actions/deploy-website
         with:
           ssh_private_key: ${{ secrets.WEB_PUBLISH_SSH_PRIVATE_KEY }}
-          ssh_destination: ${{ vars.WEB_DEPLOY_SSH }}
-          ssh_port: ${{ vars.WEB_DEPLOY_PORT }}
-          deploy_root: ${{ vars.WEB_DEPLOY_ROOT }}
+          # Secrets first, so the forge masks the endpoint in the log.
+          ssh_destination: ${{ secrets.WEB_DEPLOY_SSH || vars.WEB_DEPLOY_SSH }}
+          ssh_port: ${{ secrets.WEB_DEPLOY_PORT || vars.WEB_DEPLOY_PORT }}
+          deploy_root: ${{ secrets.WEB_DEPLOY_ROOT || vars.WEB_DEPLOY_ROOT }}
 
       # Staging's regex server block (infra/staging-web/config/default.conf) is
       # the fallback for a branch preview that has no per-branch server block
@@ -55,9 +56,9 @@ jobs:
       - name: Sync production routing to the staging fallback
         env:
           SSH_KEY: ${{ secrets.WEB_PUBLISH_SSH_PRIVATE_KEY }}
-          DEST: ${{ vars.WEB_DEPLOY_SSH }}
-          PORT: ${{ vars.WEB_DEPLOY_PORT }}
-          ROOT: ${{ vars.WEB_DEPLOY_ROOT }}
+          DEST: ${{ secrets.WEB_DEPLOY_SSH || vars.WEB_DEPLOY_SSH }}
+          PORT: ${{ secrets.WEB_DEPLOY_PORT || vars.WEB_DEPLOY_PORT }}
+          ROOT: ${{ secrets.WEB_DEPLOY_ROOT || vars.WEB_DEPLOY_ROOT }}
         run: |
           mkdir -p ~/.ssh
           # Trailing newline is required or OpenSSH rejects the key
