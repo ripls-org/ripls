@@ -476,19 +476,6 @@ resource "cloudflare_dns_record" "server" {
   comment = "ripls prod server on mimir"
 }
 
-# code.ripls.org — the project's name for the Forgejo instance its repository
-# lives on (#3293). Caddy on mimir serves the forge under this name as well as
-# its own; git over SSH uses the same name on port 222.
-resource "cloudflare_dns_record" "code" {
-  zone_id = var.cloudflare_zone_id
-  name    = "code"
-  content = "home.overt.org"
-  type    = "CNAME"
-  ttl     = 1
-  proxied = false # git over SSH needs the real host, and Caddy the real client
-  comment = "ripls source forge on mimir"
-}
-
 # ripls.app — invite links and the web app. Created by hand before Terraform
 # managed DNS; imported so both prod hostnames are managed here. Cloudflare
 # flattens the apex CNAME.

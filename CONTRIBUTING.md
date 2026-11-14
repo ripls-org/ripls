@@ -5,7 +5,7 @@ sharing of goods and skills, and outside contributions are welcome.
 
 ## Where development happens
 
-The project's home is <https://code.ripls.org/ripls-org/ripls>, a Forgejo
+The project's home is <https://code.overt.org/ripls-org/ripls>, a Forgejo
 instance. Pull requests are reviewed and merged there, CI runs there, and
 releases are cut from there. The repository on GitHub
 (`github.com/ripls-org/ripls`) is a mirror that Forgejo pushes to: it is always

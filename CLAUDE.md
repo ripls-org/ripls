@@ -13,7 +13,7 @@ the client is written with Flutter / Dart.
 ## Where the repository lives
 
 Development happens on a Forgejo instance, at
-`code.ripls.org/ripls-org/ripls` (also reachable as `code.overt.org`). Issues,
+`code.overt.org/ripls-org/ripls`. Issues,
 pull requests, CI, deploys and releases are all there; `origin` should point at
 it. `github.com/ripls-org/ripls` is a push mirror and is never merged into.
 
