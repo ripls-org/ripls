@@ -3,7 +3,7 @@
 Renovate runs **self-hosted on `mimir`** (the Ubuntu CI host — see
 the host runbook, kept privately) as a scheduled batch job,
 replacing the hosted Mend app. It is outbound-only: it clones the repo, computes
-dependency updates, pushes branches, and opens/merges PRs via the GitHub API. No
+dependency updates, pushes branches, and opens/merges PRs via the forge's API. No
 inbound networking, no web UI (the in-repo **Dependency Dashboard issue** is the
 inspection surface), no reverse proxy.
 
@@ -50,12 +50,21 @@ pins at run time.
 
 ## Auth
 
-A dedicated org-owned **GitHub App** (`ripls-renovate`) authenticates Renovate.
-Its app id + private key live only in host-side files under `/etc/nas/` on
-mimir (never committed, and deliberately outside the backed-up app directory),
-read by `run-renovate.sh`. The app is the PR author and a review
-bypass actor on the `main` ruleset; the auto-approve workflow gates on its bot
-login. See [`docs/infra/dependency_automation.md`](../docs/infra/dependency_automation.md).
+Renovate works as the **`ripls-renovate` account** on the Forgejo instance the
+repository lives on (#3293). The account is a collaborator on the repository
+with write access and nothing else. Its access token is `RENOVATE_TOKEN` in a
+host-side file under `/etc/nas/` on mimir (never committed, and deliberately
+outside the backed-up app directory), read by `run-renovate.sh`. The account is
+the author of Renovate's pull requests; workflows recognise it by the
+repository variable `RENOVATE_BOT_LOGIN`.
+
+The org-owned **GitHub App** of the same name, which authenticated Renovate
+while the repository was on GitHub, is still used for one thing:
+`mint_app_token.js` mints a short-lived token from it that Renovate uses to
+look up releases and changelogs of dependencies hosted on github.com
+(`GITHUB_COM_TOKEN`). It cannot write anywhere Renovate works, and Renovate
+runs without it, more slowly. See
+[`docs/infra/dependency_automation.md`](../docs/infra/dependency_automation.md).
 
 ## Inspecting / operating
 
