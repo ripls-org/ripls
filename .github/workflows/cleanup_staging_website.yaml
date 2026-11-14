@@ -52,9 +52,10 @@ jobs:
       - name: Remove staging directory and routing
         env:
           SLUG: ${{ steps.slug.outputs.slug }}
-          DEST: ${{ vars.WEB_DEPLOY_SSH }}
-          PORT: ${{ vars.WEB_DEPLOY_PORT }}
-          ROOT: ${{ vars.WEB_DEPLOY_ROOT }}
+          # Secrets first, so the forge masks the endpoint in the log.
+          DEST: ${{ secrets.WEB_DEPLOY_SSH || vars.WEB_DEPLOY_SSH }}
+          PORT: ${{ secrets.WEB_DEPLOY_PORT || vars.WEB_DEPLOY_PORT }}
+          ROOT: ${{ secrets.WEB_DEPLOY_ROOT || vars.WEB_DEPLOY_ROOT }}
         run: |
           if [ -z "$SLUG" ] || [[ ! "$SLUG" =~ ^[a-z0-9-]+$ ]]; then
             echo "Refusing to delete with unsafe slug: '$SLUG'" >&2

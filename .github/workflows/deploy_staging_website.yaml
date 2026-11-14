@@ -61,9 +61,10 @@ jobs:
         uses: ./.github/actions/deploy-website
         with:
           ssh_private_key: ${{ secrets.WEB_PUBLISH_SSH_PRIVATE_KEY }}
-          ssh_destination: ${{ vars.WEB_DEPLOY_SSH }}
-          ssh_port: ${{ vars.WEB_DEPLOY_PORT }}
-          deploy_root: ${{ vars.WEB_DEPLOY_ROOT }}
+          # Secrets first, so the forge masks the endpoint in the log.
+          ssh_destination: ${{ secrets.WEB_DEPLOY_SSH || vars.WEB_DEPLOY_SSH }}
+          ssh_port: ${{ secrets.WEB_DEPLOY_PORT || vars.WEB_DEPLOY_PORT }}
+          deploy_root: ${{ secrets.WEB_DEPLOY_ROOT || vars.WEB_DEPLOY_ROOT }}
           content_paths: "website/content/"
           target_subdir: "staging/sites/${{ steps.slug.outputs.slug }}/"
 
@@ -89,9 +90,9 @@ jobs:
           SSH_KEY: ${{ secrets.WEB_PUBLISH_SSH_PRIVATE_KEY }}
           SLUG: ${{ steps.slug.outputs.slug }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          DEST: ${{ vars.WEB_DEPLOY_SSH }}
-          PORT: ${{ vars.WEB_DEPLOY_PORT }}
-          ROOT: ${{ vars.WEB_DEPLOY_ROOT }}
+          DEST: ${{ secrets.WEB_DEPLOY_SSH || vars.WEB_DEPLOY_SSH }}
+          PORT: ${{ secrets.WEB_DEPLOY_PORT || vars.WEB_DEPLOY_PORT }}
+          ROOT: ${{ secrets.WEB_DEPLOY_ROOT || vars.WEB_DEPLOY_ROOT }}
         run: |
           # The slug is built by tr'ing the branch name down to [a-z0-9-], so it
           # is already safe to interpolate into the unquoted heredoc and the

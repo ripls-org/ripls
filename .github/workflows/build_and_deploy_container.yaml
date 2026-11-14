@@ -175,8 +175,12 @@ jobs:
         if: inputs.deploy
         env:
           SSH_KEY: ${{ secrets.MIMIR_DEPLOY_SSH_KEY }}
-          KNOWN_HOSTS: ${{ vars.MIMIR_SSH_KNOWN_HOSTS }}
-          DEPLOY_HOST: ${{ vars.MIMIR_DEPLOY_HOST }}
+          # The endpoint is read from a secret first, so the forge masks it in
+          # this log, which anyone can read on a public repository. Variables
+          # are printed as they are; they stay as the fallback for a private
+          # instance that set them that way.
+          KNOWN_HOSTS: ${{ secrets.MIMIR_SSH_KNOWN_HOSTS || vars.MIMIR_SSH_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ secrets.MIMIR_DEPLOY_HOST || vars.MIMIR_DEPLOY_HOST }}
         run: |
           if [ -z "$SSH_KEY" ] || [ -z "$KNOWN_HOSTS" ] || [ -z "$DEPLOY_HOST" ]; then
             echo "::error::MIMIR_DEPLOY_SSH_KEY, vars.MIMIR_SSH_KNOWN_HOSTS and vars.MIMIR_DEPLOY_HOST must all be set"
