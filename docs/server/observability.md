@@ -9,8 +9,8 @@ context:
   alwaysApply: true
   domain: server
 freshness:
-  verified_commit: "e78336400"
-  verified_on: "2026-07-26"
+  verified_commit: "c08d5e7b0"
+  verified_on: "2026-11-14"
 ---
 # Server Observability Infrastructure
 
@@ -961,7 +961,7 @@ Services → error-budget view):
 
 Each SLO carries a multi-window burn-rate alert policy (fast: 1h lookback,
 burn > 14.4×; slow: 6h lookback, burn > 6× — standard SRE-workbook starting
-values). Both are WARNING severity and warn-classified by the GitHub
+values). Both are WARNING severity and warn-classified by the alerts
 auto-filer until they prove signal; promote fast-burn to page later if
 warranted.
 
@@ -1079,7 +1079,8 @@ Email notifications go to the addresses each environment passes as
 
 In addition, **prod** routes every alert to a Pub/Sub channel
 (`gcp-alerts-to-github`) consumed by the `ripls-alerts` Cloud Function, which
-auto-files GitHub issues (gated by `enable_github_pubsub_channel`, prod only).
+auto-files issues in the private Forgejo tracker (gated by
+`enable_github_pubsub_channel`, prod only; the variable name predates the move).
 Email stays attached in parallel as a backup signal.
 
 **Adding an alert policy means adding a classifier pattern.**
@@ -1176,8 +1177,8 @@ work — they require new logging metrics on `classifier_duration_ms` and
 ### Auto-filed GitHub Issues from Alerts (Phase 1: Crashlytics)
 
 Alongside the email notification channel, production observability signals
-auto-file GitHub issues so triage moves out of inboxes and into the issue
-tracker. Implemented as a Firebase Cloud Functions codebase under
+auto-file issues in the private Forgejo tracker so triage moves out of
+inboxes and into the issue tracker. Implemented as a Firebase Cloud Functions codebase under
 `cloud_functions/` (TypeScript, Node 24). See
 [`cloud_functions/README.md`](../../cloud_functions/README.md) for layout and
 the #1148/#1149 plan (archived) for the full design.
@@ -1326,12 +1327,13 @@ they just stay quiet (no Claude, no severity-specific labels).
 
 The Claude planning workflow skips events where
 `github.actor == 'ripls-agent[bot]'` (the coding agent's identity) so it
-doesn't re-fire on its own follow-up comments. The auto-filer's GitHub
-identity is the existing GitHub App's bot user (whatever that App is named),
-distinct from `ripls-agent[bot]`, so the guard lets the auto-filer through.
-Do not rename the App such that its actor string collides. Bots are refused
-by the agent unless listed as trusted for planning, so the auto-filer's
-`<app>[bot]` login must be in the agent's trusted-bot list.
+doesn't re-fire on its own follow-up comments. Alerts are filed in the
+private Forgejo tracker as the `ripls-alerts` account, distinct from
+`ripls-agent[bot]`, so the guard would let the auto-filer through; but no
+workflow listens on that tracker today (see *Tracker authentication*
+above). If alerts are filed where the agent listens again, the filer's
+login must also be in the agent's trusted-bot list, since bots are refused
+for planning unless listed.
 
 ---
 

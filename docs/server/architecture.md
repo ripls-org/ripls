@@ -8,8 +8,8 @@ context:
   alwaysApply: true
   domain: server
 freshness:
-  verified_commit: "f9888306d"
-  verified_on: "2026-07-08"
+  verified_commit: "c08d5e7b0"
+  verified_on: "2026-11-14"
 ---
 # Server Architecture Guide
 
@@ -110,7 +110,7 @@ The ripls server is a Go-based HTTP/JSON API built on Connect-Go (gRPC-compatibl
 - `auth.UserManager`: User CRUD operations
 - `notifications.Service`: Push notification delivery
 - `location.Provider` (`location.GoogleMapsClient`): Geocoding and place search
-- `github.Client`: GitHub API operations with App authentication
+- `github.Client`: Issue-tracker operations, implemented by the GitHub App client and by `github.ForgejoClient` (Forgejo token auth)
 
 **Pattern to follow:**
 
