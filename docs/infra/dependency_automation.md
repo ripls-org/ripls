@@ -23,6 +23,25 @@ unblock each.
 Read the **Gotchas** section before changing anything here; most of it is
 non-obvious and was learned the hard way.
 
+> **Since the move to Forgejo (2026-11-14, #3293), read this doc with four
+> substitutions.** The sections below were written on GitHub and still say
+> what happened there; the parts about `versions.env`, the images and the held
+> dependencies are unchanged.
+>
+> - **Who Renovate is:** the `ripls-renovate` account on the Forgejo instance,
+>   with an access token in a host-side file, not a GitHub App
+>   (`renovate/README.md` → Auth).
+> - **How its pull requests merge:** `main` requires no approving review, so
+>   nothing approves them. Renovate asks the forge to merge an `automerge`
+>   pull request when its required checks pass. One without the label gets a
+>   review request and is merged by the reviewer
+>   (`.github/workflows/renovate_auto_approve.yaml`).
+> - **What gates a merge:** branch protection on Forgejo `main` and its list
+>   of required checks, not GitHub rulesets.
+> - **Runners:** three Forgejo runner daemons that start a fresh container per
+>   job, and no hosted runners. The reasons given below for keeping a job on
+>   a hosted runner no longer apply (`runners/README.md`).
+
 ---
 
 ## TL;DR
