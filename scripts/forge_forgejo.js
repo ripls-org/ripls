@@ -161,6 +161,9 @@ function issue(i) {
     author: user(i.user),
     labels: (i.labels || []).map((l) => ({ name: l.name })),
     assignees: (i.assignees || []).map(user),
+    milestone: i.milestone
+      ? { number: i.milestone.id, title: i.milestone.title, description: i.milestone.description || '', dueOn: i.milestone.due_on || null }
+      : null,
     createdAt: i.created_at,
     updatedAt: i.updated_at,
     closedAt: i.closed_at,
@@ -500,6 +503,8 @@ function run(r) {
     databaseId: r.id,
     number: r.index_in_repo,
     displayTitle: r.title,
+    // Forgejo keeps no workflow name on a run; gh's `name` is the file here.
+    name: r.workflow_id,
     workflowFile: r.workflow_id,
     event: r.trigger_event || r.event,
     ...runState(r.status),

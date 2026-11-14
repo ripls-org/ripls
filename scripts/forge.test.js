@@ -261,13 +261,23 @@ test('a server error carries the status and message', async () => {
   await assert.rejects(forge(['pr', 'view', '99', '--json', 'number'], {}), /GET \/api\/v1\/repos\/org\/app\/pulls\/99: HTTP 404 not found/);
 });
 
+test('issue view gives the milestone in gh\'s shape, or null', async () => {
+  const base = { number: 7, title: 't', state: 'open', user: { login: 'a' } };
+  const withOne = await forge(['issue', 'view', '7', '--json', 'number,milestone'], {
+    'GET /repos/org/app/issues/7': { ...base, milestone: { id: 2, title: 'v1', description: 'first', due_on: '2026-12-01T00:00:00Z' } },
+  });
+  assert.deepStrictEqual(JSON.parse(withOne.out).milestone, { number: 2, title: 'v1', description: 'first', dueOn: '2026-12-01T00:00:00Z' });
+  const without = await forge(['issue', 'view', '7', '--json', 'number,milestone'], { 'GET /repos/org/app/issues/7': base });
+  assert.strictEqual(JSON.parse(without.out).milestone, null);
+});
+
 test('a pull request reference must be a number on Forgejo', async () => {
   await assert.rejects(forge(['pr', 'view', 'my-branch', '--json', 'number'], {}), /needs a number on Forgejo/);
 });
 
 test('run view splits Forgejo status into status and conclusion, and finds a PR run\'s branch', async () => {
   const payload = JSON.stringify({ number: 3, pull_request: { number: 3, head: { ref: 'claude/x', repo: { full_name: 'org/app' } } } });
-  const { out } = await forge(['run', 'view', '6', '--json', 'databaseId,number,event,status,conclusion,headBranch,headSha,pullRequestNumber,workflowFile,jobs'], {
+  const { out } = await forge(['run', 'view', '6', '--json', 'databaseId,number,event,status,conclusion,headBranch,headSha,pullRequestNumber,workflowFile,name,jobs'], {
     'GET /repos/org/app/actions/runs/6': {
       id: 6, index_in_repo: 4, title: 't', workflow_id: 'probe.yaml', trigger_event: 'pull_request', status: 'failure',
       prettyref: '#3', commit_sha: 'abc', event_payload: payload, trigger_user: { login: 'ripls-agent' },
@@ -280,8 +290,8 @@ test('run view splits Forgejo status into status and conclusion, and finds a PR 
   });
   const got = JSON.parse(out);
   assert.deepStrictEqual(
-    [got.databaseId, got.number, got.event, got.status, got.conclusion, got.headBranch, got.headSha, got.pullRequestNumber, got.workflowFile],
-    [6, 4, 'pull_request', 'completed', 'failure', 'claude/x', 'abc', 3, 'probe.yaml'],
+    [got.databaseId, got.number, got.event, got.status, got.conclusion, got.headBranch, got.headSha, got.pullRequestNumber, got.workflowFile, got.name],
+    [6, 4, 'pull_request', 'completed', 'failure', 'claude/x', 'abc', 3, 'probe.yaml', 'probe.yaml'],
   );
   assert.deepStrictEqual(got.jobs.map((j) => [j.name, j.status, j.conclusion]), [
     ['build', 'completed', 'success'],
