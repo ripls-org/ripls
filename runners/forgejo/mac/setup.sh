@@ -28,8 +28,8 @@ DOMAIN="gui/$(id -u)"
 # Homebrew does not link a versioned formula into bin/; the daemon needs it to
 # run JavaScript actions (the GitHub runner ships its own instead).
 BREW="/opt/homebrew"
-JDK="$BREW/opt/openjdk@21"
-TOOL_PATH="$BREW/opt/ruby/bin:$BREW/lib/ruby/gems/4.0.0/bin:$JDK/bin:$BREW/opt/node@22/bin:$BREW/bin:$BREW/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+JDK="$BREW/opt/openjdk@25"
+TOOL_PATH="$BREW/opt/ruby/bin:$BREW/lib/ruby/gems/4.0.0/bin:$JDK/bin:$BREW/opt/node@24/bin:$BREW/bin:$BREW/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 JAVA_HOME_DIR="$JDK/libexec/openjdk.jdk/Contents/Home"
 
 if [ "${1:-}" = "--pending" ]; then
@@ -70,6 +70,12 @@ sed -e "s|@STATE@|$STATE|g" -e "s|@RUNNER@|$RUNNER|g" -e "s|@LOGS@|$LOGS|g" \
 # of reach and the agent dies with the connection.
 if launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then
   launchctl bootout "$DOMAIN/$LABEL"
+  # bootout returns before the daemon has finished shutting down, and a
+  # bootstrap in that window fails with "Input/output error".
+  for _ in $(seq 1 30); do
+    launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1 || break
+    sleep 1
+  done
 fi
 launchctl bootstrap "$DOMAIN" "$PLIST"
 

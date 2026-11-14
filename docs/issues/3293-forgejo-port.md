@@ -411,7 +411,15 @@ Two Forgejo behaviors cost a debugging round each and are worth knowing:
     exist on the Mac; they now name the 4.0 one.
   Not done: a run of either workflow on Forgejo. That is the rehearsal below.
 - [ ] Run a dev deploy and a full release rehearsal that stops before the store
-  upload.
+  upload. Ready for it (2026-11-14): the 17 secrets the deploy, release and
+  eval workflows read were copied to the Forgejo repository by a one-off
+  GitHub workflow that sent each value from GitHub's secret store to
+  Forgejo's API, so no value was printed or handled by a person. The deploy
+  variables are set too. `INSTANCE_PIPELINES` is still unset there, which is
+  what keeps the shadow from deploying; setting it is the switch.
+  Not copied, because no workflow reads them: `GEMINI_API_KEY`, `MAPBOX_KEY`,
+  `UNSPLASH_KEYS`, `RIPLS_FEEDBACK_PAT`, `GITLEAKS_LICENSE`, the GitHub App
+  key, and the org's two Apple push secrets.
 - [x] Create the private tracker repo on the instance (`ripls-org/tracker`,
   issues only). Still to do: move #2760 into it.
 - [x] Give `server/github` a Forgejo implementation behind its existing
