@@ -525,7 +525,7 @@ linters:
       #
       # EmailLoginRequest.Password and EmailRegisterRequest.Password are marked
       # deprecated in login_service.proto by the passwordless migration (#2571),
-      # but the fields and the code paths behind them still ship — ripls-org/ripls#5 tracks
+      # but the fields and the code paths behind them still ship — issue #7 tracks
       # the removal. Until then the login tests have to keep calling them: a
       # test that proves the deprecated path still works has no way to do that
       # without touching the deprecated field, and 14 //nolint directives would
@@ -533,7 +533,7 @@ linters:
       #
       # Scoped to these two field names deliberately, not to SA1019 at large: a
       # test that reaches for a deprecated *stdlib* API should still fail. This
-      # rule dies with the fields, in the same PR that closes ripls-org/ripls#5.
+      # rule dies with the fields, in the same PR that closes issue #7.
       - path: _test\.go
         linters:
           - staticcheck
