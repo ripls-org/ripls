@@ -299,12 +299,13 @@ jobs:
         # CI gate. The phone-first onboarding flow is gated by the standard
         # workflow specs (e.g. phone-rsvp-full-loop) under mobile-chromium/webkit.
         #
-        # Six workers, each with its own server and database. The job
-        # container's CPU budget is 10 (runners/README.md); four workers left
-        # most of it idle once the build was done.
+        # Four workers (the default in playwright.config.ts), and not more.
+        # Six was tried on 2026-11-14 to shorten this step: the two-browser
+        # specs that wait on realtime updates (event-invite-home-multi-client,
+        # event-rsvp-streaming-multi-client) timed out, retried, and the suite
+        # took 10.7 minutes instead of 6.2 and failed.
         env:
           CI: 'true'
-          E2E_WORKERS: '6'
         run: cd e2e && npx playwright test --project=mobile-chromium --project=webkit
 
       - name: Upload Playwright HTML report
