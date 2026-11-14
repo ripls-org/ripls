@@ -380,7 +380,9 @@ denylist.
 **Goal:** the public tree builds, releases and links correctly on its own.
 
 **Tasks:**
-- [ ] **Build-number offset:**
+- [x] **Build-number offset:** done as `scripts/build_number.sh` (with a unit
+  test), `BUILD_NUMBER_OFFSET=10500`, and the store comparison in the
+  Fastfile. As planned:
   - add `BUILD_NUMBER_OFFSET` to `versions.env`;
   - apply it in `release_app.yaml` and `Fastfile:get_build_number`;
   - add a release-time guard: the `prepare` job compares the computed number
@@ -389,13 +391,16 @@ denylist.
     higher;
   - unit-test the offset arithmetic wherever it lives (shell function or
     Fastfile helper). *(audit fix: "test or check" was not a verifiable task)*
-- [ ] **Release tags:**
+- [x] **Release tags:** settled by release 0.33.1, cut from the new history:
+  `v0.33.1` is the tag later releases diff against. As planned:
   - release notes and the cut flow may diff against the last `v*` tag, and the
     public repo has none;
   - push `v0.33.0` onto the public commit that matches it, or record the base
     tag in `versions.env`;
   - check `release/notes_prompt.md`'s diff base.
-- [ ] **The 15 TODOs that point at closed issues:** decide each one:
+- [ ] **The 15 TODOs that point at closed issues:** not done, and tracked in
+  the new repository as #22. A count on 2026-11-14 found 86 comments in 27
+  files, naming 21 closed issues. Decide each one:
   - **resolve:** the deferred work is done or no longer wanted;
   - **refile:** open a fresh issue and point the TODO at it;
   - **delete:** the comment no longer earns its place.
@@ -403,14 +408,17 @@ denylist.
   Done as one PR. Optionally, `check_todo_refs.js` could reject references to
   closed issues, but that needs the API and so can't run offline. Recommend
   doing it as a nightly check instead, not per PR.
-- [ ] **Links into moving docs:**
+- [x] **Links into moving docs:** checked 2026-11-14: nothing outside
+  `docs/issues/` names `docs/private`. As planned:
   - publish the ~62 or more docs that code links to (open question 1), after a
     scan and a read;
   - rewrite the remaining links in the 184 files.
 
   `dangling-private-refs` widens to cover every moved subtree, so this stays
   fixed.
-- [ ] **Gitleaks and the context map:**
+- [x] **Gitleaks and the context map:** checked 2026-11-14: `.gitleaks.toml`
+  no longer names `docs/private`, and every prefix the context map excludes
+  exists. As planned:
   - drop `^docs/private/` from `.gitleaks.toml` once the subtree is empty;
   - prune `EXCLUDED_PREFIXES` in `gen_context_map.js` to subtrees that still
     exist (keep `docs/issues/`, since new plans land there);
@@ -472,7 +480,8 @@ non-code pieces have their own homes.
   instance; mimir's policy allows private repos there as long as nothing
   deploys from them. It holds `docs/private/**` (phases 1–2) and receives
   the denylist with the CI job above.
-- [ ] **Private tracker:** **decided 2026-11-12: a private repo on Forgejo.**
+- [x] **Private tracker:** done: `ripls-org/tracker` on Forgejo, with #2760
+  moved into it. **Decided 2026-11-12: a private repo on Forgejo.**
   It moved to #3293 (phase 3 there), which ports both clients to the Forgejo
   API. The original GitHub-shaped tasks, for the record:
   - create it and move #2760;
