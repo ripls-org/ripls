@@ -61,6 +61,17 @@ for n in $(runner_numbers); do
   render_config "$n"
 done
 
+# The network every job container joins (config.template.yaml → network).
+# Its subnet is stated so that it sits outside Docker's default pools, which
+# the host's other stacks fill, and inside 172.16.0.0/12, the range the host
+# accepts the CI deploy key from.
+JOB_NETWORK="ripls-ci"
+JOB_SUBNET="${JOB_SUBNET:-172.16.0.0/16}"
+if ! docker network inspect "$JOB_NETWORK" >/dev/null 2>&1; then
+  docker network create --subnet "$JOB_SUBNET" "$JOB_NETWORK" >/dev/null
+  echo "created network $JOB_NETWORK ($JOB_SUBNET)"
+fi
+
 todo="$(pending)"
 if [ -n "$todo" ]; then
   IFS= read -r token || true
