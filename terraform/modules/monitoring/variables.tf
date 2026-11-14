@@ -80,10 +80,21 @@ variable "alert_email_addresses" {
   type        = list(string)
 }
 
-variable "uptime_failure_threshold" {
-  description = "Number of consecutive uptime check failures before alerting"
+variable "uptime_min_failing_regions" {
+  description = <<-EOT
+    How many checker locations must be failing the uptime check at once before
+    the alert fires. The default of 2 ignores a single failed probe, which is
+    what a deploy's restart or a blip on one checker's path produces. Keep it
+    at or below the number of locations in uptime_check_regions (the USA group
+    has 3); 1 alerts on any failed probe.
+  EOT
   type        = number
-  default     = 1
+  default     = 2
+
+  validation {
+    condition     = var.uptime_min_failing_regions >= 1 && floor(var.uptime_min_failing_regions) == var.uptime_min_failing_regions
+    error_message = "uptime_min_failing_regions must be a whole number of at least 1."
+  }
 }
 
 variable "dependency_failure_threshold" {

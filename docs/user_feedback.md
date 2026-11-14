@@ -206,6 +206,25 @@ deployment, not of this code.
 - `--github-repo-name` - Repository name (required; no default)
 - `--feedback-signer-key` (or `--feedback-signer-key-file`) - Service-account JSON key for durable screenshot URL signing (optional; see [Screenshot URL Durability](#screenshot-url-durability-2549) above)
 
+**A Forgejo tracker instead of GitHub (#3293):**
+
+The server files feedback in exactly one tracker. Setting
+`--feedback-forgejo-url` selects a Forgejo instance, and the GitHub App flags
+are then ignored.
+
+- `--feedback-forgejo-url` - Root URL of the Forgejo instance, e.g. `https://code.example.org` (env `FEEDBACK_FORGEJO_URL`)
+- `--feedback-forgejo-token` (or `--feedback-forgejo-token-file`) - Access token of an account that can write issues in the repository. In a container it is the optional `feedback-forgejo-token` secret.
+- `--github-repo-owner` / `--github-repo-name` - The repository on that instance (the flag names are historical)
+
+Two things differ from GitHub, both handled in `server/github/forgejo.go`:
+
+- Forgejo takes label ids, so label names are looked up and a missing label is
+  created (grey, for triage to recolor) instead of failing the report.
+- Forgejo has no issue types. The type is applied as a lower-case label:
+  a bug report gets `bug`, a feature request `feature`.
+
+The health check is named `forgejo` in this mode, `github` otherwise.
+
 **Why base64-encoded?**
 
 PEM private keys are multi-line and contain characters that don't survive shell argument passing. Base64-encoding produces a single continuous line that can safely be passed as a flag value. The server decodes it on startup and hands the raw PEM bytes to the GitHub App client.

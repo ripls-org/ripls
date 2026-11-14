@@ -68,6 +68,8 @@ EOF
   #   twilio-*                     the SMS channel is never constructed (#2492)
   #   feedback-signer-key          feedback screenshot URLs fall back to
   #                                short-lived signing (#2549)
+  #   feedback-forgejo-token       with FEEDBACK_FORGEJO_URL set, feedback
+  #                                cannot file issues; without it, unused
   /app/fetch-secrets -project "$GOOGLE_CLOUD_PROJECT" -dir "$SECRETS_DIR" \
     -optional mailgun-webhook-signing-key \
     -optional google-maps-api-key-server \
@@ -75,6 +77,7 @@ EOF
     -optional twilio-auth-token \
     -optional twilio-messaging-service-sid \
     -optional feedback-signer-key \
+    -optional feedback-forgejo-token \
     openai-api-key \
     anthropic-api-key \
     mailgun-api-key \
@@ -124,6 +127,10 @@ set -- "$@" \
 # stops creating issues.
 [ -n "${GITHUB_REPO_OWNER:-}" ]          && set -- "$@" "-github-repo-owner=$GITHUB_REPO_OWNER"
 [ -n "${GITHUB_REPO_NAME:-}" ]           && set -- "$@" "-github-repo-name=$GITHUB_REPO_NAME"
+# A Forgejo instance as the feedback tracker, in place of GitHub. The repo is
+# still GITHUB_REPO_OWNER/GITHUB_REPO_NAME; the token is the
+# feedback-forgejo-token credential file.
+[ -n "${FEEDBACK_FORGEJO_URL:-}" ]       && set -- "$@" "-feedback-forgejo-url=$FEEDBACK_FORGEJO_URL"
 [ -n "${WAITLIST_NOTIFY_EMAIL:-}" ]      && set -- "$@" "-waitlist-notify-email=$WAITLIST_NOTIFY_EMAIL"
 [ -n "${GOOGLE_CLIENT_ID:-}" ]           && set -- "$@" "-google-client-id=$GOOGLE_CLIENT_ID"
 [ "${LOG_SOURCE_LOCATION:-}" = "true" ]  && set -- "$@" -log-source-location

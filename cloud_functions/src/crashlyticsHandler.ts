@@ -1,4 +1,4 @@
-// Crashlytics → GitHub issue handlers. Wraps the firebase-functions v2
+// Crashlytics → tracker issue handlers. Wraps the firebase-functions v2
 // alert triggers and routes through the shared upsertIssue helper.
 //
 // Gating per the #1148/#1149 plan's §"Claude-trigger gating"
@@ -13,7 +13,7 @@
 // intentionally NOT exported — too noisy at our volume, per the plan's
 // "Issue-creation gating" table. Re-enable in Phase 2 if signal is sparse.
 
-import { Octokit } from '@octokit/rest';
+import type { IssueTracker } from './issueTracker';
 import {
   CrashlyticsEvent,
   RegressionAlertPayload,
@@ -27,9 +27,9 @@ import { logger } from 'firebase-functions/v2';
 import {
   REPO_NAME,
   REPO_OWNER,
-  githubAppPrivateKeyBase64,
-  octokitFromAppSecret,
-} from './githubAuth';
+  forgejoAlertsToken,
+  trackerFromSecret,
+} from './forgejoTracker';
 import { upsertIssue } from './upsertIssue';
 
 /**
@@ -106,12 +106,12 @@ export function shouldClaudeFixVelocity(payload: VelocityAlertPayload): boolean 
 
 /**
  * Pure-async handler for velocity alerts. Exported so it's directly testable
- * by passing a mock Octokit. The trigger wrapper at module bottom adapts the
+ * by passing a mock IssueTracker. The trigger wrapper at module bottom adapts the
  * Firebase event shape into a call to this function.
  */
 export async function handleVelocityAlert(
   payload: VelocityAlertPayload,
-  octokit: Octokit,
+  tracker: IssueTracker,
 ): Promise<void> {
   const dedupLabel = `crashlytics:${payload.issue.id}`;
   const platformLabel = derivePlatformLabel(payload.issue);
@@ -124,7 +124,7 @@ export async function handleVelocityAlert(
     extraLabels: ['crash', ...platformLabel],
     reopenIfClosed: false,
     addClaudeFixLabel: shouldClaudeFixVelocity(payload),
-    octokit,
+    tracker,
   });
   logger.info('crashlytics velocity alert handled', {
     crashlyticsIssueId: payload.issue.id,
@@ -140,7 +140,7 @@ export async function handleVelocityAlert(
  */
 export async function handleRegressionAlert(
   payload: RegressionAlertPayload,
-  octokit: Octokit,
+  tracker: IssueTracker,
 ): Promise<void> {
   const dedupLabel = `crashlytics:${payload.issue.id}`;
   const platformLabel = derivePlatformLabel(payload.issue);
@@ -153,7 +153,7 @@ export async function handleRegressionAlert(
     extraLabels: ['crash', 'regression', ...platformLabel],
     reopenIfClosed: true,
     addClaudeFixLabel: true,
-    octokit,
+    tracker,
   });
   logger.info('crashlytics regression alert handled', {
     crashlyticsIssueId: payload.issue.id,
@@ -284,7 +284,7 @@ export function buildStabilityDigestBody(payload: StabilityDigestPayload): strin
  */
 export async function handleStabilityDigest(
   payload: StabilityDigestPayload,
-  octokit: Octokit,
+  tracker: IssueTracker,
 ): Promise<void> {
   const isoMonday = isoMondayOfWeek(payload.digestDate);
   const dedupLabel = `crashlytics-digest-week:${isoMonday}`;
@@ -302,7 +302,7 @@ export async function handleStabilityDigest(
     // does not run on the comment path). So the first digest of the week
     // gets a claude-fix; subsequent days within the same week do not.
     addClaudeFixLabel: true,
-    octokit,
+    tracker,
   });
   logger.info('crashlytics stability digest handled', {
     digestDate: payload.digestDate,
@@ -336,22 +336,22 @@ function derivePlatformLabel(issue: { title: string; subtitle: string }): string
 // ---------------------------------------------------------------------------
 
 export const crashlyticsVelocityAlert = onVelocityAlertPublished(
-  { secrets: [githubAppPrivateKeyBase64] },
+  { secrets: [forgejoAlertsToken] },
   async (event: CrashlyticsEvent<VelocityAlertPayload>) => {
-    await handleVelocityAlert(event.data.payload, octokitFromAppSecret());
+    await handleVelocityAlert(event.data.payload, trackerFromSecret());
   },
 );
 
 export const crashlyticsRegressionAlert = onRegressionAlertPublished(
-  { secrets: [githubAppPrivateKeyBase64] },
+  { secrets: [forgejoAlertsToken] },
   async (event: CrashlyticsEvent<RegressionAlertPayload>) => {
-    await handleRegressionAlert(event.data.payload, octokitFromAppSecret());
+    await handleRegressionAlert(event.data.payload, trackerFromSecret());
   },
 );
 
 export const crashlyticsStabilityDigest = onStabilityDigestPublished(
-  { secrets: [githubAppPrivateKeyBase64] },
+  { secrets: [forgejoAlertsToken] },
   async (event: CrashlyticsEvent<StabilityDigestPayload>) => {
-    await handleStabilityDigest(event.data.payload, octokitFromAppSecret());
+    await handleStabilityDigest(event.data.payload, trackerFromSecret());
   },
 );

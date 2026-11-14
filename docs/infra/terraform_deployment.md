@@ -56,7 +56,8 @@ Operators need `roles/storage.objectAdmin` on the bucket for their environment.
 - Cloudflare DNS records for the server and web-app hostnames.
 - GitHub Actions secret grants for build-time secrets, and its Vertex AI role.
 - Prod only: the account-level billing budget ($40/month), and the Cloud
-  Functions runtime and deploy grants on `github-app-alerts-private-key-base64`.
+  Functions runtime and deploy grants on `forgejo-alerts-token` (and, until it
+  is retired, `github-app-alerts-private-key-base64`).
 
 ## Initial setup
 

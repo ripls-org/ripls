@@ -1,4 +1,4 @@
-// Cloud Monitoring → GitHub issue handler. Subscribes to the
+// Cloud Monitoring → tracker issue handler. Subscribes to the
 // gcp-alerts-to-github Pub/Sub topic that Cloud Monitoring's
 // notification channel publishes to (configured in
 // terraform/modules/monitoring/main.tf, gated by
@@ -23,13 +23,13 @@
 import { CloudEvent } from 'firebase-functions/v2';
 import { logger } from 'firebase-functions/v2';
 import { MessagePublishedData, onMessagePublished } from 'firebase-functions/v2/pubsub';
-import type { Octokit } from '@octokit/rest';
+import type { IssueTracker } from './issueTracker';
 import {
   REPO_NAME,
   REPO_OWNER,
-  githubAppPrivateKeyBase64,
-  octokitFromAppSecret,
-} from './githubAuth';
+  forgejoAlertsToken,
+  trackerFromSecret,
+} from './forgejoTracker';
 import { closeIssue, upsertIssue } from './upsertIssue';
 
 /**
@@ -259,7 +259,7 @@ Auto-closed by ripls-alerts on receipt of the \`state=closed\` Pub/Sub event.`;
  */
 export async function handleGcpAlert(
   payload: CloudMonitoringIncidentPayload,
-  octokit: Octokit,
+  tracker: IssueTracker,
 ): Promise<void> {
   const severity = classifySeverity(payload);
   const inc = payload.incident;
@@ -273,7 +273,7 @@ export async function handleGcpAlert(
         repo: REPO_NAME,
         dedupLabel,
         body: buildResolutionBody(payload),
-        octokit,
+        tracker,
       });
       logger.info('gcp incident close handled', {
         incidentId: inc.incident_id,
@@ -295,7 +295,7 @@ export async function handleGcpAlert(
       // does (we don't know what it is, no point burning Claude-API on a
       // mis-classified event).
       addClaudeFixLabel: severity === 'page',
-      octokit,
+      tracker,
     });
     logger.info('gcp incident open handled', {
       incidentId: inc.incident_id,
@@ -329,7 +329,7 @@ export async function handleGcpAlert(
     // of the day). upsertIssue's create-only label path means subsequent
     // occurrences within the same day won't re-fire Claude.
     addClaudeFixLabel: true,
-    octokit,
+    tracker,
   });
   logger.info('gcp warn incident handled', {
     incidentId: inc.incident_id,
@@ -405,7 +405,7 @@ function safeJsonParse(s: string): unknown {
 export const gcpAlertsHandler = onMessagePublished(
   {
     topic: 'gcp-alerts-to-github',
-    secrets: [githubAppPrivateKeyBase64],
+    secrets: [forgejoAlertsToken],
   },
   async (event: CloudEvent<MessagePublishedData>) => {
     const payload = parsePubsubMessage(event.data.message);
@@ -415,6 +415,6 @@ export const gcpAlertsHandler = onMessagePublished(
       });
       return;
     }
-    await handleGcpAlert(payload, octokitFromAppSecret());
+    await handleGcpAlert(payload, trackerFromSecret());
   },
 );

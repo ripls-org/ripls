@@ -1,4 +1,4 @@
-// Label-based upsert for GitHub issues. Used by all alert-handler trigger
+// Label-based upsert for tracker issues. Used by all alert-handler trigger
 // types (Crashlytics, Cloud Monitoring) so a single dedup pattern governs
 // every auto-filed issue.
 //
@@ -11,11 +11,13 @@
 //
 // The dedupLabel must be applied to every auto-filed issue. Callers may
 // supply extra labels (severity, platform, etc.) and may opt in to the
-// `claude-fix` label which triggers the existing claude_plan_issue.yaml
-// workflow. See the #1148/#1149 plan's §"Claude-trigger gating"
+// `claude-fix` label. In the private tracker that label starts nothing: it
+// records that the alert met the bar for an automatic plan, which it will get
+// again once alerts can be filed where the agent listens (see
+// forgejoTracker.ts). See the #1148/#1149 plan's §"Claude-trigger gating"
 // (archived) for when to opt in.
 
-import type { Octokit } from '@octokit/rest';
+import type { IssueTracker } from './issueTracker';
 
 /**
  * Standard label applied to every issue this helper creates. Used by humans
@@ -24,12 +26,9 @@ import type { Octokit } from '@octokit/rest';
 export const AUTO_FILED_LABEL = 'auto-filed';
 
 /**
- * Label that triggers .github/workflows/claude_plan_issue.yaml. Adding this
- * label to an issue causes Claude to draft a plan PR. The workflow's
- * self-trigger guard skips events where github.actor === 'ripls-agent[bot]',
- * so the auto-filer's identity must NOT be ripls-agent[bot], and the agent
- * repo only accepts it because it is listed in AGENT_TRUSTED_BOTS (#2970).
- * See plan Q9.
+ * Label that, in the code repository, starts claude_plan_issue.yaml and has
+ * Claude draft a plan PR. Alerts are filed in the private tracker, where no
+ * workflow listens, so here it only marks the alerts that qualified.
  */
 export const CLAUDE_FIX_LABEL = 'claude-fix';
 
@@ -60,8 +59,8 @@ export interface UpsertIssueOptions {
    * Defaults to false — the plan's gating section explains when to opt in.
    */
   addClaudeFixLabel?: boolean;
-  /** Authenticated Octokit instance. Constructed by the caller from GH_AUTOMATION_TOKEN. */
-  octokit: Octokit;
+  /** The tracker to file in; trigger handlers build it with trackerFromSecret(). */
+  tracker: IssueTracker;
 }
 
 export type UpsertIssueResult =
@@ -70,10 +69,10 @@ export type UpsertIssueResult =
   | { action: 'reopened'; issueNumber: number };
 
 /**
- * Upserts a GitHub issue identified by `dedupLabel`. Returns the action
+ * Upserts a tracker issue identified by `dedupLabel`. Returns the action
  * taken so the caller can log it for observability.
  *
- * Throws on any GitHub API error — the caller (a Cloud Function) should
+ * Throws on any tracker API error — the caller (a Cloud Function) should
  * let the error propagate so the platform retries (Pub/Sub triggers) or
  * surfaces in Cloud Logging (Crashlytics triggers).
  */
@@ -89,14 +88,14 @@ export async function upsertIssue(
     extraLabels = [],
     reopenIfClosed = false,
     addClaudeFixLabel = false,
-    octokit,
+    tracker,
   } = options;
 
-  // GitHub's `listForRepo` with a `labels` filter is strongly consistent
-  // (unlike the search API). Fetching state=all so we see closed issues for
+  // Listing by label reads the issues themselves, not a search index, so a
+  // just-created issue is found. Fetching state=all so we see closed issues for
   // the regression-reopen path. per_page=1 with descending creation date
   // gives us the most-recent issue with that label.
-  const { data: candidates } = await octokit.issues.listForRepo({
+  const { data: candidates } = await tracker.issues.listForRepo({
     owner,
     repo,
     state: 'all',
@@ -113,7 +112,7 @@ export async function upsertIssue(
 
   if (!existing) {
     const labels = buildLabelSet({ dedupLabel, extraLabels, addClaudeFixLabel });
-    const { data: created } = await octokit.issues.create({
+    const { data: created } = await tracker.issues.create({
       owner,
       repo,
       title,
@@ -126,7 +125,7 @@ export async function upsertIssue(
   // Always comment on the existing issue with the new payload — the body
   // typically carries fresh stats (velocity %, occurrence count, etc.) that
   // are useful even if we don't reopen.
-  await octokit.issues.createComment({
+  await tracker.issues.createComment({
     owner,
     repo,
     issue_number: existing.number,
@@ -134,7 +133,7 @@ export async function upsertIssue(
   });
 
   if (existing.state === 'closed' && reopenIfClosed) {
-    await octokit.issues.update({
+    await tracker.issues.update({
       owner,
       repo,
       issue_number: existing.number,
@@ -144,7 +143,7 @@ export async function upsertIssue(
     // is present even though the issue may have lost it during a previous
     // close. Idempotent — addLabels is upsert-shaped.
     if (addClaudeFixLabel) {
-      await octokit.issues.addLabels({
+      await tracker.issues.addLabels({
         owner,
         repo,
         issue_number: existing.number,
@@ -182,7 +181,7 @@ export interface CloseIssueOptions {
   dedupLabel: string;
   /** Comment body posted before closing (e.g., "Incident resolved at ..."). */
   body: string;
-  octokit: Octokit;
+  tracker: IssueTracker;
 }
 
 export type CloseIssueResult =
@@ -190,20 +189,20 @@ export type CloseIssueResult =
   | { action: 'noop'; reason: 'not_found' };
 
 /**
- * Closes the open GitHub issue matching the dedupLabel, after appending a
+ * Closes the open tracker issue matching the dedupLabel, after appending a
  * comment with the supplied body. Used by the Cloud Monitoring incident
  * lifecycle (state=closed → close the corresponding GH issue).
  *
  * No-op if no matching open issue exists (already closed by a human, or
  * the create path never fired in the first place — defensive). Throws
- * on any GitHub API error so the caller can surface to Cloud Logging.
+ * on any tracker API error so the caller can surface to Cloud Logging.
  */
 export async function closeIssue(
   options: CloseIssueOptions,
 ): Promise<CloseIssueResult> {
-  const { owner, repo, dedupLabel, body, octokit } = options;
+  const { owner, repo, dedupLabel, body, tracker } = options;
 
-  const { data: candidates } = await octokit.issues.listForRepo({
+  const { data: candidates } = await tracker.issues.listForRepo({
     owner,
     repo,
     state: 'open',
@@ -218,13 +217,13 @@ export async function closeIssue(
     return { action: 'noop', reason: 'not_found' };
   }
 
-  await octokit.issues.createComment({
+  await tracker.issues.createComment({
     owner,
     repo,
     issue_number: existing.number,
     body,
   });
-  await octokit.issues.update({
+  await tracker.issues.update({
     owner,
     repo,
     issue_number: existing.number,

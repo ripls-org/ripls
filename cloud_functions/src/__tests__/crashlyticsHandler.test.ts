@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from 'vitest';
-import type { Octokit } from '@octokit/rest';
+import type { IssueTracker } from '../issueTracker';
 import type {
   RegressionAlertPayload,
   StabilityDigestPayload,
@@ -19,7 +19,6 @@ import {
   isoMondayOfWeek,
   shouldClaudeFixVelocity,
 } from '../crashlyticsHandler';
-import { decodeBase64Pem } from '../githubAuth';
 import { AUTO_FILED_LABEL, CLAUDE_FIX_LABEL } from '../upsertIssue';
 
 const baseIssue = {
@@ -47,16 +46,16 @@ const regressionPayload: RegressionAlertPayload = {
   resolveTime: '2026-04-15T08:00:00Z',
 };
 
-const makeOctokit = () => {
+const makeTracker = () => {
   const listForRepo = vi.fn().mockResolvedValue({ data: [] });
   const create = vi.fn().mockResolvedValue({ data: { number: 700 } });
   const update = vi.fn().mockResolvedValue({ data: {} });
   const createComment = vi.fn().mockResolvedValue({ data: {} });
   const addLabels = vi.fn().mockResolvedValue({ data: {} });
   return {
-    octokit: {
+    tracker: {
       issues: { listForRepo, create, update, createComment, addLabels },
-    } as unknown as Octokit,
+    } as unknown as IssueTracker,
     spies: { listForRepo, create, update, createComment, addLabels },
   };
 };
@@ -108,8 +107,8 @@ describe('buildRegressionIssueBody', () => {
 
 describe('handleVelocityAlert', () => {
   test('files an issue with crash + platform:android labels and dedup label', async () => {
-    const { octokit, spies } = makeOctokit();
-    await handleVelocityAlert(velocityPayload, octokit);
+    const { tracker, spies } = makeTracker();
+    await handleVelocityAlert(velocityPayload, tracker);
 
     expect(spies.create).toHaveBeenCalledTimes(1);
     const call = spies.create.mock.calls[0][0];
@@ -122,20 +121,20 @@ describe('handleVelocityAlert', () => {
   });
 
   test('opts into claude-fix when crashPercentage >= threshold', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     await handleVelocityAlert(
       { ...velocityPayload, crashPercentage: 2 },
-      octokit,
+      tracker,
     );
 
     expect(spies.create.mock.calls[0][0].labels).toContain(CLAUDE_FIX_LABEL);
   });
 
   test('does NOT add claude-fix when crashPercentage below threshold', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     await handleVelocityAlert(
       { ...velocityPayload, crashPercentage: 0.4 },
-      octokit,
+      tracker,
     );
 
     const labels = spies.create.mock.calls[0][0].labels as string[];
@@ -143,24 +142,24 @@ describe('handleVelocityAlert', () => {
   });
 
   test('comments rather than creating when issue already exists for same Crashlytics id', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     spies.listForRepo.mockResolvedValueOnce({
       data: [{ number: 99, state: 'open' }],
     });
 
-    await handleVelocityAlert(velocityPayload, octokit);
+    await handleVelocityAlert(velocityPayload, tracker);
 
     expect(spies.create).not.toHaveBeenCalled();
     expect(spies.createComment).toHaveBeenCalledTimes(1);
   });
 
   test('does not reopen a closed issue (velocity is not a regression signal)', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     spies.listForRepo.mockResolvedValueOnce({
       data: [{ number: 99, state: 'closed' }],
     });
 
-    await handleVelocityAlert(velocityPayload, octokit);
+    await handleVelocityAlert(velocityPayload, tracker);
 
     expect(spies.update).not.toHaveBeenCalled();
     expect(spies.createComment).toHaveBeenCalledTimes(1);
@@ -169,8 +168,8 @@ describe('handleVelocityAlert', () => {
 
 describe('handleRegressionAlert', () => {
   test('files with regression label and always opts into claude-fix', async () => {
-    const { octokit, spies } = makeOctokit();
-    await handleRegressionAlert(regressionPayload, octokit);
+    const { tracker, spies } = makeTracker();
+    await handleRegressionAlert(regressionPayload, tracker);
 
     const labels = spies.create.mock.calls[0][0].labels as string[];
     expect(labels).toContain('crash');
@@ -180,12 +179,12 @@ describe('handleRegressionAlert', () => {
   });
 
   test('reopens a closed issue (the whole point of regression alerts)', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     spies.listForRepo.mockResolvedValueOnce({
       data: [{ number: 50, state: 'closed' }],
     });
 
-    await handleRegressionAlert(regressionPayload, octokit);
+    await handleRegressionAlert(regressionPayload, tracker);
 
     expect(spies.update).toHaveBeenCalledWith(
       expect.objectContaining({ issue_number: 50, state: 'open' }),
@@ -329,14 +328,14 @@ describe('formatTimestamp', () => {
 
 describe('handleStabilityDigest with object-shaped digestDate (#1804)', () => {
   test('files an issue with correct dedup label when digestDate is google.type.Date', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     await handleStabilityDigest(
       {
         ...stabilityDigestPayload,
         // Cast through unknown because the SDK type insists on string.
         digestDate: { year: 2026, month: 5, day: 8 } as unknown as string,
       },
-      octokit,
+      tracker,
     );
 
     expect(spies.create).toHaveBeenCalledTimes(1);
@@ -381,31 +380,6 @@ describe('buildRegressionIssueBody with object-shaped resolveTime (#1804)', () =
   });
 });
 
-describe('decodeBase64Pem (mirrors server/main.go decodeBase64PEM)', () => {
-  const samplePem = `-----BEGIN RSA PRIVATE KEY-----
-MIIEpAIBAAKCAQEAfakekeycontentsabc123==
------END RSA PRIVATE KEY-----`;
-
-  test('round-trips a base64-encoded PEM', () => {
-    const encoded = Buffer.from(samplePem).toString('base64');
-    expect(decodeBase64Pem(encoded)).toBe(samplePem);
-  });
-
-  test('throws when the decoded value is not PEM-shaped', () => {
-    const garbage = Buffer.from('hello world').toString('base64');
-    expect(() => decodeBase64Pem(garbage)).toThrowError(/not a valid PEM/);
-  });
-
-  test('throws when the input is not base64 (decoding to non-PEM)', () => {
-    // Non-base64 chars are silently dropped by Buffer.from('base64'), so
-    // the failure mode surfaces as "decoded value is not PEM" rather than
-    // a base64 error. Acceptable — same defense.
-    expect(() => decodeBase64Pem('not-a-pem-at-all-!!!')).toThrowError(
-      /not a valid PEM/,
-    );
-  });
-});
-
 const stabilityDigestPayload: StabilityDigestPayload = {
   '@type':
     'type.googleapis.com/google.events.firebase.firebasealerts.v1.CrashlyticsStabilityDigestPayload',
@@ -441,8 +415,8 @@ describe('buildStabilityDigestBody', () => {
 
 describe('handleStabilityDigest', () => {
   test('creates a weekly rolling issue with stability-digest + claude-fix labels', async () => {
-    const { octokit, spies } = makeOctokit();
-    await handleStabilityDigest(stabilityDigestPayload, octokit);
+    const { tracker, spies } = makeTracker();
+    await handleStabilityDigest(stabilityDigestPayload, tracker);
 
     expect(spies.create).toHaveBeenCalledTimes(1);
     const call = spies.create.mock.calls[0][0];
@@ -457,18 +431,18 @@ describe('handleStabilityDigest', () => {
     // First digest of the week (Monday) creates the issue. The mock returns
     // it on the second call so the second handler invocation hits the
     // existing-issue path.
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     spies.listForRepo
       .mockResolvedValueOnce({ data: [] })
       .mockResolvedValueOnce({ data: [{ number: 333, state: 'open' }] });
 
     await handleStabilityDigest(
       { ...stabilityDigestPayload, digestDate: '2026-05-04' },
-      octokit,
+      tracker,
     );
     await handleStabilityDigest(
       { ...stabilityDigestPayload, digestDate: '2026-05-05' },
-      octokit,
+      tracker,
     );
 
     expect(spies.create).toHaveBeenCalledTimes(1); // one create on day 1
@@ -477,15 +451,15 @@ describe('handleStabilityDigest', () => {
   });
 
   test('a digest from the next week creates a fresh issue (distinct dedup label)', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     // Two distinct weeks: 2026-05-04 (Monday wk1) and 2026-05-11 (Monday wk2).
     await handleStabilityDigest(
       { ...stabilityDigestPayload, digestDate: '2026-05-04' },
-      octokit,
+      tracker,
     );
     await handleStabilityDigest(
       { ...stabilityDigestPayload, digestDate: '2026-05-11' },
-      octokit,
+      tracker,
     );
 
     expect(spies.create).toHaveBeenCalledTimes(2);
@@ -506,7 +480,7 @@ describe('handleStabilityDigest', () => {
 
 describe('platform inference', () => {
   test('iOS-flavored title gets platform:ios', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     await handleVelocityAlert(
       {
         ...velocityPayload,
@@ -516,7 +490,7 @@ describe('platform inference', () => {
           subtitle: 'Crash in Foundation.NSArray',
         },
       },
-      octokit,
+      tracker,
     );
 
     const labels = spies.create.mock.calls[0][0].labels as string[];
@@ -525,7 +499,7 @@ describe('platform inference', () => {
   });
 
   test('ambiguous titles get no platform label (rather than guessing)', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     await handleVelocityAlert(
       {
         ...velocityPayload,
@@ -535,7 +509,7 @@ describe('platform inference', () => {
           subtitle: 'No idea',
         },
       },
-      octokit,
+      tracker,
     );
 
     const labels = spies.create.mock.calls[0][0].labels as string[];

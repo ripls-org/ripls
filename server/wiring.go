@@ -466,15 +466,32 @@ func wireServices(ctx context.Context, cfg *config.Config, logger *logging.Logge
 		userPhoneAuth = deps.firebaseAuth
 	}
 	userService := user.New(userManager, sqlStorage, userPhoneAuth, communityEventBus)
-	feedbackService := feedback.NewFromGitHubApp(ctx, github.AppConfig{
-		AppID:          cfg.GitHubAppID,
-		InstallationID: cfg.GitHubInstallationID,
-		PrivateKey:     []byte(cfg.GitHubAppPrivateKey),
-		Owner:          cfg.GitHubRepoOwner,
-		Repo:           cfg.GitHubRepoName,
-	}, bucketStorage)
-	if cfg.GitHubAppID != 0 && cfg.GitHubInstallationID != 0 && cfg.GitHubAppPrivateKey != "" {
-		healthService.RegisterFuncCached("github", healthsvc.DefaultExternalTTL, feedbackService.CheckHealth)
+	// User feedback is filed in one tracker: a Forgejo instance when its URL
+	// is configured, GitHub otherwise. Either way the health check is
+	// registered only when credentials are present, so a deployment without a
+	// tracker does not report a permanently failing dependency.
+	var feedbackService *feedback.Service
+	if cfg.FeedbackForgejoURL != "" {
+		feedbackService = feedback.NewFromForgejo(github.ForgejoConfig{
+			BaseURL: cfg.FeedbackForgejoURL,
+			Token:   cfg.FeedbackForgejoToken,
+			Owner:   cfg.GitHubRepoOwner,
+			Repo:    cfg.GitHubRepoName,
+		}, bucketStorage)
+		if cfg.FeedbackForgejoToken != "" {
+			healthService.RegisterFuncCached("forgejo", healthsvc.DefaultExternalTTL, feedbackService.CheckHealth)
+		}
+	} else {
+		feedbackService = feedback.NewFromGitHubApp(ctx, github.AppConfig{
+			AppID:          cfg.GitHubAppID,
+			InstallationID: cfg.GitHubInstallationID,
+			PrivateKey:     []byte(cfg.GitHubAppPrivateKey),
+			Owner:          cfg.GitHubRepoOwner,
+			Repo:           cfg.GitHubRepoName,
+		}, bucketStorage)
+		if cfg.GitHubAppID != 0 && cfg.GitHubInstallationID != 0 && cfg.GitHubAppPrivateKey != "" {
+			healthService.RegisterFuncCached("github", healthsvc.DefaultExternalTTL, feedbackService.CheckHealth)
+		}
 	}
 	webService, err := websvc.New(sqlStorage, bucketStorage, cfg.InviteLinkHostname, []byte(cfg.JWTSigningSecret))
 	if err != nil {

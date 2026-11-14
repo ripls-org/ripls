@@ -228,12 +228,27 @@ test('issue create resolves labels and prints the URL', async () => {
   assert.strictEqual(out, 'https://forge.example/org/app/issues/8\n');
 });
 
-test('issue list asks for issues only and filters by label on the server', async () => {
+test('issue list asks for issues only, filters by label on the server, and checks the labels again', async () => {
+  // Forgejo ignores a filter that names a label the repository does not have
+  // and answers with every issue; #3 stands for one of those.
   const { out, calls } = await forge(['issue', 'list', '--label', 'bug', '--state', 'open', '--json', 'number,state'], {
-    'GET /repos/org/app/issues': [{ number: 2, title: 't', state: 'open' }],
+    'GET /repos/org/app/issues': [
+      { number: 2, title: 't', state: 'open', labels: [{ name: 'bug' }] },
+      { number: 3, title: 'u', state: 'open', labels: [{ name: 'other' }] },
+    ],
   });
   assert.deepStrictEqual(JSON.parse(out), [{ number: 2, state: 'OPEN' }]);
   assert.deepStrictEqual([calls[0].query.type, calls[0].query.labels], ['issues', 'bug']);
+});
+
+test('issue list with several labels keeps only issues carrying all of them', async () => {
+  const { out } = await forge(['issue', 'list', '--label', 'bug,ops', '--json', 'number'], {
+    'GET /repos/org/app/issues': [
+      { number: 2, title: 't', state: 'open', labels: [{ name: 'bug' }, { name: 'ops' }] },
+      { number: 3, title: 'u', state: 'open', labels: [{ name: 'bug' }] },
+    ],
+  });
+  assert.deepStrictEqual(JSON.parse(out), [{ number: 2 }]);
 });
 
 test('label create refuses a duplicate without --force and updates with it', async () => {

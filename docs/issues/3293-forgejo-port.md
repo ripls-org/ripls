@@ -268,22 +268,25 @@ Forgejo events.
 - [x] Write `scripts/forge` with tests against recorded API responses
   (#3306, #3307). It covers every `gh` form in use across both repos, plus
   two commands of its own (`forge file`, `forge permission`).
-- [ ] Switch this repo's workflows, scripts and skills from `gh` to it. On
-  GitHub it passes through to `gh`, so both forges keep working.
-- [ ] Create the bot accounts and their tokens; replace the three App-token
+- [x] Switch this repo's dispatchers from `gh` to it (#3310 to #3313). On
+  GitHub it passes through to `gh`, so both forges keep working. Still on
+  `gh`: `release_cut`, `release_finalize`, `deploy_cloud_functions`.
+- [x] Create the bot accounts and their tokens; replace the three App-token
   steps. Three accounts, by what each may do (see *Probe round two*):
   - `ripls-agent`: writes to the repo (branches, PRs, comments). A
     collaborator, not an org member.
   - `ripls-dispatch`: starts workflows in the agent repo and answers the
     trust check. Created 2026-11-13 and proven to be able to do only that.
   - a Renovate account, when Renovate moves.
-- [ ] Port the dispatchers:
+- [x] Port the dispatchers (#3311 to #3313):
   - the trust check becomes a step: is the actor a member of the org? It
     uses the dispatch account's token, since the automatic token can't ask;
   - the CI fixers lose `workflow_run`. Each watched workflow gains a last job,
     `if: failure()`, that dispatches the fixer with the run id.
-- [ ] Import `ripls-agent` and port its workflows, prompts and
-  `validate_request.sh`.
+- [x] Import `ripls-agent` and port its workflows and
+  `validate_request.sh`. See *The agent on Forgejo* below for how. Not yet
+  ported: the nightly docs refresh (`refresh_docs`), and release-cut is ported
+  but has not run.
 - [ ] Self-host Renovate against the Forgejo repo, and port
   `renovate_auto_approve` and `validate_runner_candidate`.
 
@@ -331,6 +334,47 @@ answers the trust check, so the dispatchers need one secret, not two. Team
 membership can't be read with it (403), so trust is "member of the org", and
 the bot accounts that write to the repo stay collaborators, not members.
 
+#### The agent on Forgejo (2026-11-13)
+
+The agent repo runs on both forges from one set of files. GitHub's path is
+left as it was; Forgejo's sits beside it, chosen by `github.server_url`.
+
+| Part | GitHub | Forgejo |
+| --- | --- | --- |
+| Who the agent is | The `ripls-agent` App; a token minted per step | The `ripls-agent` account; its token is the `AGENT_TOKEN` secret |
+| Trust check in validation | Collaborator permission | Org membership, asked with `AGENT_TRUST_TOKEN` (a `ripls-dispatch` token that can read the org and nothing else) |
+| A fixer started by CI | The caller run's event is `workflow_run` | The caller run was dispatched by the system account |
+| `gh` in scripts and prompts | The real `gh` | `forge`, installed under the name `gh` from the target's default branch |
+| Claude | `anthropics/claude-code-action` | The Claude Code CLI (`run-claude-cli` action). The action rejects the event Forgejo reports inside a reusable workflow |
+| Execution log | An artifact | Printed to the job log (`upload-artifact@v7` does not run) |
+
+All three secrets (`AGENT_TOKEN`, `AGENT_TRUST_TOKEN`,
+`CLAUDE_CODE_OAUTH_TOKEN`) are repo secrets on the agent repo, never org
+secrets, so no workflow in the public repo can read them.
+
+**Verified on the shadow repo, 2026-11-13.** One issue went through every
+mode, each started the way a person or CI would start it:
+
+| Mode | Started by | Result |
+| --- | --- | --- |
+| plan | an `@claude` comment on the issue | Draft plan PR, labeled, assigned to the requester |
+| refine | an `@claude` comment on the plan PR | Plan edited and pushed; PR description updated |
+| implement | an approving review saying `@claude implement` | Code and tests pushed; PR marked ready; stage labels swapped; review requested |
+| address | a change-requesting review with an inline comment | Both points addressed and pushed |
+| fix-ci | CI failing on a planted bad test, with nobody asking | Cause found, fix pushed |
+| resolve | a manual request on a PR that conflicted with its base | Merge commit pushed keeping both sides |
+
+Validation was also sent five forged requests directly (wrong issue for the
+caller run, wrong actor, a stale caller run, extra fields, a repo the agent
+cannot read) and refused each.
+
+Two Forgejo behaviors cost a debugging round each and are worth knowing:
+
+| Behavior | What it broke | What works on both forges |
+| --- | --- | --- |
+| On a job that calls a reusable workflow, `inputs.*` in `if:` does not resolve | `if: inputs.mode == 'plan' && …` was false for every mode, so validation passed and then nothing ran | `github.event.inputs.mode` |
+| `toJSON(needs.<job>.outputs)` renders as `{"JobID": …, "Outputs": null}` | The modes received no validation results | The validate script writes one JSON output itself; callers pass `needs.validate.outputs.ctx` |
+
 ### Phase 3: Deploy, release and the tracker
 **Goal:** everything production needs has run once from Forgejo.
 **Tasks:**
@@ -341,14 +385,50 @@ the bot accounts that write to the repo stay collaborators, not members.
   chose.
 - [ ] Run a dev deploy and a full release rehearsal that stops before the store
   upload.
-- [ ] Create the private tracker repo on the instance and move #2760.
-- [ ] Give `server/github/client.go` a Forgejo implementation behind its
-  existing interface, chosen by config, and port `cloud_functions/` from
-  Octokit to the Forgejo API. Unit tests cover both.
+- [x] Create the private tracker repo on the instance (`ripls-org/tracker`,
+  issues only). Still to do: move #2760 into it.
+- [x] Give `server/github` a Forgejo implementation behind its existing
+  interface, chosen by config (#3318), and port `cloud_functions/` from
+  Octokit to the Forgejo API (#3321). Unit tests cover both. See *The tracker
+  move* below.
 - [ ] Install the `pre-receive` gitleaks hook and update `docs/secrets.md`.
 
 **Validates:** a feedback report and a test crash alert each open an issue in
 the private Forgejo tracker; the dev deploy and the rehearsal pass.
+
+#### The tracker move (2026-11-13)
+
+Two accounts file issues in the tracker, each with a token scoped to issues
+and write access to that one repository: `ripls-feedback` (the server) and
+`ripls-alerts` (the Cloud Functions). Either token gets 403 on the code repo.
+
+| Path | State | Verified by |
+| --- | --- | --- |
+| Alerts, prod | Live | A synthetic incident published to the prod alert topic opened an issue; the matching resolved message commented on it and closed it |
+| Feedback, dev | Live | A test report to the dev server opened an issue with labels `bug` and `user-feedback` |
+| Feedback, prod | **Not yet** | See below |
+
+**Prod feedback switches at the next prod release.** `infra/server/common.yaml`
+on `main` already points both environments at the tracker (#3323), and prod's
+secret holds a token. But the image prod runs predates #3318, and a deploy
+does not ship settings; `infra/sync.sh` does. So:
+
+1. Run `infra/sync.sh` immediately before the release deploy, so the new
+   settings and the new image arrive together.
+2. Check the prod log for "feedback service initialized with a Forgejo
+   tracker".
+
+Do not run `infra/sync.sh` and then restart prod on the old image: the old
+server ignores the tracker URL and the GitHub App ids are gone from the shared
+file, so feedback would be switched off.
+
+Alerts are private for now. In the private tracker `claude-fix` starts
+nothing. Making the safe alerts public is tracked on the Forgejo code repo.
+
+One more Forgejo behavior, found by a live run: listing issues with a label
+filter that names a label the repository does not have returns **every**
+issue, not none. Anything that finds "the issue with this label" has to check
+the labels on what comes back.
 
 ### Phase 4: Hand back to #3228
 **Goal:** #3228's phase 4 runs as written, with Forgejo as the destination.

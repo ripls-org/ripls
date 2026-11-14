@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from 'vitest';
-import type { Octokit } from '@octokit/rest';
+import type { IssueTracker } from '../issueTracker';
 import {
   AUTO_FILED_LABEL,
   CLAUDE_FIX_LABEL,
@@ -7,7 +7,7 @@ import {
   upsertIssue,
 } from '../upsertIssue';
 
-// Build a minimally-typed fake Octokit. We only use the four endpoints
+// Build a minimally-typed fake IssueTracker. We only use the four endpoints
 // upsertIssue calls; the rest of the surface area is irrelevant.
 interface FakeIssue {
   number: number;
@@ -15,16 +15,16 @@ interface FakeIssue {
   pull_request?: { url: string };
 }
 
-const makeOctokit = (existing: FakeIssue[] = [], createdNumber = 999) => {
+const makeTracker = (existing: FakeIssue[] = [], createdNumber = 999) => {
   const listForRepo = vi.fn().mockResolvedValue({ data: existing });
   const create = vi.fn().mockResolvedValue({ data: { number: createdNumber } });
   const update = vi.fn().mockResolvedValue({ data: {} });
   const createComment = vi.fn().mockResolvedValue({ data: {} });
   const addLabels = vi.fn().mockResolvedValue({ data: {} });
   return {
-    octokit: {
+    tracker: {
       issues: { listForRepo, create, update, createComment, addLabels },
-    } as unknown as Octokit,
+    } as unknown as IssueTracker,
     spies: { listForRepo, create, update, createComment, addLabels },
   };
 };
@@ -39,11 +39,11 @@ const baseArgs = {
 
 describe('upsertIssue', () => {
   test('creates a new issue when no existing match (auto-filed + dedup label always set)', async () => {
-    const { octokit, spies } = makeOctokit([], 555);
+    const { tracker, spies } = makeTracker([], 555);
 
     const result = await upsertIssue({
       ...baseArgs,
-      octokit,
+      tracker,
     });
 
     expect(result).toEqual({ action: 'created', issueNumber: 555 });
@@ -60,12 +60,12 @@ describe('upsertIssue', () => {
   });
 
   test('includes extra labels and dedupes against duplicates', async () => {
-    const { octokit, spies } = makeOctokit([]);
+    const { tracker, spies } = makeTracker([]);
 
     await upsertIssue({
       ...baseArgs,
       extraLabels: ['crash', 'platform:android', AUTO_FILED_LABEL /* dup */],
-      octokit,
+      tracker,
     });
 
     const labels = spies.create.mock.calls[0][0].labels as string[];
@@ -76,12 +76,12 @@ describe('upsertIssue', () => {
   });
 
   test('adds claude-fix label when addClaudeFixLabel=true', async () => {
-    const { octokit, spies } = makeOctokit([]);
+    const { tracker, spies } = makeTracker([]);
 
     await upsertIssue({
       ...baseArgs,
       addClaudeFixLabel: true,
-      octokit,
+      tracker,
     });
 
     const labels = spies.create.mock.calls[0][0].labels as string[];
@@ -89,9 +89,9 @@ describe('upsertIssue', () => {
   });
 
   test('comments on existing open issue without creating a duplicate', async () => {
-    const { octokit, spies } = makeOctokit([{ number: 42, state: 'open' }]);
+    const { tracker, spies } = makeTracker([{ number: 42, state: 'open' }]);
 
-    const result = await upsertIssue({ ...baseArgs, octokit });
+    const result = await upsertIssue({ ...baseArgs, tracker });
 
     expect(result).toEqual({ action: 'commented', issueNumber: 42 });
     expect(spies.create).not.toHaveBeenCalled();
@@ -104,12 +104,12 @@ describe('upsertIssue', () => {
   });
 
   test('reopens a closed issue when reopenIfClosed=true (regression case)', async () => {
-    const { octokit, spies } = makeOctokit([{ number: 42, state: 'closed' }]);
+    const { tracker, spies } = makeTracker([{ number: 42, state: 'closed' }]);
 
     const result = await upsertIssue({
       ...baseArgs,
       reopenIfClosed: true,
-      octokit,
+      tracker,
     });
 
     expect(result).toEqual({ action: 'reopened', issueNumber: 42 });
@@ -123,12 +123,12 @@ describe('upsertIssue', () => {
   });
 
   test('does not reopen a closed issue when reopenIfClosed=false', async () => {
-    const { octokit, spies } = makeOctokit([{ number: 42, state: 'closed' }]);
+    const { tracker, spies } = makeTracker([{ number: 42, state: 'closed' }]);
 
     const result = await upsertIssue({
       ...baseArgs,
       reopenIfClosed: false,
-      octokit,
+      tracker,
     });
 
     expect(result).toEqual({ action: 'commented', issueNumber: 42 });
@@ -139,13 +139,13 @@ describe('upsertIssue', () => {
     // Simulates a closed issue that lost the claude-fix label (e.g., human
     // removed it during a prior triage). On regression we re-add it so the
     // existing claude_plan_issue.yaml workflow re-fires.
-    const { octokit, spies } = makeOctokit([{ number: 42, state: 'closed' }]);
+    const { tracker, spies } = makeTracker([{ number: 42, state: 'closed' }]);
 
     await upsertIssue({
       ...baseArgs,
       reopenIfClosed: true,
       addClaudeFixLabel: true,
-      octokit,
+      tracker,
     });
 
     expect(spies.addLabels).toHaveBeenCalledWith({
@@ -157,13 +157,13 @@ describe('upsertIssue', () => {
   });
 
   test('regression-reopen without addClaudeFixLabel does NOT add claude-fix', async () => {
-    const { octokit, spies } = makeOctokit([{ number: 42, state: 'closed' }]);
+    const { tracker, spies } = makeTracker([{ number: 42, state: 'closed' }]);
 
     await upsertIssue({
       ...baseArgs,
       reopenIfClosed: true,
       addClaudeFixLabel: false,
-      octokit,
+      tracker,
     });
 
     expect(spies.addLabels).not.toHaveBeenCalled();
@@ -174,11 +174,11 @@ describe('upsertIssue', () => {
     // up with `crashlytics:abc123`, listForRepo will return it because the
     // GitHub API returns issues + PRs for that endpoint. We skip PRs and
     // create a fresh issue.
-    const { octokit, spies } = makeOctokit([
+    const { tracker, spies } = makeTracker([
       { number: 999, state: 'open', pull_request: { url: 'https://...' } },
     ]);
 
-    const result = await upsertIssue({ ...baseArgs, octokit });
+    const result = await upsertIssue({ ...baseArgs, tracker });
 
     expect(result.action).toBe('created');
     expect(spies.create).toHaveBeenCalledTimes(1);
@@ -186,8 +186,8 @@ describe('upsertIssue', () => {
   });
 
   test('list query uses state=all so closed issues match (regression path)', async () => {
-    const { octokit, spies } = makeOctokit([]);
-    await upsertIssue({ ...baseArgs, octokit });
+    const { tracker, spies } = makeTracker([]);
+    await upsertIssue({ ...baseArgs, tracker });
 
     expect(spies.listForRepo).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -210,9 +210,9 @@ describe('closeIssue', () => {
   };
 
   test('comments and closes the matching open issue', async () => {
-    const { octokit, spies } = makeOctokit([{ number: 77, state: 'open' }]);
+    const { tracker, spies } = makeTracker([{ number: 77, state: 'open' }]);
 
-    const result = await closeIssue({ ...closeArgs, octokit });
+    const result = await closeIssue({ ...closeArgs, tracker });
 
     expect(result).toEqual({ action: 'closed', issueNumber: 77 });
     expect(spies.createComment).toHaveBeenCalledWith({
@@ -230,15 +230,15 @@ describe('closeIssue', () => {
   });
 
   test('listForRepo uses state=open (does not waste calls on already-closed issues)', async () => {
-    const { octokit, spies } = makeOctokit([]);
-    await closeIssue({ ...closeArgs, octokit });
+    const { tracker, spies } = makeTracker([]);
+    await closeIssue({ ...closeArgs, tracker });
     expect(spies.listForRepo.mock.calls[0][0].state).toBe('open');
   });
 
   test('returns noop when no matching issue exists', async () => {
-    const { octokit, spies } = makeOctokit([]);
+    const { tracker, spies } = makeTracker([]);
 
-    const result = await closeIssue({ ...closeArgs, octokit });
+    const result = await closeIssue({ ...closeArgs, tracker });
 
     expect(result).toEqual({ action: 'noop', reason: 'not_found' });
     expect(spies.createComment).not.toHaveBeenCalled();
@@ -246,11 +246,11 @@ describe('closeIssue', () => {
   });
 
   test('skips PRs that happen to carry the dedup label', async () => {
-    const { octokit, spies } = makeOctokit([
+    const { tracker, spies } = makeTracker([
       { number: 999, state: 'open', pull_request: { url: 'https://...' } },
     ]);
 
-    const result = await closeIssue({ ...closeArgs, octokit });
+    const result = await closeIssue({ ...closeArgs, tracker });
 
     expect(result.action).toBe('noop');
     expect(spies.update).not.toHaveBeenCalled();

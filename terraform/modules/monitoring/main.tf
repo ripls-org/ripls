@@ -359,7 +359,20 @@ locals {
 # ALERT POLICIES
 # =============================================================================
 
-# Alert when uptime check fails
+# Alert when the uptime check fails from var.uptime_min_failing_regions checker
+# locations at once (2 by default), for a minute.
+#
+# One location failing alone is not an outage. A deploy restarts the single
+# server container, and for some seconds nothing answers; each location probes
+# once per period, staggered, so a restart is seen by at most one of them. The
+# same goes for a network blip on one checker's path. Alerting on a single
+# failed probe paged on roughly four dev deploys in ten.
+#
+# ALIGN_NEXT_OLDER holds each location at its latest result, so a location
+# that failed counts as failing until its next probe passes. In a real outage
+# the next location's probe fails too, about a third of a period later, and
+# the alert fires a minute after that. The alignment period is longer than the
+# check period so a late probe never leaves a location without a value.
 resource "google_monitoring_alert_policy" "uptime_failure" {
   count        = var.enable_uptime_check ? 1 : 0
   project      = var.project_id
@@ -368,21 +381,24 @@ resource "google_monitoring_alert_policy" "uptime_failure" {
   severity     = "CRITICAL"
 
   conditions {
+    # The alert-routing Cloud Function matches on this name; keep it stable.
     display_name = "Uptime check failure"
 
     condition_threshold {
       filter          = "metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\" AND resource.type=\"uptime_url\" AND metric.labels.check_id=\"${google_monitoring_uptime_check_config.health_check[0].uptime_check_id}\""
-      comparison      = "COMPARISON_LT"
-      threshold_value = 1
-      duration        = "0s"
+      comparison      = "COMPARISON_GT"
+      threshold_value = var.uptime_min_failing_regions - 1
+      duration        = "60s"
 
       aggregations {
-        alignment_period   = var.uptime_check_period
-        per_series_aligner = "ALIGN_FRACTION_TRUE"
+        alignment_period     = "1200s"
+        per_series_aligner   = "ALIGN_NEXT_OLDER"
+        cross_series_reducer = "REDUCE_COUNT_FALSE"
+        group_by_fields      = ["resource.label.*"]
       }
 
       trigger {
-        count = var.uptime_failure_threshold
+        count = 1
       }
     }
   }
@@ -391,7 +407,10 @@ resource "google_monitoring_alert_policy" "uptime_failure" {
 
   documentation {
     content   = <<-EOT
-      The uptime check for ${var.service_name} has failed.
+      The uptime check for ${var.service_name} is failing from
+      ${var.uptime_min_failing_regions} or more checker locations at once. A
+      single failed probe, such as one that lands in a deploy's restart, does
+      not fire this.
 
       **Service:** ${var.service_name}
       **Environment:** ${var.environment}

@@ -795,6 +795,15 @@ Dev's uptime check was off while dev ran on Cloud Run, because continuous
 probing kept the scale-to-zero service warm 24/7 (#2809); on the always-on
 host that cost is gone and the check is back on.
 
+The `Uptime Check Failed` alert fires only when `uptime_min_failing_regions`
+checker locations (default 2) are failing at once. A deploy on the self-hosted
+stack recreates the single server container (`infra/server/deploy.sh`), so
+nothing answers for some seconds, and the three locations probe about 100
+seconds apart: a restart fails at most one location's probe. While the alert
+fired on any single failed probe, about four dev deploys in ten paged. A real
+outage fails the next location's probe too, and the alert fires a minute after
+that.
+
 ### Log-Based Metrics
 
 Custom metrics are created from the server's logs in Cloud Logging (which
@@ -918,7 +927,7 @@ Alert policies with email notifications (plus a Pub/Sub channel in prod):
 
 | Alert | Severity | Trigger | Behavior |
 |-------|----------|---------|----------|
-| Uptime Check Failed | CRITICAL | Any uptime check failure (immediate) | Immediate notification |
+| Uptime Check Failed | CRITICAL | `/health` failing from 2 or more checker locations at once, sustained 1 min (`uptime_min_failing_regions`) | Fires 2–4 min into an outage; a single failed probe, such as one landing in a deploy's restart, does not fire |
 | Server Process Crash | CRITICAL | Container non-zero exit, OOM kill, or signal kill | Rate-limited to 1 per 5 min; re-firing = crash loop |
 | Server Serving-Loop Failure | CRITICAL | HTTP serving goroutine panic / fatal serve error / bind failure | Rate-limited to 1 per 5 min |
 | RPC Error Rate High | ERROR | >5% of an RPC's responses are 5xx, sustained 10 min (min ~1 error/min) | Per-rpc_method fraction from `rpc_requests_{env}` (#1613, `alerts.tf`) |
@@ -1214,10 +1223,13 @@ distinguish from human-filed) and a severity-derived label (e.g., `crash`,
 
 #### Claude-trigger gating
 
-The auto-filer optionally adds the `claude-fix` label, which fires the
-existing
+The auto-filer optionally adds the `claude-fix` label. Where the agent
+listens, that label fires
 [`claude_plan_issue.yaml`](../../.github/workflows/claude_plan_issue.yaml)
-workflow. Adding it costs Claude-API time, so we gate carefully:
+and costs Claude-API time, so it is gated carefully. Alerts are currently
+filed in the private tracker, where nothing listens and the label is only a
+marker (see *Tracker authentication* below); the gating is kept so the alerts
+that qualify are already identified when alerts can be filed publicly:
 
 | Signal | Adds `claude-fix`? |
 |---|---|
@@ -1245,52 +1257,26 @@ Crashlytics velocity alert fires; the `claude-fix` gating above is a
 To change: Firebase Console → Crashlytics → Settings → Velocity Alerts.
 Document the new threshold and rationale here on change.
 
-#### GitHub authentication: a dedicated alerts App
+#### Tracker authentication: a dedicated alerts account
 
-The Cloud Functions authenticate as their own GitHub App, `ripls-alerts-bot`,
-separate from the App the feedback service
-([`server/services/feedback/`](../../server/services/feedback/)) uses. The
-split keeps user-supplied feedback content away from the identity
-`claude_plan_issue.yaml` allowlists to trigger Claude planning; the
-trust-boundary reasoning is in the header of `cloud_functions/src/githubAuth.ts`.
+The Cloud Functions file issues in the private tracker on Forgejo (#3293) as
+their own account, `ripls-alerts`, separate from the account the feedback
+service ([`server/services/feedback/`](../../server/services/feedback/)) uses.
+The account can write issues in the tracker and nothing else.
 
-| Field           | Where it comes from                                         |
-|-----------------|-------------------------------------------------------------|
-| App ID          | `GITHUB_APP_ID` in `cloud_functions/src/githubAuth.ts`      |
-| Installation ID | `GITHUB_INSTALLATION_ID`, same file                         |
-| Private key     | Secret Manager: `github-app-alerts-private-key-base64`      |
+| Field        | Where it comes from                                          |
+|--------------|--------------------------------------------------------------|
+| Instance     | `TRACKER_URL` in `cloud_functions/src/forgejoTracker.ts`     |
+| Repository   | `REPO_OWNER` / `REPO_NAME`, same file                        |
+| Access token | Secret Manager: `forgejo-alerts-token`                       |
 
-The functions bind the secret via
-`defineSecret('github-app-alerts-private-key-base64')`. Octokit's
-`createAppAuth` mints short-lived installation tokens at invocation time — no
-long-lived credentials at runtime.
+The functions bind the secret via `defineSecret('forgejo-alerts-token')`. The
+token is long-lived, so its narrow scope is the control. Only the functions
+read it, so rotating it does not touch the server; the steps are in
+[`cloud_functions/README.md`](../../cloud_functions/README.md).
 
-Only the functions read this key, so rotating it does not touch the server. To
-rotate:
-
-```bash
-# 1. Generate a new private key in the alerts App's GitHub settings.
-#    Downloads a .pem.
-# 2. Base64-encode it on one line (the same encoding the Go server uses for
-#    its own App key):
-base64 -i downloaded-key.pem -o /tmp/key.b64
-
-# 3. Push a new version to Secret Manager in the project the functions run in:
-gcloud secrets versions add github-app-alerts-private-key-base64 \
-  --data-file=/tmp/key.b64 --project="$PROD_PROJECT"
-rm /tmp/key.b64
-
-# 4. Redeploy so the new version binds:
-firebase deploy --only functions:ripls-alerts --project prod
-
-# 5. Revoke the old key in the GitHub App settings.
-```
-
-The Cloud Functions runtime SA (default
-`<project-number>-compute@developer.gserviceaccount.com` unless overridden)
-needs `roles/secretmanager.secretAccessor` on this secret, and the deploying SA
-needs `secretAccessor` plus `secretmanager.viewer` to bind it; both are granted
-in the prod environment's Terraform.
+In the private tracker the `claude-fix` label starts nothing: no workflow
+listens there. It marks the alerts that met the bar for an automatic plan.
 
 #### Emergency disable
 

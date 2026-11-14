@@ -1,9 +1,15 @@
 # ripls Cloud Functions — alert-to-issue automation
 
-Cloud Functions that file GitHub issues from production observability signals
-(Crashlytics alerts and Cloud Monitoring incidents). Funnels into the existing
-`claude_plan_issue.yaml` workflow via the `claude-fix` label rather than
-duplicating any Claude planning workflow.
+Cloud Functions that file issues from production observability signals
+(Crashlytics alerts and Cloud Monitoring incidents) in the private tracker on
+Forgejo (#3293).
+
+Alerts are private for now: a crash title can carry user data, a monitoring
+alert names infrastructure, and some alerts are security signals. In the
+private tracker the `claude-fix` label starts nothing; it marks the alerts
+that met the bar for an automatic plan. Filing the safe ones publicly, where
+the label would start `claude_plan_issue.yaml` again, is tracked as its own
+issue in the code repository.
 
 Design: the #1148/#1149 plan (archived).
 Operations / runbook context: [`docs/server/observability.md`](../docs/server/observability.md)
@@ -13,18 +19,20 @@ Operations / runbook context: [`docs/server/observability.md`](../docs/server/ob
 
 ```
 cloud_functions/
-├── package.json           # Node 24, firebase-functions v2, @octokit/rest, @octokit/auth-app
+├── package.json           # Node 24, firebase-functions v2
 ├── tsconfig.json          # Strict TypeScript, lib/ output
 ├── firebase.json          # Functions-only Firebase config (not the Flutter app/firebase.json)
 ├── .firebaserc            # Project aliases: dev → ripls-dev, prod → ripls-prod
 └── src/
     ├── index.ts                # Entry point, exports the deployed handlers
-    ├── githubAuth.ts           # Shared GitHub-App auth, Octokit factory, repo constants
+    ├── issueTracker.ts         # The five tracker operations the handlers use
+    ├── forgejoTracker.ts       # Those operations against Forgejo; token secret, tracker constants
     ├── upsertIssue.ts          # Label-based dedup helper + closeIssue helper
     ├── crashlyticsHandler.ts   # Crashlytics: Velocity / Regression / StabilityDigest triggers
     ├── gcpAlertsHandler.ts     # Cloud Monitoring → Pub/Sub → upsertIssue / closeIssue
     ├── dailySweepHandler.ts    # onSchedule daily close of stale gcp-policy:* issues
     └── __tests__/
+        ├── forgejoTracker.test.ts
         ├── upsertIssue.test.ts
         ├── crashlyticsHandler.test.ts
         ├── gcpAlertsHandler.test.ts
@@ -35,10 +43,10 @@ cloud_functions/
 
 - **Here**: external event-driven automation that consumes Firebase / GCP
   signals (Crashlytics alerts, Cloud Monitoring incidents via Pub/Sub) and
-  files GitHub issues.
-- **`server/services/feedback/`**: request-driven GitHub-issue creation where
+  files tracker issues.
+- **`server/services/feedback/`**: request-driven issue creation where
   the trigger is a user RPC. Uses `server/github` directly.
-- **`server/github/`**: shared Go library for any in-server GitHub
+- **`server/github/`**: shared Go library for any in-server issue-tracker
   interaction. Do not call this from the Cloud Function — different runtime.
 
 The Cloud Function and `server/github` independently implement `upsertIssue`-shaped
@@ -73,51 +81,42 @@ future Functions codebases without sharing scaling rules.
 
 ## Secrets
 
-The functions authenticate as a **dedicated GitHub App**, `ripls-alerts-bot`,
-distinct from the `ripls-feedback-bot` App the Go server's feedback service
-uses. The split keeps user-supplied feedback content away from the identity
-`claude_plan_issue.yaml` allowlists; the reasoning is in the header comment of
-`src/githubAuth.ts` (and PR #1762). Coordinates:
+The functions file issues as a **dedicated Forgejo account**, `ripls-alerts`,
+which can write issues in the tracker and nothing else. It is distinct from
+`ripls-feedback`, the account the Go server's feedback service uses, so each
+credential can be rotated or revoked alone.
 
-| Field            | Value                                                          |
-|------------------|----------------------------------------------------------------|
-| App ID           | `3637024` (`GITHUB_APP_ID` in `src/githubAuth.ts`)             |
-| Installation ID  | `130393653` (`GITHUB_INSTALLATION_ID` in `src/githubAuth.ts`)  |
-| Private key      | GCP Secret Manager: `github-app-alerts-private-key-base64`     |
+| Field        | Value                                                        |
+|--------------|--------------------------------------------------------------|
+| Instance     | `TRACKER_URL` in `src/forgejoTracker.ts`                     |
+| Repository   | `REPO_OWNER` / `REPO_NAME`, same file                        |
+| Access token | GCP Secret Manager: `forgejo-alerts-token`                   |
 
-`src/githubAuth.ts` declares
-`defineSecret('github-app-alerts-private-key-base64')`, so Cloud Functions binds
-the secret at deploy time. `terraform/environments/prod/main.tf` grants the
-functions' runtime service account (the Compute Engine default SA)
+`src/forgejoTracker.ts` declares `defineSecret('forgejo-alerts-token')`, so
+Cloud Functions binds the secret at deploy time.
+`terraform/environments/prod/main.tf` creates the secret container and grants
+the functions' runtime service account (the Compute Engine default SA)
 `roles/secretmanager.secretAccessor` on it, and the `cloud-functions-deployer`
 SA both `secretAccessor` and `secretmanager.viewer`, which the deploy CLI needs
 to inspect the secret when binding it.
 
-The secret value is a base64-encoded PEM, the same encoding the Go server uses
-for its own App key. `decodeBase64Pem` in `src/githubAuth.ts` mirrors
-`decodeBase64PEM` in `server/config/config.go`.
+Unlike a GitHub App key, the token does not expire and is not exchanged for a
+short-lived one, so its scope is what limits it: issues only, on one private
+repository.
 
-### Rotating the App private key
-
-Only the Cloud Functions read this key; the server's feedback App has its own
-key (`github-app-private-key-base64`) and its own rotation.
+### Rotating the token
 
 ```bash
-# 1. In GitHub, generate a new private key for the ripls-alerts-bot App
-#    (Settings → Developer settings → GitHub Apps → Generate a private key).
-#    This downloads a .pem file.
-# 2. Base64-encode it on one line:
-base64 -i downloaded-private-key.pem -o /tmp/key.b64
+# 1. As an instance admin, mint a new token for the account, scoped to
+#    issues, and push it straight to Secret Manager without displaying it:
+forgejo admin user generate-access-token --username ripls-alerts \
+  --token-name "alerts-$(date +%Y%m%d)" --scopes write:issue --raw \
+  | gcloud secrets versions add forgejo-alerts-token --data-file=- --project=ripls-prod
 
-# 3. Push a new version to Secret Manager:
-gcloud secrets versions add github-app-alerts-private-key-base64 \
-  --data-file=/tmp/key.b64 --project=ripls-prod
-rm /tmp/key.b64
-
-# 4. Redeploy the functions (they pick up the new version on deploy):
+# 2. Redeploy the functions (they pick up the new version on deploy):
 firebase deploy --only functions:ripls-alerts --project prod
 
-# 5. Revoke the old key in the GitHub App settings.
+# 3. Delete the old token in the account's settings on the instance.
 ```
 
 ## Disabling in an emergency

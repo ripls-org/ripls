@@ -104,6 +104,21 @@ resource "google_secret_manager_secret" "feedback_signer_key" {
   }
 }
 
+# Access token for the Forgejo account that files user-feedback issues, used
+# when the server runs with FEEDBACK_FORGEJO_URL (#3293). Container only, like
+# the signer key above: the token is added out of band so it never lands in TF
+# state or the repo:
+#   gcloud secrets versions add feedback-forgejo-token --data-file=- --project=<project>
+# The server fetches it as an optional secret, so an empty container leaves
+# feedback on GitHub or unconfigured.
+resource "google_secret_manager_secret" "feedback_forgejo_token" {
+  project   = var.project_id
+  secret_id = "feedback-forgejo-token"
+  replication {
+    auto {}
+  }
+}
+
 # A signed URL grants its bearer whatever the signer can do, so the signer needs
 # object read — scoped by IAM Condition to the feedback-system/ prefix so the key
 # can only ever authorize feedback screenshots, never other media.
@@ -134,7 +149,10 @@ module "server_identity" {
   display_name = "Server runtime (mimir)"
   secret_ids = concat(
     local.server_runtime_secrets,
-    [google_secret_manager_secret.feedback_signer_key.secret_id],
+    [
+      google_secret_manager_secret.feedback_signer_key.secret_id,
+      google_secret_manager_secret.feedback_forgejo_token.secret_id,
+    ],
   )
   media_bucket = module.media_bucket.bucket_name
 }

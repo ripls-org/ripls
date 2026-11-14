@@ -17,53 +17,58 @@ import (
 
 // Config holds all server configuration from flags and environment.
 type Config struct {
-	LogLevel                     string
-	LogFormat                    string
-	LogSourceLocation            bool
-	DBURL                        string
-	Port                         string
-	DevMode                      bool
-	MockAIProvider               bool
-	MockWeatherProvider          bool
-	CORSOrigins                  []string
-	GoogleClientID               string
-	GeminiModel                  string
-	GeminiTemperature            float64
-	VertexAIProject              string
-	VertexAILocation             string
-	OpenAIAPIKey                 string
-	OpenAIModel                  string
-	OpenAITemperature            float64
-	AnthropicAPIKey              string
-	AnthropicModel               string
-	AnthropicTemperature         float64
-	LocalMediaStorage            string
-	GCSBucket                    string
-	NotificationProvider         string
-	FirebaseProject              string
-	MailgunAPIKey                string
-	MailgunWebhookSigningKey     string
-	MailgunDomain                string
-	MailgunFromAddress           string
-	MailgunPostalAddress         string
-	OffAppEmailEnabled           bool
-	EmailOTPTestAccounts         string
-	TwilioAccountSID             string
-	TwilioAuthToken              string
-	TwilioMessagingSID           string
-	PlatformSMSEnabled           bool
-	InviteLinkHostname           string
-	UnsplashAccessKey            string
-	PexelsAPIKey                 string
-	PixabayAPIKey                string
-	GitHubAppID                  int64
-	GitHubInstallationID         int64
-	GitHubAppPrivateKey          string
-	FeedbackSignerKey            string
-	FeedbackSignerEmail          string
-	FeedbackSignerPrivateKey     string
-	GitHubRepoOwner              string
-	GitHubRepoName               string
+	LogLevel                 string
+	LogFormat                string
+	LogSourceLocation        bool
+	DBURL                    string
+	Port                     string
+	DevMode                  bool
+	MockAIProvider           bool
+	MockWeatherProvider      bool
+	CORSOrigins              []string
+	GoogleClientID           string
+	GeminiModel              string
+	GeminiTemperature        float64
+	VertexAIProject          string
+	VertexAILocation         string
+	OpenAIAPIKey             string
+	OpenAIModel              string
+	OpenAITemperature        float64
+	AnthropicAPIKey          string
+	AnthropicModel           string
+	AnthropicTemperature     float64
+	LocalMediaStorage        string
+	GCSBucket                string
+	NotificationProvider     string
+	FirebaseProject          string
+	MailgunAPIKey            string
+	MailgunWebhookSigningKey string
+	MailgunDomain            string
+	MailgunFromAddress       string
+	MailgunPostalAddress     string
+	OffAppEmailEnabled       bool
+	EmailOTPTestAccounts     string
+	TwilioAccountSID         string
+	TwilioAuthToken          string
+	TwilioMessagingSID       string
+	PlatformSMSEnabled       bool
+	InviteLinkHostname       string
+	UnsplashAccessKey        string
+	PexelsAPIKey             string
+	PixabayAPIKey            string
+	GitHubAppID              int64
+	GitHubInstallationID     int64
+	GitHubAppPrivateKey      string
+	FeedbackSignerKey        string
+	FeedbackSignerEmail      string
+	FeedbackSignerPrivateKey string
+	GitHubRepoOwner          string
+	GitHubRepoName           string
+	// FeedbackForgejoURL and FeedbackForgejoToken select a Forgejo instance as
+	// the feedback tracker in place of GitHub. The repository is still
+	// GitHubRepoOwner/GitHubRepoName.
+	FeedbackForgejoURL           string
+	FeedbackForgejoToken         string
 	GoogleMapsAPIKeyServer       string
 	EmbeddingModelPath           string
 	EmbeddingVocabPath           string
@@ -155,8 +160,11 @@ func Parse() (*Config, error) {
 	githubAppPrivateKeyFile := flag.String("github-app-private-key-file", "", "Path to a file containing the base64-encoded GitHub App private key PEM (mutually exclusive with -github-app-private-key)")
 	feedbackSignerKey := flag.String("feedback-signer-key", "", "Service-account JSON key used to sign durable feedback screenshot URLs (mutually exclusive with -feedback-signer-key-file). When unset, feedback URLs fall back to short-lived signBlob signing. See #2549.")
 	feedbackSignerKeyFile := flag.String("feedback-signer-key-file", "", "Path to a file containing the service-account JSON key for signing durable feedback screenshot URLs (mutually exclusive with -feedback-signer-key)")
-	githubRepoOwner := flag.String("github-repo-owner", "", "GitHub repository owner that receives user-feedback issues")
-	githubRepoName := flag.String("github-repo-name", "ripls", "GitHub repository name")
+	githubRepoOwner := flag.String("github-repo-owner", "", "Owner of the repository that receives user-feedback issues, on GitHub or on the Forgejo instance named by -feedback-forgejo-url")
+	githubRepoName := flag.String("github-repo-name", "ripls", "Name of the repository that receives user-feedback issues")
+	feedbackForgejoURL := flag.String("feedback-forgejo-url", "", "Root URL of a Forgejo instance to file user-feedback issues in (e.g. https://code.example.org). When set, feedback goes there instead of GitHub and the GitHub App flags are ignored.")
+	feedbackForgejoToken := flag.String("feedback-forgejo-token", "", "Forgejo access token that can write issues in the feedback repository")
+	feedbackForgejoTokenFile := flag.String("feedback-forgejo-token-file", "", "Path to a file containing the Forgejo access token (mutually exclusive with -feedback-forgejo-token)")
 	googleMapsAPIKeyServer := flag.String("google-maps-api-key-server", "", "Google Maps Platform API key for server-side geocoding and place search. Restricted to Places API (New) + Geocoding API; client SDK keys are distinct. Required outside dev mode.")
 	googleMapsAPIKeyServerFile := flag.String("google-maps-api-key-server-file", "", "Path to a file containing the server-side Google Maps API key (mutually exclusive with -google-maps-api-key-server)")
 	embeddingModelPath := flag.String("embedding-model-path", "", "Path to local ONNX embedding model file")
@@ -222,6 +230,8 @@ func Parse() (*Config, error) {
 		FeedbackSignerKey:            *feedbackSignerKey,
 		GitHubRepoOwner:              *githubRepoOwner,
 		GitHubRepoName:               *githubRepoName,
+		FeedbackForgejoURL:           *feedbackForgejoURL,
+		FeedbackForgejoToken:         *feedbackForgejoToken,
 		GoogleMapsAPIKeyServer:       *googleMapsAPIKeyServer,
 		EmbeddingModelPath:           *embeddingModelPath,
 		EmbeddingVocabPath:           *embeddingVocabPath,
@@ -256,6 +266,7 @@ func Parse() (*Config, error) {
 		{"pixabay-api-key", &cfg.PixabayAPIKey, pixabayAPIKeyFile},
 		{"github-app-private-key", &cfg.GitHubAppPrivateKey, githubAppPrivateKeyFile},
 		{"feedback-signer-key", &cfg.FeedbackSignerKey, feedbackSignerKeyFile},
+		{"feedback-forgejo-token", &cfg.FeedbackForgejoToken, feedbackForgejoTokenFile},
 		{"google-maps-api-key-server", &cfg.GoogleMapsAPIKeyServer, googleMapsAPIKeyServerFile},
 		{"jwt-signing-secret", &cfg.JWTSigningSecret, jwtSigningSecretFile},
 	}

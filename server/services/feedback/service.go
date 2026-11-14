@@ -36,7 +36,16 @@ type Service struct {
 	bucket       storage.BucketStorage
 	repoOwner    string
 	repoName     string
+	// backend names the tracker the client talks to ("github" or "forgejo").
+	// It is what the health check reports.
+	backend string
 }
+
+// Tracker backends a Service can file issues in.
+const (
+	backendGitHub  = "github"
+	backendForgejo = "forgejo"
+)
 
 // New creates a new feedback service.
 // client: GitHub client for creating issues (use github.NewAppClient for GitHub App auth)
@@ -53,6 +62,7 @@ func New(client githubclient.Client, repoOwner, repoName string, bucket storage.
 		bucket:       bucket,
 		repoOwner:    repoOwner,
 		repoName:     repoName,
+		backend:      backendGitHub,
 	}
 }
 
@@ -281,19 +291,19 @@ func getIssueType(req *api.SubmitFeedbackRequest) string {
 	}
 }
 
-// CheckHealth validates GitHub API connectivity by fetching the authenticated user.
+// CheckHealth reports whether the issue tracker client is configured. The
+// status is named after the tracker backend ("github" or "forgejo").
 func (s *Service) CheckHealth(ctx context.Context) ([]*health.Status, error) {
 	status := &health.Status{
-		Name:    "github",
-		Backend: "github",
+		Name:    s.backend,
+		Backend: s.backend,
 		Metadata: map[string]string{
 			"repo": fmt.Sprintf("%s/%s", s.repoOwner, s.repoName),
 		},
 	}
 
-	// Verify GitHub client is configured
 	if s.githubClient == nil {
-		status.Error = "GitHub client not configured"
+		status.Error = "issue tracker client not configured"
 	}
 
 	return []*health.Status{status}, nil

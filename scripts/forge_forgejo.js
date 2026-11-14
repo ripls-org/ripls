@@ -320,7 +320,15 @@ const commands = {
 
   async issueList(client, repo, { state = 'open', label, author, search, limit = 30, fields }) {
     const query = { state, type: 'issues', labels: label, created_by: author };
-    let issues = (await client.paginate(`${repoPath(repo)}/issues`, query, search ? Infinity : limit)).map(issue);
+    // Filters applied here need every page, not just the first `limit` items.
+    let issues = (await client.paginate(`${repoPath(repo)}/issues`, query, search || label ? Infinity : limit)).map(issue);
+    if (label) {
+      // Forgejo ignores a label filter naming a label the repository does not
+      // have and answers with every issue, so the labels are checked again
+      // here. Like gh, several labels (comma-separated) must all be present.
+      const wanted = label.split(',').map((l) => l.trim()).filter(Boolean);
+      issues = issues.filter((i) => wanted.every((w) => i.labels.some((l) => l.name === w)));
+    }
     if (search) issues = issues.filter((i) => matchesSearch(i, search));
     return issues.slice(0, limit).map((i) => pick(i, fields));
   },

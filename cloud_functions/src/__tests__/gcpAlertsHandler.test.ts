@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from 'vitest';
-import type { Octokit } from '@octokit/rest';
+import type { IssueTracker } from '../issueTracker';
 import {
   AUTO_FILED_LABEL,
   CLAUDE_FIX_LABEL,
@@ -16,16 +16,16 @@ import {
   redactLabels,
 } from '../gcpAlertsHandler';
 
-const makeOctokit = () => {
+const makeTracker = () => {
   const listForRepo = vi.fn().mockResolvedValue({ data: [] });
   const create = vi.fn().mockResolvedValue({ data: { number: 1234 } });
   const update = vi.fn().mockResolvedValue({ data: {} });
   const createComment = vi.fn().mockResolvedValue({ data: {} });
   const addLabels = vi.fn().mockResolvedValue({ data: {} });
   return {
-    octokit: {
+    tracker: {
       issues: { listForRepo, create, update, createComment, addLabels },
-    } as unknown as Octokit,
+    } as unknown as IssueTracker,
     spies: { listForRepo, create, update, createComment, addLabels },
   };
 };
@@ -338,8 +338,8 @@ describe('buildResolutionBody', () => {
 
 describe('handleGcpAlert — page severity', () => {
   test('open creates issue with severity:page + claude-fix labels', async () => {
-    const { octokit, spies } = makeOctokit();
-    await handleGcpAlert(baseIncident(), octokit);
+    const { tracker, spies } = makeTracker();
+    await handleGcpAlert(baseIncident(), tracker);
 
     expect(spies.create).toHaveBeenCalledTimes(1);
     const call = spies.create.mock.calls[0][0];
@@ -354,22 +354,22 @@ describe('handleGcpAlert — page severity', () => {
   });
 
   test('open dedups against existing open issue (comments, no duplicate)', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     spies.listForRepo.mockResolvedValueOnce({
       data: [{ number: 88, state: 'open' }],
     });
-    await handleGcpAlert(baseIncident(), octokit);
+    await handleGcpAlert(baseIncident(), tracker);
 
     expect(spies.create).not.toHaveBeenCalled();
     expect(spies.createComment).toHaveBeenCalledTimes(1);
   });
 
   test('closed → closeIssue path (comment + close on the matching issue)', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     spies.listForRepo.mockResolvedValueOnce({
       data: [{ number: 88, state: 'open' }],
     });
-    await handleGcpAlert(baseIncident({ state: 'closed', ended_at: 1747010000 }), octokit);
+    await handleGcpAlert(baseIncident({ state: 'closed', ended_at: 1747010000 }), tracker);
 
     expect(spies.update).toHaveBeenCalledWith(
       expect.objectContaining({ issue_number: 88, state: 'closed' }),
@@ -378,21 +378,21 @@ describe('handleGcpAlert — page severity', () => {
   });
 
   test('closed → noop when no open issue exists (incident already resolved)', async () => {
-    const { octokit, spies } = makeOctokit();
-    await handleGcpAlert(baseIncident({ state: 'closed' }), octokit);
+    const { tracker, spies } = makeTracker();
+    await handleGcpAlert(baseIncident({ state: 'closed' }), tracker);
 
     expect(spies.update).not.toHaveBeenCalled();
     expect(spies.createComment).not.toHaveBeenCalled();
   });
 
   test('surfaces dependency/backend metric labels as dep:/backend: labels (health check)', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     await handleGcpAlert(
       baseIncident({
         condition: { displayName: 'Health Check Unhealthy - server' },
         metric: { type: 'health/status', labels: { dependency: 'ai', backend: 'anthropic' } },
       }),
-      octokit,
+      tracker,
     );
     const labels = spies.create.mock.calls[0][0].labels as string[];
     expect(labels).toContain('dep:ai');
@@ -402,13 +402,13 @@ describe('handleGcpAlert — page severity', () => {
 
 describe('handleGcpAlert — warn severity', () => {
   test('open files with daily aggregation key and severity:warn label', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     await handleGcpAlert(
       baseIncident({
         condition: { displayName: 'Server Error Logged - server' },
         started_at: 1747051200, // 2025-05-12
       }),
-      octokit,
+      tracker,
     );
 
     const call = spies.create.mock.calls[0][0];
@@ -420,7 +420,7 @@ describe('handleGcpAlert — warn severity', () => {
   });
 
   test('two warn incidents same day → second is comment, not new issue', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     const day1A = baseIncident({
       incident_id: 'inc-A',
       condition: { displayName: 'Server Error Logged - server' },
@@ -435,21 +435,21 @@ describe('handleGcpAlert — warn severity', () => {
       .mockResolvedValueOnce({ data: [] })
       .mockResolvedValueOnce({ data: [{ number: 200, state: 'open' }] });
 
-    await handleGcpAlert(day1A, octokit);
-    await handleGcpAlert(day1B, octokit);
+    await handleGcpAlert(day1A, tracker);
+    await handleGcpAlert(day1B, tracker);
 
     expect(spies.create).toHaveBeenCalledTimes(1);
     expect(spies.createComment).toHaveBeenCalledTimes(1);
   });
 
   test('warn closed events are dropped (daily aggregation; closes via daily sweep)', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     await handleGcpAlert(
       baseIncident({
         condition: { displayName: 'Server Error Logged - server' },
         state: 'closed',
       }),
-      octokit,
+      tracker,
     );
     expect(spies.create).not.toHaveBeenCalled();
     expect(spies.update).not.toHaveBeenCalled();
@@ -459,13 +459,13 @@ describe('handleGcpAlert — warn severity', () => {
 
 describe('handleGcpAlert — unknown severity', () => {
   test('files with severity:unknown but never adds claude-fix', async () => {
-    const { octokit, spies } = makeOctokit();
+    const { tracker, spies } = makeTracker();
     await handleGcpAlert(
       baseIncident({
         condition: { displayName: 'A novel policy nobody has classified' },
         summary: 'something',
       }),
-      octokit,
+      tracker,
     );
     const labels = spies.create.mock.calls[0][0].labels as string[];
     expect(labels).toContain('severity:unknown');

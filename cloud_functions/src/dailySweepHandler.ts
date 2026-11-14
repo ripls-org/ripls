@@ -1,4 +1,4 @@
-// Daily sweep that closes stale gcp-policy:* GitHub issues. Used by the
+// Daily sweep that closes stale gcp-policy:* tracker issues. Used by the
 // warn-severity Cloud Monitoring path: those issues aggregate per
 // policy-per-day (label `gcp-policy:<slug>-<yyyymmdd>`) and don't have
 // a natural "close" event from Cloud Monitoring (incident.state=closed
@@ -15,13 +15,13 @@
 
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { logger } from 'firebase-functions/v2';
-import type { Octokit } from '@octokit/rest';
+import type { IssueTracker } from './issueTracker';
 import {
   REPO_NAME,
   REPO_OWNER,
-  githubAppPrivateKeyBase64,
-  octokitFromAppSecret,
-} from './githubAuth';
+  forgejoAlertsToken,
+  trackerFromSecret,
+} from './forgejoTracker';
 
 /** Label prefix that the warn-severity gcpAlertsHandler stamps on issues. */
 const GCP_POLICY_LABEL_PREFIX = 'gcp-policy:';
@@ -37,11 +37,11 @@ interface SweepReport {
 
 /**
  * Pure-async sweep logic. Exported for direct unit testing with a mocked
- * Octokit. The trigger wrapper at the bottom of this file adapts the
+ * IssueTracker. The trigger wrapper at the bottom of this file adapts the
  * scheduler event to a call here.
  */
 export async function runDailySweep(
-  octokit: Octokit,
+  tracker: IssueTracker,
   now: Date = new Date(),
 ): Promise<SweepReport> {
   const cutoffMs = now.getTime() - STALE_AFTER_MS;
@@ -50,7 +50,7 @@ export async function runDailySweep(
   // alone is not a valid label filter (labels are exact-match), so we
   // pull the broader auto-filed set and filter client-side. Volume is
   // bounded — at our scale, a few hundred issues max.
-  const { data: candidates } = await octokit.issues.listForRepo({
+  const { data: candidates } = await tracker.issues.listForRepo({
     owner: REPO_OWNER,
     repo: REPO_NAME,
     state: 'open',
@@ -77,7 +77,7 @@ export async function runDailySweep(
       continue;
     }
 
-    await octokit.issues.createComment({
+    await tracker.issues.createComment({
       owner: REPO_OWNER,
       repo: REPO_NAME,
       issue_number: issue.number,
@@ -87,7 +87,7 @@ export async function runDailySweep(
         `Reopen if the same policy fires again today; the next firing creates a fresh ` +
         `\`gcp-policy:<slug>-<yyyymmdd>\` issue regardless.`,
     });
-    await octokit.issues.update({
+    await tracker.issues.update({
       owner: REPO_OWNER,
       repo: REPO_NAME,
       issue_number: issue.number,
@@ -103,10 +103,10 @@ export const dailyGcpPolicySweep = onSchedule(
   {
     schedule: 'every day 09:00',
     timeZone: 'UTC',
-    secrets: [githubAppPrivateKeyBase64],
+    secrets: [forgejoAlertsToken],
   },
   async () => {
-    const report = await runDailySweep(octokitFromAppSecret());
+    const report = await runDailySweep(trackerFromSecret());
     logger.info('daily gcp-policy sweep complete', report);
   },
 );
