@@ -52,9 +52,10 @@ jobs:
       - name: Remove staging directory and routing
         env:
           SLUG: ${{ steps.slug.outputs.slug }}
-          DEST: ${{ vars.WEB_DEPLOY_SSH }}
-          PORT: ${{ vars.WEB_DEPLOY_PORT }}
-          ROOT: ${{ vars.WEB_DEPLOY_ROOT }}
+          # Secrets first, so the forge masks the endpoint in the log.
+          DEST: ${{ secrets.WEB_DEPLOY_SSH || vars.WEB_DEPLOY_SSH }}
+          PORT: ${{ secrets.WEB_DEPLOY_PORT || vars.WEB_DEPLOY_PORT }}
+          ROOT: ${{ secrets.WEB_DEPLOY_ROOT || vars.WEB_DEPLOY_ROOT }}
         run: |
           if [ -z "$SLUG" ] || [[ ! "$SLUG" =~ ^[a-z0-9-]+$ ]]; then
             echo "Refusing to delete with unsafe slug: '$SLUG'" >&2
@@ -75,12 +76,19 @@ jobs:
                rm -f -- '$staging/config/locations-$SLUG.include' && \
                rm -rf -- '$staging/sites/$SLUG'"
 
-      - name: Update PR comment
-        uses: marocchino/sticky-pull-request-comment@v3
+      # Only for the comment script below; nothing else here reads the repo.
+      - name: Checkout the comment script
+        uses: actions/checkout@v7
         with:
-          header: staging-website
-          message: |
-            🧹 Staging website for this PR has been removed.
+          sparse-checkout: .github/scripts
+
+      - name: Update PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          .github/scripts/sticky_comment.sh "$PR_NUMBER" staging-website \
+            <<< "🧹 Staging website for this PR has been removed."
 
       - name: Cleanup SSH key
         if: always()
