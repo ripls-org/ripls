@@ -51,7 +51,7 @@ services:
       # two GITHUB_REPO_* names are historical: they name the repository on
       # that instance. The token is the feedback-forgejo-token secret in each
       # environment's project.
-      FEEDBACK_FORGEJO_URL: https://code.overt.org
+      FEEDBACK_FORGEJO_URL: https://code.ripls.org
       GITHUB_REPO_OWNER: ripls-org
       GITHUB_REPO_NAME: tracker
       WAITLIST_NOTIFY_EMAIL: support@ripls.org
