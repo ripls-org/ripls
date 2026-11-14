@@ -475,16 +475,69 @@ the labels on what comes back.
 ### Phase 4: Hand back to #3228
 **Goal:** #3228's phase 4 runs as written, with Forgejo as the destination.
 **Tasks:**
-- [ ] Turn the Forgejo repo from a pull mirror into the canonical repo, and
-  `ripls-org/ripls` on GitHub into its push mirror.
+- [x] Turn the Forgejo repo into the canonical repo, and `ripls-org/ripls` on
+  GitHub into its push mirror. Done 2026-11-14; see *The cut-over* below.
 - [ ] `git mv .github/workflows .forgejo/workflows`; drop the GitHub spellings
-  and the `gh` pass-through.
-- [ ] Register the remaining three runners with Forgejo; remove the GitHub
-  registration.
-- [ ] Continue with #3228 phase 4: final export, secrets, branch protection,
-  docs, the proving release, then #3229.
+  and the `gh` pass-through. Not done. Actions is switched off on the GitHub
+  mirror instead, which is one setting; the move touches every workflow's own
+  `paths:` and the reusable-workflow `uses:` lines, and can follow.
+- [x] Runners. The Forgejo fleet stays at three Linux daemons, not five: see
+  below. The GitHub fleet is stopped (its containers and the runner on the
+  Mac), and its recreate timers are removed from the host.
+- [x] Continue with #3228 phase 4: final export, secrets, branch protection,
+  docs, the proving release. #3229 (archiving the private repository) is the
+  one step left.
 
 **Validates:** #3228's criteria.
+
+#### The cut-over (2026-11-14)
+
+What was done, in order:
+
+1. A final export of the private repository's `main` to both forges, with the
+   denylist and gitleaks gates passing.
+2. Actions switched off on the three GitHub repositories (the private one, the
+   private agent repo and the public mirror), so nothing deploys twice.
+3. The cut-over change, as the first pull request on Forgejo (#10 there):
+   `enable-openid-connect: true` for the Cloud Functions deploy; `gitleaks-push`,
+   `verify_toolchain` and the hourly conflict scan dropped; the denylist
+   scanner shipped with a `Denylist Check` workflow in place of the export
+   check; `TODO(#5)` renumbered to the issue's number here, #7.
+4. `INSTANCE_PIPELINES` set on the Forgejo repository.
+5. A push mirror from Forgejo to GitHub for `main` and tags, authenticated by
+   a deploy key on the GitHub repository.
+6. Branch protection on `main`: no force-push, and five always-run checks
+   required to merge a pull request.
+
+What ran from Forgejo afterwards:
+
+| What | Result |
+| --- | --- |
+| A full pull-request run (30 checks) | Passed |
+| Push mirror | GitHub `main` followed every merge |
+| Cloud Functions deploy to prod, with the OIDC token | Passed on the first run |
+| iOS build on the Mac, Android release build | Passed |
+| Deploy to Dev, including the dev end-to-end tests | Passed, after two fixes below |
+| Staging website preview and its cleanup | Passed, after one fix below |
+
+Four things only a real run found:
+
+| Finding | Fix |
+| --- | --- |
+| **Five runner daemons exhaust the host's Docker address pool.** Every job takes a network of its own; with five jobs at once, creating one failed with "all predefined address pools have been fully subnetted", and two image builds collided in the shared image store. | Back to three daemons. Issue #12 has what would lift the cap. |
+| **The host refused the deploy key.** It accepted that key only from Docker's first address range, and a job's network can come from the second. sshd logged "correct key but not from a permitted host". | The key's allowed source range on the host now covers both of Docker's ranges and still excludes the LAN. |
+| **Repository variables are printed in logs; secrets are masked.** The first deploy log showed the deploy host's address. | The deploy and website workflows read each endpoint from a secret of the same name first, falling back to the variable. |
+| **Two more GitHub-only steps:** the staging preview's sticky comment (a marketplace action) and the runner-candidate notice (`gh`). | `.github/scripts/sticky_comment.sh`, which uses the two REST calls both forges share; and `scripts/forge`. |
+
+Still to do, none of it blocking daily work:
+
+- Renovate against the Forgejo repository, and `renovate_auto_approve`. Until
+  then dependency updates are paused; the host's `run-renovate` timer still
+  points at the private GitHub repository.
+- The nightly docs refresh in the agent repo.
+- The move to `.forgejo/workflows/`.
+- Making the Forgejo repository public.
+- Enlarging the Docker address pool (#12).
 
 ## Related Issues
 - #3228 (OSS-17): the cut-over. Its phase 4 is gated on this port.

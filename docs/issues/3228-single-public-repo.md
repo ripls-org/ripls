@@ -526,26 +526,35 @@ is archived.
     `pre-receive` gitleaks hook on the instance (admin-configured, in mimir's
     forgejo stack), or accept the gap and say so in `docs/secrets.md`.
     *(audit fix)*
-- [ ] **Final export:**
+- [x] **Final export:** done 2026-11-14. The scanner (`oss_scan.js`) and its
+  fixture tests shipped rather than being deleted, because the tree gate needs
+  them; the rest of the harness is gone. The two excluded paths stayed behind
+  in the private repository, and the security review report is also in the
+  notes repo.
   1. Run a final `npm run oss:sync -- --push`, with the excludes reduced to the
      harness itself.
   2. Delete the harness: `oss_manifest.txt`, `oss_export*.js`, `oss_publish.js`
      and `check_oss_export.yaml`.
   3. Delete the `oss:*` npm scripts.
   4. Fix `server/cmd/check-image-gps/main.go`'s reference.
-- [ ] **Move the secrets and variables** to the public repo or its environments:
+- [x] **Move the secrets and variables** to the public repo or its environments
+  (on Forgejo, 2026-11-14; the deploy endpoints are secrets there, so logs
+  mask them):
   - `BUF_TOKEN`, the GCP service-account keys, Android signing, ASC and Play;
   - `MATCH_*`, `MIMIR_DEPLOY_SSH_KEY`, `WEB_PUBLISH_SSH_PRIVATE_KEY`;
   - the denylist.
 
   Register the runners against the new repo.
-- [ ] **Agent:**
+- [x] **Agent:** on Forgejo since 2026-11-13 (#3293, *The agent on Forgejo*).
   - set `AGENT_TARGETS` to the new repo;
   - update the ripls-agent README;
   - `AGENT_REPO` and dispatch variables move with the secrets.
-- [ ] **Branch protection:** turn on required PR checks on `main`.
-- [ ] **Docs:** rewrite `CLAUDE.md` (export references) and `README.md` for
-  one-repo development.
+- [x] **Branch protection:** on Forgejo `main`, five always-run checks are
+  required to merge a pull request and force-pushes are refused. Path-gated
+  checks (Go, Flutter) are not required yet: whether a skipped job satisfies
+  a required check there is untested.
+- [x] **Docs:** `CLAUDE.md` and `CONTRIBUTING.md` say where the repository
+  lives and to use `scripts/forge`.
 - [ ] **Prove it:** cut one release from the public repo, with deploy, store
   upload and tag.
 - [ ] **Archive:** archive this repo, which is #3229.
