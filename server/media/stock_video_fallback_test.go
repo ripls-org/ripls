@@ -321,7 +321,7 @@ func TestFallbackStockVideoProvider_PerProviderTimeout(t *testing.T) {
 	t.Run("slow provider times out and fallback succeeds", func(t *testing.T) {
 		slowProvider := &slowVideoMockProvider{
 			name:  "slow",
-			delay: 500 * time.Millisecond,
+			delay: slowProviderDelay,
 		}
 		fastProvider := &videoFallbackMockProvider{
 			name:   "fast",
@@ -344,7 +344,7 @@ func TestFallbackStockVideoProvider_PerProviderTimeout(t *testing.T) {
 		if result.Id != "stock-fast" {
 			t.Errorf("Expected result from fast provider, got ID: %s", result.Id)
 		}
-		if elapsed > 100*time.Millisecond {
+		if elapsed > promptBound {
 			t.Errorf("Operation took too long (%v), slow provider wasn't timed out properly", elapsed)
 		}
 		if !slowProvider.called {
@@ -353,8 +353,8 @@ func TestFallbackStockVideoProvider_PerProviderTimeout(t *testing.T) {
 	})
 
 	t.Run("all providers timing out returns error", func(t *testing.T) {
-		provider1 := &slowVideoMockProvider{name: "slow1", delay: 500 * time.Millisecond}
-		provider2 := &slowVideoMockProvider{name: "slow2", delay: 500 * time.Millisecond}
+		provider1 := &slowVideoMockProvider{name: "slow1", delay: slowProviderDelay}
+		provider2 := &slowVideoMockProvider{name: "slow2", delay: slowProviderDelay}
 
 		fp, _ := NewFallbackStockVideoProviderWithTimeout(
 			[]StockVideoProvider{provider1, provider2},
@@ -372,7 +372,7 @@ func TestFallbackStockVideoProvider_PerProviderTimeout(t *testing.T) {
 		if result != nil {
 			t.Error("Expected nil result when all providers timeout")
 		}
-		if elapsed > 100*time.Millisecond {
+		if elapsed > promptBound {
 			t.Errorf("Operation took too long (%v), providers weren't timed out properly", elapsed)
 		}
 		if !provider1.called || !provider2.called {
@@ -382,7 +382,7 @@ func TestFallbackStockVideoProvider_PerProviderTimeout(t *testing.T) {
 }
 
 func TestFallbackStockVideoProvider_ParentContextCancellation(t *testing.T) {
-	provider1 := &slowVideoMockProvider{name: "slow1", delay: 500 * time.Millisecond}
+	provider1 := &slowVideoMockProvider{name: "slow1", delay: slowProviderDelay}
 	provider2 := &slowVideoMockProvider{
 		name:   "slow2",
 		delay:  10 * time.Millisecond,
@@ -392,7 +392,7 @@ func TestFallbackStockVideoProvider_ParentContextCancellation(t *testing.T) {
 	fp, _ := NewFallbackStockVideoProviderWithTimeout(
 		[]StockVideoProvider{provider1, provider2},
 		[]string{"slow1", "slow2"},
-		100*time.Millisecond,
+		uncancelledProviderTimeout,
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
@@ -405,7 +405,7 @@ func TestFallbackStockVideoProvider_ParentContextCancellation(t *testing.T) {
 	if err == nil {
 		t.Fatal("Expected error when parent context is cancelled")
 	}
-	if elapsed > 80*time.Millisecond {
+	if elapsed > promptBound {
 		t.Errorf("Operation took too long (%v), should have stopped on parent context cancellation", elapsed)
 	}
 	if !provider1.called {
