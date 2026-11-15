@@ -247,6 +247,15 @@ fleets.
 
 To add a runner, add a service to the compose file and run `./sync.sh`.
 
+The compose file has one service that is not a runner, `lock-sweeper`. Each
+daemon keeps a clone of every action it has used under `data/.cache/act` and
+fetches it before a job. A run cancelled in the middle of that fetch leaves
+git's lock file behind, and every later job on that daemon that uses the same
+action fails in its first second with `Unable to create '.../shallow.lock':
+File exists`. The sweeper deletes lock files more than a minute old. If a job
+fails with that message anyway, check that `forgejo-runner-lock-sweeper` is
+running.
+
 ### The Mac that builds iOS
 
 `forgejo/mac/` registers the build Mac with the same organization, under the

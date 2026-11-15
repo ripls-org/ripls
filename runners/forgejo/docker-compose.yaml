@@ -71,3 +71,33 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/cache/nas/forgejo-runner/runner-5/data:/data
+
+  # Removes git lock files a cancelled job leaves in a daemon's action cache.
+  #
+  # Each daemon keeps a clone of every action it has used under
+  # data/.cache/act, and fetches it before a job. When a run is cancelled in
+  # the middle of that fetch (a second push to a pull request cancels the
+  # first push's runs), git is killed and its lock file stays. Every later
+  # job on that daemon that uses the same action then fails in its first
+  # second with "Unable to create '.../shallow.lock': File exists", until the
+  # file is deleted. Seen 2026-11-15: two change-detection jobs failed that
+  # way on one pull request.
+  #
+  # A fetch holds its lock for seconds, so a lock more than a minute old has
+  # no owner. This is not one of the runners: setup.sh finds those by the
+  # name forgejo-runner-<number>.
+  lock-sweeper:
+    image: code.forgejo.org/forgejo/runner:13.2.1
+    container_name: forgejo-runner-lock-sweeper
+    restart: unless-stopped
+    cpus: 0.1
+    user: "0:0"
+    volumes:
+      - /var/cache/nas/forgejo-runner:/runners
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while :; do
+          find /runners/runner-*/data/.cache/act -maxdepth 5 -name '*.lock' -mmin +1 -print -delete 2>/dev/null
+          sleep 20
+        done
