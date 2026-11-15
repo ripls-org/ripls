@@ -602,7 +602,7 @@ half-worked. A rename changes that root URL instead. What depends on it:
 | What | Why it follows the root URL |
 | --- | --- |
 | DNS and the proxy's site entry | The name has to resolve and have a certificate before Forgejo starts using it. The record is `cloudflare_dns_record.code` in `terraform/environments/prod`. |
-| The GCP identity provider | A job's OIDC token names `<root URL>/api/actions` as its issuer, and the provider accepts one issuer. `forgejo_url` in the prod Terraform sets it. Until it is applied, the Cloud Functions deploy is refused. |
+| The GCP identity provider | A job's OIDC token names `<root URL>/api/actions` as its issuer, and the provider accepts one issuer. `forgejo_url` in the prod Terraform sets it, and was applied with the rename. Had it not been, the Cloud Functions deploy would have been refused. |
 | Runners | Each daemon's registration file holds the instance address. A job's checkout uses the root URL, so the job containers must resolve the new name. |
 | The server's feedback tracker, the alert functions | Both hold the instance URL: `FEEDBACK_FORGEJO_URL` in `infra/server/common.yaml`, and `TRACKER_URL` in `cloud_functions/src/forgejoTracker.ts`. Each reaches production with its next deploy. |
 | Renovate | `endpoint` and the bot's no-reply address in `renovate/config.js`. |
