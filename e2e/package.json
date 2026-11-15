@@ -15,7 +15,7 @@
     "env:status": "tsx scripts/investigate_env.ts status"
   },
   "devDependencies": {
-    "@playwright/test": "1.65.0",
+    "@playwright/test": "1.65.1",
     "@bufbuild/protobuf": "2.17.0",
     "@connectrpc/connect": "2.3.0",
     "@connectrpc/connect-web": "2.3.0",
