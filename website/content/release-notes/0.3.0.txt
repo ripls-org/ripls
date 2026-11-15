@@ -21,7 +21,7 @@ Paste a product URL when adding gear and the app will automatically pull the nam
 
 Improved Invite Links
 
-Invite links now use short, memorable codes (e.g. ripls.app/go/qkLCXDLP) instead of long UUIDs. Shared links show a branded preview with community info in messaging apps via OpenGraph metadata. (#697, fixes #690)
+Invite links now use short, memorable codes (e.g. ripls.app/go/qkLCXDLP) instead of long UUIDs. Shared links show a branded preview with community info in messaging apps via OpenGraph metadata. (#697, fixes #690)
 
 Discovery Search Improvements
 

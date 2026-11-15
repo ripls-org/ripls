@@ -21,7 +21,7 @@ Bug Fixes
 
 - Completion Quick-Add Double-Attribution: After a phone-invited guest registered, their claimed placeholder still appeared in the completion modal’s quick-add grid alongside their real account. Claimed provisionals are now excluded from that search (#2699)
 
-- Gear Lend/Give Toggle Had No Effect: Toggling Lend vs. Give when creating gear from a photo was decorative — every item was shared FOR_LOAN regardless. The toggle choice now carries through to the first share (#2687)
+- Gear Lend/Give Toggle Had No Effect: Toggling Lend vs. Give when creating gear from a photo was decorative — every item was shared FOR_LOAN regardless. The toggle choice now carries through to the first share (#2687)
 
 - $0 Gear Value on Photo Create: The full gear detection result was not persisted on save, leaving some photo-created items with a $0 estimate (#2702)
 

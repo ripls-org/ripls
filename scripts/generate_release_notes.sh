@@ -141,13 +141,22 @@ for md_file in "${MD_FILES[@]}"; do
     sed -i.bak "1,/<\/h1>/s|</h1>|</h1>\n            <p class=\"release-date\">${release_date_display}</p>|" "$html_file"
     rm -f "${html_file}.bak"
 
+    # pandoc puts a non-breaking space after abbreviations such as "e.g." and
+    # "vs.", as the raw character U+00A0. It renders the same written as the
+    # entity, and the raw one is invisible in a diff: Renovate reports it as a
+    # hidden Unicode character on its dashboard. The bytes are spelled out so
+    # this works with any sed, in any locale.
+    LC_ALL=C sed -i.bak $'s/\xc2\xa0/\\&nbsp;/g' "$html_file"
+    rm -f "${html_file}.bak"
+
     # Convert to plain text with URL after the title for app store changelogs
     # The store changelog links back to the hosted copy of these notes. Where
     # that is hosted is deployment-specific, so it comes from the environment
     # and the line is simply omitted when unset — this script runs as part of
     # `npm run generate`, so requiring the variable would break codegen for
     # everyone who does not publish release notes (#2953).
-    plain_text=$(pandoc -f markdown -t plain --wrap=none "$md_file")
+    # The same non-breaking space, here turned into an ordinary one.
+    plain_text=$(pandoc -f markdown -t plain --wrap=none "$md_file" | LC_ALL=C sed $'s/\xc2\xa0/ /g')
 
     # Insert URL link after the first line (title)
     title=$(echo "$plain_text" | head -n 1)
