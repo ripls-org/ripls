@@ -101,3 +101,18 @@ jobs:
           cd app
           flutter build apk --release --dart-define-from-file=env.local.json
           echo "Release build with R8 succeeded"
+
+  # Forgejo re-checks a pull request's scheduled merge only when a SUCCESS
+  # status is written. A workflow whose last status is a skip (the build
+  # above, when its paths did not change) triggers no re-check, and a pull
+  # request set to merge itself can sit green and unmerged. This job always
+  # runs last and succeeds, which is the trigger. It says nothing about the
+  # result: the required checks do.
+  # See "Scheduled merges" in docs/issues/3293-forgejo-port.md.
+  settled:
+    name: Checks settled
+    needs: [release-build]
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && github.server_url != 'https://github.com' }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    steps:
+      - run: "true"

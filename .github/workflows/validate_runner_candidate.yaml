@@ -194,3 +194,18 @@ jobs:
           EOF
           sed -i 's/^          //' /tmp/notice.md
           scripts/forge pr comment "$PR" --body-file /tmp/notice.md
+
+  # Forgejo re-checks a pull request's scheduled merge only when a SUCCESS
+  # status is written. A workflow whose last status is a skip (the two jobs
+  # above, when the image inputs did not change) triggers no re-check, and a
+  # pull request set to merge itself can sit green and unmerged. This job
+  # always runs last and succeeds, which is the trigger. It says nothing
+  # about the result: the required checks do.
+  # See "Scheduled merges" in docs/issues/3293-forgejo-port.md.
+  settled:
+    name: Checks settled
+    needs: [validate, unvalidated-notice]
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && github.server_url != 'https://github.com' }}
+    runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
+    steps:
+      - run: "true"
