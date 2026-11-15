@@ -602,6 +602,35 @@ After these runs the policy was widened: majors of library dependencies and
 of Flutter packages merge themselves on green checks, like minors. Toolchain
 and Terraform provider majors still wait for a person.
 
+#### Scheduled merges (2026-11-15)
+
+A pull request scheduled to merge "when checks succeed" sometimes sat green
+and unmerged. Two did in two days, and Renovate's self-merging pull requests
+use the same mechanism.
+
+Forgejo re-checks a scheduled merge at one moment only: when a status with
+the state *success* is written for the head commit. Most workflows here end
+with a status that is not a success. A path-gated job whose paths did not
+change ends as *skipped*, and so does the job that hands a failure to the CI
+fixer when nothing failed. Both are written a moment after the workflow's
+last success. So the re-check that last success triggered still sees a
+pending job and declines, and nothing triggers another. Whether a pull
+request merged came down to timing.
+
+Shown on a probe pull request: every check green, the merge still scheduled,
+nothing happening for minutes; one more success status posted to the head
+commit, and it merged within seconds. The forge's log had its last re-check
+in the same second as the final statuses, reporting unsuccessful checks.
+
+The same probe showed that a scheduled merge survives a push by another
+account. That is what happens when the CI fixer repairs a Renovate pull
+request, so a fixed pull request still merges itself.
+
+The fix is a last job, `Checks settled`, in each of the eleven workflows that
+can end on a skip. It needs the workflow's other jobs, runs whatever their
+result unless the run was cancelled, and succeeds. Its status is the trigger.
+It is not a required check and says nothing about the result.
+
 #### The rename (2026-11-14)
 
 The instance was `code.overt.org` when the port was done, and became
