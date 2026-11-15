@@ -598,6 +598,10 @@ of each kind.
 | The review request on that pull request | Refused: "Doer can't choose reviewer". A job's own token cannot request a reviewer on Forgejo, because the Actions account is not a member of the repository. The job now falls back to assigning the pull request, which worked. |
 | The dashboard's warning about hidden Unicode characters | Non-breaking spaces that pandoc writes after "e.g." and "vs." in generated release notes. The generator now writes them as `&nbsp;`. |
 
+After these runs the policy was widened: majors of library dependencies and
+of Flutter packages merge themselves on green checks, like minors. Toolchain
+and Terraform provider majors still wait for a person.
+
 #### The rename (2026-11-14)
 
 The instance was `code.overt.org` when the port was done, and became
