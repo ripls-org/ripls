@@ -1,7 +1,6 @@
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/models/media_item_data.dart';
 import 'package:ripls/core/theme/app_colors.dart';
@@ -120,10 +119,6 @@ class _InlineConversationViewState
   final ScrollController _scrollController = ScrollController();
   final FocusNode _inputFocusNode = FocusNode();
   int _previousMessageCount = 0;
-  // Cached so KeyboardActions receives a stable config across rebuilds.
-  // A new config object on each build causes the keyboard overlay to tear
-  // down and recreate, briefly dismissing the keyboard.
-  late final KeyboardActionsConfig _keyboardConfig;
 
   @override
   bool get wantKeepAlive => true;
@@ -131,7 +126,6 @@ class _InlineConversationViewState
   @override
   void initState() {
     super.initState();
-    _keyboardConfig = buildKeyboardActionsConfig([_inputFocusNode]);
     _inputFocusNode.addListener(_onFocusChange);
     WidgetsBinding.instance.addObserver(this);
     if (widget.isActive) {
@@ -411,14 +405,11 @@ class _InlineConversationViewState
   // ── Expanded mode ─────────────────────────────────────────────────────────
 
   Widget _buildExpanded(ConversationState convState) {
-    return KeyboardActions(
-      disableScroll: true,
-      // Do NOT use tapOutsideBehavior here — it treats the send button,
+    return DoneKeyboardActions(
+      // Do NOT enable dismissOnTapOutside here — it treats the send button,
       // plus button, and text field padding as "outside" and dismisses
       // the keyboard on every tap. Instead, dismiss is handled by a
       // GestureDetector on the message list area only.
-      tapOutsideBehavior: TapOutsideBehavior.none,
-      config: _keyboardConfig,
       child: Column(
         children: [
           Expanded(

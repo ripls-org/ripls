@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:logging/logging.dart';
 import 'package:ripls/core/errors/rpc_error_handler.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
@@ -352,12 +351,7 @@ class _ExperiencePreviewModalState extends ConsumerState<ExperiencePreviewModal>
     return Dialog.fullscreen(
       child: Scaffold(
         backgroundColor: AppColors.background(context),
-        body: KeyboardActions(
-          disableScroll: true,
-          config: buildKeyboardActionsConfig([
-            _titleFocusNode,
-            _descriptionFocusNode,
-          ]),
+        body: DoneKeyboardActions(
           child: KeyboardDismissWrapper(
             child: Stack(
               children: [
