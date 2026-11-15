@@ -579,13 +579,24 @@ Done later the same day:
 Still to do, none of it blocking daily work:
 
 - The iOS upload of 0.33.1, after the Apple agreement is accepted.
-- Watch Renovate's first real run and its first pull request of each kind:
-  one that merges itself, and one that asks for a review.
 - The move to `.forgejo/workflows/`. Left out on purpose: about a hundred
   references in forty files and the agent repo, for a benefit (the GitHub
   mirror runs nothing) that switching Actions off there already gives.
 - The TODO comments that still name issues from the private tracker (#22).
 - Archiving the private GitHub repository (#3229).
+
+#### Renovate's first runs (2026-11-15)
+
+Renovate's scheduled run opened its dashboard issue on its own, and two
+updates were then released from the schedule by hand to see one pull request
+of each kind.
+
+| What | Result |
+| --- | --- |
+| A patch update with the `automerge` label | Merged itself, as the Renovate account, once its checks passed. |
+| A major update without the label | Stayed open. Its iOS build failed on a changed `Podfile.lock`; the CI-fixer agent committed the lockfile change and the build passed. |
+| The review request on that pull request | Refused: "Doer can't choose reviewer". A job's own token cannot request a reviewer on Forgejo, because the Actions account is not a member of the repository. The job now falls back to assigning the pull request, which worked. |
+| The dashboard's warning about hidden Unicode characters | Non-breaking spaces that pandoc writes after "e.g." and "vs." in generated release notes. The generator now writes them as `&nbsp;`. |
 
 #### The rename (2026-11-14)
 
