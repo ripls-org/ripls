@@ -415,7 +415,7 @@ body: KeyboardDismissWrapper(
 
 **"Done" toolbar for multiline fields (`keyboard_actions`):**
 
-iOS ignores `TextInputAction.done` when `maxLines > 1`. Use the `keyboard_actions` package with `buildKeyboardActionsConfig()` to show a "Done" button in a toolbar directly above the keyboard. Each multiline `TextField` needs its own `FocusNode`.
+iOS ignores `TextInputAction.done` when `maxLines > 1`. Use the `keyboard_actions` package via the `DoneKeyboardActions` wrapper to show a "Done" button in a toolbar directly above the keyboard. Fields are discovered automatically; no per-field registration is needed.
 
 ```dart
 // In State:
@@ -424,9 +424,7 @@ final _descriptionFocusNode = FocusNode();
 _descriptionFocusNode.dispose();
 
 // In build:
-KeyboardActions(
-  disableScroll: true,
-  config: buildKeyboardActionsConfig([_descriptionFocusNode]),
+DoneKeyboardActions(
   child: KeyboardDismissWrapper(
     child: /* content */,
   ),
@@ -566,7 +564,7 @@ The app uses two distinct back button widgets for different contexts:
 - Show clear error states with retry actions
 - Provide visual feedback for button presses
 - **Wrap all text-input screens/widgets with `KeyboardDismissWrapper`** for tap-to-dismiss keyboard behavior
-- **Add `keyboard_actions` toolbar via `buildKeyboardActionsConfig()`** for every multiline `TextField` (`maxLines > 1`)
+- **Add `keyboard_actions` toolbar via `DoneKeyboardActions`** for every multiline `TextField` (`maxLines > 1`)
 
 ### ❌ Don'ts
 
