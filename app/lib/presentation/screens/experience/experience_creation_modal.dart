@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
-import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:ripls/core/errors/rpc_error_handler.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/app_colors.dart';
@@ -202,10 +201,8 @@ class _ExperienceCreationModalState
     final isImageMode = state.inputMode == CreationInputMode.image;
     final modalHeight = screenHeight * (isImageMode ? 1.0 : 0.60);
 
-    return KeyboardActions(
-      disableScroll: true,
-      tapOutsideBehavior: TapOutsideBehavior.translucentDismiss,
-      config: buildKeyboardActionsConfig([_textFocusNode]),
+    return DoneKeyboardActions(
+      dismissOnTapOutside: true,
       child: AnimatedContainer(
         duration: accessibleDuration(context, const Duration(milliseconds: 300)),
         curve: Curves.easeInOut,

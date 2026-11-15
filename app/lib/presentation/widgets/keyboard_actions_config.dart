@@ -1,26 +1,40 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 
-/// buildKeyboardActionsConfig creates a standard iOS keyboard toolbar config.
+/// DoneKeyboardActions shows a "Done" toolbar above the iOS keyboard for every
+/// text field beneath [child].
 ///
-/// Returns a [KeyboardActionsConfig] that shows a "Done" button above the iOS
-/// keyboard for each node in [focusNodes]. The toolbar is iOS-only and does
-/// not traverse focus between fields — tapping "Done" dismisses the keyboard.
+/// The toolbar is iOS-only and does not traverse focus between fields —
+/// tapping "Done" dismisses the keyboard. Fields are discovered automatically,
+/// so no per-field [FocusNode] registration is needed.
+///
+/// Set [dismissOnTapOutside] to also close the keyboard when the user taps
+/// outside the focused field and the toolbar.
 ///
 /// Usage:
 /// ```dart
-/// KeyboardActions(
-///   disableScroll: true,
-///   config: buildKeyboardActionsConfig([_titleFocusNode, _descriptionFocusNode]),
+/// DoneKeyboardActions(
+///   dismissOnTapOutside: true,
 ///   child: ...,
 /// )
 /// ```
-KeyboardActionsConfig buildKeyboardActionsConfig(List<FocusNode> focusNodes) {
-  return KeyboardActionsConfig(
-    keyboardActionsPlatform: KeyboardActionsPlatform.IOS,
-    nextFocus: false,
-    actions: focusNodes
-        .map((node) => KeyboardActionsItem(focusNode: node))
-        .toList(),
-  );
+class DoneKeyboardActions extends StatelessWidget {
+  const DoneKeyboardActions({
+    super.key,
+    required this.child,
+    this.dismissOnTapOutside = false,
+  });
+
+  final Widget child;
+  final bool dismissOnTapOutside;
+
+  @override
+  Widget build(BuildContext context) {
+    return KeyboardActions.done(
+      enabled: defaultTargetPlatform == TargetPlatform.iOS,
+      dismissOnTapOutside: dismissOnTapOutside,
+      child: child,
+    );
+  }
 }
