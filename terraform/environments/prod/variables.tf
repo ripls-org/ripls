@@ -41,7 +41,7 @@ variable "billing_account_id" {
 variable "forgejo_url" {
   description = "Root URL of the Forgejo instance whose Actions runs deploy to this project"
   type        = string
-  default     = "https://code.overt.org"
+  default     = "https://code.ripls.org"
 }
 
 variable "forgejo_repository_id" {

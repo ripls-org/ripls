@@ -16,7 +16,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 STATE="${STATE:-$HOME/forgejo-runner}"
 LOGS="${LOGS:-$HOME/Library/Logs/forgejo-runner}"
-INSTANCE="${INSTANCE:-https://code.overt.org}"
+INSTANCE="${INSTANCE:-https://code.ripls.org}"
 NAME="${RUNNER_NAME:-$(scutil --get LocalHostName)}"
 RUNNER="${RUNNER:-/opt/homebrew/bin/forgejo-runner}"
 LABEL="org.ripls.forgejo-runner"

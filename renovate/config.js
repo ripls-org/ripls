@@ -8,7 +8,7 @@
 module.exports = {
   // The repository lives on a Forgejo instance (#3293).
   platform: 'forgejo',
-  endpoint: 'https://code.overt.org/api/v1/',
+  endpoint: 'https://code.ripls.org/api/v1/',
 
   // Auth: RENOVATE_TOKEN (read from the environment by Renovate) is an access
   // token of the `ripls-renovate` account on that instance, kept in a
@@ -21,7 +21,7 @@ module.exports = {
   // works.
 
   // Commits are authored as the bot account, so the forge shows them as its.
-  gitAuthor: 'ripls-renovate <ripls-renovate@noreply.code.overt.org>',
+  gitAuthor: 'ripls-renovate <ripls-renovate@noreply.code.ripls.org>',
 
   // Only this repo; do not crawl the instance.
   autodiscover: false,

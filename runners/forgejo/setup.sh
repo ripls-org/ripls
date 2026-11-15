@@ -12,7 +12,7 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 STATE="${STATE:-/var/cache/nas/forgejo-runner}"
-INSTANCE="${INSTANCE:-https://code.overt.org}"
+INSTANCE="${INSTANCE:-https://code.ripls.org}"
 COMPOSE="$HERE/docker-compose.yaml"
 JOB_IMAGE="ripls-runner:latest"
 

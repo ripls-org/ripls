@@ -48,7 +48,7 @@ jobs:
         env:
           OSS_DENYLIST: ${{ secrets.OSS_DENYLIST }}
           CANONICAL_REPO: ripls-org/ripls
-          CANONICAL_SERVER: https://code.overt.org
+          CANONICAL_SERVER: https://code.ripls.org
           REPO: ${{ github.repository }}
           SERVER: ${{ github.server_url }}
           HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}

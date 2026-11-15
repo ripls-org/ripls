@@ -14,8 +14,8 @@ and tooling, not product code.
 
 #3228 ends with one public repo that development, deploy and release all run
 from. On 2026-11-12 the destination was decided: the self-hosted Forgejo
-instance at `code.overt.org`, with `ripls-org/ripls` on GitHub kept as a push
-mirror. The private tracker for user feedback and crash alerts goes to Forgejo
+instance at `code.overt.org` (renamed `code.ripls.org` on 2026-11-14; see *The
+rename* below), with `ripls-org/ripls` on GitHub kept as a push mirror. The private tracker for user feedback and crash alerts goes to Forgejo
 too.
 
 Nothing in this repo runs on Forgejo today. Actions are disabled on the
@@ -586,6 +586,31 @@ Still to do, none of it blocking daily work:
   mirror runs nothing) that switching Actions off there already gives.
 - The TODO comments that still name issues from the private tracker (#22).
 - Archiving the private GitHub repository (#3229).
+
+#### The rename (2026-11-14)
+
+The instance was `code.overt.org` when the port was done, and became
+`code.ripls.org` later the same day: by then it held nothing but this
+project. Earlier sections name the old host where they record what was tried
+at the time.
+
+An alias had been tried that morning, with a reverse proxy serving the forge
+under the new name while Forgejo still called itself the old one, and it was
+rolled back: Forgejo prints one root URL in its links, so the second name
+half-worked. A rename changes that root URL instead. What depends on it:
+
+| What | Why it follows the root URL |
+| --- | --- |
+| DNS and the proxy's site entry | The name has to resolve and have a certificate before Forgejo starts using it. The record is `cloudflare_dns_record.code` in `terraform/environments/prod`. |
+| The GCP identity provider | A job's OIDC token names `<root URL>/api/actions` as its issuer, and the provider accepts one issuer. `forgejo_url` in the prod Terraform sets it, and was applied with the rename. Had it not been, the Cloud Functions deploy would have been refused. |
+| Runners | Each daemon's registration file holds the instance address. A job's checkout uses the root URL, so the job containers must resolve the new name. |
+| The server's feedback tracker, the alert functions | Both hold the instance URL: `FEEDBACK_FORGEJO_URL` in `infra/server/common.yaml`, and `TRACKER_URL` in `cloud_functions/src/forgejoTracker.ts`. Each reaches production with its next deploy. |
+| Renovate | `endpoint` and the bot's no-reply address in `renovate/config.js`. |
+| Clones | `git remote set-url origin git@code.ripls.org:ripls-org/ripls.git`. Git over SSH is still on port 222. |
+| Passkeys | A passkey is bound to the host name it was made on, so one registered on the old name does not sign in on the new. Passwords and TOTP codes are unaffected. |
+
+The old name kept answering while these moved, and is removed once nothing
+asks for it.
 
 ## Related Issues
 - #3228 (OSS-17): the cut-over. Its phase 4 is gated on this port.

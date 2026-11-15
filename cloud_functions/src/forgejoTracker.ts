@@ -33,7 +33,7 @@ export const forgejoAlertsToken = defineSecret('forgejo-alerts-token');
 
 // Where the tracker lives. Constants because the functions deploy against one
 // tracker; promote them to defineString params if that ever stops being true.
-export const TRACKER_URL = 'https://code.overt.org';
+export const TRACKER_URL = 'https://code.ripls.org';
 export const REPO_OWNER = 'ripls-org';
 export const REPO_NAME = 'tracker';
 
