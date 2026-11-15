@@ -166,7 +166,7 @@ PODS:
     - FlutterMacOS
   - flutter_timezone (0.0.1):
     - Flutter
-  - gal (1.0.0):
+  - gal (3.0.1):
     - Flutter
     - FlutterMacOS
   - geolocator_apple (1.2.0):
@@ -443,7 +443,7 @@ SPEC CHECKSUMS:
   flutter_local_notifications: 643a3eda1ce1c0599413ca31672536d423dee214
   flutter_secure_storage_darwin: 46e401699982ee74142909676535e0f6a7321e58
   flutter_timezone: 7c838e17ffd4645d261e87037e5bebf6d38fe544
-  gal: baecd024ebfd13c441269ca7404792a7152fde89
+  gal: 49b4e48d0ffca13a414561eff9716a990c6260b6
   geolocator_apple: ab36aa0e8b7d7a2d7639b3b4e48308394e8cef5e
   Google-Maps-iOS-Utils: 0a484b05ed21d88c9f9ebbacb007956edd508a96
   google_maps_flutter_ios: 17552876e72723da1d41accc22f03b5f7afbde69
