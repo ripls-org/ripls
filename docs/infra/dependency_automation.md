@@ -62,12 +62,16 @@ non-obvious and was learned the hard way.
   prebuilt-image toolchain. Consumers read it via build-args / sourcing — there
   are no hand-maintained mirrors. `scripts/check_versions.js` (CI) guards the few
   genuine source mirrors; `npm run doctor:versions` flags local drift.
-- **Auto-merge is hands-off for safe updates:** patch/minor of
-  gomod/npm/github-actions/gradle/terraform auto-merge on green with no human.
-  PRs that need a person (majors, Flutter `pub`, base images) get a reviewer
-  auto-assigned and native auto-merge enabled, so they merge **the moment the
-  human approves** (§4). Patch/minor **baked-tool** (`needs runner rebuild`)
-  bumps now auto-merge too, gated by a candidate-image check that proves the new
+- **Auto-merge is hands-off for library updates, majors included** (since
+  2026-11-15): every update type of gomod/npm/github-actions/gradle/`pub`
+  libraries, and patch/minor of terraform and the Gradle wrapper, merge on green
+  with no human. "Green" includes green after the CI-fixer agent migrated the
+  code (§6): the test suites and platform builds are the gate.
+  PRs that still need a person (Terraform provider majors, toolchain majors,
+  the Android Gradle plugin, ONNX Runtime, base images, fastlane gems) are
+  assigned to `DEFAULT_RENOVATE_REVIEWER`, who merges them (§4). Patch/minor
+  **baked-tool** (`needs runner rebuild`)
+  bumps auto-merge too, gated by a candidate-image check that proves the new
   toolchain pre-merge (§5); their majors still route to human review.
 - **Failing Renovate PRs are auto-fixed by Claude.** When a bump needs a code
   migration, `claude_fix_renovate_ci.yaml` checks out the branch, migrates,
@@ -90,9 +94,15 @@ non-obvious and was learned the hard way.
   `docker-compose` / `bundler` / `cocoapods`.
 - **Auto-merge** (`addLabels: ["automerge"]` + `platformAutomerge: true`):
   patch/minor of `gomod`/`npm`/`github-actions`/`gradle`/`gradle-wrapper`/
-  `terraform`. **Manual:** all majors, `pub` (Flutter app deps), `dockerfile`/
-  `docker-compose` (base images), `bundler`, and anything matching `versions.env`
-  (labeled `needs runner rebuild`).
+  `terraform`/`pub`, and **majors** of `gomod`/`npm`/`github-actions`/`gradle`/
+  `pub` libraries. **Manual:** majors of `terraform` providers and the Gradle
+  wrapper; the toolchains by name in any manager (`go`, `node`, `flutter`,
+  `dart`, `java`), the Android Gradle plugin and the ONNX Runtime binding;
+  `dockerfile`/`docker-compose` (base images), `bundler`, and major bumps in
+  `versions.env` (labeled `needs runner rebuild`). The exclusions are written
+  into the major rule as negated names, not as a later `automerge: false` rule:
+  labels only accumulate, so a later rule could not take `automerge` back off,
+  and the review job reads that label.
 - **Blocked/pinned deps** (reasons in [Held-back dependencies](#held-back-dependencies)
   below): `analyzer` `<14` (freezed 4's
   ceiling), `microsoft/onnxruntime` `<1.30` (release-tarball ceiling, checked by

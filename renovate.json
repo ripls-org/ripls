@@ -35,14 +35,26 @@
       "addLabels": ["automerge"]
     },
     {
-      "description": "Majors always wait for a human regardless of manager.",
+      "description": "Majors wait for a human by default. The next rule lifts that for library majors; what stays here is everything else: Terraform providers (a provider major changes what the next apply does, and no check exercises that), base images, the Renovate image, fastlane gems, the Gradle wrapper, and the toolchains named in the exclusions below.",
       "matchUpdateTypes": ["major"],
       "automerge": false
     },
     {
-      "description": "Flutter app (pub) deps: manual review for all initially — package minors here have repeatedly needed code migration. Relax to automerge-patch once the green signal (flutter analyze + test) is trusted.",
+      "description": "Library majors merge themselves on green checks, like minors (decided 2026-11-15). 'Green' includes green after the CI-fixer agent has migrated the code: the test suites and the iOS, Android and web builds are the gate, not a person. Excluded by name, because a later rule keeps each of them manual and a rule that set automerge:false after this one could not take the 'automerge' label back off (labels only accumulate, and the invariant is automerge:true IFF the label): the toolchains baked into the runner image (go, node, flutter, dart, java), the ONNX Runtime binding, and the Android Gradle plugin, which must move with the Gradle wrapper.",
+      "matchManagers": ["gomod", "npm", "github-actions", "gradle", "pub"],
+      "matchUpdateTypes": ["major"],
+      "matchDepNames": ["!go", "!node", "!flutter", "!dart", "!java"],
+      "matchPackageNames": ["!github.com/yalue/onnxruntime_go", "!com.android.application", "!com.android.library", "!gradle"],
+      "automerge": true,
+      "addLabels": ["automerge"]
+    },
+    {
+      "description": "Flutter app (pub) minors and patches merge themselves too (decided 2026-11-15). They were manual because package minors here have repeatedly needed code migration; the CI-fixer agent now does that migration, and flutter analyze, the tests and the platform builds gate the result. The SDK constraints are excluded: they move with the Flutter toolchain in versions.env.",
       "matchManagers": ["pub"],
-      "automerge": false
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "matchDepNames": ["!flutter", "!dart"],
+      "automerge": true,
+      "addLabels": ["automerge"]
     },
     {
       "description": "Generated Go code (server/gen/**) is not checked in, so Renovate's built-in go.sum refresh cannot resolve the in-module generated imports and fails, leaving go.mod-only PRs with a stale go.sum. This postUpgradeTask regenerates the Go proto packages (local buf plugins, no network) and runs `go mod tidy` so the branch carries a correct go.sum. Runs once per branch; only go.mod/go.sum are committed (server/gen is gitignored and discarded). Requires self-hosted Renovate — the command allowlist lives in renovate/config.js and the toolchain in renovate/Dockerfile.",
