@@ -37,6 +37,8 @@ concurrency:
 permissions:
   contents: read
   pull-requests: write
+  # Assigning a pull request goes through its issue half.
+  issues: write
 
 env:
   # Human asked to review Renovate pull requests that do not merge themselves.
@@ -82,8 +84,13 @@ jobs:
           REQUESTED=$(scripts/forge pr view "$PR" --json reviewRequests \
             --jq "[.reviewRequests[].login] | index(\"$DEFAULT_RENOVATE_REVIEWER\") // empty")
           if [ -z "$REVIEWED" ] && [ -z "$REQUESTED" ]; then
+            # Forgejo refuses a review request made with a job's own token
+            # ("Doer can't choose reviewer": the Actions account is not a
+            # member of the repository). Assigning the pull request is allowed
+            # and reaches the same person, so fall back to that.
             scripts/forge pr edit "$PR" --add-reviewer "$DEFAULT_RENOVATE_REVIEWER" \
-              || echo "::notice::Could not request review from $DEFAULT_RENOVATE_REVIEWER on PR #$PR; continuing."
+              || scripts/forge pr edit "$PR" --add-assignee "$DEFAULT_RENOVATE_REVIEWER" \
+              || echo "::notice::Could not request review from or assign $DEFAULT_RENOVATE_REVIEWER on PR #$PR; continuing."
           else
             echo "$DEFAULT_RENOVATE_REVIEWER already requested or has reviewed PR #$PR; not re-requesting."
           fi
