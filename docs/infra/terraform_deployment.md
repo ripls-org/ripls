@@ -8,6 +8,9 @@ context:
   lens: [infra]
   skills: [issue, audit]
   domain: infra
+freshness:
+  verified_commit: "2bc16f0"
+  verified_on: "2026-11-15"
 ---
 # Terraform deployment runbook — this instance
 
@@ -134,7 +137,7 @@ Operators need `roles/storage.objectAdmin` on the bucket for their environment.
 ### Domain Configuration
 
 7. **DNS is managed in Cloudflare by Terraform.** Each environment has two
-   records, CNAMEs to mimir's public name, unproxied so Caddy on mimir sees the
+   app records, CNAMEs to mimir's public name, unproxied so Caddy on mimir sees the
    real client connection and terminates TLS (Cloudflare's proxy would also cut
    the server's long-lived streams):
 
@@ -142,6 +145,11 @@ Operators need `roles/storage.objectAdmin` on the bucket for their environment.
    |---|---|
    | dev | `server-dev.ripls.org`, `dev.ripls.app` |
    | prod | `server.ripls.org`, `ripls.app` |
+
+   Prod also carries a third record, `code.ripls.org`: the Forgejo instance the
+   repository lives on, served by Caddy on mimir for the web side and used for
+   git over SSH on port 222. It is unproxied for the same reason (SSH needs the
+   real host).
 
    The `ripls.app` and `dev.ripls.app` records were created by hand and are
    brought under Terraform with `import` blocks. The Caddy entries themselves
