@@ -1,6 +1,6 @@
 module go.ripls.org/ripls
 
-go 1.27.3
+go 1.27.4
 
 require (
 	cloud.google.com/go/storage v1.69.0
