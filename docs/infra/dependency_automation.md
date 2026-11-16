@@ -9,8 +9,8 @@ context:
   skills: [issue, audit]
   domain: infra
 freshness:
-  verified_commit: "e792499"
-  verified_on: "2026-11-14"
+  verified_commit: "3bf45b7"
+  verified_on: "2026-11-16"
 ---
 # Dependency & Toolchain Automation
 
@@ -34,7 +34,8 @@ non-obvious and was learned the hard way.
 > - **How its pull requests merge:** `main` requires no approving review, so
 >   nothing approves them. Renovate asks the forge to merge an `automerge`
 >   pull request when its required checks pass. One without the label gets a
->   review request and is merged by the reviewer
+>   review request (or, when Forgejo refuses a job-token review request, an
+>   assignment to the same person) and is merged by the reviewer
 >   (`.github/workflows/renovate_auto_approve.yaml`).
 > - **What gates a merge:** branch protection on Forgejo `main` and its list
 >   of required checks, not GitHub rulesets.
