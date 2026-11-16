@@ -30,6 +30,7 @@
     "lint:go:no-inline-user-strings": "node scripts/check_no_inline_user_strings.js",
     "lint:go:size": "bash scripts/check_go_file_size.sh",
     "check:onnx-tarballs": "node scripts/check_onnx_tarballs.js",
+    "ios:apply-podfile-lock-patch": "node scripts/apply_podfile_lock_patch.js",
     "lint:todo-refs": "node scripts/check_todo_refs.js",
     "lint:go:fix": "gofumpt -l -w . && golangci-lint run --config server/.golangci.yml --fix ./server/...",
     "lint:e2e:types": "cd e2e && npx --no-install tsc --noEmit",

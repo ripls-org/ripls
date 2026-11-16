@@ -162,7 +162,10 @@ jobs:
             # make this file, and the CI fixer runs on Linux. It decodes this
             # and applies it from the repository root, where copying the diff
             # above by hand loses whitespace and the checksums with it.
-            #   <the lines between the markers> | base64 -d | gunzip | git apply
+            # scripts/apply_podfile_lock_patch.js reads it back out of a saved
+            # copy of this log.
+            echo "To apply this change from any machine, save this job's log and run:"
+            echo "  npm run ios:apply-podfile-lock-patch -- <saved log>"
             echo "-----BEGIN PODFILE LOCK PATCH-----"
             git diff ios/Podfile.lock | gzip -9 | base64 | tr -d '\n' | fold -w 76
             echo
