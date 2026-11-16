@@ -31,7 +31,7 @@ require (
 	github.com/stretchr/testify v1.12.1
 	github.com/testcontainers/testcontainers-go v0.45.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.45.0
-	github.com/yalue/onnxruntime_go v1.36.0
+	github.com/yalue/onnxruntime_go v1.38.0
 	golang.org/x/crypto v0.59.0
 	golang.org/x/image v0.46.0
 	golang.org/x/oauth2 v0.38.0
