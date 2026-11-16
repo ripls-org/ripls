@@ -139,7 +139,13 @@ jobs:
         # --repo-update so the runner's cached spec repo learns about pod
         # versions newer than its last warm-up (e.g. a Firebase SDK bump from a
         # Flutter plugin upgrade); plain `pod install` fails on a stale repo.
-        run: cd ios && pod install --repo-update
+        #
+        # `pod install` refuses outright when Podfile.lock pins a pod version
+        # the plugins no longer accept, which is what a plugin major does (a
+        # FlutterFire major moves the Firebase iOS SDK). `pod update` resolves
+        # again from the podspecs. Either way the next step reports the lock
+        # as changed; this only gets the job far enough to say how.
+        run: cd ios && (pod install --repo-update || pod update --repo-update)
         working-directory: app
 
       # Catch a plugin bump that changed the resolved pod set but wasn't
@@ -152,6 +158,15 @@ jobs:
           if ! git diff --quiet ios/Podfile.lock; then
             echo "::error::app/ios/Podfile.lock changed after 'pod install'. A Flutter plugin bump likely needs a committed pod update — run 'cd app/ios && pod install --repo-update' and commit the result."
             git diff ios/Podfile.lock
+            # The same diff in a form that survives a log: only a Mac can
+            # make this file, and the CI fixer runs on Linux. It decodes this
+            # and applies it from the repository root, where copying the diff
+            # above by hand loses whitespace and the checksums with it.
+            #   <the lines between the markers> | base64 -d | gunzip | git apply
+            echo "-----BEGIN PODFILE LOCK PATCH-----"
+            git diff ios/Podfile.lock | gzip -9 | base64 | tr -d '\n' | fold -w 76
+            echo
+            echo "-----END PODFILE LOCK PATCH-----"
             exit 1
           fi
 
