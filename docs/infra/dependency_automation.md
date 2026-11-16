@@ -9,8 +9,8 @@ context:
   skills: [issue, audit]
   domain: infra
 freshness:
-  verified_commit: "e792499"
-  verified_on: "2026-11-14"
+  verified_commit: "3bf45b7"
+  verified_on: "2026-11-16"
 ---
 # Dependency & Toolchain Automation
 
@@ -34,7 +34,8 @@ non-obvious and was learned the hard way.
 > - **How its pull requests merge:** `main` requires no approving review, so
 >   nothing approves them. Renovate asks the forge to merge an `automerge`
 >   pull request when its required checks pass. One without the label gets a
->   review request and is merged by the reviewer
+>   review request (or, when Forgejo refuses a job-token review request, an
+>   assignment to the same person) and is merged by the reviewer
 >   (`.github/workflows/renovate_auto_approve.yaml`).
 > - **What gates a merge:** branch protection on Forgejo `main` and its list
 >   of required checks, not GitHub rulesets.
@@ -62,12 +63,16 @@ non-obvious and was learned the hard way.
   prebuilt-image toolchain. Consumers read it via build-args / sourcing — there
   are no hand-maintained mirrors. `scripts/check_versions.js` (CI) guards the few
   genuine source mirrors; `npm run doctor:versions` flags local drift.
-- **Auto-merge is hands-off for safe updates:** patch/minor of
-  gomod/npm/github-actions/gradle/terraform auto-merge on green with no human.
-  PRs that need a person (majors, Flutter `pub`, base images) get a reviewer
-  auto-assigned and native auto-merge enabled, so they merge **the moment the
-  human approves** (§4). Patch/minor **baked-tool** (`needs runner rebuild`)
-  bumps now auto-merge too, gated by a candidate-image check that proves the new
+- **Auto-merge is hands-off for library updates, majors included** (since
+  2026-11-15): every update type of gomod/npm/github-actions/gradle/`pub`
+  libraries, and patch/minor of terraform and the Gradle wrapper, merge on green
+  with no human. "Green" includes green after the CI-fixer agent migrated the
+  code (§6): the test suites and platform builds are the gate.
+  PRs that still need a person (Terraform provider majors, toolchain majors,
+  the Android Gradle plugin, ONNX Runtime, base images, fastlane gems) are
+  assigned to `DEFAULT_RENOVATE_REVIEWER`, who merges them (§4). Patch/minor
+  **baked-tool** (`needs runner rebuild`)
+  bumps auto-merge too, gated by a candidate-image check that proves the new
   toolchain pre-merge (§5); their majors still route to human review.
 - **Failing Renovate PRs are auto-fixed by Claude.** When a bump needs a code
   migration, `claude_fix_renovate_ci.yaml` checks out the branch, migrates,
@@ -90,9 +95,15 @@ non-obvious and was learned the hard way.
   `docker-compose` / `bundler` / `cocoapods`.
 - **Auto-merge** (`addLabels: ["automerge"]` + `platformAutomerge: true`):
   patch/minor of `gomod`/`npm`/`github-actions`/`gradle`/`gradle-wrapper`/
-  `terraform`. **Manual:** all majors, `pub` (Flutter app deps), `dockerfile`/
-  `docker-compose` (base images), `bundler`, and anything matching `versions.env`
-  (labeled `needs runner rebuild`).
+  `terraform`/`pub`, and **majors** of `gomod`/`npm`/`github-actions`/`gradle`/
+  `pub` libraries. **Manual:** majors of `terraform` providers and the Gradle
+  wrapper; the toolchains by name in any manager (`go`, `node`, `flutter`,
+  `dart`, `java`), the Android Gradle plugin and the ONNX Runtime binding;
+  `dockerfile`/`docker-compose` (base images), `bundler`, and major bumps in
+  `versions.env` (labeled `needs runner rebuild`). The exclusions are written
+  into the major rule as negated names, not as a later `automerge: false` rule:
+  labels only accumulate, so a later rule could not take `automerge` back off,
+  and the review job reads that label.
 - **Blocked/pinned deps** (reasons in [Held-back dependencies](#held-back-dependencies)
   below): `analyzer` `<14` (freezed 4's
   ceiling), `microsoft/onnxruntime` `<1.30` (release-tarball ceiling, checked by
@@ -440,7 +451,18 @@ pushes, and comments, instead of leaving it red for a human (#2396).
   commented → back off) bounds total attempts. The cap is per PR, not per time
   window, because a new SHA defeats the dedup two ways: the guard's revert
   advances it within minutes, and Renovate's daily rebase of a stuck PR advances
-  it once a day. A comment from a human resets the count.
+  it once a day. A comment from a human resets the count. Comments from the
+  Actions account (`forgejo-actions` on Forgejo) are not a human's.
+- **One agent run per commit:** the marker is written when the agent
+  finishes, so it does not stop a second request arriving while the first is
+  still running, and each failed check on a commit sends a request. The
+  dispatcher therefore leaves a claim comment
+  (`<!-- claude-renovate-claim:SHA -->`) before it dispatches, and stops at an
+  existing one. A claim lapses after 45 minutes, so a request the agent repo
+  refused (it rejects one that waited more than 15 minutes in the queue) does
+  not leave the commit without a fixer. Before this, one pull request got five
+  runs for one commit, two started in the same minute and reaching opposite
+  conclusions (2026-11-16).
 - **Auth:** the migration runs in the private agent repo (#2970), which
   checks out and pushes as `ripls-agent[bot]` with a token scoped to this repo
   (it can push to a `ripls-renovate[bot]`-authored branch); this repo only holds

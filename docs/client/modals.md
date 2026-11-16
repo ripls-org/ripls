@@ -8,8 +8,8 @@ context:
   lens: [client]
   domain: client
 freshness:
-  verified_commit: "69c4ab218"
-  verified_on: "2026-07-19"
+  verified_commit: "3bf45b7"
+  verified_on: "2026-11-16"
 ---
 # Client Modal Architecture
 
@@ -295,29 +295,24 @@ body: KeyboardDismissWrapper(
 
 **Reference:** [keyboard_dismiss_wrapper.dart](../app/lib/presentation/widgets/keyboard_dismiss_wrapper.dart)
 
-### buildKeyboardActionsConfig
+### DoneKeyboardActions
 
-Shared helper that builds a `KeyboardActionsConfig` for the `keyboard_actions` package.
+Shared wrapper widget around `KeyboardActions.done` from the `keyboard_actions` package (iOS-only; fields are discovered automatically).
 
 **Purpose:** Provides a "Done" button toolbar above the iOS keyboard for multiline `TextField` widgets where iOS cannot show a native "Done" key (because `TextInputAction.done` is ignored when `maxLines > 1`).
 
 **Usage:**
 ```dart
-// Add a FocusNode to state + dispose():
-final _myFocusNode = FocusNode();
-
-// Wrap the content section:
-KeyboardActions(
-  disableScroll: true,
-  config: buildKeyboardActionsConfig([_myFocusNode]),
+// Wrap the content section (fields beneath it are discovered automatically;
+// pass dismissOnTapOutside: true to also close the keyboard on outside taps):
+DoneKeyboardActions(
   child: KeyboardDismissWrapper(
     child: /* content with TextField */,
   ),
 ),
 
-// Attach to the multiline TextField:
+// No per-field wiring on the multiline TextField:
 TextField(
-  focusNode: _myFocusNode,
   maxLines: 4,
   ...
 ),
@@ -552,7 +547,7 @@ after grep confirmed zero callers.
 - Media upload: Stores media ID, not file paths
 - Validation: Client-side checks before submission
 - Success: Navigator returns created content ID
-- Keyboard: `KeyboardActions` + `KeyboardDismissWrapper` wraps the full-screen content; each `ContentEditableField` has its own `FocusNode` passed to `buildKeyboardActionsConfig()`
+- Keyboard: `DoneKeyboardActions` + `KeyboardDismissWrapper` wraps the full-screen content
 
 ---
 
@@ -588,12 +583,10 @@ Applied universally: preview modals, creation modals, form screens, and embedded
 
 #### 2. "Done" Toolbar for Multiline Fields (`keyboard_actions`)
 
-iOS ignores `TextInputAction.done` when `maxLines > 1` — the keyboard shows a Return key instead. For any multiline `TextField`, use `KeyboardActions` + `buildKeyboardActionsConfig()` to display a "Done" button in a toolbar directly above the keyboard.
+iOS ignores `TextInputAction.done` when `maxLines > 1` — the keyboard shows a Return key instead. For any multiline `TextField`, use `DoneKeyboardActions` to display a "Done" button in a toolbar directly above the keyboard.
 
 ```dart
-KeyboardActions(
-  disableScroll: true,
-  config: buildKeyboardActionsConfig([_descriptionFocusNode]),
+DoneKeyboardActions(
   child: KeyboardDismissWrapper(
     child: /* content with multiline TextField */,
   ),
@@ -651,8 +644,8 @@ Standard picker/action modals shown via `ModalHelpers.showStandardModal()` get a
 - **Add static show() method** to modal classes for clean call sites
 - **Use `GlassFooterButtons`** for every footer action row — never hand-roll OutlinedButton/ElevatedButton pairs
 - **Wrap all text-input content with `KeyboardDismissWrapper`** for tap-to-dismiss keyboard behavior
-- **Use `keyboard_actions` + `buildKeyboardActionsConfig()`** for any multiline `TextField` (`maxLines > 1`) — iOS ignores `TextInputAction.done` for multiline fields
-- **Add `FocusNode` per multiline field** and pass it to both `buildKeyboardActionsConfig([node])` and `TextField(focusNode: node)`
+- **Use `DoneKeyboardActions`** for any multiline `TextField` (`maxLines > 1`) — iOS ignores `TextInputAction.done` for multiline fields
+- **Give each multiline field its own `FocusNode`** via `TextField(focusNode: node)`
 - **Add textInputAction: TextInputAction.done** to single-line TextFields
 - **Track unsaved changes** to enable/disable save button
 - **Support read-only mode** for non-owner views
@@ -667,7 +660,7 @@ Standard picker/action modals shown via `ModalHelpers.showStandardModal()` get a
 - **Don't use manual showModalBottomSheet()** - use ModalHelpers for picker/action modals, or follow creation modal patterns
 - **Don't use FractionallySizedBox** - ModalHelpers handles sizing for picker modals
 - **Don't use callback parameters** - use Navigator result pattern
-- **Don't duplicate keyboard handling** - use `KeyboardDismissWrapper` and `buildKeyboardActionsConfig()` centrally
+- **Don't duplicate keyboard handling** - use `KeyboardDismissWrapper` and `DoneKeyboardActions` centrally
 - **Don't use raw `GestureDetector` for keyboard dismiss** - use `KeyboardDismissWrapper` instead
 - **Don't leave multiline fields without a keyboard dismiss mechanism** - always add `keyboard_actions` toolbar for `maxLines > 1` fields
 - **Don't hard-code modal heights** - use default 75% (expands to 90%) for pickers, 60%/95% for creation modals, 90% for transfer modals

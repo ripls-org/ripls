@@ -1201,10 +1201,10 @@ packages:
     dependency: "direct main"
     description:
       name: keyboard_actions
-      sha256: "59483c0ece5e4f0f0d8e9fb2b641dbf20d8788e14f5ee4da2de31a4a3e33f388"
+      sha256: b87ce4217ca4c31c735c81734d34a9ce08f27b056c1500fd5a1bc87a0cdc36b1
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.2"
+    version: "5.0.3"
   leak_tracker:
     dependency: transitive
     description:

@@ -579,13 +579,57 @@ Done later the same day:
 Still to do, none of it blocking daily work:
 
 - The iOS upload of 0.33.1, after the Apple agreement is accepted.
-- Watch Renovate's first real run and its first pull request of each kind:
-  one that merges itself, and one that asks for a review.
 - The move to `.forgejo/workflows/`. Left out on purpose: about a hundred
   references in forty files and the agent repo, for a benefit (the GitHub
   mirror runs nothing) that switching Actions off there already gives.
 - The TODO comments that still name issues from the private tracker (#22).
 - Archiving the private GitHub repository (#3229).
+
+#### Renovate's first runs (2026-11-15)
+
+Renovate's scheduled run opened its dashboard issue on its own, and two
+updates were then released from the schedule by hand to see one pull request
+of each kind.
+
+| What | Result |
+| --- | --- |
+| A patch update with the `automerge` label | Merged itself, as the Renovate account, once its checks passed. |
+| A major update without the label | Stayed open. Its iOS build failed on a changed `Podfile.lock`; the CI-fixer agent committed the lockfile change and the build passed. |
+| The review request on that pull request | Refused: "Doer can't choose reviewer". A job's own token cannot request a reviewer on Forgejo, because the Actions account is not a member of the repository. The job now falls back to assigning the pull request, which worked. |
+| The dashboard's warning about hidden Unicode characters | Non-breaking spaces that pandoc writes after "e.g." and "vs." in generated release notes. The generator now writes them as `&nbsp;`. |
+
+After these runs the policy was widened: majors of library dependencies and
+of Flutter packages merge themselves on green checks, like minors. Toolchain
+and Terraform provider majors still wait for a person.
+
+#### Scheduled merges (2026-11-15)
+
+A pull request scheduled to merge "when checks succeed" sometimes sat green
+and unmerged. Two did in two days, and Renovate's self-merging pull requests
+use the same mechanism.
+
+Forgejo re-checks a scheduled merge at one moment only: when a status with
+the state *success* is written for the head commit. Most workflows here end
+with a status that is not a success. A path-gated job whose paths did not
+change ends as *skipped*, and so does the job that hands a failure to the CI
+fixer when nothing failed. Both are written a moment after the workflow's
+last success. So the re-check that last success triggered still sees a
+pending job and declines, and nothing triggers another. Whether a pull
+request merged came down to timing.
+
+Shown on a probe pull request: every check green, the merge still scheduled,
+nothing happening for minutes; one more success status posted to the head
+commit, and it merged within seconds. The forge's log had its last re-check
+in the same second as the final statuses, reporting unsuccessful checks.
+
+The same probe showed that a scheduled merge survives a push by another
+account. That is what happens when the CI fixer repairs a Renovate pull
+request, so a fixed pull request still merges itself.
+
+The fix is a last job, `Checks settled`, in each of the eleven workflows that
+can end on a skip. It needs the workflow's other jobs, runs whatever their
+result unless the run was cancelled, and succeeds. Its status is the trigger.
+It is not a required check and says nothing about the result.
 
 #### The rename (2026-11-14)
 
