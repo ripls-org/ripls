@@ -449,14 +449,28 @@ async function main(argv, env = process.env, deps = {}) {
   return 0;
 }
 
+// Exit once stdout has been written out.
+//
+// On Linux, stdout to a pipe is asynchronous, and process.exit() does not wait
+// for it: everything past the first 8 KB is dropped. So `x=$(forge pr view …)`
+// came back cut off for any pull request with a long description, and the
+// caller's jq failed on the broken JSON. That is how a 30 KB Renovate
+// description got a fix request refused as "PR is not open" (2026-11-16).
+// macOS writes pipes synchronously, which is why it never showed there.
+//
+// The empty write's callback runs after every write queued before it.
+function exitAfterFlush(code) {
+  process.stdout.write('', () => process.exit(code));
+}
+
 if (require.main === module) {
   main(process.argv.slice(2)).then(
-    (code) => process.exit(code),
+    (code) => exitAfterFlush(code),
     (err) => {
       process.stderr.write(`forge: ${err.message}\n`);
-      process.exit(err.exitCode || 1);
+      exitAfterFlush(err.exitCode || 1);
     },
   );
 }
 
-module.exports = { main, parseArgs, parseRemote, detect };
+module.exports = { main, parseArgs, parseRemote, detect, exitAfterFlush };
