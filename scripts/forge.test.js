@@ -514,6 +514,21 @@ test('parseRemote reads https, scp-style and ssh remotes', () => {
   assert.strictEqual(parseRemote(''), null);
 });
 
+test('exitAfterFlush delivers all of a large output through a pipe', () => {
+  // The fault this guards against only shows on Linux, where a pipe is
+  // written asynchronously; on macOS the test passes with or without the fix.
+  const { spawnSync } = require('node:child_process');
+  const size = 300000;
+  const script = `
+    const { exitAfterFlush } = require(${JSON.stringify(require.resolve('./forge.js'))});
+    process.stdout.write('x'.repeat(${size}));
+    exitAfterFlush(3);
+  `;
+  const res = spawnSync(process.execPath, ['-e', script], { encoding: 'utf8', maxBuffer: size * 2 });
+  assert.strictEqual(res.status, 3);
+  assert.strictEqual(res.stdout.length, size);
+});
+
 test('parseArgs handles short flags, =values, repeats and comma lists', () => {
   const { positional, opts } = parseArgs(['12', '-R', 'o/r', '--json=a,b', '--add-label', 'x,y', '--add-label', 'z', '--draft']);
   assert.deepStrictEqual(positional, ['12']);
