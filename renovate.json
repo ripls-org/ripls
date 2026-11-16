@@ -43,8 +43,7 @@
       "description": "Library majors merge themselves on green checks, like minors (decided 2026-11-15). 'Green' includes green after the CI-fixer agent has migrated the code: the test suites and the iOS, Android and web builds are the gate, not a person. Excluded by name, because a later rule keeps each of them manual and a rule that set automerge:false after this one could not take the 'automerge' label back off (labels only accumulate, and the invariant is automerge:true IFF the label): the toolchains baked into the runner image (go, node, flutter, dart, java), the ONNX Runtime binding, and the Android Gradle plugin, which must move with the Gradle wrapper.",
       "matchManagers": ["gomod", "npm", "github-actions", "gradle", "pub"],
       "matchUpdateTypes": ["major"],
-      "matchDepNames": ["!go", "!node", "!flutter", "!dart", "!java"],
-      "matchPackageNames": ["!github.com/yalue/onnxruntime_go", "!com.android.application", "!com.android.library", "!gradle"],
+      "matchDepNames": ["!go", "!node", "!flutter", "!dart", "!java", "!github.com/yalue/onnxruntime_go", "!com.android.application", "!com.android.library", "!gradle"],
       "automerge": true,
       "addLabels": ["automerge"]
     },
@@ -91,10 +90,10 @@
       "labels": ["dependencies", "needs runner rebuild"]
     },
     {
-      "description": "Capped at the tarball ceiling, not the API ceiling (#2416). Some ONNX Runtime patch releases are package-manager-only and publish no x64+aarch64 GitHub release tarball, so runners/Dockerfile's `onnxruntime-linux-x64-<v>.tgz` download 404s and the candidate runner image build fails (the PR sticks red on Validate Runner Candidate, caught live by #2370). 1.22.1/1.22.2 were two such releases, which is why this sat at <1.22.1 long after newer runtimes shipped. Raising it is gated on `npm run check:onnx-tarballs`, which asserts the pinned ONNXRUNTIME_VERSION publishes both tarballs — run it instead of reading this cap as a permanent ceiling. 1.29.0 publishes both.",
+      "description": "Capped at the tarball ceiling, not the API ceiling (#2416). Some ONNX Runtime patch releases are package-manager-only and publish no x64+aarch64 GitHub release tarball, so runners/Dockerfile's `onnxruntime-linux-x64-<v>.tgz` download 404s and the candidate runner image build fails (the PR sticks red on Validate Runner Candidate, caught live by #2370). 1.22.1/1.22.2 were two such releases, which is why this sat at <1.22.1 long after newer runtimes shipped. Raising it is gated on `npm run check:onnx-tarballs`, which asserts the pinned ONNXRUNTIME_VERSION publishes both tarballs — run it instead of reading this cap as a permanent ceiling. 1.29.0 publishes both. Raised to <1.33.0 on 2026-11-16: 1.32.0 publishes both (checked with that script), and the Go binding had moved on alone to a release that needs C-API 31, which the 1.29 runtime in the image does not have, so its pull request could only fail.",
       "matchDatasources": ["github-releases"],
       "matchPackageNames": ["microsoft/onnxruntime"],
-      "allowedVersions": "<1.30.0"
+      "allowedVersions": "<1.33.0"
     },
     {
       "description": "Versions.env baked-tool bumps (Flutter/Go/Node/JDK/ONNX) are validated pre-merge against a candidate runner image (validate_runner_candidate.yaml, #2395), then build_runner_image + recreate_runners republish + roll the fleet. automerge:false here is the safe default (majors stay manual via the global major rule); the minor/patch sibling rule below enables auto-merge once that candidate check is green. Always labeled 'needs runner rebuild' (#2287).",
@@ -143,6 +142,13 @@
       "groupName": "dart protobuf runtime"
     },
     {
+      "description": "The FlutterFire packages (firebase_core, firebase_auth, firebase_messaging, ...) are released together and each release line pins one firebase_core major, so no one of them can move across a core major alone: on 2026-11-16 firebase_performance ^0.12 and firebase_app_installations ^0.5 each opened a pull request that pub could not resolve, because both need firebase_core ^5 while the rest held it at ^4. Group them into one branch, and keep majors and minors in that same branch (separateMajorMinor:false): the 0.x packages' 'minor' bumps need the others' majors. Merge policy is unchanged, so the group merges itself on green like any other pub update. Its iOS half needs a regenerated Podfile.lock, which Test iOS Build prints as a patch for the CI fixer to apply.",
+      "matchManagers": ["pub"],
+      "matchPackageNames": ["/^firebase_/"],
+      "groupName": "flutterfire",
+      "separateMajorMinor": false
+    },
+    {
       "description": "cross_file is capped at <0.4 by share_plus, not by us: share_plus 13.x (latest 13.3.1) requires cross_file ^0.3.5+2, so 0.4 fails pub resolution (#3132). Lift when a share_plus release accepts cross_file 0.4.",
       "matchManagers": ["pub"],
       "matchPackageNames": ["cross_file"],
@@ -181,7 +187,7 @@
     },
     {
       "description": "AGP and the Gradle wrapper are interdependent majors (AGP 9 requires Gradle 9, and Gradle 9 drops APIs AGP 8 relies on), so they must migrate together. Group them into one branch across the gradle and gradle-wrapper managers so a future toolchain major arrives as a single PR — and so AGP/Gradle don't reopen as two separately-failing PRs (#2389, #2391). Sets only groupName: merge policy is still governed by the manager auto-merge rule above (minor/patch) and the global major rule (majors stay manual). Kotlin is intentionally excluded — AGP 9's KGP floor (2.2.10) is already cleared, so grouping it would only couple unrelated Kotlin bumps. See #2404.",
-      "matchPackageNames": ["com.android.application", "com.android.library", "gradle"],
+      "matchDepNames": ["com.android.application", "com.android.library", "gradle"],
       "groupName": "android gradle toolchain"
     },
     {
