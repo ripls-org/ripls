@@ -451,7 +451,18 @@ pushes, and comments, instead of leaving it red for a human (#2396).
   commented → back off) bounds total attempts. The cap is per PR, not per time
   window, because a new SHA defeats the dedup two ways: the guard's revert
   advances it within minutes, and Renovate's daily rebase of a stuck PR advances
-  it once a day. A comment from a human resets the count.
+  it once a day. A comment from a human resets the count. Comments from the
+  Actions account (`forgejo-actions` on Forgejo) are not a human's.
+- **One agent run per commit:** the marker is written when the agent
+  finishes, so it does not stop a second request arriving while the first is
+  still running, and each failed check on a commit sends a request. The
+  dispatcher therefore leaves a claim comment
+  (`<!-- claude-renovate-claim:SHA -->`) before it dispatches, and stops at an
+  existing one. A claim lapses after 45 minutes, so a request the agent repo
+  refused (it rejects one that waited more than 15 minutes in the queue) does
+  not leave the commit without a fixer. Before this, one pull request got five
+  runs for one commit, two started in the same minute and reaching opposite
+  conclusions (2026-11-16).
 - **Auth:** the migration runs in the private agent repo (#2970), which
   checks out and pushes as `ripls-agent[bot]` with a token scoped to this repo
   (it can push to a `ripls-renovate[bot]`-authored branch); this repo only holds

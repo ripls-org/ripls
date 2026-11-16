@@ -307,7 +307,7 @@ jobs:
           ATTEMPTS=$(jq '
             def is_marker: (.body | contains("<!-- claude-renovate-fix:"));
             def is_bot: ((.author.login // "") | sub("^app/"; "") | sub("\\[bot\\]$"; "")
-              | test("^(renovate|ripls-renovate|ripls-agent|github-actions)$"));
+              | test("^(renovate|ripls-renovate|ripls-agent|github-actions|forgejo-actions)$"));
             ([.[] | select((is_marker or is_bot) | not) | .createdAt] | max // "") as $last_human
             | [.[] | select(is_marker and .createdAt > $last_human)] | length
           ' /tmp/pr-comments.json)
@@ -329,6 +329,31 @@ jobs:
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+
+          # Per-SHA claim: one agent run per commit. The marker above is
+          # written by the agent when it finishes, minutes later. Until then
+          # every other failed check on the same commit used to start another
+          # agent run, and nothing on the agent's side holds them apart on
+          # Forgejo. On 2026-11-16 one pull request got five runs, two of them
+          # started in the same minute and reaching opposite conclusions. So
+          # the first request for a commit leaves a claim here, and later ones
+          # stop at it.
+          #
+          # A claim lapses after 45 minutes. The agent repo refuses a request
+          # that waited too long in the queue, and a claim that never lapsed
+          # would then leave the commit with no fixer at all.
+          CLAIM="<!-- claude-renovate-claim:${HEAD_SHA} -->"
+          CLAIM_AT=$(jq -r "[.[] | select(.body | contains(\"$CLAIM\")) | .createdAt] | max // \"\"" /tmp/pr-comments.json)
+          if [ -n "$CLAIM_AT" ]; then
+            CLAIM_AGE=$(( $(date -u +%s) - $(date -u -d "$CLAIM_AT" +%s) ))
+            if [ "$CLAIM_AGE" -lt 2700 ]; then
+              echo "::notice::The CI fixer was already asked about PR #$PR_NUMBER @ $HEAD_SHA ${CLAIM_AGE}s ago; not asking again."
+              echo "should_run=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          BODY=$(printf '%s\n%s' "$CLAIM" "The CI fixer has been asked to look at the failing checks on \`${HEAD_SHA:0:8}\`. Other failures on this commit will not start another run.")
+          "$FORGE" pr comment "$PR_NUMBER" --body "$BODY"
 
           echo "should_run=true" >> "$GITHUB_OUTPUT"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
