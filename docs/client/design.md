@@ -8,8 +8,8 @@ context:
   lens: [client]
   domain: client
 freshness:
-  verified_commit: "3faa32b81"
-  verified_on: "2026-06-12"
+  verified_commit: "3bf45b7"
+  verified_on: "2026-11-16"
 ---
 # Client Design Language
 
@@ -418,19 +418,12 @@ body: KeyboardDismissWrapper(
 iOS ignores `TextInputAction.done` when `maxLines > 1`. Use the `keyboard_actions` package via the `DoneKeyboardActions` wrapper to show a "Done" button in a toolbar directly above the keyboard. Fields are discovered automatically; no per-field registration is needed.
 
 ```dart
-// In State:
-final _descriptionFocusNode = FocusNode();
-// In dispose():
-_descriptionFocusNode.dispose();
-
-// In build:
 DoneKeyboardActions(
   child: KeyboardDismissWrapper(
     child: /* content */,
   ),
 ),
 TextField(
-  focusNode: _descriptionFocusNode,
   maxLines: 4,
   ...
 ),

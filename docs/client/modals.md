@@ -8,8 +8,8 @@ context:
   lens: [client]
   domain: client
 freshness:
-  verified_commit: "69c4ab218"
-  verified_on: "2026-07-19"
+  verified_commit: "3bf45b7"
+  verified_on: "2026-11-16"
 ---
 # Client Modal Architecture
 
@@ -303,19 +303,16 @@ Shared wrapper widget around `KeyboardActions.done` from the `keyboard_actions` 
 
 **Usage:**
 ```dart
-// Add a FocusNode to state + dispose():
-final _myFocusNode = FocusNode();
-
-// Wrap the content section:
+// Wrap the content section (fields beneath it are discovered automatically;
+// pass dismissOnTapOutside: true to also close the keyboard on outside taps):
 DoneKeyboardActions(
   child: KeyboardDismissWrapper(
     child: /* content with TextField */,
   ),
 ),
 
-// Attach to the multiline TextField:
+// No per-field wiring on the multiline TextField:
 TextField(
-  focusNode: _myFocusNode,
   maxLines: 4,
   ...
 ),
