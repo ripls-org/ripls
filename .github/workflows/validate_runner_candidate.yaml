@@ -33,9 +33,6 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   changes:
     name: Detect runner-image changes
@@ -44,9 +41,6 @@ jobs:
     # here skips the jobs below too.
     if: github.event_name == 'pull_request' && vars.INSTANCE_PIPELINES == 'true'
     runs-on: self-hosted-linux
-    permissions:
-      contents: read
-      pull-requests: read
     outputs:
       relevant: ${{ steps.filter.outputs.relevant }}
     steps:
@@ -154,9 +148,6 @@ jobs:
           github.event.pull_request.user.login != 'ripls-renovate[bot]' &&
           github.event.pull_request.user.login != vars.RENOVATE_BOT_LOGIN }}
     runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
       # Only for scripts/forge, which the comment below goes through.
       - name: Checkout the forge client

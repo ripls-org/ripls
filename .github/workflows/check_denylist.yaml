@@ -23,9 +23,6 @@ on:
       - main
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   check-denylist:
     name: Check Denylist

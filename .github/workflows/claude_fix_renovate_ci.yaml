@@ -68,11 +68,6 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: read
-  # The hold gate comments on held PRs.
-  pull-requests: write
-
 # Several failed required checks (Go Tests + Flutter Tests + ...) on one PR
 # each fire this workflow. Dispatching takes seconds, so this group no longer
 # serializes the migrations themselves: the agent runs one job per PR at a time

@@ -12,10 +12,6 @@ on:
   pull_request:
     types: [opened]
 
-permissions:
-  contents: read
-  pull-requests: write
-
 jobs:
   assign:
     # Not the self-hosted GitHub fleet: the sparse checkout below must not run

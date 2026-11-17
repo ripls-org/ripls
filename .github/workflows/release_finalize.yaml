@@ -10,12 +10,6 @@ on:
     types: [closed]
     branches: [main]
 
-permissions:
-  contents: write
-  packages: write
-  pull-requests: read
-  id-token: write
-
 concurrency:
   group: release-finalize
   cancel-in-progress: false
@@ -60,9 +54,6 @@ jobs:
   deploy_prod:
     needs: discover
     if: needs.discover.outputs.should_run == 'true'
-    permissions:
-      contents: read
-      packages: write
     uses: ./.github/workflows/build_and_deploy_container.yaml
     with:
       environment: prod
@@ -73,9 +64,6 @@ jobs:
     needs: [discover, deploy_prod]
     if: needs.discover.outputs.should_run == 'true'
     runs-on: self-hosted-linux
-    permissions:
-      contents: write
-      actions: write
     steps:
       - name: Checkout merge commit
         uses: actions/checkout@v7

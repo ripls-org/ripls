@@ -36,12 +36,6 @@ concurrency:
   group: renovate-auto-approve-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  pull-requests: write
-  # Assigning a pull request goes through its issue half.
-  issues: write
-
 env:
   # Human asked to review Renovate pull requests that do not merge themselves.
   # A repository variable rather than a name written here: it names a person.

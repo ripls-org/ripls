@@ -25,9 +25,6 @@ on:
           - major
         default: fix
 
-permissions:
-  contents: read
-
 jobs:
   dispatch:
     # GitHub-hosted: the composite needs a sparse checkout, which must not run

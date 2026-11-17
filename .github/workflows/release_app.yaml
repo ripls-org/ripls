@@ -342,8 +342,6 @@ jobs:
       )
     needs: [prepare, build-ios, build-android]
     runs-on: self-hosted-linux
-    permissions:
-      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v7

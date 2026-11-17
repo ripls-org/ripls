@@ -39,10 +39,6 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: read
-  pull-requests: read
-
 jobs:
   dispatch:
     # SAME-REPO ONLY: a fork can name its branch claude/*, so check where the

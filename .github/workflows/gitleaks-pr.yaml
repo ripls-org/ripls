@@ -19,9 +19,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-permissions:
-  contents: read
-
 jobs:
   scan:
     name: Gitleaks (PR)

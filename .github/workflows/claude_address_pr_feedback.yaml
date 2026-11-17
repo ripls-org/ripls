@@ -29,9 +29,6 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: read
-
 jobs:
   dispatch:
     # Trigger paths (plan and implementing PRs are excluded; refine and

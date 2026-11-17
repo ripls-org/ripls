@@ -38,7 +38,7 @@ results*):
 | `pull_request_review` trigger | `claude_implement_plan`, `claude_address_pr_feedback`, `claude_refine_plan` | Works, though undocumented. The action is `reviewed`, and the kind of review is in `review.type`. |
 | `author_association` in the event | four agent dispatchers | Absent. The collaborator-permission API answers the same question. |
 | `environment:` secret scoping | five deploy and release workflows | Absent. Secrets are per repo, org or user. |
-| `permissions:` | most workflows | Ignored. The automatic token is read-only for fork PRs and read-write otherwise. |
+| `permissions:` | most workflows | Ignored. The automatic token is read-only for fork PRs and read-write otherwise. Removed from every workflow on 2026-11-17: Forgejo 17 prints a warning on each job that carries the field, and the GitHub mirror runs nothing that would read it. Do not add it to new workflows. |
 | `id-token: write` (OIDC into GCP) | `deploy_cloud_functions`, `release_finalize` | Spelled `enable-openid-connect`, and it works. GCP needs a provider for the new issuer. |
 | GitHub App tokens | the dispatch bridge, `claude_refine_plan`, `claude_resolve_conflict` | No Apps. A bot account with scoped access tokens instead. |
 | Reusable workflows | `build_and_deploy_container`, `test_dev_e2e` | Supported, same repo or any public repo. |
