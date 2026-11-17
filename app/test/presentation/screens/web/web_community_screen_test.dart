@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/user.pb.dart' as api;
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/screens/web/web_community_screen.dart';
 import 'package:ripls/presentation/viewmodels/event_invite_join_view_model.dart';
 import 'package:ripls/services/auth_state.dart';
@@ -59,7 +60,7 @@ Widget _harness({
         ).overrideWith(() => _StubJoinNotifier(shortCode, joinStatus)),
     ],
     child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: child,
     ),
@@ -102,7 +103,7 @@ void main() {
             ),
           ],
           child: MaterialApp.router(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             routerConfig: router,
           ),
@@ -142,7 +143,7 @@ void main() {
             ),
           ],
           child: MaterialApp.router(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             routerConfig: router,
           ),
@@ -259,7 +260,7 @@ void main() {
             ),
           ],
           child: MaterialApp.router(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             routerConfig: router,
           ),

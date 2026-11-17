@@ -7,9 +7,9 @@
 //
 // Triggered from ExperienceEventPane's "What's Needed" row when the
 // experience has zero needs/contributions and the viewer is the host.
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/core/theme/app_theme.dart';

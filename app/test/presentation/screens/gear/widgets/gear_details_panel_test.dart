@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/gear_service.pb.dart'
     show GetGearResponse;
 import 'package:ripls/data/gen/ripls/api/user.pb.dart' show User;
 import 'package:ripls/presentation/screens/gear/widgets/gear_details_panel.dart';
 import 'package:ripls/presentation/viewmodels/gear_view_model.dart';
+
 import '../../../../helpers/l10n_helpers.dart';
 
 class _FakeGearNotifier extends GearNotifier {

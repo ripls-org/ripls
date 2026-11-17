@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/presentation/widgets/content/content_view_builders.dart';
 
 /// RequestEditPane renders the editable title + description fields for a

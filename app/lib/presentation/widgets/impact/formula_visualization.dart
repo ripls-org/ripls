@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/gen/paper_tokens.gen.dart';
 import 'package:ripls/presentation/models/drill_down_data.dart';
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// CalendarScrim is the full-bleed readability gradient over the calendar
 /// backdrop — darker at the top (for the header) and bottom (for the day

@@ -8,6 +8,7 @@
 // are in the a11y tree). See docs/client/testing/semantics_identifiers.md.
 
 import { type Locator, type Page } from '@playwright/test';
+import { appTextFields } from './text-fields.js';
 
 /**
  * Click → settle → type → read back, retrying up to 3 times. Flutter-web
@@ -81,7 +82,9 @@ export async function completePhoneRegister(
   opts: CompletePhoneRegisterOptions,
 ): Promise<void> {
   const typeInto = (value: string) =>
-    typeIntoField(page, page.getByRole('textbox').first(), value);
+    // appTextFields, not page.getByRole: once the phone field has been focused
+    // the page also holds an invisible autofill placeholder that sorts first.
+    typeIntoField(page, appTextFields(page).first(), value);
 
   // Step 1: phone number → Send Code.
   await page.getByRole('button', { name: /send code/i }).waitFor({ timeout: 20_000 });

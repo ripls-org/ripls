@@ -3,10 +3,10 @@ import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/core/theme/gen/glass_tokens.gen.dart';

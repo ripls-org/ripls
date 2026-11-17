@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/observability/events.dart';
 import 'package:ripls/core/observability/service.dart';
 import 'package:ripls/data/repositories/tier_tracking_repository.dart';

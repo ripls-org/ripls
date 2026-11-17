@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Tappable is the codebase default for any non-text widget that responds to
 /// `onTap`. It replaces raw `GestureDetector` and `InkWell` with a thin wrapper

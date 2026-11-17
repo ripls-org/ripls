@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/gear.pb.dart' show Availability;
 import 'package:ripls/data/gen/ripls/api/request.pb.dart' show Request, RequestState;
 import 'package:ripls/data/gen/ripls/api/transfer.pb.dart' show TransferType;

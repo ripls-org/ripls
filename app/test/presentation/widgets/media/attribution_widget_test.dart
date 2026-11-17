@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/media_service.pb.dart';
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/widgets/media/attribution_widget.dart';
 
 void main() {
@@ -18,12 +18,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(attribution: testAttribution),
@@ -41,12 +36,7 @@ void main() {
     testWidgets('displays compact attribution with camera icon', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(
@@ -72,12 +62,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(
@@ -97,12 +82,7 @@ void main() {
     testWidgets('has proper semantics for accessibility', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(attribution: testAttribution),
@@ -121,12 +101,7 @@ void main() {
     testWidgets('creator name is tappable', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(attribution: testAttribution),
@@ -149,12 +124,7 @@ void main() {
     testWidgets('Unsplash text is tappable', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(attribution: testAttribution),
@@ -188,12 +158,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(attribution: pexelsAttribution),
@@ -211,12 +176,7 @@ void main() {
     testWidgets('displays compact attribution with camera icon', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(
@@ -240,12 +200,7 @@ void main() {
     testWidgets('has proper semantics for Pexels accessibility', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(attribution: pexelsAttribution),
@@ -264,12 +219,7 @@ void main() {
     testWidgets('Pexels text is tappable', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(attribution: pexelsAttribution),
@@ -292,12 +242,7 @@ void main() {
     testWidgets('creator name is tappable for Pexels', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AttributionWidget(attribution: pexelsAttribution),

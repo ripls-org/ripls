@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/presentation/widgets/chat/conversation_overlay_chrome.dart';
 import 'package:ripls/presentation/widgets/content/content_morph_panel.dart';
 

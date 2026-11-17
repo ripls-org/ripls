@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 
 /// localizedApp wraps [child] in a [MaterialApp] with full localization
 /// delegates configured for widget tests.
@@ -10,12 +10,7 @@ import 'package:ripls/l10n/app_localizations.dart';
 /// must never resolve localized strings directly.
 Widget localizedApp(Widget child) {
   return MaterialApp(
-    localizationsDelegates: const [
-      AppLocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: child,
   );

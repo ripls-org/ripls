@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/errors/rpc_error_handler.dart' show ServiceException;
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/app_colors.dart';

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/location.pb.dart'
     show GeocodedLocation;
 import 'package:ripls/presentation/widgets/location/location_picker_modal.dart';

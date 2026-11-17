@@ -31,6 +31,7 @@ import { registerUser, type SeededUser } from '../../lib/seed/users.js';
 import { mintExperienceShareLink } from '../../lib/seed/communities.js';
 import { createProvisionalUser } from '../../lib/seed/provisional.js';
 import { createEventViaWebUI } from '../../lib/ui/create-event.js';
+import { appTextFields } from '../../lib/ui/text-fields.js';
 
 const SPEC_SLUG = 'phone-rsvp-full-loop';
 const GUEST_PHONE = '+15551234567';
@@ -153,7 +154,9 @@ test('host creates an event via web UI; guest joins via phone OTP and auto-RSVPs
   // keystrokes via click + pressSequentially do reach it (so the controller
   // updates and the disabled-until-input buttons enable).
   const typeInto = async (value: string) => {
-    const field = page.getByRole('textbox').first();
+    // appTextFields, not page.getByRole: once the phone field has been focused
+    // the page also holds an invisible autofill placeholder that sorts first.
+    const field = appTextFields(page).first();
     await field.click();
     await field.pressSequentially(value, { delay: 20 });
   };

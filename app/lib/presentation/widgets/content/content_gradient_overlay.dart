@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/gen/overlay_tokens.gen.dart';
 
 /// ContentGradientOverlay darkens the top of a full-bleed hero so the back and

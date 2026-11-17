@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 
 /// The four place destinations of the converged bottom dock (#2634), in

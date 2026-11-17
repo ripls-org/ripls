@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Deterministic per-community color helper. Maps a community id to one of
 /// a small parchment-friendly palette so the Workshop CTA-row chip and

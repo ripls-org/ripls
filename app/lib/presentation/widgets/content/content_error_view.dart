@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// ContentErrorView provides standardized error display for content loading failures.
 ///

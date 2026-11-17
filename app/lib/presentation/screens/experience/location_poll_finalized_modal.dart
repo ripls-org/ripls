@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/core/theme/gen/glass_tokens.gen.dart';
 import 'package:ripls/core/utils/location_picker_helper.dart';
 import 'package:ripls/core/utils/toast_helper.dart';
-import 'package:ripls/data/gen/ripls/api/location.pb.dart' as locapi;
 import 'package:ripls/data/gen/ripls/api/location.pb.dart'
     show LocationProposal, LocationVoteStatus;
+import 'package:ripls/data/gen/ripls/api/location.pb.dart' as locapi;
 import 'package:ripls/presentation/screens/experience/location_poll_propose_modal.dart';
 import 'package:ripls/presentation/viewmodels/experience_view_model.dart';
 import 'package:ripls/presentation/viewmodels/location_modal_view_model.dart';

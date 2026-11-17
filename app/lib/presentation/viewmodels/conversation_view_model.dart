@@ -11,9 +11,9 @@
 // one [conversationProvider] family so call sites are unchanged.
 import 'dart:async';
 
-import 'package:flutter/material.dart' show ImageProvider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart' show ImageProvider;
 import 'package:ripls/core/utils/video_cache_helper.dart';
 import 'package:ripls/data/gen/ripls/api/chat_service.pb.dart'
     show ConversationItem;

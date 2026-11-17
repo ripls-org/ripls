@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/experience.pb.dart' show Experience;
 import 'package:ripls/data/gen/ripls/api/experience_service.pb.dart' show GetExperienceResponse;
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/viewmodels/experience_view_model.dart';
 import 'package:ripls/presentation/widgets/chat/message_list.dart';
 
@@ -26,12 +26,7 @@ void main() {
         ),
       ],
       child: MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: PollBannerOrLabel(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/config/environment.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';

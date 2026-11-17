@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 
 /// Displays or edits the brand and model fields of a gear item.

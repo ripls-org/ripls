@@ -1,8 +1,8 @@
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/repositories/portfolio_repository.dart';
 import 'package:ripls/presentation/providers/user_timezone_provider.dart';
 import 'package:ripls/presentation/screens/communities/shared_calendar_screen.dart';

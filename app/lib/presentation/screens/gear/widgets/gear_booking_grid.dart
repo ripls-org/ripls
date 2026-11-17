@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/app_theme.dart';
 import 'package:ripls/data/repositories/gear_repository.dart' show GearBooking;
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';

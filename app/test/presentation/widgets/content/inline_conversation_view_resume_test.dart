@@ -1,9 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/cache/stash_cache_manager.dart';
 import 'package:ripls/data/gen/ripls/api/chat_service.pb.dart';
 import 'package:ripls/data/gen/ripls/api/conversation.pb.dart'
@@ -12,6 +11,7 @@ import 'package:ripls/data/gen/ripls/api/user.pb.dart' show User;
 import 'package:ripls/data/repositories/chat_repository.dart';
 import 'package:ripls/data/repositories/unread_count_repository.dart';
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/viewmodels/conversation_view_model.dart';
 import 'package:ripls/presentation/widgets/content/inline_conversation_view.dart';
 import 'package:ripls/services/auth_state.dart';
@@ -139,12 +139,7 @@ Widget _buildTestApp({
       ),
     ],
     child: MaterialApp(
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: InlineConversationView(

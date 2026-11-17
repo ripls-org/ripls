@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/utils/media_helpers.dart';
 import 'package:ripls/data/repositories/media_url.dart';
 

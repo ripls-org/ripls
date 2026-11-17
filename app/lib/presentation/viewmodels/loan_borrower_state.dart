@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/errors/user_error.dart';
 import 'package:ripls/data/gen/ripls/api/transfer.pb.dart';
 

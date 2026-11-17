@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// SwipeToCloseWrapper adds swipe-right-to-close gesture to overlay screens.
 ///

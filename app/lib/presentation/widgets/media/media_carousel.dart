@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/models/media_item_data.dart';
 import 'package:ripls/core/router/video_background_route_observer.dart';

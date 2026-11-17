@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Returns [duration] when the user has not requested reduced motion, or
 /// [Duration.zero] when they have. Use this in place of bare [Duration]

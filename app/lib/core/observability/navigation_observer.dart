@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/observability/breadcrumbs.dart';
 import 'package:ripls/core/observability/logging/logger.dart';
 import 'package:ripls/core/observability/logging/redactor.dart';

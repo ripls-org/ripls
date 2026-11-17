@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/presentation/viewmodels/content_expanded_provider.dart';
 import 'package:ripls/presentation/widgets/content/content_morph_panel_launcher.dart';
 

@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mockito/mockito.dart';
 import 'package:ripls/data/cache/stash_cache_manager.dart';
 import 'package:ripls/data/gen/ripls/api/community_service.pb.dart'
@@ -9,6 +8,7 @@ import 'package:ripls/data/gen/ripls/api/community_service.pb.dart'
 import 'package:ripls/data/gen/ripls/api/item.pb.dart';
 import 'package:ripls/data/gen/ripls/api/workshop_service.pb.dart';
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/screens/workshop/workshop_screen.dart';
 import 'package:ripls/services/providers/cache_providers.dart';
 import 'package:ripls/services/providers/community_providers.dart';
@@ -86,12 +86,7 @@ void main() {
         ),
       ],
       child: MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const WorkshopScreen(),
       ),
@@ -137,12 +132,7 @@ void main() {
         ),
       ],
       child: MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const WorkshopScreen(),
       ),
@@ -299,12 +289,7 @@ Future<void> _pumpWorkshopWithBrief(
       ),
     ],
     child: MaterialApp(
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: const WorkshopScreen(),
     ),

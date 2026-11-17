@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/observability/settings.dart';
 import 'package:ripls/presentation/widgets/observability/consent_dialog.dart';
 import 'package:ripls/services/providers.dart';

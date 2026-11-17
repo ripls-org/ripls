@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// ContentDashedAvatar is a dashed ring with optional [initials] inside — the
 /// "invited / not replied yet" status circle on the pitching-in surface

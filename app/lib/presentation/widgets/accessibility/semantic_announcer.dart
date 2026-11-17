@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// SemanticAnnouncer announces a transient string to assistive technologies.
 /// Use this for one-shot status messages that aren't tied to a persistent

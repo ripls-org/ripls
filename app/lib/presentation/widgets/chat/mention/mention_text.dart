@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'mention_chip.dart';
 import 'mention_parser.dart';
 import 'mention_types.dart';

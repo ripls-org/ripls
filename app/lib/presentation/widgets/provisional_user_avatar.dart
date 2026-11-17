@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// ProvisionalUserAvatar renders a greyed-out avatar with initials and a small
 /// "Not on Ripls" dot badge for visual distinction from registered users.

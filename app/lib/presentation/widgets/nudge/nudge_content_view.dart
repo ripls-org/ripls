@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/media_service.pb.dart' show Attribution;
 import 'package:ripls/presentation/screens/create/blank_create_dispatcher.dart';
 import 'package:ripls/presentation/widgets/nudge/nudge_card_variants.dart';

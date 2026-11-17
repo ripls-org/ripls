@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/common.pb.dart'
     show TrackedString, TrackedEstimate, Estimate;
 import 'package:ripls/data/gen/ripls/api/gear_service.pb.dart'
@@ -7,6 +7,7 @@ import 'package:ripls/data/gen/ripls/api/gear_service.pb.dart'
 import 'package:ripls/data/gen/ripls/api/user.pb.dart' show User;
 import 'package:ripls/presentation/screens/gear/widgets/gear_details_pane.dart';
 import 'package:ripls/presentation/viewmodels/gear_view_model.dart';
+
 import '../../../../helpers/l10n_helpers.dart';
 
 GearDetailsPane _buildPane({

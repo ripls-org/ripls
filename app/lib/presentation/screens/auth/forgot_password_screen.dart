@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/services/providers.dart';
+
 import '../../widgets/adaptive/auth_screen_wrapper.dart';
 import '../../widgets/keyboard_dismiss_wrapper.dart';
 

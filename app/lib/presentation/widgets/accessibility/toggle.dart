@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';
 
 /// Toggle is the codebase primitive for segmented-button / chip / RSVP-style

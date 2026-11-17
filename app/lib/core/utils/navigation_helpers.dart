@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/item.pb.dart';
 import 'package:ripls/presentation/screens/experience/experience_screen.dart';
 import 'package:ripls/presentation/screens/gear/gear_screen.dart';

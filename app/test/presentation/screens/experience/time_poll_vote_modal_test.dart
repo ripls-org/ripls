@@ -1,11 +1,11 @@
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/time.pb.dart';
 import 'package:ripls/data/gen/ripls/api/user.pb.dart';
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/screens/experience/time_poll_vote_modal.dart';
 import 'package:ripls/presentation/viewmodels/time_modal_view_model.dart';
 import 'package:ripls/presentation/widgets/experience/time_proposal_tile.dart';
@@ -95,12 +95,7 @@ Widget _wrapModal({
       authStateProvider.overrideWith(() => _FakeAuthStateNotifier(authUser)),
     ],
     child: MaterialApp(
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Builder(

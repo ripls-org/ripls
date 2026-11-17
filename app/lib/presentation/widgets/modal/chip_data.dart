@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Data class for configuring a chip in a modal. Consumed by the glass-modal
 /// `GlassChip` widget and by the location-picker chip carousel — pass

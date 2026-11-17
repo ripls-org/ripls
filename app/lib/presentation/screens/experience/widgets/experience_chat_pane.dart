@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/experience.pbenum.dart' as proto;
 import 'package:ripls/data/gen/ripls/api/experience_service.pb.dart' show RSVP;
 import 'package:ripls/data/gen/ripls/api/experience_service.pbenum.dart'

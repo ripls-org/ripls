@@ -1,7 +1,8 @@
 import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/utils/image_cache_keys.dart';
 import 'package:video_player/video_player.dart';
 
