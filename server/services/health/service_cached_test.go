@@ -2,6 +2,7 @@ package health
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -95,8 +96,8 @@ func TestRegisterFuncCached_RefreshesAfterTTL(t *testing.T) {
 
 func TestRegisterFuncCached_CachesFailures(t *testing.T) {
 	// A failing paid upstream must not be re-probed on every request — the
-	// error result is cached for the TTL like a success, and still reported
-	// unhealthy so alerting sees it on every probe.
+	// error result is cached (for FailureTTL) and still reported unhealthy
+	// in the response body while it is.
 	logger := logging.Default()
 	svc := New(logger)
 
@@ -121,6 +122,167 @@ func TestRegisterFuncCached_CachesFailures(t *testing.T) {
 
 	if got := calls.Load(); got != 1 {
 		t.Errorf("expected the failing upstream probed once, got %d", got)
+	}
+}
+
+func TestCachedChecker_FailureUsesShorterTTL(t *testing.T) {
+	healthy := []*healthpkg.Status{{Name: "location", Backend: "google_maps"}}
+	unhealthy := []*healthpkg.Status{{Name: "location", Backend: "google_maps", Error: "status 403"}}
+
+	tests := []struct {
+		name     string
+		ttl      time.Duration
+		statuses []*healthpkg.Status
+		err      error
+		want     time.Duration
+	}{
+		{"healthy result keeps the full TTL", 15 * time.Minute, healthy, nil, 15 * time.Minute},
+		{"unhealthy result is capped", 15 * time.Minute, unhealthy, nil, time.Minute},
+		{"probe error is capped", 15 * time.Minute, nil, context.DeadlineExceeded, time.Minute},
+		{"a TTL already below the cap is kept", 10 * time.Second, unhealthy, nil, 10 * time.Second},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &cachedChecker{ttl: tt.ttl, failureTTL: time.Minute, statuses: tt.statuses, err: tt.err}
+			if got := c.currentTTL(); got != tt.want {
+				t.Errorf("currentTTL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCachedChecker_ReprobesFailureBeforeFullTTL(t *testing.T) {
+	// The first probe fails and the second succeeds. With an hour-long TTL
+	// the recovery must still show once the short failure TTL has passed.
+	var calls atomic.Int64
+	checker := &cachedChecker{
+		inner: &funcChecker{name: "google_maps", fn: func(ctx context.Context) ([]*healthpkg.Status, error) {
+			status := &healthpkg.Status{Name: "location", Backend: "google_maps"}
+			if calls.Add(1) == 1 {
+				status.Error = "status 503"
+			}
+			return []*healthpkg.Status{status}, nil
+		}},
+		ttl:        time.Hour,
+		failureTTL: 10 * time.Millisecond,
+	}
+
+	ctx := context.Background()
+	first, err := checker.CheckHealth(ctx)
+	if err != nil {
+		t.Fatalf("CheckHealth returned error: %v", err)
+	}
+	if first[0].IsHealthy() {
+		t.Fatal("expected the first probe to report unhealthy")
+	}
+	//nolint:forbidigo // As in TestRegisterFuncCached_RefreshesAfterTTL: the
+	// assertion is that a real TTL expires and cachedChecker has no injectable
+	// clock. 20ms against a 10ms failure TTL.
+	time.Sleep(20 * time.Millisecond)
+	second, err := checker.CheckHealth(ctx)
+	if err != nil {
+		t.Fatalf("CheckHealth returned error: %v", err)
+	}
+	if !second[0].IsHealthy() {
+		t.Errorf("expected a fresh, healthy probe after the failure TTL, got error %q", second[0].Error)
+	}
+	if got := calls.Load(); got != 2 {
+		t.Errorf("expected 2 probes, got %d", got)
+	}
+}
+
+func TestRegisterFuncCached_ProbeIgnoresCallerCancellation(t *testing.T) {
+	// The health request that triggers a refresh may be abandoned by its
+	// caller. The probe's result is cached for everyone, so it must not
+	// record that one caller's cancellation as the dependency's state.
+	svc := New(logging.Default())
+
+	var probeCtxErr error
+	var hasDeadline bool
+	svc.RegisterFuncCached("google_maps", time.Hour, func(ctx context.Context) ([]*healthpkg.Status, error) {
+		probeCtxErr = ctx.Err()
+		_, hasDeadline = ctx.Deadline()
+		status := &healthpkg.Status{Name: "location", Backend: "google_maps"}
+		if probeCtxErr != nil {
+			status.Error = probeCtxErr.Error()
+		}
+		return []*healthpkg.Status{status}, nil
+	})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	resp, err := svc.CheckHealth(ctx, connect.NewRequest(&api.CheckHealthRequest{}))
+	if err != nil {
+		t.Fatalf("CheckHealth returned error: %v", err)
+	}
+	if probeCtxErr != nil {
+		t.Errorf("probe ran on a cancelled context: %v", probeCtxErr)
+	}
+	if !hasDeadline {
+		t.Error("probe context should carry its own deadline")
+	}
+	if !resp.Msg.Healthy {
+		t.Errorf("a cancelled caller made the dependency unhealthy: %q", resp.Msg.Dependencies[0].Error)
+	}
+}
+
+func TestCheckHealth_LogsFailedProbeOnceNotEveryReplay(t *testing.T) {
+	// Log-based alerting counts dependency_health_check_failed lines. One
+	// failed probe served from cache to three health requests is one
+	// failure, not three.
+	sink := logging.NewTestSink(slog.LevelError)
+	svc := New(sink.NewLogger())
+
+	var calls atomic.Int64
+	svc.RegisterFuncCached("google_maps", time.Hour, countingCheck(&calls, []*healthpkg.Status{
+		{Name: "location", Backend: "google_maps", Error: "status 403"},
+	}))
+
+	for range 3 {
+		resp, err := svc.CheckHealth(context.Background(), connect.NewRequest(&api.CheckHealthRequest{}))
+		if err != nil {
+			t.Fatalf("CheckHealth returned error: %v", err)
+		}
+		if resp.Msg.Healthy {
+			t.Error("every response should still report the dependency unhealthy")
+		}
+	}
+
+	var failures int
+	for _, rec := range sink.Records() {
+		if rec.Message == "dependency_health_check_failed" {
+			failures++
+		}
+	}
+	if failures != 1 {
+		t.Errorf("expected 1 dependency_health_check_failed log for 1 failed probe, got %d", failures)
+	}
+}
+
+func TestCheckHealth_LogsEveryFailureOfUncachedChecker(t *testing.T) {
+	// An uncached checker probes on every request, so every failure is a
+	// real failed probe and is logged.
+	sink := logging.NewTestSink(slog.LevelError)
+	svc := New(sink.NewLogger())
+	svc.RegisterFunc("database", func(ctx context.Context) ([]*healthpkg.Status, error) {
+		return []*healthpkg.Status{{Name: "database", Backend: "postgresql", Error: "connection refused"}}, nil
+	})
+
+	for range 3 {
+		if _, err := svc.CheckHealth(context.Background(), connect.NewRequest(&api.CheckHealthRequest{})); err != nil {
+			t.Fatalf("CheckHealth returned error: %v", err)
+		}
+	}
+
+	var failures int
+	for _, rec := range sink.Records() {
+		if rec.Message == "dependency_health_check_failed" {
+			failures++
+		}
+	}
+	if failures != 3 {
+		t.Errorf("expected 3 dependency_health_check_failed logs, got %d", failures)
 	}
 }
 
@@ -175,7 +337,8 @@ func TestRegisterFuncCached_CachedMetadataIsIsolated(t *testing.T) {
 		inner: &funcChecker{name: "google_maps", fn: countingCheck(&calls, []*healthpkg.Status{
 			{Name: "location", Backend: "google_maps", Metadata: map[string]string{"probe": "geocode"}},
 		})},
-		ttl: time.Hour,
+		ttl:        time.Hour,
+		failureTTL: FailureTTL,
 	}
 
 	ctx := context.Background()

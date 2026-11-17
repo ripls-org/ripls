@@ -416,8 +416,31 @@ the Google Maps checker's billable geocode was 45% of the GCP bill before the
 cache (#2809), and the Pexels probe burned its 200 req/hour quota the same way
 (#929, fixed then by deregistering). Free local checks (database, storage)
 stay uncached so `/readyz` always reflects current state. Cached results are
-re-served with a `cached_age_ms` detail; an unhealthy cached result still
-reports unhealthy on every probe, so log-based alerting is unaffected.
+re-served with a `cached_age_ms` detail.
+
+Three rules keep a cached checker's result about the dependency rather than
+about the health request that happened to trigger the probe:
+
+- **The probe does not inherit the caller's cancellation.** It runs on a
+  detached context with its own 30-second deadline. A prober that hangs up as
+  the cache expires would otherwise cache `context canceled` as the
+  dependency's state and serve it to every later request.
+- **An unhealthy result is reused for at most one minute** (`FailureTTL`), not
+  the full 15. Recovery shows within a minute, and a provider that is really
+  down is still probed only once a minute.
+- **`dependency_health_check_failed` is logged once per failed probe**, not
+  once per health request that was served the cached failure. The response
+  body still reports the dependency unhealthy every time. The log-based metric
+  therefore counts failed probes: a single transient failure is one data
+  point, and a sustained outage produces one a minute, which reaches the
+  alert's two-failure threshold in about a minute.
+
+Dependency error text is public (it is in the unauthenticated `/health` body)
+and logged, so it must not contain credentials. An error from `http.Client`
+quotes the request URL, which for a provider that takes its key as a query
+parameter includes the key: checkers strip the URL at the source (see
+`withoutRequestURL` in `server/location/google.go`), and the health service
+removes the query string from any URL left in an error as a backstop.
 
 ```go
 // server/main.go (core resources) and server/wiring.go (services/providers)
