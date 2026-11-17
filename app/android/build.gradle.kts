@@ -26,6 +26,20 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 
+    // TODO(#60): Flutter 3.50.0 gives each plugin the app's `profile` build
+    // type by copying it whole, and ours sets a resValue and an
+    // applicationIdSuffix that the Android Gradle Plugin rejects in a library
+    // ("Build Type profile contains custom resource values, but the feature is
+    // disabled"). Flutter skips build types a plugin already has, so defining
+    // `profile` here first, with the fallbacks Flutter gives the app's, avoids
+    // the copy. Remove once versions.env pins a Flutter release with the
+    // upstream fix (flutter/flutter pull request 196692; expected in 3.50.1).
+    pluginManager.withPlugin("com.android.library") {
+        extensions.findByType<com.android.build.gradle.LibraryExtension>()
+            ?.buildTypes?.maybeCreate("profile")?.matchingFallbacks
+            ?.addAll(listOf("debug", "release"))
+    }
+
     // TODO(#6): drop once camera_android_camerax puts concurrent-futures on
     // its own compile classpath (or camera-core's POM stops scoping it
     // `runtime`, or javac downgrades the diagnostic again — JDK-8370800).
