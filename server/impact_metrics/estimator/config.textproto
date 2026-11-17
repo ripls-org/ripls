@@ -36,11 +36,15 @@ global {
   waste_co2e_per_kg: 1.0
 
   # Flat default carbon (grams CO2e) for requests lacking detailed data.
-  # TODO: replace with LLM-assisted estimation per request type.
+  # TODO(#58): one value for every such request, whatever was asked for.
+  # Replace with an estimate made from the request description, keeping this
+  # as the fallback. Deferred: it needs a model call and evaluation cases the
+  # estimator does not have yet.
   request_default_carbon_grams: 5000
 
   # Flat default carbon (grams CO2e) for experiences.
-  # TODO: replace with LLM-assisted estimation.
+  # TODO(#58): zero for every experience. Replace with an estimate made from
+  # the experience description, as for requests above.
   experience_default_carbon_grams: 0
 }
 
@@ -288,7 +292,10 @@ quality_time {
   novelty_routine: 0.8
 
   # Vulnerability defaults by transaction type
-  # TODO(phase-8): Replace with LLM classification from item/request description.
+  # TODO(#58): one fixed value per transaction type, so lending a ladder and
+  # lending a car score the same. Replace with a value classified from the
+  # item or request description, keeping these as the fallback. Deferred: it
+  # needs a model call and evaluation cases the estimator does not have yet.
   vulnerability_gear_loan: 1.0
   vulnerability_giveaway: 1.0
   vulnerability_request: 1.0

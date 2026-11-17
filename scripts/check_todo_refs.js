@@ -14,7 +14,10 @@
  *                     non-numeric tags like `TODO(some-slug)`.
  *   - fixme           any `FIXME`. Standardize on `TODO(#NNNN):`.
  *
- * Scopes: app/lib/ and server/, *.go and *.dart. Unlike
+ * Scopes: app/lib/, server/ and proto/; *.go, *.dart, *.proto and *.textproto
+ * (`#` comments). The proto files were added after two `TODO(phase-8)` notes
+ * sat unseen in a .proto and a .textproto: the rule covers every language,
+ * and a gate that reads two of them enforces it for two. Unlike
  * check_ephemeral_comments.js this DOES scan test files — CLAUDE.md's rule has
  * no test exemption, and two of the twelve originals lived in integration tests.
  * Exclusions: /gen/ path segments, generated Dart, l10n, and this script plus
@@ -34,7 +37,17 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 
-const SCAN_DIRS = [path.join(ROOT, 'app', 'lib'), path.join(ROOT, 'server')];
+const SCAN_DIRS = [
+  path.join(ROOT, 'app', 'lib'),
+  path.join(ROOT, 'server'),
+  path.join(ROOT, 'proto'),
+];
+
+// File extensions that are scanned at all.
+const SCANNED_EXTENSIONS = ['.go', '.dart', '.proto', '.textproto'];
+
+// Extensions whose comments start with `#` rather than `//` or `/* */`.
+const HASH_COMMENT_EXTENSIONS = ['.textproto'];
 
 // Path segments that make a file exempt.
 const EXCLUDED_PATH_SEGMENTS = [path.sep + 'gen' + path.sep];
@@ -84,6 +97,24 @@ function extractCommentPortion(line, inBlockComment) {
   return null;
 }
 
+/**
+ * extractHashComment returns the `#` comment on a line, or null. A `#` inside
+ * a string value is taken for a comment start too; for this gate that only
+ * risks a false alarm on a string that also spells out a bare marker.
+ */
+function extractHashComment(line) {
+  const idx = line.indexOf('#');
+  return idx >= 0 ? line.slice(idx) : null;
+}
+
+function usesHashComments(relPath) {
+  return HASH_COMMENT_EXTENSIONS.some((ext) => relPath.endsWith(ext));
+}
+
+function isScannedFile(name) {
+  return SCANNED_EXTENSIONS.some((ext) => name.endsWith(ext));
+}
+
 function updateBlockCommentState(line, inBlockComment) {
   if (inBlockComment) {
     const close = line.indexOf('*/');
@@ -119,12 +150,18 @@ function violationsForComment(commentText) {
 function scanSource(relPath, src) {
   const lines = src.split('\n');
   const violations = [];
+  const hashComments = usesHashComments(relPath);
   let inBlockComment = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const commentText = extractCommentPortion(line, inBlockComment);
-    inBlockComment = updateBlockCommentState(line, inBlockComment);
+    let commentText;
+    if (hashComments) {
+      commentText = extractHashComment(line);
+    } else {
+      commentText = extractCommentPortion(line, inBlockComment);
+      inBlockComment = updateBlockCommentState(line, inBlockComment);
+    }
     if (!commentText) continue;
 
     // A multi-line TODO's continuation lines carry no marker of their own, so
@@ -162,7 +199,7 @@ function walkFiles(dir, out = []) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       walkFiles(full, out);
-    } else if (entry.isFile() && (entry.name.endsWith('.go') || entry.name.endsWith('.dart'))) {
+    } else if (entry.isFile() && isScannedFile(entry.name)) {
       out.push(full);
     }
   }
@@ -218,4 +255,5 @@ module.exports = {
   violationsForComment,
   scanSource,
   isExcluded,
+  isScannedFile,
 };

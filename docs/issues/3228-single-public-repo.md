@@ -398,16 +398,21 @@ denylist.
   - push `v0.33.0` onto the public commit that matches it, or record the base
     tag in `versions.env`;
   - check `release/notes_prompt.md`'s diff base.
-- [ ] **The 15 TODOs that point at closed issues:** not done, and tracked in
-  the new repository as #22. A count on 2026-11-14 found 86 comments in 27
-  files, naming 21 closed issues. Decide each one:
-  - **resolve:** the deferred work is done or no longer wanted;
-  - **refile:** open a fresh issue and point the TODO at it;
-  - **delete:** the comment no longer earns its place.
+- [x] **The 15 TODOs that point at closed issues:** none were left to decide.
+  The count on 2026-11-14 that opened #22 in the new repository (86 comments
+  in 27 files, naming 21 closed issues) was a count of the wrong thing: every
+  hit was prose in `docs/issues/`, an example in `CLAUDE.md` or
+  `CONTRIBUTING.md`, or a fixture in `check_todo_refs.test.js`. No code
+  comment named an old issue, then or on 2026-11-17; the 15 had been cleared
+  before the move. Planning docs are history and keep their numbers.
 
-  Done as one PR. Optionally, `check_todo_refs.js` could reject references to
-  closed issues, but that needs the API and so can't run offline. Recommend
-  doing it as a nightly check instead, not per PR.
+  What the recount did find: six TODOs in `estimator_config.proto` and
+  `config.textproto` with no issue at all (`TODO(phase-8)` and bare `TODO:`),
+  unseen because `check_todo_refs.js` read only Go and Dart. They now point at
+  #58, and the check reads `.proto` and `.textproto` too.
+
+  Not done: rejecting references to closed issues. That needs the API, so it
+  cannot run offline; it would be a nightly check, not a per-PR one.
 - [x] **Links into moving docs:** checked 2026-11-14: nothing outside
   `docs/issues/` names `docs/private`. As planned:
   - publish the ~62 or more docs that code links to (open question 1), after a

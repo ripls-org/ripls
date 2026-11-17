@@ -582,7 +582,6 @@ Still to do, none of it blocking daily work:
 - The move to `.forgejo/workflows/`. Left out on purpose: about a hundred
   references in forty files and the agent repo, for a benefit (the GitHub
   mirror runs nothing) that switching Actions off there already gives.
-- The TODO comments that still name issues from the private tracker (#22).
 - Archiving the private GitHub repository (#3229).
 
 #### Renovate's first runs (2026-11-15)
