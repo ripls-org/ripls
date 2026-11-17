@@ -168,6 +168,16 @@
       "allowedVersions": "<23.0.0"
     },
     {
+      "description": "Cloud Functions stay on Node 24 while the rest of the project is on 26 (#63). The engines field picks the deployed runtime, and as of 2026-11-17 the Firebase CLI rejects nodejs26 at deploy; the two workflows build and test the functions on the version they deploy to. Remove this rule when the CLI accepts nodejs26.",
+      "matchFileNames": [
+        "cloud_functions/package.json",
+        ".github/workflows/test_cloud_functions.yaml",
+        ".github/workflows/deploy_cloud_functions.yaml"
+      ],
+      "matchDepNames": ["node"],
+      "allowedVersions": "<25.0.0"
+    },
+    {
       "description": "Blocked: firebase-admin held at <14 (cloud_functions). firebase-functions peer-requires firebase-admin '^11.10.0 || ^12.0.0 || ^13.0.0', and the latest firebase-functions (7.2.5) still caps at v13 — so admin v14 fails `npm install` with ERESOLVE and the PR can't go green. Lift when a firebase-functions release widens its peer range to include v14.",
       "matchManagers": ["npm"],
       "matchPackageNames": ["firebase-admin"],
