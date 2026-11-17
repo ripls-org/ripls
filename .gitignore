@@ -175,3 +175,10 @@ server/test_data/manual/
 
 # Local benchmark output.
 benchmark_results/
+
+# Credential files that google-github-actions/auth writes into the workspace
+# of a CI job. They hold whatever the job authenticated with, sometimes a
+# service-account key, and `git add -A` in that workspace would stage them: an
+# agent run did exactly that on 2026-11-17, and only the forge's gitleaks hook
+# stopped the push.
+gha-creds-*.json
