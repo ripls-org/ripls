@@ -33,9 +33,6 @@ jobs:
     # Instance-only (docs/infra/dependency_automation.md).
     if: github.event_name == 'pull_request' && vars.INSTANCE_PIPELINES == 'true'
     runs-on: self-hosted-linux
-    permissions:
-      contents: read
-      pull-requests: read
     outputs:
       relevant: ${{ steps.filter.outputs.relevant }}
     steps:
@@ -185,8 +182,6 @@ jobs:
     needs: [build-ios]
     if: ${{ failure() && github.server_url != 'https://github.com' && github.event_name == 'pull_request' }}
     runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v7
         with:

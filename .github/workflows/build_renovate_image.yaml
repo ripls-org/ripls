@@ -27,9 +27,6 @@ on:
       - ".github/workflows/build_renovate_image.yaml"
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   build:
     # Only the repo that owns the runner fleet builds its image (see

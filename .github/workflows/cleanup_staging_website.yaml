@@ -8,10 +8,6 @@ on:
       - ".github/actions/deploy-website/**"
       - ".github/workflows/deploy_staging_website.yaml"
 
-permissions:
-  contents: read
-  pull-requests: write
-
 jobs:
   cleanup:
     # Same gate as deploy_staging_website.yaml: a fork's PR never got a

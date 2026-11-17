@@ -130,8 +130,6 @@ jobs:
     needs: [test]
     if: ${{ failure() && github.server_url != 'https://github.com' && github.event_name == 'pull_request' }}
     runs-on: ${{ vars.CI_RUNNER_LINUX || 'ubuntu-latest' }}
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v7
         with:

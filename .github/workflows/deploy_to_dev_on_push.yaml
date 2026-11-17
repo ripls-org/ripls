@@ -21,9 +21,6 @@ jobs:
     # Instance-only (docs/infra/dependency_automation.md); e2e-tests needs
     # this job, so it skips too.
     if: vars.INSTANCE_PIPELINES == 'true'
-    permissions:
-      contents: read
-      packages: write
     uses: ./.github/workflows/build_and_deploy_container.yaml
     with:
       environment: dev
@@ -32,8 +29,6 @@ jobs:
 
   e2e-tests:
     needs: build-and-deploy
-    permissions:
-      contents: read
     uses: ./.github/workflows/test_dev_e2e.yaml
     with:
       server_url: "https://server-dev.ripls.org"

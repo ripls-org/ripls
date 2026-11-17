@@ -48,9 +48,6 @@ on:
       - "package.json"
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   lint-workflows:
     name: Lint Workflows

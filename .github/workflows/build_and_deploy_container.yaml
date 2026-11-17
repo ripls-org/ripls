@@ -27,9 +27,6 @@ on:
 jobs:
   build:
     runs-on: self-hosted-linux
-    permissions:
-      contents: read
-      packages: write
     env:
       # Job-wide so EVERY codegen invocation is authenticated against buf.build —
       # both the explicit "Generate proto Dart code" step and the Flutter web
