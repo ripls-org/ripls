@@ -119,8 +119,11 @@ const CHECKS = [
 
 function run(cmd) {
   try {
-    // Capture stderr too (java -version, xcodebuild print there).
-    return execSync(cmd, { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' });
+    // Fold stderr into the result: `java -version` prints its version there
+    // and nothing on stdout. Piping stderr is not enough, because execSync
+    // returns stdout alone, which is how an installed JDK came to be reported
+    // as "not found".
+    return execSync(`${cmd} 2>&1`, { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' });
   } catch {
     return null;
   }
@@ -185,5 +188,6 @@ module.exports = {
   extractRuby,
   verdict,
   major,
+  run,
   CHECKS,
 };

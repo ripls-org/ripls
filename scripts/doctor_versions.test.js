@@ -14,6 +14,7 @@ const {
   extractRuby,
   verdict,
   major,
+  run,
 } = require('./doctor_versions');
 
 test('parseVersionsEnv reads KEY=VALUE and ignores comments/blanks', () => {
@@ -47,7 +48,17 @@ test('extractFlutter parses the Flutter banner line', () => {
 test('extractJava parses the openjdk version line (stderr)', () => {
   assert.equal(extractJava('openjdk version "17.0.13" 2024-10-15'), '17');
   assert.equal(extractJava('openjdk version "21" 2024'), '21');
+  assert.equal(extractJava('openjdk version "25.0.5.0.3" 2026-10-24'), '25');
   assert.equal(extractJava('garbage'), null);
+});
+
+test('run returns what a command prints on stderr, as java -version does', () => {
+  const out = run(`"${process.execPath}" -e "console.error('openjdk version \\"25.0.5\\"')"`);
+  assert.equal(extractJava(out), '25');
+});
+
+test('run returns null for a command that fails', () => {
+  assert.equal(run(`"${process.execPath}" -e "process.exit(3)"`), null);
 });
 
 test('extractXcode / extractCocoaPods / extractRuby', () => {
