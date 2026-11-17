@@ -14,8 +14,12 @@
 //   - warn severity (rpc errors / service-level errors / latency / SLO burn):
 //       gcp-policy:<policy-slug>-<yyyymmdd>  — daily aggregation
 //       (closed by the daily-sweep function, not by individual closes)
+//   - health check failing for an external dependency (anything but
+//     database / storage): warn severity, but per-incident like a page
 //
 // Claude-trigger gating per the plan's Cost section:
+//   - external dependency health failure → no claude-fix (a provider
+//     outage has no code fix)
 //   - page severity → claude-fix on create
 //   - warn severity → claude-fix on first occurrence of the day
 //   - unknown severity → no claude-fix (don't burn API on misclassified events)
@@ -108,7 +112,25 @@ const WARN_PATTERNS: RegExp[] = [
   /delivery\s*fail/i,
 ];
 
+// The dependencies whose failure stops the server serving traffic. Mirrors
+// criticalDependencies in server/services/health/service.go, which gates
+// /readyz on the same two.
+const CRITICAL_DEPENDENCIES = new Set(['database', 'storage']);
+
+/**
+ * True when the incident is the health-check policy reporting a dependency
+ * the server can run without: a third-party provider (email, geocoding, AI,
+ * the code forge). Such an outage degrades one feature, and the remedy is on
+ * the provider's side or in configuration, not in this repository's code.
+ */
+export function isExternalDependencyFailure(payload: CloudMonitoringIncidentPayload): boolean {
+  const condition = payload.incident.condition?.displayName ?? payload.incident.summary ?? '';
+  const dependency = payload.incident.metric?.labels?.dependency;
+  return /health\s*check/i.test(condition) && !!dependency && !CRITICAL_DEPENDENCIES.has(dependency);
+}
+
 export function classifySeverity(payload: CloudMonitoringIncidentPayload): AlertSeverity {
+  if (isExternalDependencyFailure(payload)) return 'warn';
   // Prefer the policy's condition displayName (stable, set by Terraform).
   // Only fall back to summary when displayName is absent — concatenating
   // both would let a long summary trip a pattern intended to match the
@@ -265,7 +287,11 @@ export async function handleGcpAlert(
   const inc = payload.incident;
 
   // Page-severity policies dedup per-incident with full open/close lifecycle.
-  if (severity === 'page' || severity === 'unknown') {
+  // So does an external dependency's health failure, although it is only a
+  // warning: each incident is one provider's outage, with a start and an end
+  // worth recording, and the daily per-policy issue would merge unrelated
+  // providers into one.
+  if (severity === 'page' || severity === 'unknown' || isExternalDependencyFailure(payload)) {
     const dedupLabel = `gcp-incident:${inc.incident_id}`;
     if (inc.state === 'closed') {
       const result = await closeIssue({
@@ -287,13 +313,14 @@ export async function handleGcpAlert(
       owner: REPO_OWNER,
       repo: REPO_NAME,
       dedupLabel,
-      title: titleForPage(payload),
+      title: titleForIncident(payload, severity),
       body: buildIncidentBody(payload),
       extraLabels: extraLabelsForPage(payload, severity),
       reopenIfClosed: false,
       // Page-severity always opts into claude-fix; unknown severity never
       // does (we don't know what it is, no point burning Claude-API on a
-      // mis-classified event).
+      // mis-classified event), and nor does an external dependency's
+      // outage (there is no code change that fixes a provider being down).
       addClaudeFixLabel: severity === 'page',
       tracker,
     });
@@ -340,9 +367,10 @@ export async function handleGcpAlert(
   });
 }
 
-function titleForPage(payload: CloudMonitoringIncidentPayload): string {
+function titleForIncident(payload: CloudMonitoringIncidentPayload, severity: AlertSeverity): string {
   const condition = payload.incident.condition?.displayName;
-  return `[ops:page] ${condition ?? payload.incident.summary ?? 'Cloud Monitoring incident'}`;
+  const prefix = severity === 'warn' ? '[ops:warn]' : '[ops:page]';
+  return `${prefix} ${condition ?? payload.incident.summary ?? 'Cloud Monitoring incident'}`;
 }
 
 function titleForWarn(payload: CloudMonitoringIncidentPayload, date: string): string {
@@ -356,6 +384,7 @@ function extraLabelsForPage(
 ): string[] {
   const labels: string[] = ['ops'];
   if (severity === 'page') labels.push('severity:page');
+  if (severity === 'warn') labels.push('severity:warn');
   if (severity === 'unknown') labels.push('severity:unknown');
   // For health_check_unhealthy alerts, the condition payload carries
   // dependency / backend metric labels that belong on the issue too so

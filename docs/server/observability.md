@@ -1190,7 +1190,8 @@ the #1148/#1149 plan (archived) for the full design.
 | Crashlytics velocity alert | Firebase | `onVelocityAlertPublished` | Create / comment, dedup label `crashlytics:<id>` |
 | Crashlytics regression alert | Firebase | `onRegressionAlertPublished` | Create / comment / **reopen**, same dedup label |
 | Crashlytics stability digest | Firebase | `onStabilityDigestPublished` | Weekly rolling issue, dedup label `crashlytics-digest-week:<isoMonday>`. First digest of the week creates the issue with `claude-fix`; subsequent days within the same week append comments. New week → new issue. |
-| Cloud Monitoring incident — page severity | Cloud Monitoring → Pub/Sub → Cloud Function | `onMessagePublished('gcp-alerts-to-github')` | Create / comment / **close on resolve**, dedup label `gcp-incident:<id>`. Page-severity = `uptime_failure`, `health_check_unhealthy`, `database_*`. Always opts into `claude-fix`. |
+| Cloud Monitoring incident — page severity | Cloud Monitoring → Pub/Sub → Cloud Function | `onMessagePublished('gcp-alerts-to-github')` | Create / comment / **close on resolve**, dedup label `gcp-incident:<id>`. Page-severity = `uptime_failure`, `health_check_unhealthy` for a critical dependency (database, storage), `database_*`. Always opts into `claude-fix`. |
+| Cloud Monitoring incident — external dependency unhealthy | Cloud Monitoring → Pub/Sub → Cloud Function | `onMessagePublished('gcp-alerts-to-github')` | `health_check_unhealthy` for any other dependency (email, geocoding, AI, the forge). Same per-incident lifecycle as a page (`gcp-incident:<id>`, **close on resolve**, `dep:` / `backend:` labels) but titled `[ops:warn]`, labelled `severity:warn`, and never `claude-fix`: the server runs without these and a provider outage has no code fix. |
 | Cloud Monitoring incident — warn severity | Cloud Monitoring → Pub/Sub → Cloud Function | `onMessagePublished('gcp-alerts-to-github')` | Daily aggregation: dedup label `gcp-policy:<slug>-<yyyymmdd>`. Warn-severity = `rpc_error_rate`, `all_errors`, `rpc_p95_latency` (both tiers), SLO burn-rate policies. First firing of the day creates with `claude-fix`; subsequent same-day firings append comments. `state=closed` events dropped (closed by daily sweep, not per-incident). |
 | Cloud Monitoring — daily sweep | Cloud Scheduler → Cloud Function | `onSchedule('every day 09:00 UTC')` | Closes open `gcp-policy:*` issues > 24h old. Cleans up the warn-severity aggregator from the previous day. |
 
@@ -1239,7 +1240,8 @@ that qualify are already identified when alerts can be filed publicly:
 | Crashlytics regression alert | Yes (always — prior fix history is useful context) |
 | Crashlytics stability digest, **first digest of the week** | Yes (one plan per weekly tracking issue) |
 | Crashlytics stability digest, subsequent days same week | No (appended as comment to existing issue, no new plan) |
-| Cloud Monitoring page-severity (uptime / health / database) | Yes (page = wake someone up; Claude triages while humans respond) |
+| Cloud Monitoring page-severity (uptime / health of database or storage / database) | Yes (page = wake someone up; Claude triages while humans respond) |
+| Cloud Monitoring health check failing for an external dependency (email, geocoding, AI, the forge) | No (a provider outage has no code fix) |
 | Cloud Monitoring warn-severity, **first firing of the day** | Yes (one plan per daily aggregator) |
 | Cloud Monitoring warn-severity, subsequent same-day firings | No (appended as comment, no new plan) |
 | Cloud Monitoring **unknown** severity (policy didn't match a classifier pattern) | No — file the issue, let humans triage manually so we don't burn Claude-API on misclassifications |
