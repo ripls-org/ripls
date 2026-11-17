@@ -26,32 +26,6 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 
-    // TODO(#6): drop once camera_android_camerax puts concurrent-futures on
-    // its own compile classpath (or camera-core's POM stops scoping it
-    // `runtime`, or javac downgrades the diagnostic again — JDK-8370800).
-    //
-    // camera-core annotates fields such as
-    // SurfaceRequest.mSurfaceRecreationCompleter with JSpecify TYPE_USE
-    // annotations whose declared type comes from
-    // androidx.concurrent.futures.CallbackToFutureAdapter, but camera-core's POM
-    // scopes androidx.concurrent:concurrent-futures to `runtime` — so it is on
-    // the plugin's runtime classpath and absent from its compile classpath.
-    // javac 24+ turned "cannot attach type annotations: class file for X not
-    // found" from a warning into a hard error, so on JDK 25
-    // :camera_android_camerax:compileReleaseJavaWithJavac fails and takes the
-    // Android release build with it. compileOnly puts the class file where
-    // javac can read it without touching the runtime graph or the packaged app.
-    //
-    // Nested in withPlugin because the `compileOnly` configuration only exists
-    // once the Android library plugin has been applied to the subproject.
-    if (project.name == "camera_android_camerax") {
-        pluginManager.withPlugin("com.android.library") {
-            dependencies {
-                add("compileOnly", "androidx.concurrent:concurrent-futures:1.3.0")
-            }
-        }
-    }
-
     // Fix for plugins missing namespace (e.g., flutter_app_badger, add_2_calendar)
     // This must run after plugins are applied, so we use pluginManager.withPlugin
     pluginManager.withPlugin("com.android.library") {
