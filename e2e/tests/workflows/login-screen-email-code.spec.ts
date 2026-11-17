@@ -22,6 +22,7 @@ import { test, expect, type Page, type Locator } from '../../lib/fixtures.js';
 import { registerUser, seedLegacyPasswordUser } from '../../lib/seed/users.js';
 import { completeEmailRegister } from '../../lib/ui/email-register.js';
 import { dismissDataConsent } from '../../lib/ui/consent.js';
+import { appSemantics, appTextFields } from '../../lib/ui/text-fields.js';
 
 const SPEC_SLUG = 'login-screen-email-code';
 
@@ -131,9 +132,12 @@ test('the legacy password form still signs in the accounts that hold one', async
     await locator.pressSequentially(value, { delay: 30 });
   };
 
-  const fields = page.getByRole('textbox');
-  await typeInto(fields.nth(0), legacyEmail);
-  await typeInto(page.locator('input[type="password"]').first(), legacyPassword);
+  // Both locators stay inside the semantics tree. Focusing the email field
+  // makes the engine add an invisible autofill placeholder for the password
+  // field ahead of it in the page, which a page-wide `.nth(0)` or
+  // `input[type="password"]` would resolve to. See lib/ui/text-fields.ts.
+  await typeInto(appTextFields(page).nth(0), legacyEmail);
+  await typeInto(appSemantics(page).locator('input[type="password"]'), legacyPassword);
 
   await page.getByRole('button', { name: /^log in$/i }).click();
 
