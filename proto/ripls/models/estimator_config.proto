@@ -71,11 +71,15 @@ message EstimatorGlobalConfig {
   float waste_co2e_per_kg = 6;
 
   // Flat default carbon estimate (grams CO2e) for requests lacking detailed data.
-  // TODO: replace with LLM-assisted estimation per request type.
+  // TODO(#58): one value for every such request, whatever was asked for.
+  // Remove once the estimate is made from the request description, with this
+  // kept only as the fallback. Deferred: it needs a model call and evaluation
+  // cases the estimator does not have yet.
   float request_default_carbon_grams = 7;
 
   // Flat default carbon estimate (grams CO2e) for experiences.
-  // TODO: replace with LLM-assisted estimation.
+  // TODO(#58): one value for every experience. Remove once the estimate is
+  // made from the experience description, as for requests above.
   float experience_default_carbon_grams = 8;
 }
 
@@ -212,7 +216,11 @@ message QualityTimeConfig {
   float novelty_routine = 23;
 
   // --- Vulnerability defaults by transaction type ---
-  // TODO(phase-8): Replace with LLM classification from item/request description.
+  // TODO(#58): these are one fixed value per transaction type, so lending a
+  // ladder and lending a car score the same. Remove them once vulnerability
+  // is classified from the item or request description, with the type value
+  // kept only as the fallback. Deferred because it needs a model call and
+  // evaluation cases the estimator does not have yet.
 
   float vulnerability_gear_loan = 24;
   float vulnerability_giveaway = 25;

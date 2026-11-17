@@ -8,6 +8,7 @@ const {
   violationsForComment,
   scanSource,
   isExcluded,
+  isScannedFile,
 } = require('./check_todo_refs.js');
 
 // Note: this file is on check_todo_refs.js's self-exempt list, which is why it
@@ -80,6 +81,45 @@ test('reports only the marker line of a multi-line TODO', () => {
   const v = scanSource('a.go', src);
   assert.strictEqual(v.length, 1);
   assert.strictEqual(v[0].line, 3);
+});
+
+test('flags a non-numeric TODO tag in a proto comment', () => {
+  const src = ['message M {', '  // TODO(phase-8): replace with a model call', '  float x = 1;', '}'].join('\n');
+  const v = scanSource('proto/ripls/models/m.proto', src);
+  assert.strictEqual(v.length, 1);
+  assert.strictEqual(v[0].line, 2);
+  assert.strictEqual(v[0].reason, 'todo-no-issue');
+});
+
+test('flags TODO in a textproto hash comment', () => {
+  const src = ['quality_time {', '  # TODO(phase-8): replace with a model call', '  x: 1.0  # FIXME tune', '}'].join('\n');
+  const v = scanSource('server/estimator/config.textproto', src);
+  assert.deepStrictEqual(
+    v.map((x) => [x.line, x.reason]),
+    [
+      [2, 'todo-no-issue'],
+      [3, 'fixme'],
+    ],
+  );
+});
+
+test('accepts an issue-referenced TODO in a textproto hash comment', () => {
+  const src = ['  # TODO(#58): one fixed value per type', '  x: 1.0'].join('\n');
+  assert.deepStrictEqual(scanSource('config.textproto', src), []);
+});
+
+test('does not treat a hash as a comment outside textproto', () => {
+  const src = ['func f() {', '\tcolor := "#TODO"', '}'].join('\n');
+  assert.deepStrictEqual(scanSource('a.go', src), []);
+});
+
+test('scans Go, Dart, proto and textproto files only', () => {
+  for (const name of ['a.go', 'a.dart', 'a.proto', 'a.textproto']) {
+    assert.ok(isScannedFile(name), `expected scanned: ${name}`);
+  }
+  for (const name of ['a.md', 'a.yaml', 'a.json', 'a.ts']) {
+    assert.strictEqual(isScannedFile(name), false, `expected skipped: ${name}`);
+  }
 });
 
 test('excludes generated and l10n files', () => {
