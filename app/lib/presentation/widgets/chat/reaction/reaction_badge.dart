@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/data/gen/ripls/api/chat_service.pb.dart' show Reaction;
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';

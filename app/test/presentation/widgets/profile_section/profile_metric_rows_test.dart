@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/presentation/widgets/profile_section/metric_tile_grid.dart'
     show MetricTileData;
 import 'package:ripls/presentation/widgets/profile_section/profile_metric_rows.dart';

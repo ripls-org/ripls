@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/presentation/models/discover_item.dart';
 import 'package:ripls/presentation/models/magazine_item.dart';

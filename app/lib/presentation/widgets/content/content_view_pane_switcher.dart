@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// ContentViewPaneSwitcher animates horizontal slide transitions between
 /// indexed tab panes, with an optional swipe gesture that drives [onTabChanged].

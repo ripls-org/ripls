@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/core/theme/gen/glass_tokens.gen.dart';
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';

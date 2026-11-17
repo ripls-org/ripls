@@ -1,8 +1,8 @@
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/gear_booking.pb.dart'
     show GearBooking, GearBookingState;
 import 'package:ripls/data/gen/ripls/api/user.pb.dart' show User;

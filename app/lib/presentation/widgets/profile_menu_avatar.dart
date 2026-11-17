@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';
 import 'package:ripls/presentation/widgets/profile_menu_modal.dart';

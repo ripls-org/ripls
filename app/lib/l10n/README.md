@@ -8,6 +8,8 @@ Localization resources and generated Dart bindings.
 - **`app_es.arb`** — Spanish translations. Keys must match `app_en.arb`.
 - **`app_localizations.dart`** / **`app_localizations_en.dart`** / **`app_localizations_es.dart`** — generated Dart classes (do not edit by hand). Regenerate with `npm run generate`.
 
+- **`localization_delegates.dart`** — `appLocalizationsDelegates`, the hand-written delegate list every `MaterialApp` uses in place of the generated `AppLocalizations.localizationsDelegates` (which still serves the deprecated in-framework Material library).
+
 ## How to add a new string
 
 1. Add the key and value to `app_en.arb` with a `description` field.

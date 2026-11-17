@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:ripls/data/gen/ripls/api/feedback_service.pb.dart';
 import 'package:ripls/data/repositories/feedback_repository.dart';
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/viewmodels/feedback_sheet_view_model.dart';
 import 'package:ripls/presentation/widgets/feedback/feedback_sheet.dart';
 import 'package:ripls/services/providers.dart';
@@ -45,12 +45,7 @@ void main() {
           feedbackSheetProvider.overrideWith(() => _SubmittedNotifier()),
       ],
       child: MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: FeedbackSheet()),
       ),

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/gen/design_tokens.gen.dart';
 import 'package:ripls/core/utils/value_helpers.dart';
 import 'package:ripls/data/gen/ripls/api/value.pb.dart';

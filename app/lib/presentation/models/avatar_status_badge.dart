@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 
 /// AvatarStatusBadge describes the status icon and color overlaid on a user avatar.

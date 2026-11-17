@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 
 /// The most item rows a collapsed participation card (the "who's in" / "needs"

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/gen/glass_tokens.gen.dart';
 
 /// Reusable instruction overlay for creation modals.

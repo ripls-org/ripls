@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:connectrpc/connect.dart' show Code;
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/errors/rpc_error_handler.dart';
 import 'package:ripls/core/errors/user_error.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';

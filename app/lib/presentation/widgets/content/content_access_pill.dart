@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/gen/glass_tokens.gen.dart';
 import 'package:ripls/core/theme/gen/overlay_tokens.gen.dart';

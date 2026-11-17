@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/observability/settings.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/presentation/widgets/modal/modal_header.dart';

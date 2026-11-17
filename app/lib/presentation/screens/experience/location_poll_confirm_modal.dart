@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/app_colors.dart';
-import 'package:ripls/data/gen/ripls/api/location.pb.dart' as locapi;
 import 'package:ripls/data/gen/ripls/api/location.pb.dart'
     show LocationProposal, LocationVote, LocationVoteStatus;
+import 'package:ripls/data/gen/ripls/api/location.pb.dart' as locapi;
 import 'package:ripls/presentation/viewmodels/location_modal_view_model.dart';
 import 'package:ripls/presentation/widgets/accessibility/show_accessible_modal.dart';
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';

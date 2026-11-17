@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/app_theme.dart';
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';
 import 'package:ripls/presentation/widgets/profile_section/metric_tile_grid.dart'

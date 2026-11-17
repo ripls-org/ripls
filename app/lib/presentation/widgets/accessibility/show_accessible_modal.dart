@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/utils/responsive.dart';
 
 /// Drop-in replacement for [showModalBottomSheet] that restores focus to

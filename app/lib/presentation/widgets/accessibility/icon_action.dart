@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// IconAction is the codebase default for icon-only buttons. It wraps
 /// Flutter's [IconButton] and *requires* both a [semanticsLabel] and a

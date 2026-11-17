@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/l10n/app_localizations.dart';
@@ -7,6 +7,7 @@ import 'package:ripls/presentation/viewmodels/equivalence_tier_tracking_view_mod
 import 'package:ripls/presentation/widgets/accessibility/accessible_duration.dart';
 import 'package:ripls/presentation/widgets/accessibility/tappable.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import 'equivalence_metric.dart';
 import 'equivalence_resolver.dart';
 import 'equivalence_tier.dart';

@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:connectrpc/connect.dart' as connect;
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/app_theme.dart';
 import 'package:ripls/core/theme/gen/glass_tokens.gen.dart';

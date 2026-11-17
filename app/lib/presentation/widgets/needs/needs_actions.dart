@@ -5,9 +5,9 @@
 // mixins applied to NeedsActions) is tracked in #2148. Done together
 // with the rest of the v2 work would have made the diff harder to
 // review; landing as-is so the surface contract is stable first.
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/errors/rpc_error_handler.dart';
 import 'package:ripls/core/errors/user_error.dart' show UserError;
 import 'package:ripls/core/extensions/l10n_extensions.dart';

@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/repositories/media_repository.dart';
 import 'package:ripls/l10n/app_localizations.dart';
 import 'package:ripls/presentation/widgets/media/video_background_host.dart';

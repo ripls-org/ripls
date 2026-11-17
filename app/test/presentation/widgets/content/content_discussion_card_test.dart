@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/presentation/widgets/content/content_discussion_card.dart';
 
 Widget _host(Widget child, {double width = 800}) => MaterialApp(

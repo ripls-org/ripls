@@ -1,7 +1,7 @@
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/common.pb.dart'
     show CarbonEstimate, Estimate;
 import 'package:ripls/data/gen/ripls/api/impact_estimate.pb.dart';

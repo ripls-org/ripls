@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
+
 import '../../../core/theme/app_colors.dart';
 
 final _log = Logger('ContentEditableField');

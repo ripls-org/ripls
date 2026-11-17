@@ -1,10 +1,10 @@
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/portfolio.pb.dart';
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/widgets/home/calendar/calendar_day_detail.dart';
 import 'package:ripls/presentation/widgets/weather/weather_chip.dart';
 
@@ -28,12 +28,7 @@ void main() {
     return tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             // Mirror the real host: the detail sits bottom-aligned in a

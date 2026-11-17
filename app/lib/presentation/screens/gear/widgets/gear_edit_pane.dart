@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/presentation/screens/gear/widgets/gear_details_pane.dart';
 import 'package:ripls/presentation/screens/gear/widgets/gear_sharing_mode_toggle.dart';
 import 'package:ripls/presentation/viewmodels/gear_view_model.dart';

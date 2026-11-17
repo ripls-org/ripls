@@ -2,7 +2,7 @@
 // confirm body (TITLE / QUANTITY / COMMENT layout per
 // claim-sheet-prototype.html) live here. Splitting per-flow is
 // tracked in #2148 alongside the broader needs-v2 cleanup.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/core/theme/gen/glass_tokens.gen.dart';

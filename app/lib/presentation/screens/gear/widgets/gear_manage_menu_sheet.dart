@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/extensions/l10n_extensions.dart';
 import 'package:ripls/data/gen/ripls/api/gear.pb.dart' show Availability;
 import 'package:ripls/presentation/viewmodels/gear_view_model.dart';

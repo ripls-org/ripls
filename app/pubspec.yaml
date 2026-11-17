@@ -59,6 +59,7 @@ dependencies:
   intl: ^0.20.1
   keyboard_actions: ^5.0.0
   logging: ^1.2.0
+  material_ui: ^1.11.1
   mime: ^2.0.0
   package_info_plus: ^10.1.0
   play_install_referrer: ^0.6.0

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// DashedBorder is a dashed rounded-rectangle [ShapeBorder] — used for the
 /// "needed" / "add" chips on the pitching-in surface

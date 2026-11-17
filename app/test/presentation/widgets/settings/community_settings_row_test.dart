@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/community_service.pb.dart';
 import 'package:ripls/presentation/widgets/group_avatar.dart';
 import 'package:ripls/presentation/widgets/settings/community_settings_row.dart';

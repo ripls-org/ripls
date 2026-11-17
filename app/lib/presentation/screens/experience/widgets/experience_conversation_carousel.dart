@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/gen/overlay_tokens.gen.dart';
 import 'package:ripls/presentation/screens/experience/widgets/experience_chat_pane.dart';
 import 'package:ripls/presentation/screens/experience/widgets/experience_read_shell.dart';

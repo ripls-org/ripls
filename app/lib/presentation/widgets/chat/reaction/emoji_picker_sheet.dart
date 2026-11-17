@@ -1,5 +1,5 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/app_colors.dart';
 import 'package:ripls/presentation/widgets/modal/glass/glass.dart';
 

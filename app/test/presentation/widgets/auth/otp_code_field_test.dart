@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/presentation/widgets/auth/otp_code_field.dart';
 
 /// Tests for the one-time-code field shared by the phone and email sign-in

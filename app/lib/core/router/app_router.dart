@@ -5,9 +5,9 @@
 // pushScreen accept an optional `routeName:` that flows through to
 // RouteSettings for analytics attribution.
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/config/environment.dart';
 import 'package:ripls/core/observability/analytics_route_observer.dart';
 import 'package:ripls/core/observability/events.dart';

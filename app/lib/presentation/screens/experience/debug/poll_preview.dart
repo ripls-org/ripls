@@ -10,12 +10,13 @@
 //
 // Kinds: `time-tbd`, `time-poll`, `time-set` (host), `time-poll-friend`.
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/theme/app_theme.dart';
 import 'package:ripls/data/gen/ripls/api/time.pb.dart';
 import 'package:ripls/data/gen/ripls/api/user.pb.dart';
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/screens/experience/time_poll_finalized_modal.dart';
 import 'package:ripls/presentation/screens/experience/time_poll_propose_modal.dart';
 import 'package:ripls/presentation/screens/experience/time_poll_vote_modal.dart';
@@ -165,7 +166,7 @@ class PollPreviewApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _PreviewScaffold(body: seed.body),
       ),

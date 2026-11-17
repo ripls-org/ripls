@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show Factory;
 import 'package:flutter/gestures.dart'
     show EagerGestureRecognizer, OneSequenceGestureRecognizer;
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/services/device_location_service.dart';
 import 'package:ripls/services/providers.dart';
+
 import '../../../core/theme/app_colors.dart';
 
 final _log = Logger('LocationModalWidgets');

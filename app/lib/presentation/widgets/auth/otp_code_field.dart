@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The 6-digit one-time-code entry field, shared by the phone and email
 /// verification flows so both look and behave identically — the two sit next

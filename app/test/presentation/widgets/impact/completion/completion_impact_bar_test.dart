@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/data/gen/ripls/api/common.pb.dart';
 import 'package:ripls/data/gen/ripls/api/impact_estimate.pb.dart';
 import 'package:ripls/presentation/widgets/impact/completion/completion_impact_bar.dart';

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/presentation/screens/auth/phone_consent_disclosure.dart';
 
 import '../../../helpers/l10n_helpers.dart';

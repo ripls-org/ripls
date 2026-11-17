@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Lazily renders + caches lettered map-pin `BitmapDescriptor`s for a poll's
 /// option markers, keyed by letter + leader state. Until a pin's bitmap is

@@ -6,12 +6,12 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ripls/core/audio/audio_session_manager.dart';
 import 'package:ripls/core/config/environment.dart';
 import 'package:ripls/core/config/firebase_options_web.dart';
@@ -23,6 +23,7 @@ import 'package:ripls/core/utils/logout_diagnostics.dart';
 import 'package:ripls/core/utils/rpc_utils.dart';
 import 'package:ripls/core/utils/timeago_short_messages.dart';
 import 'package:ripls/l10n/app_localizations.dart';
+import 'package:ripls/l10n/localization_delegates.dart';
 import 'package:ripls/presentation/screens/experience/debug/poll_preview.dart';
 import 'package:ripls/presentation/screens/splash/splash_screen.dart';
 import 'package:ripls/presentation/viewmodels/locale_view_model.dart';
@@ -755,7 +756,7 @@ class _GearAppState extends ConsumerState<GearApp> with WidgetsBindingObserver {
         darkTheme: AppTheme.darkTheme,
         themeMode: themeMode,
         locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const SplashScreen(),
       );
@@ -769,14 +770,25 @@ class _GearAppState extends ConsumerState<GearApp> with WidgetsBindingObserver {
           themeMode: themeMode,
           routerConfig: router,
           locale: locale,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           // Seeds localized strings used by ChatNotificationManager from the
           // Android background isolate (which has no l10n context).
           // Inserted via `builder` so we run as a descendant of Localizations
           // and can resolve `context.l10n`.
-          builder: (context, child) =>
-              _ChatNotificationStringSeeder(child: child),
+          //
+          // TODO(#55): the bridge hands the app's colours, text theme and
+          // localizations to dependencies that still build on the deprecated
+          // package:flutter/material.dart (emoji_picker_flutter,
+          // flutter_typeahead, keyboard_actions and others), which cannot see
+          // a package:material_ui Theme. Remove it, and this ignore, once
+          // every such dependency has a release built on material_ui.
+          builder: (context, child) => _ChatNotificationStringSeeder(
+            child: child == null
+                ? null
+                // ignore: deprecated_member_use
+                : MaterialUiCompatibilityBridge(child: child),
+          ),
         ),
       ),
     );
