@@ -4,7 +4,7 @@
   "private": true,
   "description": "Cloud Functions for ripls observability automation. See the #1148/#1149 plan (archived) for the design.",
   "engines": {
-    "node": "24"
+    "node": "26"
   },
   "main": "lib/index.js",
   "scripts": {

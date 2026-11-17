@@ -166,7 +166,7 @@ jobs:
         # runner image. Playwright and Connect-ES v2 run on Node 22 (LTS).
         uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          node-version: '26'
 
       # No setup-java step: the runner image this repo's CI uses bakes Temurin
       # (versions.env JAVA_VERSION) with JAVA_HOME + java on PATH, so the
