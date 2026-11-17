@@ -21,17 +21,17 @@ dependencies:
   device_info_plus: ^13.1.0
   dotted_border: ^3.1.0
   emoji_picker_flutter: ^4.4.0
-  firebase_analytics: ^12.0.4
+  firebase_analytics: ^13.0.0
   # Supplies the Firebase installation ID that RegisterDeviceToken reports.
   # FCM deprecated addressing a push by registration token in favour of the
   # installation ID (#3043); the server falls back to the token when this is
   # unavailable.
-  firebase_app_installations: ^0.4.3
-  firebase_auth: ^6.2.0
-  firebase_core: ^4.2.0
-  firebase_crashlytics: ^5.0.5
-  firebase_messaging: ^16.0.3
-  firebase_performance: ^0.11.1+2
+  firebase_app_installations: ^0.5.0
+  firebase_auth: ^7.0.0
+  firebase_core: ^5.0.0
+  firebase_crashlytics: ^6.0.0
+  firebase_messaging: ^17.0.0
+  firebase_performance: ^0.12.0
   fixnum: ^1.1.0
   fl_chart: ^1.0.0
   flutter:
