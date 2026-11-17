@@ -161,12 +161,12 @@ jobs:
         # needs `gcloud secrets versions access`.
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Install Node 22
+      - name: Install Node
         # Pin the job's Node explicitly so it does not drift with the
-        # runner image. Playwright and Connect-ES v2 run on Node 22 (LTS).
+        # runner image. Renovate moves this with versions.env's NODE_MAJOR.
         uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          node-version: '26'
 
       # No setup-java step: the runner image this repo's CI uses bakes Temurin
       # (versions.env JAVA_VERSION) with JAVA_HOME + java on PATH, so the

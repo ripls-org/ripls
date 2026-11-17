@@ -110,6 +110,9 @@ non-obvious and was learned the hard way.
   `npm run check:onnx-tarballs`), `java` tracked
   major-only (`temurin-<major>-jdk` apt naming),
   `@types/node` `<23` (tracks Node 22 runtime),
+  `node` `<25` in `cloud_functions/package.json` and the two Cloud Functions
+  workflows only (the Firebase CLI rejects `nodejs26` at deploy; #63), while
+  `versions.env` and everything else are on 26,
   `mapbox_maps_flutter` (pinned), `dev.flutter.*` gradle plugins (SDK-provided,
   not on Maven).
 - **Grouped deps** (one PR instead of several near-duplicates): `@types/node`
