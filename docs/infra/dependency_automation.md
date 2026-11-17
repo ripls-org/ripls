@@ -9,8 +9,8 @@ context:
   skills: [issue, audit]
   domain: infra
 freshness:
-  verified_commit: "3bf45b7"
-  verified_on: "2026-11-16"
+  verified_commit: "0b1dd27"
+  verified_on: "2026-11-17"
 ---
 # Dependency & Toolchain Automation
 
@@ -106,7 +106,7 @@ non-obvious and was learned the hard way.
   and the review job reads that label.
 - **Blocked/pinned deps** (reasons in [Held-back dependencies](#held-back-dependencies)
   below): `analyzer` `<14` (freezed 4's
-  ceiling), `microsoft/onnxruntime` `<1.30` (release-tarball ceiling, checked by
+  ceiling), `microsoft/onnxruntime` `<1.33` (release-tarball ceiling, checked by
   `npm run check:onnx-tarballs`), `java` tracked
   major-only (`temurin-<major>-jdk` apt naming),
   `@types/node` `<23` (tracks Node 22 runtime),
@@ -400,7 +400,14 @@ The same mimir-native, no-registry pattern as the runner image. Full detail in
   **Linux** runner image and never runs CocoaPods). Learned from #2883, whose
   bump auto-merged and left every `main` iOS build red until #2920. To fix such
   a PR you do not need a Mac: the failing check prints the lock diff, and the
-  `+  Flutter: <sha>` line in it *is* `pod install`'s output from tinker.
+  `+  Flutter: <sha>` line in it *is* `pod install`'s output from tinker. It
+  also prints the diff as a gzip+base64 block between `BEGIN/END PODFILE LOCK
+  PATCH` markers; save the job log and run
+  `npm run ios:apply-podfile-lock-patch -- <saved log>`
+  (`scripts/apply_podfile_lock_patch.js`) to apply it. The step falls back to
+  `pod update --repo-update` when `pod install` refuses a stale pin (a plugin
+  major, e.g. FlutterFire), and the FlutterFire `firebase_*` pub packages are
+  one Renovate group (`flutterfire`, `separateMajorMinor: false`).
 - **Android** is mostly self-tracking: Gradle (wrapper), AGP, Kotlin, Firebase
   plugins, and lib deps are Renovate-managed and committed in-repo (so inherently
   synced); `compileSdk`/`targetSdk`/`minSdk`/`ndkVersion` are `flutter.*`
@@ -541,15 +548,15 @@ type-shaped declarations via `ClassNamePart.typeName`, functions and typedefs vi
 a bare token. Verified behaviour-preserving by diffing the tool's full report
 before and after: byte-identical.
 
-#### Go `onnxruntime_go` — native ORT version coupling (capped `<1.30`)
+#### Go `onnxruntime_go` — native ORT version coupling (native ORT capped `<1.33`)
 
 `github.com/yalue/onnxruntime_go` is coupled in lockstep to the native ONNX
 Runtime library: each binding release vendors a fixed `ORT_API_VERSION` that the
 loaded `.so`/`.dylib` must support (ORT 1.N supports API ≤ N). **The binding's own
 version number is not the API version** — read
-`onnxruntime_c_api.h` in the module to find it. Currently binding **v1.35.0**
-(`ORT_API_VERSION 29`) against native ORT **1.29.0** in `Dockerfile`,
-`runners/Dockerfile` and `versions.env`.
+`onnxruntime_c_api.h` in the module to find it. Currently binding **v1.38.0**
+against native ORT **1.32.0** in `Dockerfile` and `versions.env`
+(`runners/Dockerfile` takes it from `versions.env`).
 
 > **The two halves cannot move in one PR, even though they are one logical
 > bump.** `Go Tests` runs on the *current* runner fleet, and the fleet only picks
