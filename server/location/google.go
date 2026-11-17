@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -61,6 +62,20 @@ func NewGoogleMapsClient(apiKey string) *GoogleMapsClient {
 		apiKey:     apiKey,
 		httpClient: &http.Client{},
 	}
+}
+
+// withoutRequestURL drops the request URL from an error returned by
+// http.Client.Do. Such an error is a *url.Error whose text quotes the full
+// URL, and the Geocoding API takes the API key as a query parameter, so the
+// unmodified error would carry the key into logs and health responses. The
+// underlying cause stays wrapped, so errors.Is still sees a cancellation or
+// timeout.
+func withoutRequestURL(err error) error {
+	var urlErr *url.Error
+	if errors.As(err, &urlErr) {
+		return fmt.Errorf("%s request failed: %w", strings.ToLower(urlErr.Op), urlErr.Err)
+	}
+	return err
 }
 
 // === Geocoding API response shapes ===.
@@ -381,7 +396,7 @@ func (c *GoogleMapsClient) CheckHealth(ctx context.Context) ([]*health.Status, e
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		status.LatencyMs = time.Since(start).Milliseconds()
-		status.Error = err.Error()
+		status.Error = withoutRequestURL(err).Error()
 		return []*health.Status{status}, nil
 	}
 	defer resp.Body.Close()
@@ -507,6 +522,7 @@ func (c *GoogleMapsClient) fetchPlaceDetails(ctx context.Context, logger *loggin
 func (c *GoogleMapsClient) doGeocodingRequest(ctx context.Context, logger *logging.Logger, req *http.Request, startTime time.Time) (*googleGeocodingResponse, error) {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		err = withoutRequestURL(err)
 		logger.ErrorContext(ctx, "google geocoding request failed",
 			"error", err, "duration_ms", time.Since(startTime).Milliseconds())
 		return nil, fmt.Errorf("failed to make geocoding request: %w", err)

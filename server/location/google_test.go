@@ -3,6 +3,7 @@ package location
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -573,5 +574,56 @@ func TestBuildGoogleComponents(t *testing.T) {
 				t.Errorf("buildGoogleComponents = %q, want %q", got, c.want)
 			}
 		})
+	}
+}
+
+// === Request errors never carry the API key ===.
+
+// transportFailure is what http.Client.Do reports when the round trip fails:
+// it wraps this in a *url.Error quoting the request URL, key included.
+func transportFailure(*http.Request) (*http.Response, error) {
+	return nil, context.Canceled
+}
+
+func TestGoogleCheckHealth_TransportErrorOmitsAPIKey(t *testing.T) {
+	client := newGoogleTestClient(transportFailure)
+	client.apiKey = "sekrit-test-key"
+
+	statuses, err := client.CheckHealth(context.Background())
+	if err != nil {
+		t.Fatalf("CheckHealth returned go error: %v", err)
+	}
+	got := statuses[0].Error
+	if got == "" {
+		t.Fatal("expected an error for a failed request")
+	}
+	if strings.Contains(got, "sekrit-test-key") || strings.Contains(got, "key=") {
+		t.Errorf("health error carries the request URL: %q", got)
+	}
+	if !strings.Contains(got, "context canceled") {
+		t.Errorf("health error lost its cause: %q", got)
+	}
+}
+
+func TestGoogleForwardGeocode_TransportErrorOmitsAPIKey(t *testing.T) {
+	client := newGoogleTestClient(transportFailure)
+	client.apiKey = "sekrit-test-key"
+
+	_, err := client.ForwardGeocode(context.Background(), &models.Address{PostalCode: "94043", RegionCode: "US"})
+	if err == nil {
+		t.Fatal("expected an error for a failed request")
+	}
+	if strings.Contains(err.Error(), "sekrit-test-key") || strings.Contains(err.Error(), "key=") {
+		t.Errorf("geocoding error carries the request URL: %q", err.Error())
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("geocoding error no longer wraps its cause: %v", err)
+	}
+}
+
+func TestWithoutRequestURL_LeavesOtherErrorsAlone(t *testing.T) {
+	plain := errors.New("boom")
+	if got := withoutRequestURL(plain); got != plain {
+		t.Errorf("withoutRequestURL changed a non-URL error: %v", got)
 	}
 }

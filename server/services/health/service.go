@@ -83,16 +83,35 @@ func (s *Service) RegisterFunc(name string, fn CheckFunc) {
 // /readyz always reflects current state.
 const DefaultExternalTTL = 15 * time.Minute
 
+// FailureTTL caps how long a cached checker reuses an unhealthy result. It is
+// much shorter than DefaultExternalTTL so that a dependency which recovers, or
+// a probe that failed for a passing reason, stops reporting unhealthy within a
+// minute, while a provider that is really down is still probed only once a
+// minute rather than on every health request.
+const FailureTTL = time.Minute
+
+// probeTimeout bounds a cached checker's upstream probe. The probe does not
+// inherit the health request's cancellation (see cachedChecker.CheckHealth),
+// so it needs a deadline of its own.
+const probeTimeout = 30 * time.Second
+
+// cachedAgeKey is the Metadata key a cached checker adds to results it serves
+// from its cache rather than from a probe made for this request.
+const cachedAgeKey = "cached_age_ms"
+
 // cachedChecker serves a wrapped checker's results from a TTL cache. Uptime
 // checks hit /health every ~100 seconds from multiple prober regions; without
 // a cache, every probe re-runs every registered checker, which for paid
 // upstreams turns monitoring frequency directly into provider spend (a
 // billable geocode per probe, #2809; previously a Pexels quota burn, #929).
-// Errors are cached like successes so a failing paid API is not hammered
-// either.
+// Failures are cached too, for the shorter FailureTTL, so a failing paid API
+// is not hammered either.
 type cachedChecker struct {
 	inner Checker
-	ttl   time.Duration
+	// ttl is how long a healthy result is reused; failureTTL is the (shorter)
+	// limit for an unhealthy one.
+	ttl        time.Duration
+	failureTTL time.Duration
 
 	// mu also serializes refreshes: when the cache expires, exactly one
 	// caller performs the upstream probe while concurrent callers wait
@@ -109,20 +128,45 @@ func (c *cachedChecker) Name() string { return c.inner.Name() }
 // the wrapped checker. Cached copies carry a cached_age_ms detail so the
 // /health body is honest about staleness; LatencyMs keeps the real probe's
 // measurement.
+//
+// The probe runs on a context detached from the caller's cancellation. Its
+// result is shared with every health request for the next TTL, so it must
+// describe the dependency rather than the one request that happened to
+// trigger it: a caller that disconnects mid-probe would otherwise cache
+// "context canceled" as the dependency's state.
 func (c *cachedChecker) CheckHealth(ctx context.Context) ([]*healthpkg.Status, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	age := time.Since(c.fetchedAt)
-	if !c.fetchedAt.IsZero() && age < c.ttl {
+	if !c.fetchedAt.IsZero() && age < c.currentTTL() {
 		return cloneStatuses(c.statuses, age), c.err
 	}
 
-	statuses, err := c.inner.CheckHealth(ctx)
+	probeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), probeTimeout)
+	defer cancel()
+
+	statuses, err := c.inner.CheckHealth(probeCtx)
 	c.fetchedAt = time.Now()
 	c.statuses = statuses
 	c.err = err
 	return statuses, err
+}
+
+// currentTTL is how long the result now in the cache may be reused: the
+// configured TTL when every status is healthy, and no more than failureTTL
+// when the probe errored or reported any dependency unhealthy.
+func (c *cachedChecker) currentTTL() time.Duration {
+	failed := c.err != nil
+	for _, s := range c.statuses {
+		if !s.IsHealthy() {
+			failed = true
+		}
+	}
+	if failed {
+		return min(c.ttl, c.failureTTL)
+	}
+	return c.ttl
 }
 
 // cloneStatuses copies cached statuses before handing them to a request so
@@ -136,20 +180,22 @@ func cloneStatuses(statuses []*healthpkg.Status, age time.Duration) []*healthpkg
 		for k, v := range s.Metadata {
 			copied.Metadata[k] = v
 		}
-		copied.Metadata["cached_age_ms"] = strconv.FormatInt(age.Milliseconds(), 10)
+		copied.Metadata[cachedAgeKey] = strconv.FormatInt(age.Milliseconds(), 10)
 		cloned[i] = &copied
 	}
 	return cloned
 }
 
 // RegisterFuncCached registers a named check function whose results are
-// reused for ttl before the dependency is probed again. Use it for checkers
-// whose probe costs money or provider quota; keep free critical checks on
-// RegisterFunc so readiness stays current.
+// reused for ttl before the dependency is probed again (an unhealthy result
+// for at most FailureTTL). Use it for checkers whose probe costs money or
+// provider quota; keep free critical checks on RegisterFunc so readiness
+// stays current.
 func (s *Service) RegisterFuncCached(name string, ttl time.Duration, fn CheckFunc) {
 	s.checkers = append(s.checkers, &cachedChecker{
-		inner: &funcChecker{name: name, fn: fn},
-		ttl:   ttl,
+		inner:      &funcChecker{name: name, fn: fn},
+		ttl:        ttl,
+		failureTTL: FailureTTL,
 	})
 }
 
@@ -190,7 +236,7 @@ func (s *Service) CheckHealth(
 				Backend:   healthStatus.Backend,
 				Details:   healthStatus.Metadata,
 				LatencyMs: latency,
-				Error:     healthStatus.Error,
+				Error:     redactURLQueries(healthStatus.Error),
 			}
 			response.Dependencies = append(response.Dependencies, status)
 
@@ -206,7 +252,16 @@ func (s *Service) CheckHealth(
 		if !dep.Healthy {
 			failedDependencies = append(failedDependencies, dep.Name)
 
-			// Log each failure with full details for log-based alerting
+			// A result replayed from a checker's cache is the same failed
+			// probe that was logged when it ran. Logging it again on every
+			// health request would make the log-based failure count track
+			// how often /health is polled instead of how often a probe
+			// failed, so one bad probe would look like many.
+			if _, replayed := dep.Details[cachedAgeKey]; replayed {
+				continue
+			}
+
+			// Log each failed probe with full details for log-based alerting
 			logFields := []any{
 				"dependency", dep.Name,
 				"backend", dep.Backend,
@@ -243,7 +298,12 @@ func (s *Service) HealthHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		resp, _ := s.CheckHealth(ctx, connect.NewRequest(&api.CheckHealthRequest{}))
+		resp, err := s.CheckHealth(ctx, connect.NewRequest(&api.CheckHealthRequest{}))
+		if err != nil {
+			s.logger.ErrorContext(ctx, "health check failed", "error", err)
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
 
 		jsonBytes, err := protojson.MarshalOptions{EmitUnpopulated: true}.Marshal(resp.Msg)
 		if err != nil {
