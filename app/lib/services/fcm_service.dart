@@ -164,6 +164,12 @@ class FCMService {
       // Wrap independently so message handlers remain functional.
       try {
         await _registerDeviceToken();
+        // firebase_messaging 17 deprecates onTokenRefresh/getToken in favour of
+        // register()/onRegistered, which yield the Firebase Installation ID
+        // rather than the FCM registration token the server's device_token
+        // field holds today. Switching changes that contract, so keep the
+        // token path until the server side is decided.
+        // ignore: deprecated_member_use
         _messaging.onTokenRefresh.listen(_onTokenRefresh);
       } catch (e) {
         _log.error(
@@ -260,6 +266,9 @@ class FCMService {
   /// triggers a token refresh and retry rather than a SEVERE log. SEVERE is
   /// only emitted by the caller ([initialize]) after the retry also fails.
   Future<void> _registerDeviceToken() async {
+    // See the note in [initialize]: the FCM token is still what the server
+    // stores in device_token, so the deprecated getToken() stays for now.
+    // ignore: deprecated_member_use
     final token = await _messaging.getToken();
     if (token == null) {
       _log.warning('Failed to get device token');
