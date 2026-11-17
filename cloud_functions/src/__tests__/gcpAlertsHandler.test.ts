@@ -9,6 +9,7 @@ import {
   buildIncidentBody,
   buildResolutionBody,
   classifySeverity,
+  isExternalDependencyFailure,
   handleGcpAlert,
   incidentDateUtc,
   parsePubsubMessage,
@@ -397,6 +398,63 @@ describe('handleGcpAlert — page severity', () => {
     const labels = spies.create.mock.calls[0][0].labels as string[];
     expect(labels).toContain('dep:ai');
     expect(labels).toContain('backend:anthropic');
+  });
+});
+
+describe('handleGcpAlert — external dependency health failure', () => {
+  const emailDown = (overrides: Partial<CloudMonitoringIncidentPayload['incident']> = {}) =>
+    baseIncident({
+      condition: { displayName: 'Dependency health check failed 2 consecutive times' },
+      metric: { type: 'health/status', labels: { dependency: 'email', backend: 'mailgun' } },
+      ...overrides,
+    });
+
+  test('classifies as warn, and a critical dependency still pages', () => {
+    expect(classifySeverity(emailDown())).toBe('warn');
+    expect(isExternalDependencyFailure(emailDown())).toBe(true);
+    for (const dependency of ['database', 'storage']) {
+      const critical = emailDown({ metric: { type: 'health/status', labels: { dependency } } });
+      expect(isExternalDependencyFailure(critical)).toBe(false);
+      expect(classifySeverity(critical)).toBe('page');
+    }
+  });
+
+  test('a health check alert with no dependency label still pages', () => {
+    const p = baseIncident({ condition: { displayName: 'Health Check Unhealthy - server' } });
+    expect(isExternalDependencyFailure(p)).toBe(false);
+    expect(classifySeverity(p)).toBe('page');
+  });
+
+  test('a dependency label on another policy does not make it external', () => {
+    const p = baseIncident({ metric: { type: 'x', labels: { dependency: 'email' } } });
+    expect(isExternalDependencyFailure(p)).toBe(false);
+    expect(classifySeverity(p)).toBe('page');
+  });
+
+  test('open files a per-incident warn issue without claude-fix', async () => {
+    const { tracker, spies } = makeTracker();
+    await handleGcpAlert(emailDown(), tracker);
+
+    expect(spies.create).toHaveBeenCalledTimes(1);
+    const call = spies.create.mock.calls[0][0];
+    expect(call.title).toContain('[ops:warn]');
+    const labels = call.labels as string[];
+    expect(labels).toContain('gcp-incident:inc-7771');
+    expect(labels).toContain('severity:warn');
+    expect(labels).toContain('dep:email');
+    expect(labels).toContain('backend:mailgun');
+    expect(labels).not.toContain('severity:page');
+    expect(labels).not.toContain(CLAUDE_FIX_LABEL);
+  });
+
+  test('closed closes the incident issue, unlike other warn alerts', async () => {
+    const { tracker, spies } = makeTracker();
+    spies.listForRepo.mockResolvedValueOnce({ data: [{ number: 88, state: 'open' }] });
+    await handleGcpAlert(emailDown({ state: 'closed', ended_at: 1747010000 }), tracker);
+
+    expect(spies.update).toHaveBeenCalledWith(
+      expect.objectContaining({ issue_number: 88, state: 'closed' }),
+    );
   });
 });
 
